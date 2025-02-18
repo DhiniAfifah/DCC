@@ -14,6 +14,32 @@ export default function AdministrativeForm() {
     <div className="space-y-6 max-w-4xl mx-auto p-4">
       <Card>
         <CardHeader>
+          <CardTitle>Sertifikat Kalibrasi</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-6">
+          <div className="grid gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="laboratory-code">Laboratory Code</Label>
+                <Input id="laboratory-code" />
+              </div>
+              <div>
+                <Label htmlFor="certificate">Certificate number</Label>
+                <Input id="certificate" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="order">Order number</Label>
+                <Input id="order" />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Identitas Pemilik</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-6">
@@ -103,7 +129,7 @@ export default function AdministrativeForm() {
               </div>
               <div>
                 <Label htmlFor="pages">
-                  Jumlah halaman (termasuk halaman ini)
+                  Jumlah halaman (termasuk halaman cover)
                 </Label>
                 <Input id="pages" type="number" />
               </div>
