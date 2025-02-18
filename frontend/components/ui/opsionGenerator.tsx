@@ -7,11 +7,10 @@ const OpsionGenerator = () => {
       {/* Background resmi: gradient abu-abu ke navy */}
       <div className="fixed inset-0 -z-20 bg-gradient-to-br from-gray-100 to-blue-900"></div>
 
-      {/* Efek noise untuk sentuhan tekstur */}
       <div className="fixed inset-0 -z-10 bg-[url('/noise.png')] opacity-10"></div>
 
       <div className="flex flex-col space-y-6 w-full max-w-md z-20">
-        <DccOption href="/create">Create new DCC</DccOption>
+        <DccOption href="/create/form">Create new DCC</DccOption>
         <DccOption href="/load">Load existing DCC</DccOption>
       </div>
     </div>
