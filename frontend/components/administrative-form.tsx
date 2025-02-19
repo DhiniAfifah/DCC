@@ -1,15 +1,69 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+
+const countries = [
+  { label: "Indonesia", value: "id" },
+  { label: "United States", value: "us" },
+  { label: "United Kingdom", value: "uk" },
+  { label: "Germany", value: "de" },
+  { label: "France", value: "fr" },
+  { label: "Japan", value: "jp" },
+  { label: "China", value: "cn" },
+] as const;
+
+const languages = [
+  { label: "Bahasa Indonesia", value: "id" },
+  { label: "English", value: "en" },
+  { label: "Mandarin", value: "zh" },
+  { label: "French", value: "fr" },
+  { label: "German", value: "de" },
+  { label: "Japanese", value: "jp" },
+] as const;
+
+const FormSchema = z.object({
+  country: z.string({
+    required_error: "Please select a country.",
+  }),
+  language: z.string({
+    required_error: "Please select a language.",
+  }),
+});
 
 export default function AdministrativeForm() {
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+  });
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto p-4">
       <Card>
@@ -56,42 +110,164 @@ export default function AdministrativeForm() {
               </div>
               <div>
                 <Label htmlFor="country-code">Kode Negara</Label>
-                <Select>
-                  <SelectTrigger id="country-code">
-                    <SelectValue placeholder="Pilih negara" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ID">ID</SelectItem>
-                    <SelectItem value="MY">MY</SelectItem>
-                    <SelectItem value="SG">SG</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Form {...form}>
+                  <FormField
+                    control={form.control}
+                    name="country"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value
+                                  ? countries.find((country) => country.value === field.value)?.label
+                                  : "Pilih negara"}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                            <Command>
+                              <CommandInput placeholder="Cari negara..." className="h-9" />
+                              <CommandList>
+                                <CommandEmpty>Negara tidak ditemukan.</CommandEmpty>
+                                <CommandGroup>
+                                  {countries.map((country) => (
+                                    <CommandItem
+                                      value={country.label}
+                                      key={country.value}
+                                      onSelect={() => {
+                                        form.setValue("country", country.value);
+                                      }}
+                                    >
+                                      {country.label}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </FormItem>
+                    )}
+                  />
+                </Form>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="used-lang">Bahasa yang Digunakan</Label>
-                <Select>
-                  <SelectTrigger id="used-lang">
-                    <SelectValue placeholder="Pilih bahasa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="id">id</SelectItem>
-                    <SelectItem value="en">en</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Form {...form}>
+                  <FormField
+                    control={form.control}
+                    name="language"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value
+                                  ? languages.find((lang) => lang.value === field.value)?.label
+                                  : "Pilih bahasa"}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Cari bahasa..." className="h-9" />
+                              <CommandList>
+                                <CommandEmpty>Bahasa tidak ditemukan.</CommandEmpty>
+                                <CommandGroup>
+                                  {languages.map((lang) => (
+                                    <CommandItem
+                                      value={lang.label}
+                                      key={lang.value}
+                                      onSelect={() => {
+                                        form.setValue("language", lang.value);
+                                      }}
+                                    >
+                                      {lang.label}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </FormItem>
+                    )}
+                  />
+                </Form>
               </div>
               <div>
                 <Label htmlFor="mandatory-lang">Bahasa Wajib</Label>
-                <Select>
-                  <SelectTrigger id="mandatory-lang">
-                    <SelectValue placeholder="Pilih bahasa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="id">id</SelectItem>
-                    <SelectItem value="en">en</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Form {...form}>
+                  <FormField
+                    control={form.control}
+                    name="language"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value
+                                  ? languages.find((lang) => lang.value === field.value)?.label
+                                  : "Pilih bahasa"}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Cari bahasa..." className="h-9" />
+                              <CommandList>
+                                <CommandEmpty>Bahasa tidak ditemukan.</CommandEmpty>
+                                <CommandGroup>
+                                  {languages.map((lang) => (
+                                    <CommandItem
+                                      value={lang.label}
+                                      key={lang.value}
+                                      onSelect={() => {
+                                        form.setValue("language", lang.value);
+                                      }}
+                                    >
+                                      {lang.label}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </FormItem>
+                    )}
+                  />
+                </Form>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
