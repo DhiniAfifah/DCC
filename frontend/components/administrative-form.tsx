@@ -33,9 +33,9 @@ const languages = [
 ] as const;
 
 const FormSchema = z.object({
-  country: z.string({required_error: "Please select a country.",}),
-  usedLanguages: z.array(z.object({ value: z.string().min(1, "Please select a language.") })),
-  mandatoryLanguages: z.array(z.object({ value: z.string().min(1, "Please select a language.") })),
+  country: z.string(),
+  usedLanguages: z.array(z.object({ value: z.string().min(1) })),
+  mandatoryLanguages: z.array(z.object({ value: z.string().min(1) })),
   objects: z.array(
     z.object({
       jenis: z.string().optional(),
@@ -46,7 +46,7 @@ const FormSchema = z.object({
       idLain: z.string().optional(),
     })
   ),
-  statements: z.array(z.object({ value: z.string().min(1, "Statement cannot be empty") }))
+  statements: z.array(z.object({ value: z.string().min(1) }))
 });
 
 export default function AdministrativeForm() {
@@ -104,7 +104,7 @@ export default function AdministrativeForm() {
             </CardContent>
           </Card>
 
-          <Card id="core-data">
+          <Card id="coreData">
             <CardHeader>
               <CardTitle>Data Inti</CardTitle>
             </CardHeader>
@@ -112,9 +112,9 @@ export default function AdministrativeForm() {
               <div className="grid gap-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="core-issuer">Penerbit</Label>
+                    <Label htmlFor="coreIssuer">Penerbit</Label>
                     <Select>
-                      <SelectTrigger id="core-issuer">
+                      <SelectTrigger id="coreIssuer">
                         <SelectValue placeholder="Pilih penerbit" />
                       </SelectTrigger>
                       <SelectContent>
@@ -127,7 +127,7 @@ export default function AdministrativeForm() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="country-code">Kode Negara</Label>
+                    <Label htmlFor="countryCode">Kode Negara</Label>
                     <Form {...form}>
                       <FormField
                         control={form.control}
@@ -315,12 +315,12 @@ export default function AdministrativeForm() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="tgl-mulai">Tanggal Mulai Pengukuran</Label>
-                    <Input id="tgl-mulai" type="date" />
+                    <Label htmlFor="tglMulai">Tanggal Mulai Pengukuran</Label>
+                    <Input id="tglMulai" type="date" />
                   </div>
                   <div>
-                    <Label htmlFor="tgl-akhir">Tanggal Akhir Pengukuran</Label>
-                    <Input id="tgl-akhir" type="date" />
+                    <Label htmlFor="tglAkhir">Tanggal Akhir Pengukuran</Label>
+                    <Input id="tglAkhir" type="date" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -340,8 +340,8 @@ export default function AdministrativeForm() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="tgl-pengesahan">Tanggal pengesahan</Label>
-                    <Input id="tgl-pengesahan" type="date" />
+                    <Label htmlFor="tglPengesahan">Tanggal pengesahan</Label>
+                    <Input id="tglPengesahan" type="date" />
                   </div>
                 </div>
               </div>
@@ -373,29 +373,29 @@ export default function AdministrativeForm() {
                         <Input id={`tipe-${index}`} {...form.register(`objects.${index}.tipe`)} />
                       </div>
                       <div>
-                        <Label htmlFor={`item-issuer-${index}`}>Identifikasi Alat</Label>
+                        <Label htmlFor={`itemIssuer-${index}`}>Identifikasi Alat</Label>
                         <Select {...form.register(`objects.${index}.issuer`)}>
-                          <SelectTrigger id={`item-issuer-${index}`}>
+                          <SelectTrigger id={`itemIssuer-${index}`}>
                             <SelectValue placeholder="Pilih penerbit" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="manufacturer">Manufacturer</SelectItem>
-                            <SelectItem value="calibrationLaboratory">Calibration Laboratory</SelectItem>
-                            <SelectItem value="customer">Customer</SelectItem>
-                            <SelectItem value="owner">Owner</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
+                            <SelectItem value="manufacturer">manufacturer</SelectItem>
+                            <SelectItem value="calibrationLaboratory">calibrationLaboratory</SelectItem>
+                            <SelectItem value="customer">customer</SelectItem>
+                            <SelectItem value="owner">owner</SelectItem>
+                            <SelectItem value="other">other</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor={`seri-item-${index}`}>Nomor Seri</Label>
-                        <Input id={`seri-item-${index}`} {...form.register(`objects.${index}.seri`)} />
+                        <Label htmlFor={`seriItem-${index}`}>Nomor Seri</Label>
+                        <Input id={`seriItem-${index}`} {...form.register(`objects.${index}.seri`)} />
                       </div>
                       <div>
-                        <Label htmlFor={`id-lain-${index}`}>Identifikasi Lain</Label>
-                        <Input id={`id-lain-${index}`} {...form.register(`objects.${index}.idLain`)} />
+                        <Label htmlFor={`idLain-${index}`}>Identifikasi Lain</Label>
+                        <Input id={`idLain-${index}`} {...form.register(`objects.${index}.idLain`)} />
                       </div>
                     </div>
                   </div>
@@ -414,7 +414,7 @@ export default function AdministrativeForm() {
             </CardContent>
           </Card>
 
-          <Card id="resp-person">
+          <Card id="respPerson">
             <CardHeader>
               <CardTitle>Penanggung Jawab</CardTitle>
             </CardHeader>
@@ -422,8 +422,8 @@ export default function AdministrativeForm() {
               <div className="grid gap-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="nama-pejabat">Nama</Label>
-                    <Input id="nama-pejabat" />
+                    <Label htmlFor="namaPejabat">Nama</Label>
+                    <Input id="namaPejabat" />
                   </div>
                   <div>
                     <Label htmlFor="nip">NIP</Label>
@@ -447,9 +447,9 @@ export default function AdministrativeForm() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="main-signer">Main Signer</Label>
+                    <Label htmlFor="mainSigner">Main Signer</Label>
                     <Select>
-                      <SelectTrigger id="main-signer">
+                      <SelectTrigger id="mainSigner">
                         <SelectValue placeholder="" />
                       </SelectTrigger>
                       <SelectContent>
@@ -496,37 +496,37 @@ export default function AdministrativeForm() {
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
                 <div>
-                  <Label htmlFor="nama-cust">Nama</Label>
-                  <Input id="nama-cust" />
+                  <Label htmlFor="namaCust">Nama</Label>
+                  <Input id="namaCust" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="jalan-cust">Nama Jalan</Label>
-                    <Input id="jalan-cust" />
+                    <Label htmlFor="jalanCust">Nama Jalan</Label>
+                    <Input id="jalanCust" />
                   </div>
                   <div>
-                    <Label htmlFor="no-jalan-cust">Nomor Jalan</Label>
-                    <Input id="no-jalan-cust" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="kota-cust">Kota</Label>
-                    <Input id="kota-cust" />
-                  </div>
-                  <div>
-                    <Label htmlFor="state-cust">Provinsi</Label>
-                    <Input id="state-cust" />
+                    <Label htmlFor="noJalanCust">Nomor Jalan</Label>
+                    <Input id="noJalanCust" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="pos-cust">Kode Pos</Label>
-                    <Input id="pos-cust" />
+                    <Label htmlFor="kotaCust">Kota</Label>
+                    <Input id="kotaCust" />
                   </div>
                   <div>
-                    <Label htmlFor="negara-cust">Negara</Label>
-                    <Input id="negara-cust" />
+                    <Label htmlFor="stateCust">Provinsi</Label>
+                    <Input id="stateCust" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="posCust">Kode Pos</Label>
+                    <Input id="posCust" />
+                  </div>
+                  <div>
+                    <Label htmlFor="negaraCust">Negara</Label>
+                    <Input id="negaraCust" />
                   </div>
                 </div>
               </div>
