@@ -2,16 +2,41 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronsUpDown } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
+import { useEffect } from "react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 const countries = [
   { label: "Indonesia", value: "id" },
@@ -33,9 +58,13 @@ const languages = [
 ] as const;
 
 const FormSchema = z.object({
-  country: z.string({required_error: "Please select a country.",}),
-  usedLanguages: z.array(z.object({ value: z.string().min(1, "Please select a language.") })),
-  mandatoryLanguages: z.array(z.object({ value: z.string().min(1, "Please select a language.") })),
+  country: z.string({ required_error: "Please select a country." }),
+  usedLanguages: z.array(
+    z.object({ value: z.string().min(1, "Please select a language.") })
+  ),
+  mandatoryLanguages: z.array(
+    z.object({ value: z.string().min(1, "Please select a language.") })
+  ),
   objects: z.array(
     z.object({
       jenis: z.string().optional(),
@@ -46,43 +75,89 @@ const FormSchema = z.object({
       idLain: z.string().optional(),
     })
   ),
-  statements: z.array(z.object({ value: z.string().min(1, "Statement cannot be empty") }))
+  statements: z.array(
+    z.object({ value: z.string().min(1, "Statement cannot be empty") })
+  ),
 });
 
-export default function AdministrativeForm() {
+export default function AdministrativeForm({
+  updateFormData,
+}: {
+  updateFormData: (data: any) => void;
+}) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       usedLanguages: [{ value: "" }],
       mandatoryLanguages: [{ value: "" }],
-      objects: [{ jenis: "", merek: "", tipe: "", issuer: "", seri: "", idLain: "" }],
-      statements: [{ value: "" }]
+      objects: [
+        { jenis: "", merek: "", tipe: "", issuer: "", seri: "", idLain: "" },
+      ],
+      statements: [{ value: "" }],
     },
   });
 
-  const { fields: statementFields, append: appendStatement, remove: removeStatement } = useFieldArray({
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      updateFormData(values);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
+  const {
+    fields: statementFields,
+    append: appendStatement,
+    remove: removeStatement,
+  } = useFieldArray({
     control: form.control,
     name: "statements",
   });
 
-  const { fields: usedFields, append: appendUsed, remove: removeUsed } = useFieldArray({
+  const {
+    fields: usedFields,
+    append: appendUsed,
+    remove: removeUsed,
+  } = useFieldArray({
     control: form.control,
     name: "usedLanguages",
   });
 
-  const { fields: mandatoryFields, append: appendMandatory, remove: removeMandatory } = useFieldArray({
+  const {
+    fields: mandatoryFields,
+    append: appendMandatory,
+    remove: removeMandatory,
+  } = useFieldArray({
     control: form.control,
     name: "mandatoryLanguages",
-  }); 
+  });
 
   const { fields: itemFields, append: appendItem } = useFieldArray({
     control: form.control,
     name: "objects",
   });
 
+  const onSubmit = async (data: any) => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log("DCC Created:", result);
+      alert(`DCC Created! Download: ${result.download_link}`);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+
   return (
     <FormProvider {...form}>
-      <form>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="space-y-6 max-w-4xl mx-auto p-4">
           <Card id="software">
             <CardHeader>
@@ -118,8 +193,12 @@ export default function AdministrativeForm() {
                         <SelectValue placeholder="Pilih penerbit" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="manufacturer">manufacturer</SelectItem>
-                        <SelectItem value="calibrationLaboratory">calibrationLaboratory</SelectItem>
+                        <SelectItem value="manufacturer">
+                          manufacturer
+                        </SelectItem>
+                        <SelectItem value="calibrationLaboratory">
+                          calibrationLaboratory
+                        </SelectItem>
                         <SelectItem value="customer">customer</SelectItem>
                         <SelectItem value="owner">owner</SelectItem>
                         <SelectItem value="other">other</SelectItem>
@@ -146,7 +225,10 @@ export default function AdministrativeForm() {
                                     )}
                                   >
                                     {field.value
-                                      ? countries.find((country) => country.value === field.value)?.label
+                                      ? countries.find(
+                                          (country) =>
+                                            country.value === field.value
+                                        )?.label
                                       : "Pilih negara"}
                                     <ChevronsUpDown className="opacity-50" />
                                   </Button>
@@ -154,16 +236,24 @@ export default function AdministrativeForm() {
                               </PopoverTrigger>
                               <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                                 <Command>
-                                  <CommandInput placeholder="Cari negara..." className="h-9" />
+                                  <CommandInput
+                                    placeholder="Cari negara..."
+                                    className="h-9"
+                                  />
                                   <CommandList>
-                                    <CommandEmpty>Negara tidak ditemukan.</CommandEmpty>
+                                    <CommandEmpty>
+                                      Negara tidak ditemukan.
+                                    </CommandEmpty>
                                     <CommandGroup>
                                       {countries.map((country) => (
                                         <CommandItem
                                           value={country.label}
                                           key={country.value}
                                           onSelect={() => {
-                                            form.setValue("country", country.value);
+                                            form.setValue(
+                                              "country",
+                                              country.value
+                                            );
                                           }}
                                         >
                                           {country.label}
@@ -195,22 +285,40 @@ export default function AdministrativeForm() {
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <FormControl>
-                                      <Button variant="outline" className="w-full justify-between">
-                                        {field.value ? languages.find(lang => lang.value === field.value)?.label : "Pilih bahasa"}
+                                      <Button
+                                        variant="outline"
+                                        className="w-full justify-between"
+                                      >
+                                        {field.value
+                                          ? languages.find(
+                                              (lang) =>
+                                                lang.value === field.value
+                                            )?.label
+                                          : "Pilih bahasa"}
                                         <ChevronsUpDown className="opacity-50" />
                                       </Button>
                                     </FormControl>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-full p-0">
                                     <Command>
-                                      <CommandInput placeholder="Cari bahasa..." className="h-9" />
+                                      <CommandInput
+                                        placeholder="Cari bahasa..."
+                                        className="h-9"
+                                      />
                                       <CommandList>
-                                        <CommandEmpty>Bahasa tidak ditemukan.</CommandEmpty>
+                                        <CommandEmpty>
+                                          Bahasa tidak ditemukan.
+                                        </CommandEmpty>
                                         <CommandGroup>
-                                          {languages.map(lang => (
+                                          {languages.map((lang) => (
                                             <CommandItem
                                               key={lang.value}
-                                              onSelect={() => form.setValue(`usedLanguages.${index}.value`, lang.value)}
+                                              onSelect={() =>
+                                                form.setValue(
+                                                  `usedLanguages.${index}.value`,
+                                                  lang.value
+                                                )
+                                              }
                                             >
                                               {lang.label}
                                             </CommandItem>
@@ -229,16 +337,22 @@ export default function AdministrativeForm() {
                                   >
                                     ✕
                                   </Button>
-                                )}  
+                                )}
                               </div>
-                              
+
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      ))}  
+                      ))}
                     </div>
-                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendUsed({ value: "" })}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => appendUsed({ value: "" })}
+                    >
                       <p className="text-xl">+</p>
                     </Button>
                   </div>
@@ -256,22 +370,40 @@ export default function AdministrativeForm() {
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <FormControl>
-                                      <Button variant="outline" className="w-full justify-between">
-                                        {field.value ? languages.find(lang => lang.value === field.value)?.label : "Pilih bahasa"}
+                                      <Button
+                                        variant="outline"
+                                        className="w-full justify-between"
+                                      >
+                                        {field.value
+                                          ? languages.find(
+                                              (lang) =>
+                                                lang.value === field.value
+                                            )?.label
+                                          : "Pilih bahasa"}
                                         <ChevronsUpDown className="opacity-50" />
                                       </Button>
                                     </FormControl>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-full p-0">
                                     <Command>
-                                      <CommandInput placeholder="Cari bahasa..." className="h-9" />
+                                      <CommandInput
+                                        placeholder="Cari bahasa..."
+                                        className="h-9"
+                                      />
                                       <CommandList>
-                                        <CommandEmpty>Bahasa tidak ditemukan.</CommandEmpty>
+                                        <CommandEmpty>
+                                          Bahasa tidak ditemukan.
+                                        </CommandEmpty>
                                         <CommandGroup>
-                                          {languages.map(lang => (
+                                          {languages.map((lang) => (
                                             <CommandItem
                                               key={lang.value}
-                                              onSelect={() => form.setValue(`mandatoryLanguages.${index}.value`, lang.value)}
+                                              onSelect={() =>
+                                                form.setValue(
+                                                  `mandatoryLanguages.${index}.value`,
+                                                  lang.value
+                                                )
+                                              }
                                             >
                                               {lang.label}
                                             </CommandItem>
@@ -290,15 +422,21 @@ export default function AdministrativeForm() {
                                   >
                                     ✕
                                   </Button>
-                                )}  
+                                )}
                               </div>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      ))}  
+                      ))}
                     </div>
-                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendMandatory({ value: "" })}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => appendMandatory({ value: "" })}
+                    >
                       <p className="text-xl">+</p>
                     </Button>
                   </div>
@@ -333,8 +471,12 @@ export default function AdministrativeForm() {
                       <SelectContent>
                         <SelectItem value="laboratory">laboratory</SelectItem>
                         <SelectItem value="customer">customer</SelectItem>
-                        <SelectItem value="laboratoryBranch">laboratoryBranch</SelectItem>
-                        <SelectItem value="customerBranch">customerBranch</SelectItem>
+                        <SelectItem value="laboratoryBranch">
+                          laboratoryBranch
+                        </SelectItem>
+                        <SelectItem value="customerBranch">
+                          customerBranch
+                        </SelectItem>
                         <SelectItem value="other">other</SelectItem>
                       </SelectContent>
                     </Select>
@@ -356,31 +498,50 @@ export default function AdministrativeForm() {
               <div className="grid gap-4">
                 {itemFields.map((field, index) => (
                   <div key={field.id} className="grid gap-4 border-b pb-4">
-                    <p className="text-sm text-muted-foreground">Objek {index + 1}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Objek {index + 1}
+                    </p>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor={`jenis-${index}`}>Jenis Alat atau Objek</Label>
-                        <Input id={`jenis-${index}`} {...form.register(`objects.${index}.jenis`)} />
+                        <Label htmlFor={`jenis-${index}`}>
+                          Jenis Alat atau Objek
+                        </Label>
+                        <Input
+                          id={`jenis-${index}`}
+                          {...form.register(`objects.${index}.jenis`)}
+                        />
                       </div>
                       <div>
                         <Label htmlFor={`merek-${index}`}>Merek/Pembuat</Label>
-                        <Input id={`merek-${index}`} {...form.register(`objects.${index}.merek`)} />
+                        <Input
+                          id={`merek-${index}`}
+                          {...form.register(`objects.${index}.merek`)}
+                        />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor={`tipe-${index}`}>Tipe</Label>
-                        <Input id={`tipe-${index}`} {...form.register(`objects.${index}.tipe`)} />
+                        <Input
+                          id={`tipe-${index}`}
+                          {...form.register(`objects.${index}.tipe`)}
+                        />
                       </div>
                       <div>
-                        <Label htmlFor={`item-issuer-${index}`}>Identifikasi Alat</Label>
+                        <Label htmlFor={`item-issuer-${index}`}>
+                          Identifikasi Alat
+                        </Label>
                         <Select {...form.register(`objects.${index}.issuer`)}>
                           <SelectTrigger id={`item-issuer-${index}`}>
                             <SelectValue placeholder="Pilih penerbit" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="manufacturer">Manufacturer</SelectItem>
-                            <SelectItem value="calibrationLaboratory">Calibration Laboratory</SelectItem>
+                            <SelectItem value="manufacturer">
+                              Manufacturer
+                            </SelectItem>
+                            <SelectItem value="calibrationLaboratory">
+                              Calibration Laboratory
+                            </SelectItem>
                             <SelectItem value="customer">Customer</SelectItem>
                             <SelectItem value="owner">Owner</SelectItem>
                             <SelectItem value="other">Other</SelectItem>
@@ -391,11 +552,19 @@ export default function AdministrativeForm() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor={`seri-item-${index}`}>Nomor Seri</Label>
-                        <Input id={`seri-item-${index}`} {...form.register(`objects.${index}.seri`)} />
+                        <Input
+                          id={`seri-item-${index}`}
+                          {...form.register(`objects.${index}.seri`)}
+                        />
                       </div>
                       <div>
-                        <Label htmlFor={`id-lain-${index}`}>Identifikasi Lain</Label>
-                        <Input id={`id-lain-${index}`} {...form.register(`objects.${index}.idLain`)} />
+                        <Label htmlFor={`id-lain-${index}`}>
+                          Identifikasi Lain
+                        </Label>
+                        <Input
+                          id={`id-lain-${index}`}
+                          {...form.register(`objects.${index}.idLain`)}
+                        />
                       </div>
                     </div>
                   </div>
@@ -406,7 +575,14 @@ export default function AdministrativeForm() {
                 size="sm"
                 className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
                 onClick={() =>
-                  appendItem({ jenis: "", merek: "", tipe: "", issuer: "", seri: "", idLain: "" })
+                  appendItem({
+                    jenis: "",
+                    merek: "",
+                    tipe: "",
+                    issuer: "",
+                    seri: "",
+                    idLain: "",
+                  })
                 }
               >
                 <p className="text-xl">+</p>
@@ -438,11 +614,21 @@ export default function AdministrativeForm() {
                         <SelectValue placeholder="Pilih peran" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pelaksana">pelaksana kalibrasi</SelectItem>
-                        <SelectItem value="penyelia">penyelia kalibrasi</SelectItem>
-                        <SelectItem value="kepala">kepala Laboratorium</SelectItem>
-                        <SelectItem value="tk">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
-                        <SelectItem value="mrb">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
+                        <SelectItem value="pelaksana">
+                          pelaksana kalibrasi
+                        </SelectItem>
+                        <SelectItem value="penyelia">
+                          penyelia kalibrasi
+                        </SelectItem>
+                        <SelectItem value="kepala">
+                          kepala Laboratorium
+                        </SelectItem>
+                        <SelectItem value="tk">
+                          Direktur SNSU Termoelektrik dan Kimia
+                        </SelectItem>
+                        <SelectItem value="mrb">
+                          Direktur SNSU Mekanika, Radiasi, dan Biologi
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -550,7 +736,12 @@ export default function AdministrativeForm() {
                           <Input {...field} />
                         </FormControl>
                         {statementFields.length > 1 && (
-                          <Button type="button" variant="destructive" size="icon" onClick={() => removeStatement(index)}>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => removeStatement(index)}
+                          >
                             ✕
                           </Button>
                         )}
@@ -570,6 +761,9 @@ export default function AdministrativeForm() {
               </Button>
             </CardContent>
           </Card>
+          <div className="flex justify-end mt-4">
+            <Button type="submit">Submit</Button>
+          </div>
         </div>
       </form>
     </FormProvider>

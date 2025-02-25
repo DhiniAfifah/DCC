@@ -1,119 +1,85 @@
+from fastapi import FastAPI, Depends, HTTPException, Request
+from sqlalchemy.orm import Session
+from database import SessionLocal
+from models import DCCForm
+from schemas import DCCFormCreate
+import shutil
 import os
-from fastapi import FastAPI
-from pydantic import BaseModel
-from docx import Document
-import xml.etree.ElementTree as ET
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from database import Base, engine
+from models import DCCForm
 
 app = FastAPI()
 
-# Model data yang akan diterima dari frontend
-class DccData(BaseModel):
-    labCode: str
-    certificate: str
-    order: str
-    jenis: str
-    merek: str
-    tipe: str
-    seri: str
-    issuer: str
-    value: str
-    namaCust: str
-    kotaCust: str
-    pejabat: str
-    namaPejabat: str
-    namaLab: str
-    kotaLab: str
-    namaAlat: str
-    pembuat: str
-    model: str
-    noSeri: str
-    tglMulai: str
-    tglAkhir: str
-    tempat: str
-    jalanCust: str
-    noJalanCust: str
-    stateCust: str
-    kodePosCust: str
-    kodeNegaraCust: str
-    NIP: str
-    tglPengesahan: str
-    halaman: str
+# Tambahkan endpoint root
+@app.get("/")
+async def root():
+    return {"message": "Welcome to DCC API!"}
 
-@app.post("/api/create-new-dcc")
-async def create_new_dcc(data: DccData):
-    # Membuat direktori jika belum ada
-    output_dir = './certificates'
-    os.makedirs(output_dir, exist_ok=True)  # Buat direktori jika belum ada
+# Membuat tabel-tabel yang didefinisikan di model
+Base.metadata.create_all(bind=engine)
 
-    # Nama file PDF dan XML berdasarkan certificate number
-    docx_path = os.path.join(output_dir, f"{data.certificate}.docx")
-    xml_path = os.path.join(output_dir, f"{data.certificate}.xml")
+# 🔹 Hitung path ke direktori "backend/"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Dapatkan path "backend/"
+ASSETS_DIR = os.path.join(BASE_DIR, "assets")  # Path ke "backend/assets"
+GENERATED_DIR = os.path.join(ASSETS_DIR, "generated")  # Path ke "backend/assets/generated"
 
-    # 1. Mengisi template Word (.docx) dengan data yang diterima
-    doc = Document('../assets/template DCC.docx')  # Pastikan path template benar
+# 🔹 Pastikan folder "assets" dan "generated" ada
+os.makedirs(GENERATED_DIR, exist_ok=True)
 
-    # Mengatur context untuk template
-    context = {
-        'labCode': data.labCode,
-        'certificate': data.certificate,
-        'order': data.order,
-        'jenis': data.jenis,
-        'merek': data.merek,
-        'seri': data.seri,
-        'issuer': data.issuer,
-        'value': data.value,
-        'namaCust': data.namaCust,
-        'jalanCust': data.jalanCust,
-        'noJalanCust': data.noJalanCust,
-        'kotaCust': data.kotaCust,
-        'stateCust': data.stateCust,
-        'kodePosCust': data.kodePosCust,
-        'kodeNegaraCust': data.kodeNegaraCust,
-        'pejabat': data.pejabat,
-        'namaPejabat': data.namaPejabat,
-        'NIP': data.NIP,
-        'tglPengesahan': data.tglPengesahan,
-        'halaman': data.halaman,
-        'namaAlat': data.namaAlat,
-        'pembuat': data.pembuat,
-        'model': data.model,
-        'noSeri': data.noSeri,
-        'tglMulai': data.tglMulai,
-        'tglAkhir': data.tglAkhir,
-        'tempat': data.tempat
-    }
+# 🔹 Mount folder "assets" agar file bisa diakses dari frontend
+app.mount("/static", StaticFiles(directory=ASSETS_DIR), name="static")
 
-    # Gantilah semua placeholder dalam template .docx dengan context
-    for paragraph in doc.paragraphs:
-        for key, value in context.items():
-            if key in paragraph.text:
-                paragraph.text = paragraph.text.replace(f'{{{{ {key} }}}}', value)
+# 🔹 Tambahkan CORS Middleware agar backend bisa menerima request dari frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Bisa diganti dengan frontend URL tertentu (misalnya ["http://localhost:3000"])
+    allow_credentials=True,
+    allow_methods=["*"],  # Mengizinkan semua metode (GET, POST, OPTIONS, dll.)
+    allow_headers=["*"],  # Mengizinkan semua header
+)
 
-    # Simpan file .docx yang telah terisi
-    doc.save(docx_path)
+# Dependency untuk database session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-    # 2. Membuat file XML
-    root = ET.Element("dcc:digitalCalibrationCertificate", xmlns_xsi="http://www.w3.org/2001/XMLSchema-instance", xsi_schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd", xmlns_dcc="https://ptb.de/dcc")
+@app.post("/create-dcc/")
+async def create_dcc(request: Request, db: Session = Depends(get_db)):
+    try:
+        data = await request.json()
+        print("Data diterima dari frontend:", data)  # 🔹 Debugging: Print data yang dikirim
 
-    administrativeData = ET.SubElement(root, "dcc:administrativeData")
-    coreData = ET.SubElement(administrativeData, "dcc:coreData")
-    ET.SubElement(coreData, "dcc:uniqueIdentifier").text = data.certificate
-    ET.SubElement(coreData, "dcc:performanceLocation").text = "Lab " + data.namaLab
-    ET.SubElement(coreData, "dcc:issueDate").text = "26/07/2024"
-    
-    # Menambahkan data objek yang dikalibrasi
-    items = ET.SubElement(root, "dcc:items")
-    item = ET.SubElement(items, "dcc:item")
-    ET.SubElement(item, "dcc:name").text = data.namaAlat
-    ET.SubElement(item, "dcc:manufacturer").text = data.pembuat
-    ET.SubElement(item, "dcc:model").text = data.model
-    identification = ET.SubElement(item, "dcc:identification")
-    ET.SubElement(identification, "dcc:issuer").text = data.issuer
-    ET.SubElement(identification, "dcc:value").text = data.value
-    ET.SubElement(identification, "dcc:name").text = data.seri
+        # Validasi data sebelum diproses
+        form_data = DCCFormCreate(**data)
+        print("Data sudah sesuai dengan schemas.py")
 
-    # Menyimpan XML ke file
-    tree = ET.ElementTree(root)
-    tree.write(xml_path)
+    except Exception as e:
+        print("ERROR membaca data:", str(e))
+        raise HTTPException(status_code=400, detail=f"Invalid request body: {str(e)}")
 
-    return {"message": "Sertifikat berhasil dibuat", "docx_path": docx_path, "xml_path": xml_path}
+    # Simpan data ke database
+    dcc = DCCForm(**form_data.dict())
+    db.add(dcc)
+    db.commit()
+    db.refresh(dcc)
+
+    # Cek apakah ID sudah dibuat
+    if not dcc.id:
+        raise HTTPException(status_code=500, detail="Failed to generate DCC ID")
+
+    # Path untuk template dan output sertifikat
+    template_path = os.path.join(ASSETS_DIR, "dcc_template.pdf")  
+    output_path = os.path.join(GENERATED_DIR, f"DCC_{dcc.id}.pdf")  
+
+    shutil.copy(template_path, output_path)
+
+    download_url = f"http://127.0.0.1:8000/static/generated/DCC_{dcc.id}.pdf"
+    print("Sertifikat disimpan di:", output_path)
+    print("Link download:", download_url)
+
+    return {"message": "DCC Created!", "download_link": download_url}
