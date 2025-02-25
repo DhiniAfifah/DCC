@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Stepper from "@/components/ui/stepper";
 import AdministrativeForm from "@/components/administrative-form";
+import MeasurementForm from "@/components/measurement-form";
 import { Button } from "@/components/ui/button";
 
 export default function CreateDCC() {
@@ -33,6 +34,7 @@ export default function CreateDCC() {
 
       <div className="mt-12">
         {currentStep === 0 && <AdministrativeForm />}
+        {currentStep === 1 && <MeasurementForm />}
         {/* Form step lainnya */}
       </div>
 
