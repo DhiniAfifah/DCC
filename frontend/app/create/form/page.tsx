@@ -16,43 +16,44 @@ export default function CreateDCC() {
 
   // Simpan data form di state
   const [formData, setFormData] = useState({
-    software_name: "",
-    software_version: "",
-    issuer: "",
-    country: "",
+    software: "",
+    version: "",
+    core_issuer: "",
+    country_code: "",
     used_languages: [""],
     mandatory_languages: [""],
-    certificate_number: "",
-    order_number: "",
-    measurement_start: "",
-    measurement_end: "",
-    calibration_place: "",
-    approval_date: "",
+    sertifikat: "",
+    order: "",
+    tgl_mulai: "",
+    tgl_akhir: "",
+    tempat: "",
+    tgl_pengesahan: "",
     objects: [
       {
         jenis: null,
         merek: null,
         tipe: null,
-        issuer: null,
+        item_issuer: null,
         seri: null,
-        idLain: null,
+        id_lain: null,
       },
     ],
     responsible_person: {
-      name: "",
+      nama_resp: "",
       nip: "",
-      role: "",
+      peran: "",
+      mainSigner: "",
       signature: "",
       timestamp: "",
     },
     owner_identity: {
-      name: "",
-      street_name: "",
-      street_number: "",
-      city: "",
-      province: "",
-      postal_code: "",
-      country: "",
+      nama_cust: "",
+      jalan_cust: "",
+      no_jalan_cust: "",
+      kota_cust: "",
+      state_cust: "",
+      pos_cust: "",
+      negara_cust: "",
     },
     statements: [""],
   });
@@ -69,17 +70,17 @@ export default function CreateDCC() {
       mandatory_languages: data.mandatory_languages
         ? data.mandatory_languages.map((lang: string) => ({ value: lang }))
         : prev.mandatory_languages,
-      certificate_number: data.certificate_number?.toString() || "",
-      order_number: data.order_number?.toString() || "",
-      measurement_start: data.measurement_start
-        ? new Date(data.measurement_start).toISOString().split("T")[0]
-        : prev.measurement_start,
-      measurement_end: data.measurement_end
-        ? new Date(data.measurement_end).toISOString().split("T")[0]
-        : prev.measurement_end,
-      approval_date: data.approval_date
-        ? new Date(data.approval_date).toISOString().split("T")[0]
-        : prev.approval_date,
+      sertifikat: data.sertifikat?.toString() || "",
+      order: data.order?.toString() || "",
+      tgl_mulai: data.tgl_mulai
+        ? new Date(data.tgl_mulai).toISOString().split("T")[0]
+        : prev.tgl_mulai,
+      tgl_akhir: data.tgl_akhir
+        ? new Date(data.tgl_akhir).toISOString().split("T")[0]
+        : prev.tgl_akhir,
+      tgl_pengesahan: data.tgl_pengesahan
+        ? new Date(data.tgl_pengesahan).toISOString().split("T")[0]
+        : prev.tgl_pengesahan,
       statements: Array.isArray(data.statements)
         ? data.statements.map((stmt: string) =>
             typeof stmt === "string" ? stmt.trim() : ""

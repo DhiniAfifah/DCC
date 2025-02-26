@@ -17,43 +17,44 @@ class Language(BaseModel):
         raise ValueError("Invalid language format")
 
 class ObjectDescription(BaseModel):
-    jenis: Optional[str] = None
-    merek: Optional[str] = None
-    tipe: Optional[str] = None
-    issuer: Optional[str] = None
-    seri: Optional[str] = None
-    idLain: Optional[str] = None
+    jenis: str
+    merek: str
+    tipe: str
+    item_issuer: str
+    seri: str
+    id_lain: str
 
 class ResponsiblePerson(BaseModel):
-    name: str
+    nama_resp: str
     nip: str
-    role: str
-    signature: Optional[str] = None
-    timestamp: Optional[str] = None
+    peran: str
+    mainSigner: str
+    signature: str
+    timestamp: str
 
 class OwnerIdentity(BaseModel):
-    name: str
-    street_name: str
-    street_number: str
-    city: str
-    province: str
-    postal_code: str
-    country: str
+    nama_cust: str
+    jalan_cust: str
+    no_jalan_cust: str
+    kota_cust: str
+    state_cust: str
+    pos_cust: str
+    negara_cust: str
 
 class DCCFormCreate(BaseModel):
-    software_name: str
-    software_version: str
-    issuer: str
-    country: str
+    software: str
+    version: str
+    core_issuer: str
+    country_code: str
     used_languages: List[Language]
     mandatory_languages: List[Language]
-    certificate_number: str
-    order_number: str
-    measurement_start: str
-    measurement_end: str
-    calibration_place: str
-    approval_date: str
+    sertifikat: str
+    order: str
+    tgl_mulai: str
+    tgl_akhir: str
+    tempat: str
+    tgl_pengesahan: str
     objects: List[ObjectDescription]
-    responsible_person: ResponsiblePerson
+    responsible_person: List[ResponsiblePerson]
     owner_identity: OwnerIdentity
     statements: List[str] 
