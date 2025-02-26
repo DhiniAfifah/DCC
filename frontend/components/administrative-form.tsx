@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronsUpDown } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
-
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -33,56 +33,106 @@ const languages = [
 ] as const;
 
 const FormSchema = z.object({
-  country: z.string(),
-  usedLanguages: z.array(z.object({ value: z.string().min(1) })),
-  mandatoryLanguages: z.array(z.object({ value: z.string().min(1) })),
-  objects: z.array(
-    z.object({
-      jenis: z.string().optional(),
-      merek: z.string().optional(),
-      tipe: z.string().optional(),
-      issuer: z.string().optional(),
-      seri: z.string().optional(),
-      idLain: z.string().optional(),
-    })
-  ),
-  statements: z.array(z.object({ value: z.string().min(1) }))
+  country: z.string({ required_error: "Please select a country." }),
+  usedLanguages: z.array(z.object({ value: z.string().min(1, "Please select a language.") })),
+  mandatoryLanguages: z.array(z.object({ value: z.string().min(1, "Please select a language.") })),
+  objects: z.array(z.object({
+    jenis: z.string().optional(),
+    merek: z.string().optional(),
+    tipe: z.string().optional(),
+    issuer: z.string().optional(),
+    seri: z.string().optional(),
+    idLain: z.string().optional(),
+  })),
+  responsiblePersons: z.array(z.object({
+    nama: z.string().optional(),
+    nip: z.string().optional(),
+    peran: z.string().optional(),
+    mainSigner: z.string().optional(),
+    signature: z.string().optional(),
+    timestamp: z.string().optional(),
+  })),
+  statements: z.array(z.object({ value: z.string().min(1, "Statement cannot be empty") })),
 });
 
-export default function AdministrativeForm() {
+export default function AdministrativeForm({updateFormData}: {updateFormData: (data: any) => void;}) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       usedLanguages: [{ value: "" }],
       mandatoryLanguages: [{ value: "" }],
       objects: [{ jenis: "", merek: "", tipe: "", issuer: "", seri: "", idLain: "" }],
-      statements: [{ value: "" }]
+      responsiblePersons: [{ nama: "", nip: "", peran: "", mainSigner: "", signature: "", timestamp: "" }],
+      statements: [{ value: "" }],
     },
   });
 
-  const { fields: statementFields, append: appendStatement, remove: removeStatement } = useFieldArray({
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      updateFormData(values);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
+  const {
+    fields: statementFields,
+    append: appendStatement,
+    remove: removeStatement,
+  } = useFieldArray({
     control: form.control,
     name: "statements",
   });
 
-  const { fields: usedFields, append: appendUsed, remove: removeUsed } = useFieldArray({
+  const {
+    fields: usedFields,
+    append: appendUsed,
+    remove: removeUsed,
+  } = useFieldArray({
     control: form.control,
     name: "usedLanguages",
   });
 
-  const { fields: mandatoryFields, append: appendMandatory, remove: removeMandatory } = useFieldArray({
+  const {
+    fields: mandatoryFields,
+    append: appendMandatory,
+    remove: removeMandatory,
+  } = useFieldArray({
     control: form.control,
     name: "mandatoryLanguages",
-  }); 
+  });
 
-  const { fields: itemFields, append: appendItem } = useFieldArray({
+  const { fields: itemFields, append: appendItem, remove: removeItem } = useFieldArray({
     control: form.control,
     name: "objects",
   });
 
+  const { fields: personFields, append: appendPerson, remove: removePerson } = useFieldArray({
+    control: form.control,
+    name: "responsiblePersons",
+  });
+
+  const onSubmit = async (data: any) => {
+    try {
+      const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      console.log("DCC Created:", result);
+      alert(`DCC Created! Download: ${result.download_link}`);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+
   return (
     <FormProvider {...form}>
-      <form>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="space-y-6 max-w-4xl mx-auto p-4">
           <Card id="software">
             <CardHeader>
@@ -104,7 +154,7 @@ export default function AdministrativeForm() {
             </CardContent>
           </Card>
 
-          <Card id="coreData">
+          <Card id="core-data">
             <CardHeader>
               <CardTitle>Data Inti</CardTitle>
             </CardHeader>
@@ -112,14 +162,18 @@ export default function AdministrativeForm() {
               <div className="grid gap-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="coreIssuer">Penerbit</Label>
+                    <Label htmlFor="core-issuer">Penerbit</Label>
                     <Select>
-                      <SelectTrigger id="coreIssuer">
+                      <SelectTrigger id="core-issuer">
                         <SelectValue placeholder="Pilih penerbit" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="manufacturer">manufacturer</SelectItem>
-                        <SelectItem value="calibrationLaboratory">calibrationLaboratory</SelectItem>
+                        <SelectItem value="manufacturer">
+                          manufacturer
+                        </SelectItem>
+                        <SelectItem value="calibrationLaboratory">
+                          calibrationLaboratory
+                        </SelectItem>
                         <SelectItem value="customer">customer</SelectItem>
                         <SelectItem value="owner">owner</SelectItem>
                         <SelectItem value="other">other</SelectItem>
@@ -127,7 +181,7 @@ export default function AdministrativeForm() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="countryCode">Kode Negara</Label>
+                    <Label htmlFor="country-code">Kode Negara</Label>
                     <Form {...form}>
                       <FormField
                         control={form.control}
@@ -146,7 +200,10 @@ export default function AdministrativeForm() {
                                     )}
                                   >
                                     {field.value
-                                      ? countries.find((country) => country.value === field.value)?.label
+                                      ? countries.find(
+                                          (country) =>
+                                            country.value === field.value
+                                        )?.label
                                       : "Pilih negara"}
                                     <ChevronsUpDown className="opacity-50" />
                                   </Button>
@@ -154,16 +211,24 @@ export default function AdministrativeForm() {
                               </PopoverTrigger>
                               <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                                 <Command>
-                                  <CommandInput placeholder="Cari negara..." className="h-9" />
+                                  <CommandInput
+                                    placeholder="Cari negara..."
+                                    className="h-9"
+                                  />
                                   <CommandList>
-                                    <CommandEmpty>Negara tidak ditemukan.</CommandEmpty>
+                                    <CommandEmpty>
+                                      Negara tidak ditemukan.
+                                    </CommandEmpty>
                                     <CommandGroup>
                                       {countries.map((country) => (
                                         <CommandItem
                                           value={country.label}
                                           key={country.value}
                                           onSelect={() => {
-                                            form.setValue("country", country.value);
+                                            form.setValue(
+                                              "country",
+                                              country.value
+                                            );
                                           }}
                                         >
                                           {country.label}
@@ -195,22 +260,40 @@ export default function AdministrativeForm() {
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <FormControl>
-                                      <Button variant="outline" className="w-full justify-between">
-                                        {field.value ? languages.find(lang => lang.value === field.value)?.label : "Pilih bahasa"}
+                                      <Button
+                                        variant="outline"
+                                        className="w-full justify-between"
+                                      >
+                                        {field.value
+                                          ? languages.find(
+                                              (lang) =>
+                                                lang.value === field.value
+                                            )?.label
+                                          : "Pilih bahasa"}
                                         <ChevronsUpDown className="opacity-50" />
                                       </Button>
                                     </FormControl>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-full p-0">
                                     <Command>
-                                      <CommandInput placeholder="Cari bahasa..." className="h-9" />
+                                      <CommandInput
+                                        placeholder="Cari bahasa..."
+                                        className="h-9"
+                                      />
                                       <CommandList>
-                                        <CommandEmpty>Bahasa tidak ditemukan.</CommandEmpty>
+                                        <CommandEmpty>
+                                          Bahasa tidak ditemukan.
+                                        </CommandEmpty>
                                         <CommandGroup>
-                                          {languages.map(lang => (
+                                          {languages.map((lang) => (
                                             <CommandItem
                                               key={lang.value}
-                                              onSelect={() => form.setValue(`usedLanguages.${index}.value`, lang.value)}
+                                              onSelect={() =>
+                                                form.setValue(
+                                                  `usedLanguages.${index}.value`,
+                                                  lang.value
+                                                )
+                                              }
                                             >
                                               {lang.label}
                                             </CommandItem>
@@ -229,16 +312,22 @@ export default function AdministrativeForm() {
                                   >
                                     ✕
                                   </Button>
-                                )}  
+                                )}
                               </div>
-                              
+
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      ))}  
+                      ))}
                     </div>
-                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendUsed({ value: "" })}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => appendUsed({ value: "" })}
+                    >
                       <p className="text-xl">+</p>
                     </Button>
                   </div>
@@ -256,22 +345,40 @@ export default function AdministrativeForm() {
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <FormControl>
-                                      <Button variant="outline" className="w-full justify-between">
-                                        {field.value ? languages.find(lang => lang.value === field.value)?.label : "Pilih bahasa"}
+                                      <Button
+                                        variant="outline"
+                                        className="w-full justify-between"
+                                      >
+                                        {field.value
+                                          ? languages.find(
+                                              (lang) =>
+                                                lang.value === field.value
+                                            )?.label
+                                          : "Pilih bahasa"}
                                         <ChevronsUpDown className="opacity-50" />
                                       </Button>
                                     </FormControl>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-full p-0">
                                     <Command>
-                                      <CommandInput placeholder="Cari bahasa..." className="h-9" />
+                                      <CommandInput
+                                        placeholder="Cari bahasa..."
+                                        className="h-9"
+                                      />
                                       <CommandList>
-                                        <CommandEmpty>Bahasa tidak ditemukan.</CommandEmpty>
+                                        <CommandEmpty>
+                                          Bahasa tidak ditemukan.
+                                        </CommandEmpty>
                                         <CommandGroup>
-                                          {languages.map(lang => (
+                                          {languages.map((lang) => (
                                             <CommandItem
                                               key={lang.value}
-                                              onSelect={() => form.setValue(`mandatoryLanguages.${index}.value`, lang.value)}
+                                              onSelect={() =>
+                                                form.setValue(
+                                                  `mandatoryLanguages.${index}.value`,
+                                                  lang.value
+                                                )
+                                              }
                                             >
                                               {lang.label}
                                             </CommandItem>
@@ -290,15 +397,21 @@ export default function AdministrativeForm() {
                                   >
                                     ✕
                                   </Button>
-                                )}  
+                                )}
                               </div>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      ))}  
+                      ))}
                     </div>
-                    <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendMandatory({ value: "" })}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => appendMandatory({ value: "" })}
+                    >
                       <p className="text-xl">+</p>
                     </Button>
                   </div>
@@ -315,12 +428,12 @@ export default function AdministrativeForm() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="tglMulai">Tanggal Mulai Pengukuran</Label>
-                    <Input id="tglMulai" type="date" />
+                    <Label htmlFor="tgl-mulai">Tanggal Mulai Pengukuran</Label>
+                    <Input id="tgl-mulai" type="date" />
                   </div>
                   <div>
-                    <Label htmlFor="tglAkhir">Tanggal Akhir Pengukuran</Label>
-                    <Input id="tglAkhir" type="date" />
+                    <Label htmlFor="tgl-akhir">Tanggal Akhir Pengukuran</Label>
+                    <Input id="tgl-akhir" type="date" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -333,15 +446,19 @@ export default function AdministrativeForm() {
                       <SelectContent>
                         <SelectItem value="laboratory">laboratory</SelectItem>
                         <SelectItem value="customer">customer</SelectItem>
-                        <SelectItem value="laboratoryBranch">laboratoryBranch</SelectItem>
-                        <SelectItem value="customerBranch">customerBranch</SelectItem>
+                        <SelectItem value="laboratoryBranch">
+                          laboratoryBranch
+                        </SelectItem>
+                        <SelectItem value="customerBranch">
+                          customerBranch
+                        </SelectItem>
                         <SelectItem value="other">other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="tglPengesahan">Tanggal pengesahan</Label>
-                    <Input id="tglPengesahan" type="date" />
+                    <Label htmlFor="tgl-pengesahan">Tanggal pengesahan</Label>
+                    <Input id="tgl-pengesahan" type="date" />
                   </div>
                 </div>
               </div>
@@ -355,47 +472,85 @@ export default function AdministrativeForm() {
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
                 {itemFields.map((field, index) => (
-                  <div key={field.id} className="grid gap-4 border-b pb-4">
-                    <p className="text-sm text-muted-foreground">Objek {index + 1}</p>
+                  <div key={field.id} className="grid gap-4 border-b pb-4 relative">
+                    <p className="text-sm text-muted-foreground">
+                      Objek {index + 1}
+                    </p>
+                    {itemFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removeItem(index)}
+                      >
+                        ✕
+                      </Button>
+                    )}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor={`jenis-${index}`}>Jenis Alat atau Objek</Label>
-                        <Input id={`jenis-${index}`} {...form.register(`objects.${index}.jenis`)} />
+                        <Label htmlFor={`jenis-${index}`}>
+                          Jenis Alat atau Objek
+                        </Label>
+                        <Input
+                          id={`jenis-${index}`}
+                          {...form.register(`objects.${index}.jenis`)}
+                        />
                       </div>
                       <div>
                         <Label htmlFor={`merek-${index}`}>Merek/Pembuat</Label>
-                        <Input id={`merek-${index}`} {...form.register(`objects.${index}.merek`)} />
+                        <Input
+                          id={`merek-${index}`}
+                          {...form.register(`objects.${index}.merek`)}
+                        />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor={`tipe-${index}`}>Tipe</Label>
-                        <Input id={`tipe-${index}`} {...form.register(`objects.${index}.tipe`)} />
+                        <Input
+                          id={`tipe-${index}`}
+                          {...form.register(`objects.${index}.tipe`)}
+                        />
                       </div>
                       <div>
-                        <Label htmlFor={`itemIssuer-${index}`}>Identifikasi Alat</Label>
+                        <Label htmlFor={`item-issuer-${index}`}>
+                          Identifikasi Alat
+                        </Label>
                         <Select {...form.register(`objects.${index}.issuer`)}>
-                          <SelectTrigger id={`itemIssuer-${index}`}>
+                          <SelectTrigger id={`item-issuer-${index}`}>
                             <SelectValue placeholder="Pilih penerbit" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="manufacturer">manufacturer</SelectItem>
-                            <SelectItem value="calibrationLaboratory">calibrationLaboratory</SelectItem>
-                            <SelectItem value="customer">customer</SelectItem>
-                            <SelectItem value="owner">owner</SelectItem>
-                            <SelectItem value="other">other</SelectItem>
+                            <SelectItem value="manufacturer">
+                              Manufacturer
+                            </SelectItem>
+                            <SelectItem value="calibrationLaboratory">
+                              Calibration Laboratory
+                            </SelectItem>
+                            <SelectItem value="customer">Customer</SelectItem>
+                            <SelectItem value="owner">Owner</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor={`seriItem-${index}`}>Nomor Seri</Label>
-                        <Input id={`seriItem-${index}`} {...form.register(`objects.${index}.seri`)} />
+                        <Label htmlFor={`seri-item-${index}`}>Nomor Seri</Label>
+                        <Input
+                          id={`seri-item-${index}`}
+                          {...form.register(`objects.${index}.seri`)}
+                        />
                       </div>
                       <div>
-                        <Label htmlFor={`idLain-${index}`}>Identifikasi Lain</Label>
-                        <Input id={`idLain-${index}`} {...form.register(`objects.${index}.idLain`)} />
+                        <Label htmlFor={`id-lain-${index}`}>
+                          Identifikasi Lain
+                        </Label>
+                        <Input
+                          id={`id-lain-${index}`}
+                          {...form.register(`objects.${index}.idLain`)}
+                        />
                       </div>
                     </div>
                   </div>
@@ -406,7 +561,14 @@ export default function AdministrativeForm() {
                 size="sm"
                 className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
                 onClick={() =>
-                  appendItem({ jenis: "", merek: "", tipe: "", issuer: "", seri: "", idLain: "" })
+                  appendItem({
+                    jenis: "",
+                    merek: "",
+                    tipe: "",
+                    issuer: "",
+                    seri: "",
+                    idLain: "",
+                  })
                 }
               >
                 <p className="text-xl">+</p>
@@ -414,78 +576,104 @@ export default function AdministrativeForm() {
             </CardContent>
           </Card>
 
-          <Card id="respPerson">
+          <Card id="resp-person">
             <CardHeader>
               <CardTitle>Penanggung Jawab</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="namaPejabat">Nama</Label>
-                    <Input id="namaPejabat" />
+                {personFields.map((field, index) => (
+                  <div key={field.id} className="grid gap-4 border-b pb-4 relative">
+                    <p className="text-sm text-muted-foreground">Orang {index + 1}</p>
+                    {personFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removePerson(index)}
+                      >
+                        ✕
+                      </Button>
+                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`nama-${index}`}>Nama</Label>
+                        <Input id={`nama-${index}`} {...form.register(`responsiblePersons.${index}.nama`)} />
+                      </div>
+                      <div>
+                        <Label htmlFor={`nip-${index}`}>NIP</Label>
+                        <Input id={`nip-${index}`} {...form.register(`responsiblePersons.${index}.nip`)} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`peran-${index}`}>Peran</Label>
+                        <Select {...form.register(`responsiblePersons.${index}.peran`)}>
+                          <SelectTrigger id={`peran-${index}`}>
+                            <SelectValue placeholder="Pilih peran" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pelaksana">Pelaksana Kalibrasi</SelectItem>
+                            <SelectItem value="penyelia">Penyelia Kalibrasi</SelectItem>
+                            <SelectItem value="kepala">Kepala Laboratorium</SelectItem>
+                            <SelectItem value="tk">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
+                            <SelectItem value="mrb">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor={`main-signer-${index}`}>Main Signer</Label>
+                        <Select {...form.register(`responsiblePersons.${index}.mainSigner`)}>
+                          <SelectTrigger id={`main-signer-${index}`}>
+                            <SelectValue placeholder="" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Iya</SelectItem>
+                            <SelectItem value="false">Tidak</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`signature-${index}`}>Signature</Label>
+                        <Select {...form.register(`responsiblePersons.${index}.signature`)}>
+                          <SelectTrigger id={`signature-${index}`}>
+                            <SelectValue placeholder="" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Iya</SelectItem>
+                            <SelectItem value="false">Tidak</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor={`timestamp-${index}`}>Timestamp</Label>
+                        <Select {...form.register(`responsiblePersons.${index}.timestamp`)}>
+                          <SelectTrigger id={`timestamp-${index}`}>
+                            <SelectValue placeholder="" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Iya</SelectItem>
+                            <SelectItem value="false">Tidak</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="nip">NIP</Label>
-                    <Input id="nip" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="peran">Peran</Label>
-                    <Select>
-                      <SelectTrigger id="peran">
-                        <SelectValue placeholder="Pilih peran" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pelaksana">pelaksana kalibrasi</SelectItem>
-                        <SelectItem value="penyelia">penyelia kalibrasi</SelectItem>
-                        <SelectItem value="kepala">kepala Laboratorium</SelectItem>
-                        <SelectItem value="tk">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
-                        <SelectItem value="mrb">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="mainSigner">Main Signer</Label>
-                    <Select>
-                      <SelectTrigger id="mainSigner">
-                        <SelectValue placeholder="" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">Iya</SelectItem>
-                        <SelectItem value="false">Tidak</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="signature">Signature</Label>
-                    <Select>
-                      <SelectTrigger id="signature">
-                        <SelectValue placeholder="" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">Iya</SelectItem>
-                        <SelectItem value="false">Tidak</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="timestamp">Timestamp</Label>
-                    <Select>
-                      <SelectTrigger id="timestamp">
-                        <SelectValue placeholder="" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">Iya</SelectItem>
-                        <SelectItem value="false">Tidak</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                ))}
               </div>
+              <Button
+                type="button"
+                size="sm"
+                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                onClick={() =>
+                  appendPerson({ nama: "", nip: "", peran: "", mainSigner: "", signature: "", timestamp: "" })
+                }
+              >
+                <p className="text-xl">+</p>
+              </Button>
             </CardContent>
           </Card>
 
@@ -496,37 +684,37 @@ export default function AdministrativeForm() {
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
                 <div>
-                  <Label htmlFor="namaCust">Nama</Label>
-                  <Input id="namaCust" />
+                  <Label htmlFor="nama-cust">Nama</Label>
+                  <Input id="nama-cust" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="jalanCust">Nama Jalan</Label>
-                    <Input id="jalanCust" />
+                    <Label htmlFor="jalan-cust">Nama Jalan</Label>
+                    <Input id="jalan-cust" />
                   </div>
                   <div>
-                    <Label htmlFor="noJalanCust">Nomor Jalan</Label>
-                    <Input id="noJalanCust" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="kotaCust">Kota</Label>
-                    <Input id="kotaCust" />
-                  </div>
-                  <div>
-                    <Label htmlFor="stateCust">Provinsi</Label>
-                    <Input id="stateCust" />
+                    <Label htmlFor="no-jalan-cust">Nomor Jalan</Label>
+                    <Input id="no-jalan-cust" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="posCust">Kode Pos</Label>
-                    <Input id="posCust" />
+                    <Label htmlFor="kota-cust">Kota</Label>
+                    <Input id="kota-cust" />
                   </div>
                   <div>
-                    <Label htmlFor="negaraCust">Negara</Label>
-                    <Input id="negaraCust" />
+                    <Label htmlFor="state-cust">Provinsi</Label>
+                    <Input id="state-cust" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="pos-cust">Kode Pos</Label>
+                    <Input id="pos-cust" />
+                  </div>
+                  <div>
+                    <Label htmlFor="negara-cust">Negara</Label>
+                    <Input id="negara-cust" />
                   </div>
                 </div>
               </div>
@@ -550,7 +738,12 @@ export default function AdministrativeForm() {
                           <Input {...field} />
                         </FormControl>
                         {statementFields.length > 1 && (
-                          <Button type="button" variant="destructive" size="icon" onClick={() => removeStatement(index)}>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => removeStatement(index)}
+                          >
                             ✕
                           </Button>
                         )}
@@ -570,6 +763,9 @@ export default function AdministrativeForm() {
               </Button>
             </CardContent>
           </Card>
+          <div className="flex justify-end mt-4">
+            <Button type="submit">Submit</Button>
+          </div>
         </div>
       </form>
     </FormProvider>
