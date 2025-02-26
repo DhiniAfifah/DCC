@@ -3,40 +3,15 @@ import { ChevronsUpDown } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 const countries = [
   { label: "Indonesia", value: "id" },
@@ -59,40 +34,35 @@ const languages = [
 
 const FormSchema = z.object({
   country: z.string({ required_error: "Please select a country." }),
-  usedLanguages: z.array(
-    z.object({ value: z.string().min(1, "Please select a language.") })
-  ),
-  mandatoryLanguages: z.array(
-    z.object({ value: z.string().min(1, "Please select a language.") })
-  ),
-  objects: z.array(
-    z.object({
-      jenis: z.string().optional(),
-      merek: z.string().optional(),
-      tipe: z.string().optional(),
-      issuer: z.string().optional(),
-      seri: z.string().optional(),
-      idLain: z.string().optional(),
-    })
-  ),
-  statements: z.array(
-    z.object({ value: z.string().min(1, "Statement cannot be empty") })
-  ),
+  usedLanguages: z.array(z.object({ value: z.string().min(1, "Please select a language.") })),
+  mandatoryLanguages: z.array(z.object({ value: z.string().min(1, "Please select a language.") })),
+  objects: z.array(z.object({
+    jenis: z.string().optional(),
+    merek: z.string().optional(),
+    tipe: z.string().optional(),
+    issuer: z.string().optional(),
+    seri: z.string().optional(),
+    idLain: z.string().optional(),
+  })),
+  responsiblePersons: z.array(z.object({
+    nama: z.string().optional(),
+    nip: z.string().optional(),
+    peran: z.string().optional(),
+    mainSigner: z.string().optional(),
+    signature: z.string().optional(),
+    timestamp: z.string().optional(),
+  })),
+  statements: z.array(z.object({ value: z.string().min(1, "Statement cannot be empty") })),
 });
 
-export default function AdministrativeForm({
-  updateFormData,
-}: {
-  updateFormData: (data: any) => void;
-}) {
+export default function AdministrativeForm({updateFormData}: {updateFormData: (data: any) => void;}) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       usedLanguages: [{ value: "" }],
       mandatoryLanguages: [{ value: "" }],
-      objects: [
-        { jenis: "", merek: "", tipe: "", issuer: "", seri: "", idLain: "" },
-      ],
+      objects: [{ jenis: "", merek: "", tipe: "", issuer: "", seri: "", idLain: "" }],
+      responsiblePersons: [{ nama: "", nip: "", peran: "", mainSigner: "", signature: "", timestamp: "" }],
       statements: [{ value: "" }],
     },
   });
@@ -132,9 +102,14 @@ export default function AdministrativeForm({
     name: "mandatoryLanguages",
   });
 
-  const { fields: itemFields, append: appendItem } = useFieldArray({
+  const { fields: itemFields, append: appendItem, remove: removeItem } = useFieldArray({
     control: form.control,
     name: "objects",
+  });
+
+  const { fields: personFields, append: appendPerson, remove: removePerson } = useFieldArray({
+    control: form.control,
+    name: "responsiblePersons",
   });
 
   const onSubmit = async (data: any) => {
@@ -497,10 +472,21 @@ export default function AdministrativeForm({
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
                 {itemFields.map((field, index) => (
-                  <div key={field.id} className="grid gap-4 border-b pb-4">
+                  <div key={field.id} className="grid gap-4 border-b pb-4 relative">
                     <p className="text-sm text-muted-foreground">
                       Objek {index + 1}
                     </p>
+                    {itemFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removeItem(index)}
+                      >
+                        ✕
+                      </Button>
+                    )}
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor={`jenis-${index}`}>
@@ -596,82 +582,98 @@ export default function AdministrativeForm({
             </CardHeader>
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="nama-pejabat">Nama</Label>
-                    <Input id="nama-pejabat" />
+                {personFields.map((field, index) => (
+                  <div key={field.id} className="grid gap-4 border-b pb-4 relative">
+                    <p className="text-sm text-muted-foreground">Orang {index + 1}</p>
+                    {personFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removePerson(index)}
+                      >
+                        ✕
+                      </Button>
+                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`nama-${index}`}>Nama</Label>
+                        <Input id={`nama-${index}`} {...form.register(`responsiblePersons.${index}.nama`)} />
+                      </div>
+                      <div>
+                        <Label htmlFor={`nip-${index}`}>NIP</Label>
+                        <Input id={`nip-${index}`} {...form.register(`responsiblePersons.${index}.nip`)} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`peran-${index}`}>Peran</Label>
+                        <Select {...form.register(`responsiblePersons.${index}.peran`)}>
+                          <SelectTrigger id={`peran-${index}`}>
+                            <SelectValue placeholder="Pilih peran" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pelaksana">Pelaksana Kalibrasi</SelectItem>
+                            <SelectItem value="penyelia">Penyelia Kalibrasi</SelectItem>
+                            <SelectItem value="kepala">Kepala Laboratorium</SelectItem>
+                            <SelectItem value="tk">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
+                            <SelectItem value="mrb">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor={`main-signer-${index}`}>Main Signer</Label>
+                        <Select {...form.register(`responsiblePersons.${index}.mainSigner`)}>
+                          <SelectTrigger id={`main-signer-${index}`}>
+                            <SelectValue placeholder="" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Iya</SelectItem>
+                            <SelectItem value="false">Tidak</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor={`signature-${index}`}>Signature</Label>
+                        <Select {...form.register(`responsiblePersons.${index}.signature`)}>
+                          <SelectTrigger id={`signature-${index}`}>
+                            <SelectValue placeholder="" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Iya</SelectItem>
+                            <SelectItem value="false">Tidak</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor={`timestamp-${index}`}>Timestamp</Label>
+                        <Select {...form.register(`responsiblePersons.${index}.timestamp`)}>
+                          <SelectTrigger id={`timestamp-${index}`}>
+                            <SelectValue placeholder="" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="true">Iya</SelectItem>
+                            <SelectItem value="false">Tidak</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="nip">NIP</Label>
-                    <Input id="nip" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="peran">Peran</Label>
-                    <Select>
-                      <SelectTrigger id="peran">
-                        <SelectValue placeholder="Pilih peran" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pelaksana">
-                          pelaksana kalibrasi
-                        </SelectItem>
-                        <SelectItem value="penyelia">
-                          penyelia kalibrasi
-                        </SelectItem>
-                        <SelectItem value="kepala">
-                          kepala Laboratorium
-                        </SelectItem>
-                        <SelectItem value="tk">
-                          Direktur SNSU Termoelektrik dan Kimia
-                        </SelectItem>
-                        <SelectItem value="mrb">
-                          Direktur SNSU Mekanika, Radiasi, dan Biologi
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="main-signer">Main Signer</Label>
-                    <Select>
-                      <SelectTrigger id="main-signer">
-                        <SelectValue placeholder="" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">Iya</SelectItem>
-                        <SelectItem value="false">Tidak</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="signature">Signature</Label>
-                    <Select>
-                      <SelectTrigger id="signature">
-                        <SelectValue placeholder="" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">Iya</SelectItem>
-                        <SelectItem value="false">Tidak</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="timestamp">Timestamp</Label>
-                    <Select>
-                      <SelectTrigger id="timestamp">
-                        <SelectValue placeholder="" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="true">Iya</SelectItem>
-                        <SelectItem value="false">Tidak</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                ))}
               </div>
+              <Button
+                type="button"
+                size="sm"
+                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                onClick={() =>
+                  appendPerson({ nama: "", nip: "", peran: "", mainSigner: "", signature: "", timestamp: "" })
+                }
+              >
+                <p className="text-xl">+</p>
+              </Button>
             </CardContent>
           </Card>
 
