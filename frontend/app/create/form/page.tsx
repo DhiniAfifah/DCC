@@ -21,8 +21,8 @@ export default function CreateDCC() {
     version: "",
     core_issuer: "",
     country_code: "",
-    used_languages: [{ value: "" }],
-    mandatory_languages: [{ value: "" }],
+    used_languages: [],
+    mandatory_languages: [],
     sertifikat: "",
     order: "",
     tgl_mulai: "",
@@ -68,10 +68,10 @@ export default function CreateDCC() {
       ...prev,
       ...data,
       used_languages: data.used_languages
-        ? data.used_languages.map((lang: string) => ({ value: lang }))
+        ? data.used_languages
         : prev.used_languages,
       mandatory_languages: data.mandatory_languages
-        ? data.mandatory_languages.map((lang: string) => ({ value: lang }))
+        ? data.mandatory_languages
         : prev.mandatory_languages,
       sertifikat: data.sertifikat?.toString() || "",
       order: data.order?.toString() || "",
@@ -164,10 +164,10 @@ export default function CreateDCC() {
   };
 
   return (
-    <div className="container mx-auto py-8 max-h-screen overflow-y-auto z-10">
+    <div className="container mx-auto py-8 pt-20">
       <Stepper currentStep={currentStep} steps={steps} />
 
-      <div className="mt-12">
+      <div className="mt-12 space-y-10">
         {currentStep === 0 && (
           <AdministrativeForm updateFormData={updateFormData} />
         )}

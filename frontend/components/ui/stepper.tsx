@@ -40,7 +40,7 @@ export default function Stepper({ currentStep, steps }: StepperProps) {
             </div>
             {index < steps.length - 1 && (
               <div
-                className={`w-20 h-0.5 transition-colors duration-200 ${
+                className={`w-32 h-0.5 transition-colors duration-200 ${
                   currentStep > index ? "bg-green-600" : "bg-gray-300"
                 }`}
               />

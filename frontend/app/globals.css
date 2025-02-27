@@ -65,6 +65,7 @@ html,
 body {
   height: 100%;
   overflow: hidden;
+  overflow-y: auto;
 }
 
 @layer base {
@@ -75,8 +76,6 @@ body {
     @apply bg-background text-foreground;
   }
 }
-
-
 
 @layer base {
   * {
