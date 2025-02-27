@@ -21,8 +21,8 @@ export default function CreateDCC() {
     version: "",
     core_issuer: "",
     country_code: "",
-    used_languages: [""],
-    mandatory_languages: [""],
+    used_languages: [{ value: "" }],
+    mandatory_languages: [{ value: "" }],
     sertifikat: "",
     order: "",
     tgl_mulai: "",
@@ -39,14 +39,16 @@ export default function CreateDCC() {
         id_lain: null,
       },
     ],
-    responsible_person: {
-      nama_resp: "",
-      nip: "",
-      peran: "",
-      mainSigner: "",
-      signature: "",
-      timestamp: "",
-    },
+    responsible_person: [
+      {
+        nama_resp: "",
+        nip: "",
+        peran: "",
+        mainSigner: "",
+        signature: "",
+        timestamp: "",
+      },
+    ],
     owner_identity: {
       nama_cust: "",
       jalan_cust: "",
@@ -86,7 +88,27 @@ export default function CreateDCC() {
         ? data.statements.map((stmt: string) =>
             typeof stmt === "string" ? stmt.trim() : ""
           )
-        : [],
+        : prev.statements,
+      responsible_person: Array.isArray(data.responsible_person)
+        ? data.responsible_person.map((resp: any) => ({
+            nama_resp: resp.nama_resp || "",
+            nip: resp.nip || "",
+            peran: resp.peran || "",
+            mainSigner: resp.mainSigner || "",
+            signature: resp.signature || "",
+            timestamp: resp.timestamp || "",
+          }))
+        : prev.responsible_person,
+      objects: Array.isArray(data.objects)
+        ? data.objects.map((obj: any) => ({
+            jenis: obj.jenis || "",
+            merek: obj.merek || "",
+            tipe: obj.tipe || "",
+            item_issuer: obj.item_issuer || "",
+            seri: obj.seri || "",
+            id_lain: obj.id_lain || "",
+          }))
+        : prev.objects,
     }));
   };
 

@@ -1,85 +1,57 @@
-from fastapi import FastAPI, Depends, HTTPException, Request
+import logging
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import SessionLocal
-from models import DCCForm
-from schemas import DCCFormCreate
-import shutil
+from fastapi.responses import FileResponse
+import api.crud as crud
+import api.models as models
+import api.schemas as schemas
+import api.database as database
 import os
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from database import Base, engine
-from models import DCCForm
+
+# Set log level
+logging.basicConfig(level=logging.DEBUG)
 
 app = FastAPI()
 
-# Tambahkan endpoint root
 @app.get("/")
-async def root():
-    return {"message": "Welcome to DCC API!"}
+async def read_root():
+    return {"message": "Selamat datang di API Digital Calibration Certificate (DCC)."}
 
-# Membuat tabel-tabel yang didefinisikan di model
-Base.metadata.create_all(bind=engine)
-
-# 🔹 Hitung path ke direktori "backend/"
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Dapatkan path "backend/"
-ASSETS_DIR = os.path.join(BASE_DIR, "assets")  # Path ke "backend/assets"
-GENERATED_DIR = os.path.join(ASSETS_DIR, "generated")  # Path ke "backend/assets/generated"
-
-# 🔹 Pastikan folder "assets" dan "generated" ada
-os.makedirs(GENERATED_DIR, exist_ok=True)
-
-# 🔹 Mount folder "assets" agar file bisa diakses dari frontend
-app.mount("/static", StaticFiles(directory=ASSETS_DIR), name="static")
-
-# 🔹 Tambahkan CORS Middleware agar backend bisa menerima request dari frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Bisa diganti dengan frontend URL tertentu (misalnya ["http://localhost:3000"])
-    allow_credentials=True,
-    allow_methods=["*"],  # Mengizinkan semua metode (GET, POST, OPTIONS, dll.)
-    allow_headers=["*"],  # Mengizinkan semua header
-)
-
-# Dependency untuk database session
+# Dependency untuk mendapatkan sesi database
 def get_db():
-    db = SessionLocal()
+    db = database.SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
+# Route untuk create-dcc
 @app.post("/create-dcc/")
-async def create_dcc(request: Request, db: Session = Depends(get_db)):
+async def create_dcc(dcc: schemas.DCCFormCreate, db: Session = Depends(get_db)):
     try:
-        data = await request.json()
-        print("Data diterima dari frontend:", data)  # 🔹 Debugging: Print data yang dikirim
-
-        # Validasi data sebelum diproses
-        form_data = DCCFormCreate(**data)
-        print("Data sudah sesuai dengan schemas.py")
-
+        logging.info("Received request to create DCC")
+        result = crud.create_dcc(db=db, dcc=dcc)
+        logging.info(f"DCC Created Successfully: {result}")
+        return result
     except Exception as e:
-        print("ERROR membaca data:", str(e))
-        raise HTTPException(status_code=400, detail=f"Invalid request body: {str(e)}")
+        logging.error(f"Error occurred while creating DCC: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
-    # Simpan data ke database
-    dcc = DCCForm(**form_data.dict())
-    db.add(dcc)
-    db.commit()
-    db.refresh(dcc)
+# Route untuk download-dcc
+@app.get("/download-dcc/{dcc_id}")
+async def download_dcc(dcc_id: int, db: Session = Depends(get_db)):
+    try:
+        # Cari DCC berdasarkan ID
+        dcc_data = db.query(models.DCC).filter(models.DCC.id == dcc_id).first()
+        if not dcc_data:
+            raise HTTPException(status_code=404, detail="DCC not found")
 
-    # Cek apakah ID sudah dibuat
-    if not dcc.id:
-        raise HTTPException(status_code=500, detail="Failed to generate DCC ID")
+        # Tentukan lokasi file yang akan didownload
+        file_path = f"./dcc_files/{dcc_id}.pdf"  
+        if not os.path.exists(file_path):
+            raise HTTPException(status_code=404, detail="File not found")
 
-    # Path untuk template dan output sertifikat
-    template_path = os.path.join(ASSETS_DIR, "dcc_template.pdf")  
-    output_path = os.path.join(GENERATED_DIR, f"DCC_{dcc.id}.pdf")  
-
-    shutil.copy(template_path, output_path)
-
-    download_url = f"http://127.0.0.1:8000/static/generated/DCC_{dcc.id}.pdf"
-    print("Sertifikat disimpan di:", output_path)
-    print("Link download:", download_url)
-
-    return {"message": "DCC Created!", "download_link": download_url}
+        # Mengirim file sebagai response
+        return FileResponse(path=file_path, media_type='application/pdf', filename=f"DCC-{dcc_id}.pdf")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error downloading DCC: {str(e)}")

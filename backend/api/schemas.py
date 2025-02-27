@@ -42,19 +42,19 @@ class OwnerIdentity(BaseModel):
     negara_cust: str
 
 class DCCFormCreate(BaseModel):
-    software: str
-    version: str
-    core_issuer: str
-    country_code: str
-    used_languages: List[Language]
-    mandatory_languages: List[Language]
-    sertifikat: str
-    order: str
-    tgl_mulai: str
-    tgl_akhir: str
-    tempat: str
-    tgl_pengesahan: str
-    objects: List[ObjectDescription]
-    responsible_person: List[ResponsiblePerson]
-    owner_identity: OwnerIdentity
-    statements: List[str] 
+    software: str  # software
+    version: str  # versi
+    core_issuer: str  # penerbit
+    country_code: str  # kode negara
+    used_languages: List[Language]  # bahasa yang digunakan
+    mandatory_languages: List[Language]  # bahasa wajib
+    sertifikat: str  # nomor sertifikat
+    order: str  # nomor order
+    tgl_mulai: str  # tanggal mulai pengukuran
+    tgl_akhir: str  # tanggal akhir pengukuran
+    tempat: str  # tempat kalibrasi
+    tgl_pengesahan: str  # tanggal pengesahan
+    objects: List[ObjectDescription]  # Deskripsi objek yang diukur
+    responsible_person: List[ResponsiblePerson]  # Penanggung jawab
+    owner_identity: OwnerIdentity  # Identitas pemilik
+    statements: List[str]  # Catatan
