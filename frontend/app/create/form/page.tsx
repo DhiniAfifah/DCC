@@ -35,15 +35,15 @@ export default function CreateDCC() {
         merek: null,
         tipe: null,
         item_issuer: null,
-        seri: null,
+        seri_item: null,
         id_lain: null,
       },
     ],
-    responsible_person: {
+    person: {
       nama_resp: "",
       nip: "",
       peran: "",
-      mainSigner: "",
+      main_signer: "",
       signature: "",
       timestamp: "",
     },
