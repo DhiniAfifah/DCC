@@ -49,7 +49,7 @@ export default function CreateDCC() {
         timestamp: "",
       }
     ],
-    owner_identity: {
+    owner: {
       nama_cust: "",
       jalan_cust: "",
       no_jalan_cust: "",
