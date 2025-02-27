@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import datetime
 
 class Language(BaseModel):
     value: str
@@ -50,10 +51,10 @@ class DCCFormCreate(BaseModel):
     mandatory_languages: List[Language]
     sertifikat: str
     order: str
-    tgl_mulai: str
-    tgl_akhir: str
+    tgl_mulai: datetime  
+    tgl_akhir: datetime  
     tempat: str
-    tgl_pengesahan: str
+    tgl_pengesahan: datetime  
     objects: List[ObjectDescription]
     persons: List[ResponsiblePerson]
     owner: OwnerIdentity

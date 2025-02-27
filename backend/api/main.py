@@ -8,7 +8,7 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from database import Base, engine
-from models import DCCForm
+from models import UsedLanguage, MandatoryLanguage, DCCObject, DCCPerson, DCCOwner, DCCStatement
 
 app = FastAPI()
 
@@ -34,7 +34,7 @@ app.mount("/static", StaticFiles(directory=ASSETS_DIR), name="static")
 # 🔹 Tambahkan CORS Middleware agar backend bisa menerima request dari frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Bisa diganti dengan frontend URL tertentu (misalnya ["http://localhost:3000"])
+    allow_origins=["http://localhost:3000"],  # Bisa diganti dengan frontend URL tertentu (misalnya ["http://localhost:3000"])
     allow_credentials=True,
     allow_methods=["*"],  # Mengizinkan semua metode (GET, POST, OPTIONS, dll.)
     allow_headers=["*"],  # Mengizinkan semua header
@@ -63,7 +63,20 @@ async def create_dcc(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=f"Invalid request body: {str(e)}")
 
     # Simpan data ke database
-    dcc = DCCForm(**form_data.dict())
+    # Extract related objects separately
+    form_data_dict = form_data.model_dump(exclude={"used_languages", "mandatory_languages", "objects", "persons", "owner", "statements"}, exclude_unset=True)
+
+    # Create DCCForm instance **without relationships**
+    dcc = DCCForm(**form_data_dict)
+
+    # Manually assign relationships (if applicable)
+    dcc.used_languages = [UsedLanguage(**lang.model_dump()) for lang in form_data.used_languages] if form_data.used_languages else []
+    dcc.mandatory_languages = [MandatoryLanguage(**lang.model_dump()) for lang in form_data.mandatory_languages] if form_data.mandatory_languages else []
+    dcc.objects = [DCCObject(**obj.model_dump()) for obj in form_data.objects] if form_data.objects else []
+    dcc.persons = [DCCPerson(**person.model_dump()) for person in form_data.persons] if form_data.persons else []
+    dcc.owner = DCCOwner(**form_data.owner.model_dump()) if form_data.owner else None
+    dcc.statements = [DCCStatement(value=stmt) for stmt in form_data.statements]
+
     db.add(dcc)
     db.commit()
     db.refresh(dcc)

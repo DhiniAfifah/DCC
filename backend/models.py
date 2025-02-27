@@ -21,7 +21,7 @@ class DCCForm(Base):
     mandatory_languages = relationship("MandatoryLanguage", back_populates="dcc_form")
     objects = relationship("DCCObject", back_populates="dcc_form")
     persons = relationship("DCCPerson", back_populates="dcc_form")
-    owner = relationship("DCCOwner", back_populates="dcc_form")
+    owner = relationship("DCCOwner", back_populates="dcc_form", uselist=False)
     statements = relationship("DCCStatement", back_populates="dcc_form")
 
 class UsedLanguage(Base):
