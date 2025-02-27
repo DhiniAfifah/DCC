@@ -31,22 +31,24 @@ export default function CreateDCC() {
     tgl_pengesahan: "",
     objects: [
       {
-        jenis: null,
-        merek: null,
-        tipe: null,
-        item_issuer: null,
-        seri_item: null,
-        id_lain: null,
+        jenis: "",
+        merek: "",
+        tipe: "",
+        item_issuer: "",
+        seri_item: "",
+        id_lain: "",
       },
     ],
-    person: {
-      nama_resp: "",
-      nip: "",
-      peran: "",
-      main_signer: "",
-      signature: "",
-      timestamp: "",
-    },
+    persons: [
+      {
+        nama_resp: "",
+        nip: "",
+        peran: "",
+        main_signer: "",
+        signature: "",
+        timestamp: "",
+      }
+    ],
     owner_identity: {
       nama_cust: "",
       jalan_cust: "",

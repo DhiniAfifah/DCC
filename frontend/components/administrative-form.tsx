@@ -66,13 +66,15 @@ const FormSchema = z.object({
     signature: z.string().min(1, {message: empty_field_error_message,}),
     timestamp: z.string().min(1, {message: empty_field_error_message,}),
   })),
-  nama_cust: z.string().min(1, {message: empty_field_error_message,}),
-  jalan_cust: z.string().min(1, {message: empty_field_error_message,}),
-  no_jalan_cust: z.string().min(1, {message: empty_field_error_message,}),
-  kota_cust: z.string().min(1, {message: empty_field_error_message,}),
-  state_cust: z.string().min(1, {message: empty_field_error_message,}),
-  pos_cust: z.string().min(1, {message: empty_field_error_message,}),
-  negara_cust: z.string().min(1, {message: empty_field_error_message,}),
+  owner: z.object({
+    nama_cust: z.string().min(1, {message: empty_field_error_message,}),
+    jalan_cust: z.string().min(1, {message: empty_field_error_message,}),
+    no_jalan_cust: z.string().min(1, {message: empty_field_error_message,}),
+    kota_cust: z.string().min(1, {message: empty_field_error_message,}),
+    state_cust: z.string().min(1, {message: empty_field_error_message,}),
+    pos_cust: z.string().min(1, {message: empty_field_error_message,}),
+    negara_cust: z.string().min(1, {message: empty_field_error_message,}),
+  }),
   statements: z.array(z.object({ value: z.string().min(1, empty_field_error_message) })),
 });
 
@@ -92,17 +94,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
       tempat: "",
       objects: [{ jenis: "", merek: "", tipe: "", item_issuer: "", seri_item: "", id_lain: "" }],
       persons: [{ nama_resp: "", nip: "", peran: "", main_signer: "", signature: "", timestamp: "" }],
-      nama_cust: "",
-      jalan_cust: "",
-      no_jalan_cust: "",
-      kota_cust: "",
-      state_cust: "",
-      pos_cust: "",
-      negara_cust: "",
+      owner: { nama_cust: "", jalan_cust: "", no_jalan_cust: "", kota_cust: "", state_cust: "", pos_cust: "", negara_cust: "" },
       statements: [{ value: "" }],
     },
   });
-  console.log("Form errors:", form.formState.errors);
 
   useEffect(() => {
     const subscription = form.watch((values) => {
@@ -139,19 +134,32 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
 
   const onSubmit = async (data: any) => {
     try {
+      const formattedData = {
+        ...data,
+        statements: data.statements.map((s: { value: string }) => s.value), // Convert objects to strings
+      };
+
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formattedData),
       });
+
+      if (!response.ok) {
+        const errorResult = await response.json();
+        console.error("Error response from server:", errorResult);
+        alert(`Failed to create DCC: ${errorResult.detail}`);
+        return;
+      }
 
       const result = await response.json();
       console.log("DCC Created:", result);
       alert(`DCC Created! Download: ${result.download_link}`);
     } catch (error) {
       console.error("Error submitting form:", error);
+      alert("An error occurred while submitting the form.");
     }
   };
 
@@ -771,7 +779,6 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                       <FormLabel>Nama</FormLabel>
                       <FormField control={form.control} name={`persons.${index}.nama_resp`} render={({ field }) => (
                           <FormItem>
-                            
                             <FormControl><Input {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
@@ -884,7 +891,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
             <div className="grid gap-4">
               <div id="nama_cust">
                 <FormLabel>Nama</FormLabel>
-                <FormField control={form.control} name="nama_cust" render={({ field }) => (
+                <FormField control={form.control} name={`owner.nama_cust`} render={({ field }) => (
                     <FormItem>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
@@ -895,7 +902,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
               <div className="grid grid-cols-2 gap-4">
                 <div id="jalan_cust">
                   <FormLabel>Jalan</FormLabel>
-                  <FormField control={form.control} name="jalan_cust" render={({ field }) => (
+                  <FormField control={form.control} name={`owner.jalan_cust`} render={({ field }) => (
                       <FormItem>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
@@ -905,7 +912,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                 </div>
                 <div id="no_jalan_cust">
                   <FormLabel>Nomor Jalan</FormLabel>
-                  <FormField control={form.control} name="no_jalan_cust" render={({ field }) => (
+                  <FormField control={form.control} name={`owner.no_jalan_cust`} render={({ field }) => (
                       <FormItem>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
@@ -917,7 +924,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
               <div className="grid grid-cols-2 gap-4">
                 <div id="kota_cust">
                   <FormLabel>Kota</FormLabel>
-                  <FormField control={form.control} name="kota_cust" render={({ field }) => (
+                  <FormField control={form.control} name={`owner.kota_cust`} render={({ field }) => (
                       <FormItem>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
@@ -927,7 +934,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                 </div>
                 <div id="state_cust">
                   <FormLabel>Provinsi</FormLabel>
-                  <FormField control={form.control} name="state_cust" render={({ field }) => (
+                  <FormField control={form.control} name={`owner.state_cust`} render={({ field }) => (
                       <FormItem>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
@@ -939,7 +946,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
               <div className="grid grid-cols-2 gap-4">
                 <div id="pos_cust">
                   <FormLabel>Kode Pos</FormLabel>
-                  <FormField control={form.control} name="pos_cust" render={({ field }) => (
+                  <FormField control={form.control} name={`owner.pos_cust`} render={({ field }) => (
                       <FormItem>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
@@ -949,7 +956,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                 </div>
                 <div id="negara_cust">
                   <FormLabel>Negara</FormLabel>
-                  <FormField control={form.control} name="negara_cust" render={({ field }) => (
+                  <FormField control={form.control} name={`owner.negara_cust`} render={({ field }) => (
                       <FormItem>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />

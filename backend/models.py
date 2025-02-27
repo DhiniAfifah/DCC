@@ -21,15 +21,8 @@ class DCCForm(Base):
     mandatory_languages = relationship("MandatoryLanguage", back_populates="dcc_form")
     objects = relationship("DCCObject", back_populates="dcc_form")
     persons = relationship("DCCPerson", back_populates="dcc_form")
+    owner = relationship("DCCOwner", back_populates="dcc_form")
     statements = relationship("DCCStatement", back_populates="dcc_form")
-    
-    nama_cust = Column(String, nullable=False)
-    jalan_cust = Column(String, nullable=False)
-    no_jalan_cust = Column(String, nullable=False)
-    kota_cust = Column(String, nullable=False)
-    state_cust = Column(String, nullable=False)
-    pos_cust = Column(String, nullable=False)
-    negara_cust = Column(String, nullable=False)
 
 class UsedLanguage(Base):
     __tablename__ = "used_languages"
@@ -68,6 +61,19 @@ class DCCPerson(Base):
     signature = Column(String, nullable=False)
     timestamp = Column(String, nullable=False)
     dcc_form = relationship("DCCForm", back_populates="persons")
+
+class DCCOwner(Base):
+    __tablename__ = "dcc_owner"
+    id = Column(Integer, primary_key=True, index=True)
+    dcc_form_id = Column(Integer, ForeignKey("dcc_forms.id"))
+    nama_cust = Column(String, nullable=False)
+    jalan_cust = Column(String, nullable=False)
+    no_jalan_cust = Column(String, nullable=False)
+    kota_cust = Column(String, nullable=False)
+    state_cust = Column(String, nullable=False)
+    pos_cust = Column(String, nullable=False)
+    negara_cust = Column(String, nullable=False)
+    dcc_form = relationship("DCCForm", back_populates="owner")
 
 class DCCStatement(Base):
     __tablename__ = "dcc_statements"

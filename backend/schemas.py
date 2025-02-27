@@ -55,6 +55,6 @@ class DCCFormCreate(BaseModel):
     tempat: str
     tgl_pengesahan: str
     objects: List[ObjectDescription]
-    person: List[ResponsiblePerson]
-    owner_identity: OwnerIdentity
+    persons: List[ResponsiblePerson]
+    owner: OwnerIdentity
     statements: List[str] 
