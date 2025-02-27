@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Stepper from "@/components/ui/stepper";
 import AdministrativeForm from "@/components/administrative-form";
+import MeasurementForm from "@/components/measurement-form";
 import { Button } from "@/components/ui/button";
 
 export default function CreateDCC() {
@@ -150,6 +151,7 @@ export default function CreateDCC() {
         {currentStep === 0 && (
           <AdministrativeForm updateFormData={updateFormData} />
         )}
+        {currentStep === 1 && <MeasurementForm />}
       </div>
 
       <div className="flex justify-between max-w-4xl mx-auto px-4 mt-8">
