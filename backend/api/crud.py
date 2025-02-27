@@ -9,6 +9,7 @@ from fpdf import FPDF
 import os
 from docx import Document
 from docx2pdf import convert
+import xml.etree.ElementTree as ET
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
@@ -42,33 +43,58 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         db.refresh(db_dcc)
         logging.info(f"DCC {dcc.sertifikat} saved successfully with ID {db_dcc.id}")
 
-        # Path to template file
-        template_path = "./assets/sertifikat_template.docx"
+        # Path to generate XML file
+        xml_file_path = f"./dcc_files/{db_dcc.id}_sertifikat.xml"
         
-        # Load the template
-        doc = Document(template_path)
+        # Creating the XML structure
+        root = ET.Element("DCC")
+        ET.SubElement(root, "software_name").text = dcc.software
+        ET.SubElement(root, "software_version").text = dcc.version
+        ET.SubElement(root, "core_issuer").text = dcc.core_issuer
+        ET.SubElement(root, "sertifikat_number").text = dcc.sertifikat
+        ET.SubElement(root, "order_number").text = dcc.order
+        ET.SubElement(root, "tgl_mulai").text = dcc.tgl_mulai
+        ET.SubElement(root, "tgl_akhir").text = dcc.tgl_akhir
+        ET.SubElement(root, "tgl_pengesahan").text = dcc.tgl_pengesahan
+        ET.SubElement(root, "tempat_kalibrasi").text = dcc.tempat
+        
+        # Adding used_languages and mandatory_languages
+        used_langs = ET.SubElement(root, "used_languages")
+        for lang in dcc.used_languages:
+            ET.SubElement(used_langs, "language").text = lang.value
+        
+        mandatory_langs = ET.SubElement(root, "mandatory_languages")
+        for lang in dcc.mandatory_languages:
+            ET.SubElement(mandatory_langs, "language").text = lang.value
+        
+        # Adding other data (objects, responsible persons, etc.)
+        objects = ET.SubElement(root, "objects_description")
+        for obj in dcc.objects:
+            obj_elem = ET.SubElement(objects, "object")
+            for key, value in obj.dict().items():
+                ET.SubElement(obj_elem, key).text = str(value)
+        
+        responsible_persons = ET.SubElement(root, "responsible_person")
+        for resp in dcc.responsible_person:
+            resp_elem = ET.SubElement(responsible_persons, "person")
+            for key, value in resp.dict().items():
+                ET.SubElement(resp_elem, key).text = str(value)
+        
+        owner = ET.SubElement(root, "owner_identity")
+        for key, value in dcc.owner_identity.dict().items():
+            ET.SubElement(owner, key).text = str(value)
+        
+        # Adding statements
+        statements = ET.SubElement(root, "statements")
+        for stmt in dcc.statements:
+            ET.SubElement(statements, "statement").text = stmt
 
-        # Replace placeholders with actual data from DCC
-        doc.paragraphs[0].text = f"DCC Sertifikat: {dcc.sertifikat}"  # Example, you can replace more placeholders
+        # Writing XML to file
+        tree = ET.ElementTree(root)
+        tree.write(xml_file_path)
 
-        # Replace other placeholders with relevant data
-        doc.paragraphs[1].text = f"Software: {dcc.software}"
-        doc.paragraphs[2].text = f"Version: {dcc.version}"
-        doc.paragraphs[3].text = f"Core Issuer: {dcc.core_issuer}"
-
-        # Save the modified file as a temporary .docx file
-        modified_doc_path = f"./dcc_files/{db_dcc.id}_modified.docx"
-        doc.save(modified_doc_path)
-
-        # Convert the .docx file to PDF
-        modified_pdf_path = f"./dcc_files/{db_dcc.id}.pdf"
-        convert(modified_doc_path, modified_pdf_path)
-
-        # Delete the temporary .docx file
-        os.remove(modified_doc_path)
-
-        # Generate download link
-        download_link = f"http://127.0.0.1:8000/download-dcc/{db_dcc.id}"
+        # Generating the download link
+        download_link = f"http://127.0.0.1:8000/download-dcc/{db_dcc.id}_sertifikat.xml"
         logging.info(f"Generated download link: {download_link}")
 
         return {"download_link": download_link}

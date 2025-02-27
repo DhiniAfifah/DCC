@@ -154,14 +154,12 @@ export default function CreateDCC() {
     } catch (error: unknown) {
       console.error("Error submitting form:", error);
 
-      let errorMessage = "Unknown error occurred.";
+      // Cek apakah error adalah instance dari Error
       if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === "string") {
-        errorMessage = error;
+        alert(`Failed to create DCC. Error: ${error.message}`);
+      } else {
+        alert("An unknown error occurred.");
       }
-
-      alert(`Failed to create DCC. Error: ${errorMessage}`);
     }
   };
 

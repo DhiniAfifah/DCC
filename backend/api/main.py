@@ -2,6 +2,7 @@ import logging
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 import api.crud as crud
 import api.models as models
 import api.schemas as schemas
@@ -12,6 +13,14 @@ import os
 logging.basicConfig(level=logging.DEBUG)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Izinkan hanya permintaan dari http://localhost:3000
+    allow_credentials=True,
+    allow_methods=["*"],  # Mengizinkan semua HTTP methods
+    allow_headers=["*"],  # Mengizinkan semua headers
+)
 
 @app.get("/")
 async def read_root():
@@ -39,19 +48,15 @@ async def create_dcc(dcc: schemas.DCCFormCreate, db: Session = Depends(get_db)):
 
 # Route untuk download-dcc
 @app.get("/download-dcc/{dcc_id}")
-async def download_dcc(dcc_id: int, db: Session = Depends(get_db)):
+async def download_dcc(dcc_id: int):
     try:
-        # Cari DCC berdasarkan ID
-        dcc_data = db.query(models.DCC).filter(models.DCC.id == dcc_id).first()
-        if not dcc_data:
-            raise HTTPException(status_code=404, detail="DCC not found")
+        # Path ke file XML
+        xml_file_path = f"./dcc_files/{dcc_id}_sertifikat.xml"
 
-        # Tentukan lokasi file yang akan didownload
-        file_path = f"./dcc_files/{dcc_id}.pdf"  
-        if not os.path.exists(file_path):
+        if not os.path.exists(xml_file_path):
             raise HTTPException(status_code=404, detail="File not found")
 
-        # Mengirim file sebagai response
-        return FileResponse(path=file_path, media_type='application/pdf', filename=f"DCC-{dcc_id}.pdf")
+        return FileResponse(path=xml_file_path, media_type='application/xml', filename=f"DCC-{dcc_id}.xml")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error downloading DCC: {str(e)}")
