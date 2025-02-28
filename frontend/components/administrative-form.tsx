@@ -5,16 +5,40 @@ import { z } from "zod";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
-import { Calendar } from "@/components/ui/calendar"
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
 
 const countries = [
   { label: "Indonesia", value: "id" },
@@ -35,48 +59,62 @@ const languages = [
   { label: "Japanese", value: "jp" },
 ] as const;
 
-const empty_field_error_message = 'Input diperlukan.'
+const empty_field_error_message = "Input diperlukan.";
 
 const FormSchema = z.object({
-  software: z.string().min(1, {message: empty_field_error_message,}),
-  version: z.string().min(1, {message: empty_field_error_message,}),
-  core_issuer: z.string({required_error: empty_field_error_message,}),
-  country_code: z.string({required_error: empty_field_error_message,}),
-  used_languages: z.array(z.object({ value: z.string().min(1, empty_field_error_message) })),
-  mandatory_languages: z.array(z.object({ value: z.string().min(1, empty_field_error_message) })),
-  sertifikat: z.string().min(1, {message: empty_field_error_message,}),
-  order: z.string().min(1, {message: empty_field_error_message,}),
-  tgl_mulai: z.date({required_error: empty_field_error_message,}),
-  tgl_akhir: z.date({required_error: empty_field_error_message,}),
-  tempat: z.string({required_error: empty_field_error_message,}),
-  tgl_pengesahan: z.date({required_error: empty_field_error_message,}),
-  objects: z.array(z.object({
-    jenis: z.string().min(1, {message: empty_field_error_message,}),
-    merek: z.string().min(1, {message: empty_field_error_message,}),
-    tipe: z.string().min(1, {message: empty_field_error_message,}),
-    item_issuer: z.string().min(1, {message: empty_field_error_message,}),
-    seri: z.string().min(1, {message: empty_field_error_message,}),
-    id_lain: z.string().min(1, {message: empty_field_error_message,}),
-  })),
-  responsiblePersons: z.array(z.object({
-    nama_resp: z.string().min(1, {message: empty_field_error_message,}),
-    nip: z.string().min(1, {message: empty_field_error_message,}),
-    peran: z.string().min(1, {message: empty_field_error_message,}),
-    mainSigner: z.string().min(1, {message: empty_field_error_message,}),
-    signature: z.string().min(1, {message: empty_field_error_message,}),
-    timestamp: z.string().min(1, {message: empty_field_error_message,}),
-  })),
-  nama_cust: z.string().min(1, {message: empty_field_error_message,}),
-  jalan_cust: z.string().min(1, {message: empty_field_error_message,}),
-  no_jalan_cust: z.string().min(1, {message: empty_field_error_message,}),
-  kota_cust: z.string().min(1, {message: empty_field_error_message,}),
-  state_cust: z.string().min(1, {message: empty_field_error_message,}),
-  pos_cust: z.string().min(1, {message: empty_field_error_message,}),
-  negara_cust: z.string().min(1, {message: empty_field_error_message,}),
-  statements: z.array(z.object({ value: z.string().min(1, empty_field_error_message) })),
+  software: z.string().min(1, { message: empty_field_error_message }),
+  version: z.string().min(1, { message: empty_field_error_message }),
+  core_issuer: z.string({ required_error: empty_field_error_message }),
+  country_code: z.string({ required_error: empty_field_error_message }),
+  used_languages: z.array(
+    z.object({ value: z.string().min(1, empty_field_error_message) })
+  ),
+  mandatory_languages: z.array(
+    z.object({ value: z.string().min(1, empty_field_error_message) })
+  ),
+  sertifikat: z.string().min(1, { message: empty_field_error_message }),
+  order: z.string().min(1, { message: empty_field_error_message }),
+  tgl_mulai: z.date({ required_error: empty_field_error_message }),
+  tgl_akhir: z.date({ required_error: empty_field_error_message }),
+  tempat: z.string({ required_error: empty_field_error_message }),
+  tgl_pengesahan: z.date({ required_error: empty_field_error_message }),
+  objects: z.array(
+    z.object({
+      jenis: z.string().min(1, { message: empty_field_error_message }),
+      merek: z.string().min(1, { message: empty_field_error_message }),
+      tipe: z.string().min(1, { message: empty_field_error_message }),
+      item_issuer: z.string().min(1, { message: empty_field_error_message }),
+      seri: z.string().min(1, { message: empty_field_error_message }),
+      id_lain: z.string().min(1, { message: empty_field_error_message }),
+    })
+  ),
+  responsiblePersons: z.array(
+    z.object({
+      nama_resp: z.string().min(1, { message: empty_field_error_message }),
+      nip: z.string().min(1, { message: empty_field_error_message }),
+      peran: z.string().min(1, { message: empty_field_error_message }),
+      mainSigner: z.string().min(1, { message: empty_field_error_message }),
+      signature: z.string().min(1, { message: empty_field_error_message }),
+      timestamp: z.string().min(1, { message: empty_field_error_message }),
+    })
+  ),
+  nama_cust: z.string().min(1, { message: empty_field_error_message }),
+  jalan_cust: z.string().min(1, { message: empty_field_error_message }),
+  no_jalan_cust: z.string().min(1, { message: empty_field_error_message }),
+  kota_cust: z.string().min(1, { message: empty_field_error_message }),
+  state_cust: z.string().min(1, { message: empty_field_error_message }),
+  pos_cust: z.string().min(1, { message: empty_field_error_message }),
+  negara_cust: z.string().min(1, { message: empty_field_error_message }),
+  statements: z.array(
+    z.object({ value: z.string().min(1, empty_field_error_message) })
+  ),
 });
 
-export default function AdministrativeForm({updateFormData}: {updateFormData: (data: any) => void;}) {
+export default function AdministrativeForm({
+  updateFormData,
+}: {
+  updateFormData: (data: any) => void;
+}) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -89,8 +127,26 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
       sertifikat: "",
       order: "",
       tempat: "",
-      objects: [{ jenis: "", merek: "", tipe: "", item_issuer: "", seri: "", id_lain: "" }],
-      responsiblePersons: [{ nama_resp: "", nip: "", peran: "", mainSigner: "", signature: "", timestamp: "" }],
+      objects: [
+        {
+          jenis: "",
+          merek: "",
+          tipe: "",
+          item_issuer: "",
+          seri: "",
+          id_lain: "",
+        },
+      ],
+      responsiblePersons: [
+        {
+          nama_resp: "",
+          nip: "",
+          peran: "",
+          mainSigner: "",
+          signature: "",
+          timestamp: "",
+        },
+      ],
       nama_cust: "",
       jalan_cust: "",
       no_jalan_cust: "",
@@ -110,27 +166,47 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
     return () => subscription.unsubscribe();
   }, [form.watch]);
 
-  const {fields: statementFields, append: appendStatement, remove: removeStatement,} = useFieldArray({
+  const {
+    fields: statementFields,
+    append: appendStatement,
+    remove: removeStatement,
+  } = useFieldArray({
     control: form.control,
     name: "statements",
   });
 
-  const {fields: usedFields, append: appendUsed, remove: removeUsed,} = useFieldArray({
+  const {
+    fields: usedFields,
+    append: appendUsed,
+    remove: removeUsed,
+  } = useFieldArray({
     control: form.control,
     name: "used_languages",
   });
 
-  const {fields: mandatoryFields, append: appendMandatory, remove: removeMandatory,} = useFieldArray({
+  const {
+    fields: mandatoryFields,
+    append: appendMandatory,
+    remove: removeMandatory,
+  } = useFieldArray({
     control: form.control,
     name: "mandatory_languages",
   });
 
-  const { fields: itemFields, append: appendItem, remove: removeItem } = useFieldArray({
+  const {
+    fields: itemFields,
+    append: appendItem,
+    remove: removeItem,
+  } = useFieldArray({
     control: form.control,
     name: "objects",
   });
 
-  const { fields: personFields, append: appendPerson, remove: removePerson } = useFieldArray({
+  const {
+    fields: personFields,
+    append: appendPerson,
+    remove: removePerson,
+  } = useFieldArray({
     control: form.control,
     name: "responsiblePersons",
   });
@@ -155,12 +231,20 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-4xl mx-auto p-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6 max-w-4xl mx-auto p-4"
+      >
         <Card id="software">
-          <CardHeader><CardTitle>Software</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Software</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="software" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="software"
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nama</FormLabel>
                     <FormControl>
@@ -170,7 +254,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                   </FormItem>
                 )}
               />
-              <FormField control={form.control} name="version" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="version"
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Versi</FormLabel>
                     <FormControl>
@@ -185,21 +272,33 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
         </Card>
 
         <Card id="core-data">
-          <CardHeader><CardTitle>Data Inti</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Data Inti</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="core_issuer" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="core_issuer"
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Penerbit</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="text-muted-foreground">
                           <SelectValue placeholder="Pilih penerbit" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="manufacturer">manufacturer</SelectItem>
-                        <SelectItem value="calibrationLaboratory">calibrationLaboratory</SelectItem>
+                        <SelectItem value="manufacturer">
+                          manufacturer
+                        </SelectItem>
+                        <SelectItem value="calibrationLaboratory">
+                          calibrationLaboratory
+                        </SelectItem>
                         <SelectItem value="customer">customer</SelectItem>
                         <SelectItem value="owner">owner</SelectItem>
                         <SelectItem value="other">other</SelectItem>
@@ -209,10 +308,16 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                   </FormItem>
                 )}
               />
-              <FormField control={form.control} name="tempat" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="tempat"
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tempat Kalibrasi</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
                         <SelectTrigger className="text-muted-foreground">
                           <SelectValue placeholder="Pilih tempat" />
@@ -221,8 +326,12 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                       <SelectContent>
                         <SelectItem value="laboratory">laboratory</SelectItem>
                         <SelectItem value="customer">customer</SelectItem>
-                        <SelectItem value="laboratoryBranch">laboratoryBranch</SelectItem>
-                        <SelectItem value="customerBranch">customerBranch</SelectItem>
+                        <SelectItem value="laboratoryBranch">
+                          laboratoryBranch
+                        </SelectItem>
+                        <SelectItem value="customerBranch">
+                          customerBranch
+                        </SelectItem>
                         <SelectItem value="other">other</SelectItem>
                       </SelectContent>
                     </Select>
@@ -232,7 +341,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="tgl_pengesahan" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="tgl_pengesahan"
+                render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Tanggal Pengesahan</FormLabel>
                     <Popover>
@@ -240,7 +352,9 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                         <FormControl>
                           <Button
                             variant={"outline"}
-                            className={cn(!field.value && "text-muted-foreground")}
+                            className={cn(
+                              !field.value && "text-muted-foreground"
+                            )}
                           >
                             {field.value ? (
                               format(field.value, "PPP")
@@ -267,7 +381,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                   </FormItem>
                 )}
               />
-              <FormField control={form.control} name="country_code" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="country_code"
+                render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Kode Negara</FormLabel>
                     <Popover>
@@ -283,8 +400,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                           >
                             {field.value
                               ? countries.find(
-                                  (country) =>
-                                    country.value === field.value
+                                  (country) => country.value === field.value
                                 )?.label
                               : "Pilih negara"}
                             <ChevronsUpDown className="opacity-50" />
@@ -298,9 +414,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                             className="h-9"
                           />
                           <CommandList>
-                            <CommandEmpty>
-                              Negara tidak ditemukan.
-                            </CommandEmpty>
+                            <CommandEmpty>Negara tidak ditemukan.</CommandEmpty>
                             <CommandGroup>
                               {countries.map((country) => (
                                 <CommandItem
@@ -350,8 +464,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                                   >
                                     {field.value
                                       ? languages.find(
-                                          (lang) =>
-                                            lang.value === field.value
+                                          (lang) => lang.value === field.value
                                         )?.label
                                       : "Pilih bahasa"}
                                     <ChevronsUpDown className="opacity-50" />
@@ -438,8 +551,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                                   >
                                     {field.value
                                       ? languages.find(
-                                          (lang) =>
-                                            lang.value === field.value
+                                          (lang) => lang.value === field.value
                                         )?.label
                                       : "Pilih bahasa"}
                                     <ChevronsUpDown className="opacity-50" />
@@ -504,7 +616,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="sertifikat" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="sertifikat"
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nomor Sertifikat</FormLabel>
                     <FormControl>
@@ -514,7 +629,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                   </FormItem>
                 )}
               />
-              <FormField control={form.control} name="order" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="order"
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nomor Order</FormLabel>
                     <FormControl>
@@ -526,7 +644,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="tgl_mulai" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="tgl_mulai"
+                render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Tanggal Mulai Pengukuran</FormLabel>
                     <Popover>
@@ -563,7 +684,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                   </FormItem>
                 )}
               />
-              <FormField control={form.control} name="tgl_akhir" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="tgl_akhir"
+                render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Tanggal Akhir Pengukuran</FormLabel>
                     <Popover>
@@ -605,12 +729,19 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
         </Card>
 
         <Card id="items">
-          <CardHeader><CardTitle>Deskripsi Objek yang Dikalibrasi/Diukur</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Deskripsi Objek yang Dikalibrasi/Diukur</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
               {itemFields.map((field, index) => (
-                <div key={field.id} className="grid gap-4 border-b pb-4 relative">
-                  <p className="text-sm text-muted-foreground">Objek {index + 1}</p>
+                <div
+                  key={field.id}
+                  className="grid gap-4 border-b pb-4 relative"
+                >
+                  <p className="text-sm text-muted-foreground">
+                    Objek {index + 1}
+                  </p>
                   {itemFields.length > 1 && (
                     <Button
                       type="button"
@@ -624,9 +755,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                   )}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label id={`jenis-${index}`}>
-                        Jenis Alat atau Objek
-                      </Label>
+                      <Label id={`jenis-${index}`}>Jenis Alat atau Objek</Label>
                       <Input
                         id={`jenis-${index}`}
                         {...form.register(`objects.${index}.jenis`)}
@@ -652,13 +781,19 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                       <Label id={`item_issuer-${index}`}>
                         Identifikasi Alat
                       </Label>
-                      <Select {...form.register(`objects.${index}.item_issuer`)}>
+                      <Select
+                        {...form.register(`objects.${index}.item_issuer`)}
+                      >
                         <SelectTrigger id={`item_issuer-${index}`}>
                           <SelectValue placeholder="Pilih penerbit" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="manufacturer">manufacturer</SelectItem>
-                          <SelectItem value="calibrationLaboratory">calibrationLaboratory</SelectItem>
+                          <SelectItem value="manufacturer">
+                            manufacturer
+                          </SelectItem>
+                          <SelectItem value="calibrationLaboratory">
+                            calibrationLaboratory
+                          </SelectItem>
                           <SelectItem value="customer">customer</SelectItem>
                           <SelectItem value="owner">owner</SelectItem>
                           <SelectItem value="other">other</SelectItem>
@@ -675,9 +810,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                       />
                     </div>
                     <div>
-                      <Label id={`id-lain-${index}`}>
-                        Identifikasi Lain
-                      </Label>
+                      <Label id={`id-lain-${index}`}>Identifikasi Lain</Label>
                       <Input
                         id={`id-lain-${index}`}
                         {...form.register(`objects.${index}.id_lain`)}
@@ -714,8 +847,13 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
               {personFields.map((field, index) => (
-                <div key={field.id} className="grid gap-4 border-b pb-4 relative">
-                  <p className="text-sm text-muted-foreground">Orang {index + 1}</p>
+                <div
+                  key={field.id}
+                  className="grid gap-4 border-b pb-4 relative"
+                >
+                  <p className="text-sm text-muted-foreground">
+                    Orang {index + 1}
+                  </p>
                   {personFields.length > 1 && (
                     <Button
                       type="button"
@@ -730,32 +868,58 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor={`nama_resp-${index}`}>Nama</Label>
-                      <Input id={`nama_resp-${index}`} {...form.register(`responsiblePersons.${index}.nama_resp`)} />
+                      <Input
+                        id={`nama_resp-${index}`}
+                        {...form.register(
+                          `responsiblePersons.${index}.nama_resp`
+                        )}
+                      />
                     </div>
                     <div>
                       <Label htmlFor={`nip-${index}`}>NIP</Label>
-                      <Input id={`nip-${index}`} {...form.register(`responsiblePersons.${index}.nip`)} />
+                      <Input
+                        id={`nip-${index}`}
+                        {...form.register(`responsiblePersons.${index}.nip`)}
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor={`peran-${index}`}>Peran</Label>
-                      <Select {...form.register(`responsiblePersons.${index}.peran`)}>
+                      <Select
+                        {...form.register(`responsiblePersons.${index}.peran`)}
+                      >
                         <SelectTrigger id={`peran-${index}`}>
                           <SelectValue placeholder="Pilih peran" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pelaksana">Pelaksana Kalibrasi</SelectItem>
-                          <SelectItem value="penyelia">Penyelia Kalibrasi</SelectItem>
-                          <SelectItem value="kepala">Kepala Laboratorium</SelectItem>
-                          <SelectItem value="tk">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
-                          <SelectItem value="mrb">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
+                          <SelectItem value="pelaksana">
+                            Pelaksana Kalibrasi
+                          </SelectItem>
+                          <SelectItem value="penyelia">
+                            Penyelia Kalibrasi
+                          </SelectItem>
+                          <SelectItem value="kepala">
+                            Kepala Laboratorium
+                          </SelectItem>
+                          <SelectItem value="tk">
+                            Direktur SNSU Termoelektrik dan Kimia
+                          </SelectItem>
+                          <SelectItem value="mrb">
+                            Direktur SNSU Mekanika, Radiasi, dan Biologi
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor={`main-signer-${index}`}>Main Signer</Label>
-                      <Select {...form.register(`responsiblePersons.${index}.mainSigner`)}>
+                      <Label htmlFor={`main-signer-${index}`}>
+                        Main Signer
+                      </Label>
+                      <Select
+                        {...form.register(
+                          `responsiblePersons.${index}.mainSigner`
+                        )}
+                      >
                         <SelectTrigger id={`main-signer-${index}`}>
                           <SelectValue placeholder="" />
                         </SelectTrigger>
@@ -769,7 +933,11 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor={`signature-${index}`}>Signature</Label>
-                      <Select {...form.register(`responsiblePersons.${index}.signature`)}>
+                      <Select
+                        {...form.register(
+                          `responsiblePersons.${index}.signature`
+                        )}
+                      >
                         <SelectTrigger id={`signature-${index}`}>
                           <SelectValue placeholder="" />
                         </SelectTrigger>
@@ -781,7 +949,11 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                     </div>
                     <div>
                       <Label htmlFor={`timestamp-${index}`}>Timestamp</Label>
-                      <Select {...form.register(`responsiblePersons.${index}.timestamp`)}>
+                      <Select
+                        {...form.register(
+                          `responsiblePersons.${index}.timestamp`
+                        )}
+                      >
                         <SelectTrigger id={`timestamp-${index}`}>
                           <SelectValue placeholder="" />
                         </SelectTrigger>
@@ -800,7 +972,14 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
               size="sm"
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() =>
-                appendPerson({ nama_resp: "", nip: "", peran: "", mainSigner: "", signature: "", timestamp: "" })
+                appendPerson({
+                  nama_resp: "",
+                  nip: "",
+                  peran: "",
+                  mainSigner: "",
+                  signature: "",
+                  timestamp: "",
+                })
               }
             >
               <p className="text-xl">+</p>
@@ -809,10 +988,15 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
         </Card>
 
         <Card id="customer">
-          <CardHeader><CardTitle>Identitas Pemilik</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Identitas Pemilik</CardTitle>
+          </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
-              <FormField control={form.control} name="nama_cust" render={({ field }) => (
+              <FormField
+                control={form.control}
+                name="nama_cust"
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nama</FormLabel>
                     <FormControl>
@@ -823,7 +1007,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                 )}
               />
               <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="jalan_cust" render={({ field }) => (
+                <FormField
+                  control={form.control}
+                  name="jalan_cust"
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Nama Jalan</FormLabel>
                       <FormControl>
@@ -833,7 +1020,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                     </FormItem>
                   )}
                 />
-                <FormField control={form.control} name="no_jalan_cust" render={({ field }) => (
+                <FormField
+                  control={form.control}
+                  name="no_jalan_cust"
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Nomor Jalan</FormLabel>
                       <FormControl>
@@ -845,7 +1035,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="kota_cust" render={({ field }) => (
+                <FormField
+                  control={form.control}
+                  name="kota_cust"
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Kota</FormLabel>
                       <FormControl>
@@ -855,7 +1048,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                     </FormItem>
                   )}
                 />
-                <FormField control={form.control} name="state_cust" render={({ field }) => (
+                <FormField
+                  control={form.control}
+                  name="state_cust"
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Provinsi</FormLabel>
                       <FormControl>
@@ -867,7 +1063,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="pos_cust" render={({ field }) => (
+                <FormField
+                  control={form.control}
+                  name="pos_cust"
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Kode Pos</FormLabel>
                       <FormControl>
@@ -877,7 +1076,10 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                     </FormItem>
                   )}
                 />
-                <FormField control={form.control} name="negara_cust" render={({ field }) => (
+                <FormField
+                  control={form.control}
+                  name="negara_cust"
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>Negara</FormLabel>
                       <FormControl>
@@ -934,9 +1136,6 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
             </Button>
           </CardContent>
         </Card>
-        <div className="flex justify-end mt-4">
-          <Button type="submit">Submit</Button>
-        </div>
       </form>
     </FormProvider>
   );
