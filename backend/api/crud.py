@@ -1,8 +1,8 @@
 import logging
 import json
 from fastapi import HTTPException
-import api.models as models
-import api.schemas as schemas
+import models as models
+import schemas as schemas
 from sqlalchemy.orm import Session
 from datetime import datetime
 from fpdf import FPDF 
@@ -44,7 +44,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         logging.info(f"DCC {dcc.sertifikat} saved successfully with ID {db_dcc.id}")
 
         # Path to generate XML file
-        xml_file_path = f"./dcc_files/{db_dcc.id}_sertifikat.xml"
+        xml_file_path = f"../dcc_files/{db_dcc.id}_sertifikat.xml"
         
         # Creating the XML structure
         root = ET.Element("DCC")

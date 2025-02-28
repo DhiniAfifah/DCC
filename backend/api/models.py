@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Integer, Date, Text
-from .database import Base
+from database import Base
 
 class DCC(Base):
     __tablename__ = "dcc"

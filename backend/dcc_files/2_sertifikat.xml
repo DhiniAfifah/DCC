@@ -1,0 +1,49 @@
+<DCC>
+    <software_name>.</software_name>
+    <software_version>.</software_version>
+    <core_issuer>manufacturer</core_issuer>
+    <sertifikat_number>.</sertifikat_number>
+    <order_number>.</order_number>
+    <tgl_mulai>2025-02-12</tgl_mulai>
+    <tgl_akhir>2025-02-10</tgl_akhir>
+    <tgl_pengesahan>2025-02-27</tgl_pengesahan>
+    <tempat_kalibrasi>laboratory</tempat_kalibrasi>
+    <used_languages>
+        <language>de</language>
+    </used_languages>
+    <mandatory_languages>
+        <language>de</language>
+    </mandatory_languages>
+    <objects_description>
+        <object>
+            <jenis>.</jenis>
+            <merek>.</merek>
+            <tipe>.</tipe>
+            <item_issuer />
+            <seri>.</seri>
+            <id_lain>.</id_lain>
+        </object>
+    </objects_description>
+    <responsible_person>
+        <person>
+            <nama_resp />
+            <nip />
+            <peran />
+            <mainSigner />
+            <signature />
+            <timestamp />
+        </person>
+    </responsible_person>
+    <owner_identity>
+        <nama_cust />
+        <jalan_cust />
+        <no_jalan_cust />
+        <kota_cust />
+        <state_cust />
+        <pos_cust />
+        <negara_cust />
+    </owner_identity>
+    <statements>
+        <statement />
+    </statements>
+</DCC>

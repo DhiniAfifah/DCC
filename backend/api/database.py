@@ -17,3 +17,4 @@ Base = declarative_base()
 
 # Membuat tabel di database jika belum ada
 Base.metadata.create_all(bind=engine)
+print("Tabel DCC telah dibuat.")
