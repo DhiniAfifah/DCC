@@ -68,6 +68,16 @@ body {
   overflow-y: auto;
 }
 
+/* Sembunyikan scrollbar di Chrome, Edge, dan Safari */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Sembunyikan scrollbar di Firefox */
+html {
+  scrollbar-width: none;
+}
+
 @layer base {
   * {
     @apply border-border;
