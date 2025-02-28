@@ -31,25 +31,25 @@ export default function CreateDCC() {
     tgl_pengesahan: "",
     objects: [
       {
-        jenis: null,
-        merek: null,
-        tipe: null,
-        item_issuer: null,
-        seri: null,
-        id_lain: null,
+        jenis: "",
+        merek: "",
+        tipe: "",
+        item_issuer: "",
+        seri_item: "",
+        id_lain: "",
       },
     ],
-    responsible_person: [
+    responsible_persons: [
       {
         nama_resp: "",
         nip: "",
         peran: "",
-        mainSigner: "",
+        main_signer: "",
         signature: "",
         timestamp: "",
       },
     ],
-    owner_identity: {
+    owner: {
       nama_cust: "",
       jalan_cust: "",
       no_jalan_cust: "",
@@ -89,23 +89,23 @@ export default function CreateDCC() {
             typeof stmt === "string" ? stmt.trim() : ""
           )
         : prev.statements,
-      responsible_person: Array.isArray(data.responsible_person)
-        ? data.responsible_person.map((resp: any) => ({
+      responsible_persons: Array.isArray(data.responsible_persons)
+        ? data.responsible_persons.map((resp: any) => ({
             nama_resp: resp.nama_resp || "",
             nip: resp.nip || "",
             peran: resp.peran || "",
-            mainSigner: resp.mainSigner || "",
+            main_signer: resp.main_signer || "",
             signature: resp.signature || "",
             timestamp: resp.timestamp || "",
           }))
-        : prev.responsible_person,
+        : prev.responsible_persons,
       objects: Array.isArray(data.objects)
         ? data.objects.map((obj: any) => ({
             jenis: obj.jenis || "",
             merek: obj.merek || "",
             tipe: obj.tipe || "",
             item_issuer: obj.item_issuer || "",
-            seri: obj.seri || "",
+            seri_item: obj.seri_item || "",
             id_lain: obj.id_lain || "",
           }))
         : prev.objects,

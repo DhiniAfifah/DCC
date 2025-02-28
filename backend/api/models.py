@@ -19,6 +19,6 @@ class DCC(Base):
     tgl_pengesahan = Column(Date)
     
     objects_description = Column(Text)  # Simpan JSON dalam bentuk teks
-    responsible_person = Column(Text)  # Simpan JSON dalam bentuk teks
-    owner_identity = Column(Text)  # Simpan JSON dalam bentuk teks
+    responsible_persons = Column(Text)  # Simpan JSON dalam bentuk teks
+    owner = Column(Text)  # Simpan JSON dalam bentuk teks
     statements = Column(Text)  # Simpan JSON dalam bentuk teks
