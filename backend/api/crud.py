@@ -1,8 +1,8 @@
 import logging
 import json
 from fastapi import HTTPException
-import models as models
-import schemas as schemas
+import api.models as models
+import api.schemas as schemas
 from sqlalchemy.orm import Session
 from datetime import datetime
 from fpdf import FPDF 

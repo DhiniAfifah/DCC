@@ -55,6 +55,6 @@ class DCCFormCreate(BaseModel):
     tempat: str  # tempat kalibrasi
     tgl_pengesahan: str  # tanggal pengesahan
     objects: List[ObjectDescription]  # Deskripsi objek yang diukur
-    persons: List[ResponsiblePerson]  # Penanggung jawab
+    responsible_persons: List[ResponsiblePerson]  # Penanggung jawab
     owner: OwnerIdentity  # Identitas pemilik
     statements: List[str]  # Catatan

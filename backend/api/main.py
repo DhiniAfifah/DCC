@@ -3,10 +3,10 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
-import crud as crud
-import models as models
-import schemas as schemas
-import database as database
+import api.crud as crud
+import api.models as models
+import api.schemas as schemas
+import api.database as database
 import os
 
 # Set log level
