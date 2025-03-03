@@ -10,6 +10,7 @@ import os
 from docx import Document
 from docx2pdf import convert
 import xml.etree.ElementTree as ET
+from yattag import Doc, indent
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
@@ -45,53 +46,195 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
 
         # Path to generate XML file
         xml_file_path = f"./dcc_files/{db_dcc.id}_sertifikat.xml"
-        
-        # Creating the XML structure
-        root = ET.Element("DCC")
-        ET.SubElement(root, "software_name").text = dcc.software
-        ET.SubElement(root, "software_version").text = dcc.version
-        ET.SubElement(root, "core_issuer").text = dcc.core_issuer
-        ET.SubElement(root, "sertifikat_number").text = dcc.sertifikat
-        ET.SubElement(root, "order_number").text = dcc.order
-        ET.SubElement(root, "tgl_mulai").text = dcc.tgl_mulai
-        ET.SubElement(root, "tgl_akhir").text = dcc.tgl_akhir
-        ET.SubElement(root, "tgl_pengesahan").text = dcc.tgl_pengesahan
-        ET.SubElement(root, "tempat_kalibrasi").text = dcc.tempat
-        
-        # Adding used_languages and mandatory_languages
-        used_langs = ET.SubElement(root, "used_languages")
-        for lang in dcc.used_languages:
-            ET.SubElement(used_langs, "language").text = lang.value
-        
-        mandatory_langs = ET.SubElement(root, "mandatory_languages")
-        for lang in dcc.mandatory_languages:
-            ET.SubElement(mandatory_langs, "language").text = lang.value
-        
-        # Adding other data (objects, responsible responsible_persons, etc.)
-        objects = ET.SubElement(root, "objects_description")
-        for obj in dcc.objects:
-            obj_elem = ET.SubElement(objects, "object")
-            for key, value in obj.dict().items():
-                ET.SubElement(obj_elem, key).text = str(value)
-        
-        responsible_persons = ET.SubElement(root, "responsible_persons")
-        for resp in dcc.responsible_persons:
-            resp_elem = ET.SubElement(responsible_persons, "person")
-            for key, value in resp.dict().items():
-                ET.SubElement(resp_elem, key).text = str(value)
-        
-        owner = ET.SubElement(root, "owner")
-        for key, value in dcc.owner.dict().items():
-            ET.SubElement(owner, key).text = str(value)
-        
-        # Adding statements
-        statements = ET.SubElement(root, "statements")
-        for stmt in dcc.statements:
-            ET.SubElement(statements, "statement").text = stmt
 
-        # Writing XML to file
-        tree = ET.ElementTree(root)
-        tree.write(xml_file_path)
+        doc, tag, text = Doc().tagtext() 
+
+        doc.asis('<?xml version="1.0" encoding="UTF-8"?>') 
+        doc.asis('<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" schemaVersion="3.3.0">') 
+        with tag('dcc:administrativeData'): 
+            with tag('dcc:dccSoftware'): 
+                with tag('dcc:software'): 
+                    with tag('dcc:name'): 
+                        with tag('dcc:content'): text(dcc.software)
+                    with tag('dcc:release'): text(dcc.version)
+            with tag('dcc:coreData'): 
+                with tag('dcc:countryCodeISO3166_1'): text(dcc.country_code)
+                for lang in dcc.used_languages:
+                    with tag('dcc:usedLangCodeISO639_1'): text(lang.value)
+                for lang in dcc.mandatory_languages:
+                    with tag('dcc:mandatoryLangCodeISO639_1'): text(lang.value)
+                with tag('dcc:uniqueIdentifier'): text(dcc.sertifikat)
+                with tag('dcc:identifications'):
+                    with tag('dcc:identification'):
+                        with tag('dcc:issuer'): text(dcc.core_issuer)
+                        with tag('dcc:value'): text(dcc.order)
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text('Nomor Order')
+                with tag('dcc:beginPerformanceDate'): text(dcc.tgl_mulai)
+                with tag('dcc:endPerformanceDate'): text(dcc.tgl_akhir)
+                with tag('dcc:performanceLocation'): text(dcc.tempat)
+                with tag('dcc:issueDate'): text(dcc.tgl_pengesahan)
+            with tag("dcc:items"):
+                for obj in dcc.objects:
+                    with tag("dcc:item"):
+                        with tag("dcc:name"): text(obj.jenis)
+                        with tag("dcc:manufacturer"): text(obj.merek)
+                        with tag("dcc:model"): text(obj.tipe)
+                        with tag("dcc:identification"):
+                            with tag("dcc:issuer"): text(obj.item_issuer)
+                            with tag("dcc:value"): text(obj.seri_item)
+                            with tag("dcc:name"):
+                                with tag("dcc:content"): text(obj.id_lain)
+            with tag('dcc:calibrationLaboratory'): 
+                with tag('dcc:calibrationLaboratoryCode'): text('LK-070-IDN')
+                with tag('dcc:contact'): 
+                    with tag('dcc:name'): 
+                        with tag('dcc:content'): text('Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)')
+                    with tag('dcc:eMail'): text('nmi@bsn.go.id')
+                    with tag('dcc:phone'): text('Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833')
+                    with tag('dcc:link'): text('www.bsn.go.id')
+                    with tag('dcc:location'): 
+                        with tag('dcc:city'): text('Tangerang Selatan')
+                        with tag('dcc:countryCode'): text('ID')
+                        with tag('dcc:postCode'): text('15314')
+                        with tag('dcc:state'): text('Banten')
+                        with tag('dcc:street'): text('KST BJ Habibie Setu')
+                        with tag('dcc:streetNo'): text('Gedung 420')
+                with tag('dcc:cryptElectronicSignature'): pass
+                with tag('dcc:cryptElectronicTimeStamp'): pass
+            with tag('dcc:respPersons'): 
+                for resp in dcc.responsible_persons:
+                    with tag('dcc:respPerson'): 
+                        with tag('dcc:person'): 
+                            with tag('dcc:name'): 
+                                with tag('dcc:content'): text(resp.nama_resp)
+                        with tag('dcc:description'): 
+                            with tag('dcc:name'): 
+                                with tag('dcc:content'): text(resp.nip)
+                        with tag('dcc:role'): text(resp.peran)
+                        with tag('dcc:mainSigner'): text(resp.main_signer)
+                        with tag('dcc:cryptElectronicSignature'): text(resp.signature)
+                        with tag('dcc:cryptElectronicTimeStamp'): text(resp.timestamp)
+            with tag('dcc:customer'): 
+                with tag('dcc:name'): 
+                    with tag('dcc:content'): text(dcc.owner.nama_cust)
+                with tag('dcc:location'): 
+                    with tag('dcc:city'): text(dcc.owner.kota_cust)
+                    with tag('dcc:countryCode'): text(dcc.owner.negara_cust)
+                    with tag('dcc:postCode'): text(dcc.owner.pos_cust)
+                    with tag('dcc:state'): text(dcc.owner.state_cust)
+                    with tag('dcc:street'): text(dcc.owner.jalan_cust)
+                    with tag('dcc:streetNo'): text(dcc.owner.no_jalan_cust)
+            with tag('dcc:statement'): 
+                with tag('dcc:name'): 
+                    for stmt in dcc.statements:
+                        with tag('dcc:content'): text(stmt)
+        # with tag('dcc:measurementResults'): 
+        #     with tag('dcc:measurementResult'):
+        #         with tag('dcc:name'): 
+        #             with tag('dcc:content'): text('Hasil Kalibrasi / Calibration Results')
+        #         with tag('dcc:usedMethods'): 
+        #             with tag('dcc:usedMethod'): 
+        #                 with tag('dcc:name'): 
+        #                     with tag('dcc:content'): text(method_name1)
+        #                 with tag('dcc:description'): 
+        #                     with tag('dcc:content'): text(method_desc1)
+        #                 with tag('dcc:norm'): text(norm1)
+        #         with tag('dcc:measuringEquipments'): 
+        #             with tag('dcc:measuringEquipment'): 
+        #                 with tag('dcc:name'): 
+        #                     with tag('dcc:content'): text(nama_alat1)
+        #                 with tag('dcc:identifications'):
+        #                     with tag('dcc:identification'):
+        #                         with tag('dcc:issuer'): text('manufacturer')
+        #                         with tag('dcc:value'): text(seri_measuring1)
+        #                         with tag('dcc:name'): 
+        #                             with tag('dcc:content'): text(manuf_model1)
+        #         with tag('dcc:influenceConditions'): 
+        #             with tag('dcc:influenceCondition'): 
+        #                 with tag('dcc:name'): 
+        #                     with tag('dcc:content'): text('Suhu/Temperature')
+        #                 with tag('dcc:description'): 
+        #                     with tag('dcc:content'): text(kondisi_desc_suhu)
+        #                 with tag('dcc:data'): 
+        #                     with tag('dcc:quantity'): 
+        #                         with tag('dcc:name'): 
+        #                             with tag('dcc:content'): text('Titik Tengah')
+        #                         with tag('si:real'): 
+        #                             with tag('si:value'): text(suhu)
+        #                             with tag('si:unit'): text(tengah_unit_suhu)
+        #                     with tag('dcc:quantity'): 
+        #                         with tag('dcc:name'): 
+        #                             with tag('dcc:content'): text('Rentang')
+        #                         with tag('si:real'): 
+        #                             with tag('si:value'): text(rentang_suhu)
+        #                             with tag('si:unit'): text(rentang_unit_suhu)
+        #             with tag('dcc:influenceCondition'): 
+        #                 with tag('dcc:name'): 
+        #                     with tag('dcc:content'): text('Kelembaban/Humidity')
+        #                 with tag('dcc:description'): 
+        #                     with tag('dcc:content'): text(kondisi_desc_lembap)
+        #                 with tag('dcc:data'): 
+        #                     with tag('dcc:quantity'): 
+        #                         with tag('dcc:name'): 
+        #                             with tag('dcc:content'): text('Titik Tengah')
+        #                         with tag('si:real'): 
+        #                             with tag('si:value'): text(lembap)
+        #                             with tag('si:unit'): text(tengah_unit_lembap)
+        #                     with tag('dcc:quantity'): 
+        #                         with tag('dcc:name'): 
+        #                             with tag('dcc:content'): text('Rentang')
+        #                         with tag('si:real'): 
+        #                             with tag('si:value'): text(rentang_lembap)
+        #                             with tag('si:unit'): text(rentang_unit_lembap)
+        #         with tag('dcc:results'): 
+        #             with tag('dcc:result'): 
+        #                 with tag('dcc:name'): 
+        #                     with tag('dcc:content'): text(judul_tabel1)
+        #                 with tag('dcc:data'):
+        #                     with tag('dcc:list'):
+        #                         with tag('dcc:quantity'):
+        #                             with tag('dcc:name'):
+        #                                 with tag('dcc:content'): text(kolom11)
+        #                             with tag('si:hybrid'):
+        #                                 with tag('si:realListXMLList'):
+        #                                     with tag('si:valueXMLList'): text(value11)
+        #                                     with tag('si:unitXMLList'): text(unit11)
+        #                         with tag('dcc:quantity'):
+        #                             with tag('dcc:name'):
+        #                                 with tag('dcc:content'): text(kolom12)
+        #                             with tag('si:hybrid'):
+        #                                 with tag('si:realListXMLList'):
+        #                                     with tag('si:valueXMLList'): text(value12)
+        #                                     with tag('si:unitXMLList'): text(unit12)
+        #             with tag('dcc:result'): 
+        #                 with tag('dcc:name'): 
+        #                     with tag('dcc:content'): text(judul_tabel2)
+        #                 with tag('dcc:data'):
+        #                     with tag('dcc:list'):
+        #                         with tag('dcc:quantity'):
+        #                             with tag('dcc:name'):
+        #                                 with tag('dcc:content'): text(kolom21)
+        #                             with tag('si:hybrid'):
+        #                                 with tag('si:realListXMLList'):
+        #                                     with tag('si:valueXMLList'): text(value21)
+        #                                     with tag('si:unitXMLList'): text(unit21)
+        #                         with tag('dcc:quantity'):
+        #                             with tag('dcc:name'):
+        #                                 with tag('dcc:content'): text(kolom22)
+        #                             with tag('si:hybrid'):
+        #                                 with tag('si:realListXMLList'):
+        #                                     with tag('si:valueXMLList'): text(value12)
+        #                                     with tag('si:unitXMLList'): text(unit12)
+        doc.asis('</dcc:digitalCalibrationCertificate>')
+
+        result = indent( 
+            doc.getvalue(), 
+            indentation='   '
+        ) 
+        
+        with open(xml_file_path, "w") as f: 
+            f.write(result)
 
         # Generating the download link
         download_link = f"http://127.0.0.1:8000/download-dcc/{db_dcc.id}_sertifikat.xml"
