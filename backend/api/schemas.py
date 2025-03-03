@@ -21,14 +21,14 @@ class ObjectDescription(BaseModel):
     merek: str
     tipe: str
     item_issuer: str
-    seri: str
+    seri_item: str
     id_lain: str
 
 class ResponsiblePerson(BaseModel):
     nama_resp: str
     nip: str
     peran: str
-    mainSigner: str
+    main_signer: str
     signature: str
     timestamp: str
 
@@ -55,6 +55,6 @@ class DCCFormCreate(BaseModel):
     tempat: str  # tempat kalibrasi
     tgl_pengesahan: str  # tanggal pengesahan
     objects: List[ObjectDescription]  # Deskripsi objek yang diukur
-    responsible_person: List[ResponsiblePerson]  # Penanggung jawab
-    owner_identity: OwnerIdentity  # Identitas pemilik
+    responsible_persons: List[ResponsiblePerson]  # Penanggung jawab
+    owner: OwnerIdentity  # Identitas pemilik
     statements: List[str]  # Catatan

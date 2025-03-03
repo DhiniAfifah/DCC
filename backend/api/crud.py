@@ -32,8 +32,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             tgl_pengesahan=datetime.strptime(dcc.tgl_pengesahan, "%Y-%m-%d").date(),
             tempat_kalibrasi=dcc.tempat,
             objects_description=json.dumps([obj.dict() for obj in dcc.objects]),
-            responsible_person=json.dumps([resp.dict() for resp in dcc.responsible_person]),
-            owner_identity=json.dumps(dcc.owner_identity.dict()),
+            responsible_persons=json.dumps([resp.dict() for resp in dcc.responsible_persons]),
+            owner=json.dumps(dcc.owner.dict()),
             statements=json.dumps(dcc.statements)
         )
 
@@ -67,21 +67,21 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         for lang in dcc.mandatory_languages:
             ET.SubElement(mandatory_langs, "language").text = lang.value
         
-        # Adding other data (objects, responsible persons, etc.)
+        # Adding other data (objects, responsible responsible_persons, etc.)
         objects = ET.SubElement(root, "objects_description")
         for obj in dcc.objects:
             obj_elem = ET.SubElement(objects, "object")
             for key, value in obj.dict().items():
                 ET.SubElement(obj_elem, key).text = str(value)
         
-        responsible_persons = ET.SubElement(root, "responsible_person")
-        for resp in dcc.responsible_person:
+        responsible_persons = ET.SubElement(root, "responsible_persons")
+        for resp in dcc.responsible_persons:
             resp_elem = ET.SubElement(responsible_persons, "person")
             for key, value in resp.dict().items():
                 ET.SubElement(resp_elem, key).text = str(value)
         
-        owner = ET.SubElement(root, "owner_identity")
-        for key, value in dcc.owner_identity.dict().items():
+        owner = ET.SubElement(root, "owner")
+        for key, value in dcc.owner.dict().items():
             ET.SubElement(owner, key).text = str(value)
         
         # Adding statements

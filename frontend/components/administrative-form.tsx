@@ -84,27 +84,29 @@ const FormSchema = z.object({
       merek: z.string().min(1, { message: empty_field_error_message }),
       tipe: z.string().min(1, { message: empty_field_error_message }),
       item_issuer: z.string().min(1, { message: empty_field_error_message }),
-      seri: z.string().min(1, { message: empty_field_error_message }),
+      seri_item: z.string().min(1, { message: empty_field_error_message }),
       id_lain: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
-  responsiblePersons: z.array(
+  responsible_persons: z.array(
     z.object({
       nama_resp: z.string().min(1, { message: empty_field_error_message }),
       nip: z.string().min(1, { message: empty_field_error_message }),
       peran: z.string().min(1, { message: empty_field_error_message }),
-      mainSigner: z.string().min(1, { message: empty_field_error_message }),
+      main_signer: z.string().min(1, { message: empty_field_error_message }),
       signature: z.string().min(1, { message: empty_field_error_message }),
       timestamp: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
-  nama_cust: z.string().min(1, { message: empty_field_error_message }),
-  jalan_cust: z.string().min(1, { message: empty_field_error_message }),
-  no_jalan_cust: z.string().min(1, { message: empty_field_error_message }),
-  kota_cust: z.string().min(1, { message: empty_field_error_message }),
-  state_cust: z.string().min(1, { message: empty_field_error_message }),
-  pos_cust: z.string().min(1, { message: empty_field_error_message }),
-  negara_cust: z.string().min(1, { message: empty_field_error_message }),
+  owner: z.object({
+    nama_cust: z.string().min(1, { message: empty_field_error_message }),
+    jalan_cust: z.string().min(1, { message: empty_field_error_message }),
+    no_jalan_cust: z.string().min(1, { message: empty_field_error_message }),
+    kota_cust: z.string().min(1, { message: empty_field_error_message }),
+    state_cust: z.string().min(1, { message: empty_field_error_message }),
+    pos_cust: z.string().min(1, { message: empty_field_error_message }),
+    negara_cust: z.string().min(1, { message: empty_field_error_message }),
+  }),
   statements: z.array(
     z.object({ value: z.string().min(1, empty_field_error_message) })
   ),
@@ -117,6 +119,7 @@ export default function AdministrativeForm({
 }) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
+    mode: "onChange",
     defaultValues: {
       software: "",
       version: "",
@@ -133,27 +136,29 @@ export default function AdministrativeForm({
           merek: "",
           tipe: "",
           item_issuer: "",
-          seri: "",
+          seri_item: "",
           id_lain: "",
         },
       ],
-      responsiblePersons: [
+      responsible_persons: [
         {
           nama_resp: "",
           nip: "",
           peran: "",
-          mainSigner: "",
+          main_signer: "",
           signature: "",
           timestamp: "",
         },
       ],
-      nama_cust: "",
-      jalan_cust: "",
-      no_jalan_cust: "",
-      kota_cust: "",
-      state_cust: "",
-      pos_cust: "",
-      negara_cust: "",
+      owner: {
+        nama_cust: "",
+        jalan_cust: "",
+        no_jalan_cust: "",
+        kota_cust: "",
+        state_cust: "",
+        pos_cust: "",
+        negara_cust: "",
+      },
       statements: [{ value: "" }],
     },
   });
@@ -208,7 +213,7 @@ export default function AdministrativeForm({
     remove: removePerson,
   } = useFieldArray({
     control: form.control,
-    name: "responsiblePersons",
+    name: "responsible_persons",
   });
 
   const onSubmit = async (data: any) => {
@@ -221,18 +226,29 @@ export default function AdministrativeForm({
         body: JSON.stringify(data),
       });
 
+      if (!response.ok) {
+        const errorResult = await response.json();
+        console.error("Error response from server:", errorResult);
+        alert(`Failed to create DCC: ${errorResult.detail}`);
+        return;
+      }
+
       const result = await response.json();
       console.log("DCC Created:", result);
       alert(`DCC Created! Download: ${result.download_link}`);
     } catch (error) {
       console.error("Error submitting form:", error);
+      alert("An error occurred while submitting the form.");
     }
   };
 
   return (
     <FormProvider {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={(e) => {
+          console.log("Form submitted!");
+          form.handleSubmit(onSubmit)(e);
+        }}
         className="space-y-6 max-w-4xl mx-auto p-4"
       >
         <Card id="software">
@@ -241,32 +257,36 @@ export default function AdministrativeForm({
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="software"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nama</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="version"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Versi</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div id="software">
+                <FormLabel>Nama</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="software"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div id="version">
+                <FormLabel>Versi</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="version"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -277,167 +297,178 @@ export default function AdministrativeForm({
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="core_issuer"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Penerbit</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="text-muted-foreground">
-                          <SelectValue placeholder="Pilih penerbit" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="manufacturer">
-                          manufacturer
-                        </SelectItem>
-                        <SelectItem value="calibrationLaboratory">
-                          calibrationLaboratory
-                        </SelectItem>
-                        <SelectItem value="customer">customer</SelectItem>
-                        <SelectItem value="owner">owner</SelectItem>
-                        <SelectItem value="other">other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="tempat"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tempat Kalibrasi</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger className="text-muted-foreground">
-                          <SelectValue placeholder="Pilih tempat" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="laboratory">laboratory</SelectItem>
-                        <SelectItem value="customer">customer</SelectItem>
-                        <SelectItem value="laboratoryBranch">
-                          laboratoryBranch
-                        </SelectItem>
-                        <SelectItem value="customerBranch">
-                          customerBranch
-                        </SelectItem>
-                        <SelectItem value="other">other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div id="core_issuer">
+                <FormLabel>Penerbit</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="core_issuer"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="manufacturer">
+                            manufacturer
+                          </SelectItem>
+                          <SelectItem value="calibrationLaboratory">
+                            calibrationLaboratory
+                          </SelectItem>
+                          <SelectItem value="customer">customer</SelectItem>
+                          <SelectItem value="owner">owner</SelectItem>
+                          <SelectItem value="other">other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div id="tempat">
+                <FormLabel>Tempat Kalibrasi</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="tempat"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="laboratory">laboratory</SelectItem>
+                          <SelectItem value="customer">customer</SelectItem>
+                          <SelectItem value="laboratoryBranch">
+                            laboratoryBranch
+                          </SelectItem>
+                          <SelectItem value="customerBranch">
+                            customerBranch
+                          </SelectItem>
+                          <SelectItem value="other">other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="tgl_pengesahan"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Tanggal Pengesahan</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pilih tanggal</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="country_code"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Kode Negara</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value
-                              ? countries.find(
-                                  (country) => country.value === field.value
-                                )?.label
-                              : "Pilih negara"}
-                            <ChevronsUpDown className="opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                        <Command>
-                          <CommandInput
-                            placeholder="Cari negara..."
-                            className="h-9"
+              <div id="tgl_pengesahan">
+                <FormLabel>Tanggal Pengesahan</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="tgl_pengesahan"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span></span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                            initialFocus
                           />
-                          <CommandList>
-                            <CommandEmpty>Negara tidak ditemukan.</CommandEmpty>
-                            <CommandGroup>
-                              {countries.map((country) => (
-                                <CommandItem
-                                  value={country.label}
-                                  key={country.value}
-                                  onSelect={() => {
-                                    form.setValue(
-                                      "country_code",
-                                      country.value
-                                    );
-                                  }}
-                                >
-                                  {country.label}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </FormItem>
-                )}
-              />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div id="country_code">
+                <FormLabel>Kode Negara</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="country_code"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value
+                                ? countries.find(
+                                    (country) => country.value === field.value
+                                  )?.label
+                                : ""}
+                              <ChevronsUpDown className="opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                          <Command>
+                            <CommandInput
+                              placeholder="Cari negara..."
+                              className="h-9"
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                Negara tidak ditemukan.
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {countries.map((country) => (
+                                  <CommandItem
+                                    value={country.label}
+                                    key={country.value}
+                                    onSelect={() => {
+                                      form.setValue(
+                                        "country_code",
+                                        country.value
+                                      );
+                                    }}
+                                  >
+                                    {country.label}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div id="used_language">
@@ -466,7 +497,7 @@ export default function AdministrativeForm({
                                       ? languages.find(
                                           (lang) => lang.value === field.value
                                         )?.label
-                                      : "Pilih bahasa"}
+                                      : ""}
                                     <ChevronsUpDown className="opacity-50" />
                                   </Button>
                                 </FormControl>
@@ -553,7 +584,7 @@ export default function AdministrativeForm({
                                       ? languages.find(
                                           (lang) => lang.value === field.value
                                         )?.label
-                                      : "Pilih bahasa"}
+                                      : ""}
                                     <ChevronsUpDown className="opacity-50" />
                                   </Button>
                                 </FormControl>
@@ -616,114 +647,122 @@ export default function AdministrativeForm({
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="sertifikat"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nomor Sertifikat</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="order"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nomor Order</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div id="sertifikat">
+                <FormLabel>Nomor Sertifikat</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="sertifikat"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div id="order">
+                <FormLabel>Nomor Order</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="order"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="tgl_mulai"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Tanggal Mulai Pengukuran</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pilih tanggal</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="tgl_akhir"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Tanggal Akhir Pengukuran</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pilih tanggal</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div id="tgl_mulai">
+                <FormLabel>Tanggal Mulai Pengukuran</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="tgl_mulai"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span></span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div id="tgl_akhir">
+                <FormLabel>Tanggal Akhir Pengukuran</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="tgl_akhir"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span></span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -754,66 +793,118 @@ export default function AdministrativeForm({
                     </Button>
                   )}
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label id={`jenis-${index}`}>Jenis Alat atau Objek</Label>
-                      <Input
-                        id={`jenis-${index}`}
-                        {...form.register(`objects.${index}.jenis`)}
+                    <div id="jenis">
+                      <FormLabel>Jenis Alat atau Objek</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`objects.${index}.jenis`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
-                    <div>
-                      <Label id={`merek-${index}`}>Merek/Pembuat</Label>
-                      <Input
-                        id={`merek-${index}`}
-                        {...form.register(`objects.${index}.merek`)}
+                    <div id="merek">
+                      <FormLabel>Merek/Pembuat</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`objects.${index}.merek`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label id={`tipe-${index}`}>Tipe</Label>
-                      <Input
-                        id={`tipe-${index}`}
-                        {...form.register(`objects.${index}.tipe`)}
+                    <div id="tipe">
+                      <FormLabel>Tipe</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`objects.${index}.tipe`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
-                    <div>
-                      <Label id={`item_issuer-${index}`}>
-                        Identifikasi Alat
-                      </Label>
-                      <Select
-                        {...form.register(`objects.${index}.item_issuer`)}
-                      >
-                        <SelectTrigger id={`item_issuer-${index}`}>
-                          <SelectValue placeholder="Pilih penerbit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="manufacturer">
-                            manufacturer
-                          </SelectItem>
-                          <SelectItem value="calibrationLaboratory">
-                            calibrationLaboratory
-                          </SelectItem>
-                          <SelectItem value="customer">customer</SelectItem>
-                          <SelectItem value="owner">owner</SelectItem>
-                          <SelectItem value="other">other</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div id="item_issuer">
+                      <FormLabel>Identifikasi Alat</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`objects.${index}.item_issuer`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="manufacturer">
+                                  manufacturer
+                                </SelectItem>
+                                <SelectItem value="calibrationLaboratory">
+                                  calibrationLaboratory
+                                </SelectItem>
+                                <SelectItem value="customer">
+                                  customer
+                                </SelectItem>
+                                <SelectItem value="owner">owner</SelectItem>
+                                <SelectItem value="other">other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label id={`seri-item-${index}`}>Nomor Seri</Label>
-                      <Input
-                        id={`seri-item-${index}`}
-                        {...form.register(`objects.${index}.seri`)}
+                    <div id="seri_item">
+                      <FormLabel>Nomor Seri</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`objects.${index}.seri_item`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
-                    <div>
-                      <Label id={`id-lain-${index}`}>Identifikasi Lain</Label>
-                      <Input
-                        id={`id-lain-${index}`}
-                        {...form.register(`objects.${index}.id_lain`)}
+                    <div id="id_lain">
+                      <FormLabel>Identifikasi Lain</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`objects.${index}.id_lain`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                   </div>
@@ -830,7 +921,7 @@ export default function AdministrativeForm({
                   merek: "",
                   tipe: "",
                   item_issuer: "",
-                  seri: "",
+                  seri_item: "",
                   id_lain: "",
                 })
               }
@@ -866,102 +957,156 @@ export default function AdministrativeForm({
                     </Button>
                   )}
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor={`nama_resp-${index}`}>Nama</Label>
-                      <Input
-                        id={`nama_resp-${index}`}
-                        {...form.register(
-                          `responsiblePersons.${index}.nama_resp`
+                    <div id="nama_resp">
+                      <FormLabel>Nama</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`responsible_persons.${index}.nama_resp`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
                         )}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor={`nip-${index}`}>NIP</Label>
-                      <Input
-                        id={`nip-${index}`}
-                        {...form.register(`responsiblePersons.${index}.nip`)}
+                    <div id="nip">
+                      <FormLabel>NIP</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`responsible_persons.${index}.nip`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor={`peran-${index}`}>Peran</Label>
-                      <Select
-                        {...form.register(`responsiblePersons.${index}.peran`)}
-                      >
-                        <SelectTrigger id={`peran-${index}`}>
-                          <SelectValue placeholder="Pilih peran" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pelaksana">
-                            Pelaksana Kalibrasi
-                          </SelectItem>
-                          <SelectItem value="penyelia">
-                            Penyelia Kalibrasi
-                          </SelectItem>
-                          <SelectItem value="kepala">
-                            Kepala Laboratorium
-                          </SelectItem>
-                          <SelectItem value="tk">
-                            Direktur SNSU Termoelektrik dan Kimia
-                          </SelectItem>
-                          <SelectItem value="mrb">
-                            Direktur SNSU Mekanika, Radiasi, dan Biologi
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor={`main-signer-${index}`}>
-                        Main Signer
-                      </Label>
-                      <Select
-                        {...form.register(
-                          `responsiblePersons.${index}.mainSigner`
+                    <div id="peran">
+                      <FormLabel>Peran</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`responsible_persons.${index}.peran`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="pelaksana">
+                                  Pelaksana Kalibrasi
+                                </SelectItem>
+                                <SelectItem value="penyelia">
+                                  Penyelia Kalibrasi
+                                </SelectItem>
+                                <SelectItem value="kepala">
+                                  Kepala Laboratorium
+                                </SelectItem>
+                                <SelectItem value="tk">
+                                  Direktur SNSU Termoelektrik dan Kimia
+                                </SelectItem>
+                                <SelectItem value="mrb">
+                                  Direktur SNSU Mekanika, Radiasi, dan Biologi
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      >
-                        <SelectTrigger id={`main-signer-${index}`}>
-                          <SelectValue placeholder="" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">Iya</SelectItem>
-                          <SelectItem value="false">Tidak</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      />
+                    </div>
+                    <div id="main_signer">
+                      <FormLabel>Main Signer</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`responsible_persons.${index}.main_signer`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="true">Iya</SelectItem>
+                                <SelectItem value="false">Tidak</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor={`signature-${index}`}>Signature</Label>
-                      <Select
-                        {...form.register(
-                          `responsiblePersons.${index}.signature`
+                    <div id="signature">
+                      <FormLabel>Signature</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`responsible_persons.${index}.signature`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="true">Iya</SelectItem>
+                                <SelectItem value="false">Tidak</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      >
-                        <SelectTrigger id={`signature-${index}`}>
-                          <SelectValue placeholder="" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">Iya</SelectItem>
-                          <SelectItem value="false">Tidak</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      />
                     </div>
-                    <div>
-                      <Label htmlFor={`timestamp-${index}`}>Timestamp</Label>
-                      <Select
-                        {...form.register(
-                          `responsiblePersons.${index}.timestamp`
+                    <div id="timestamp">
+                      <FormLabel>Timestamp</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`responsible_persons.${index}.timestamp`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="true">Iya</SelectItem>
+                                <SelectItem value="false">Tidak</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
                         )}
-                      >
-                        <SelectTrigger id={`timestamp-${index}`}>
-                          <SelectValue placeholder="" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="true">Iya</SelectItem>
-                          <SelectItem value="false">Tidak</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      />
                     </div>
                   </div>
                 </div>
@@ -976,7 +1121,7 @@ export default function AdministrativeForm({
                   nama_resp: "",
                   nip: "",
                   peran: "",
-                  mainSigner: "",
+                  main_signer: "",
                   signature: "",
                   timestamp: "",
                 })
@@ -993,39 +1138,13 @@ export default function AdministrativeForm({
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
-              <FormField
-                control={form.control}
-                name="nama_cust"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nama</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-2 gap-4">
+              <div id="nama_cust">
+                <FormLabel>Nama</FormLabel>
                 <FormField
                   control={form.control}
-                  name="jalan_cust"
+                  name={`owner.nama_cust`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nama Jalan</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="no_jalan_cust"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nomor Jalan</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -1035,60 +1154,100 @@ export default function AdministrativeForm({
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="kota_cust"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kota</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="state_cust"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Provinsi</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div id="jalan_cust">
+                  <FormLabel>Jalan</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name={`owner.jalan_cust`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div id="no_jalan_cust">
+                  <FormLabel>Nomor Jalan</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name={`owner.no_jalan_cust`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="pos_cust"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kode Pos</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="negara_cust"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Negara</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div id="kota_cust">
+                  <FormLabel>Kota</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name={`owner.kota_cust`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div id="state_cust">
+                  <FormLabel>Provinsi</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name={`owner.state_cust`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div id="pos_cust">
+                  <FormLabel>Kode Pos</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name={`owner.pos_cust`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div id="negara_cust">
+                  <FormLabel>Negara</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name={`owner.negara_cust`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </div>
           </CardContent>
