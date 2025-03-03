@@ -9,9 +9,9 @@ import { Button } from "@/components/ui/button";
 export default function CreateDCC() {
   const [currentStep, setCurrentStep] = useState(0);
   const steps = [
-    "Administrative Data",
-    "Measurement Results",
-    "Comments",
+    "Data Administrasi",
+    "Hasil Kalibrasi",
+    "Statements",
     "Preview",
   ];
 
