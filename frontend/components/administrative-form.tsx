@@ -112,11 +112,7 @@ const FormSchema = z.object({
   ),
 });
 
-export default function AdministrativeForm({
-  updateFormData,
-}: {
-  updateFormData: (data: any) => void;
-}) {
+export default function AdministrativeForm({updateFormData}: {updateFormData: (data: any) => void;}) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
     mode: "onChange",
@@ -150,14 +146,14 @@ export default function AdministrativeForm({
           timestamp: "",
         },
       ],
-      owner: {
-        nama_cust: "",
-        jalan_cust: "",
-        no_jalan_cust: "",
-        kota_cust: "",
-        state_cust: "",
-        pos_cust: "",
-        negara_cust: "",
+      owner: { 
+        nama_cust: "", 
+        jalan_cust: "", 
+        no_jalan_cust: "", 
+        kota_cust: "", 
+        state_cust: "", 
+        pos_cust: "", 
+        negara_cust: "" 
       },
       statements: [{ value: "" }],
     },
@@ -259,9 +255,9 @@ export default function AdministrativeForm({
             <div className="grid grid-cols-2 gap-4">
               <div id="software">
                 <FormLabel>Nama</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="software"
+                <FormField 
+                  control={form.control} 
+                  name="software" 
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -285,7 +281,7 @@ export default function AdministrativeForm({
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                />  
               </div>
             </div>
           </CardContent>
@@ -299,27 +295,20 @@ export default function AdministrativeForm({
             <div className="grid grid-cols-2 gap-4">
               <div id="core_issuer">
                 <FormLabel>Penerbit</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="core_issuer"
+                <FormField 
+                  control={form.control} 
+                  name="core_issuer" 
                   render={({ field }) => (
                     <FormItem>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="manufacturer">
-                            manufacturer
-                          </SelectItem>
-                          <SelectItem value="calibrationLaboratory">
-                            calibrationLaboratory
-                          </SelectItem>
+                          <SelectItem value="manufacturer">manufacturer</SelectItem>
+                          <SelectItem value="calibrationLaboratory">calibrationLaboratory</SelectItem>
                           <SelectItem value="customer">customer</SelectItem>
                           <SelectItem value="owner">owner</SelectItem>
                           <SelectItem value="other">other</SelectItem>
@@ -328,19 +317,18 @@ export default function AdministrativeForm({
                       <FormMessage />
                     </FormItem>
                   )}
-                />
+                />  
               </div>
               <div id="tempat">
                 <FormLabel>Tempat Kalibrasi</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="tempat"
+                <FormField 
+                  control={form.control} 
+                  name="tempat" 
                   render={({ field }) => (
                     <FormItem>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue />
@@ -349,12 +337,8 @@ export default function AdministrativeForm({
                         <SelectContent>
                           <SelectItem value="laboratory">laboratory</SelectItem>
                           <SelectItem value="customer">customer</SelectItem>
-                          <SelectItem value="laboratoryBranch">
-                            laboratoryBranch
-                          </SelectItem>
-                          <SelectItem value="customerBranch">
-                            customerBranch
-                          </SelectItem>
+                          <SelectItem value="laboratoryBranch">laboratoryBranch</SelectItem>
+                          <SelectItem value="customerBranch">customerBranch</SelectItem>
                           <SelectItem value="other">other</SelectItem>
                         </SelectContent>
                       </Select>
@@ -367,9 +351,9 @@ export default function AdministrativeForm({
             <div className="grid grid-cols-2 gap-4">
               <div id="tgl_pengesahan">
                 <FormLabel>Tanggal Pengesahan</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="tgl_pengesahan"
+                <FormField 
+                  control={form.control} 
+                  name="tgl_pengesahan" 
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
@@ -378,8 +362,7 @@ export default function AdministrativeForm({
                             <Button
                               variant={"outline"}
                               className={cn(
-                                !field.value && "text-muted-foreground"
-                              )}
+                                !field.value && "text-muted-foreground")}
                             >
                               {field.value ? (
                                 format(field.value, "PPP")
@@ -409,9 +392,9 @@ export default function AdministrativeForm({
               </div>
               <div id="country_code">
                 <FormLabel>Kode Negara</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="country_code"
+                <FormField 
+                  control={form.control} 
+                  name="country_code" 
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
@@ -469,6 +452,7 @@ export default function AdministrativeForm({
                   )}
                 />
               </div>
+              
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div id="used_language">
@@ -649,14 +633,12 @@ export default function AdministrativeForm({
             <div className="grid grid-cols-2 gap-4">
               <div id="sertifikat">
                 <FormLabel>Nomor Sertifikat</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="sertifikat"
+                <FormField 
+                  control={form.control} 
+                  name="sertifikat" 
                   render={({ field }) => (
                     <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
+                      <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -664,9 +646,9 @@ export default function AdministrativeForm({
               </div>
               <div id="order">
                 <FormLabel>Nomor Order</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="order"
+                <FormField 
+                  control={form.control} 
+                  name="order" 
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -681,9 +663,9 @@ export default function AdministrativeForm({
             <div className="grid grid-cols-2 gap-4">
               <div id="tgl_mulai">
                 <FormLabel>Tanggal Mulai Pengukuran</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="tgl_mulai"
+                <FormField 
+                  control={form.control} 
+                  name="tgl_mulai" 
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
@@ -723,9 +705,9 @@ export default function AdministrativeForm({
               </div>
               <div id="tgl_akhir">
                 <FormLabel>Tanggal Akhir Pengukuran</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="tgl_akhir"
+                <FormField 
+                  control={form.control} 
+                  name="tgl_akhir" 
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
@@ -763,6 +745,7 @@ export default function AdministrativeForm({
                   )}
                 />
               </div>
+              
             </div>
           </CardContent>
         </Card>
@@ -774,8 +757,8 @@ export default function AdministrativeForm({
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
               {itemFields.map((field, index) => (
-                <div
-                  key={field.id}
+                <div 
+                  key={field.id} 
                   className="grid gap-4 border-b pb-4 relative"
                 >
                   <p className="text-sm text-muted-foreground">
@@ -795,9 +778,9 @@ export default function AdministrativeForm({
                   <div className="grid grid-cols-2 gap-4">
                     <div id="jenis">
                       <FormLabel>Jenis Alat atau Objek</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.jenis`}
+                      <FormField 
+                        control={form.control} 
+                        name={`objects.${index}.jenis`} 
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -810,9 +793,9 @@ export default function AdministrativeForm({
                     </div>
                     <div id="merek">
                       <FormLabel>Merek/Pembuat</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.merek`}
+                      <FormField 
+                        control={form.control} 
+                        name={`objects.${index}.merek`} 
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -827,9 +810,9 @@ export default function AdministrativeForm({
                   <div className="grid grid-cols-2 gap-4">
                     <div id="tipe">
                       <FormLabel>Tipe</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.tipe`}
+                      <FormField 
+                        control={form.control} 
+                        name={`objects.${index}.tipe`} 
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -842,30 +825,17 @@ export default function AdministrativeForm({
                     </div>
                     <div id="item_issuer">
                       <FormLabel>Identifikasi Alat</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.item_issuer`}
+                      <FormField 
+                        control={form.control} 
+                        name={`objects.${index}.item_issuer`} 
                         render={({ field }) => (
                           <FormItem>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                               <SelectContent>
-                                <SelectItem value="manufacturer">
-                                  manufacturer
-                                </SelectItem>
-                                <SelectItem value="calibrationLaboratory">
-                                  calibrationLaboratory
-                                </SelectItem>
-                                <SelectItem value="customer">
-                                  customer
-                                </SelectItem>
+                                <SelectItem value="manufacturer">manufacturer</SelectItem>
+                                <SelectItem value="calibrationLaboratory">calibrationLaboratory</SelectItem>
+                                <SelectItem value="customer">customer</SelectItem>
                                 <SelectItem value="owner">owner</SelectItem>
                                 <SelectItem value="other">other</SelectItem>
                               </SelectContent>
@@ -879,9 +849,9 @@ export default function AdministrativeForm({
                   <div className="grid grid-cols-2 gap-4">
                     <div id="seri_item">
                       <FormLabel>Nomor Seri</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.seri_item`}
+                      <FormField 
+                        control={form.control} 
+                        name={`objects.${index}.seri_item`} 
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -894,9 +864,9 @@ export default function AdministrativeForm({
                     </div>
                     <div id="id_lain">
                       <FormLabel>Identifikasi Lain</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.id_lain`}
+                      <FormField 
+                        control={form.control} 
+                        name={`objects.${index}.id_lain`} 
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -932,14 +902,12 @@ export default function AdministrativeForm({
         </Card>
 
         <Card id="resp-person">
-          <CardHeader>
-            <CardTitle>Penanggung Jawab</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Penanggung Jawab</CardTitle></CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
               {personFields.map((field, index) => (
-                <div
-                  key={field.id}
+                <div 
+                  key={field.id} 
                   className="grid gap-4 border-b pb-4 relative"
                 >
                   <p className="text-sm text-muted-foreground">
@@ -959,9 +927,9 @@ export default function AdministrativeForm({
                   <div className="grid grid-cols-2 gap-4">
                     <div id="nama_resp">
                       <FormLabel>Nama</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`responsible_persons.${index}.nama_resp`}
+                      <FormField 
+                        control={form.control} 
+                        name={`responsible_persons.${index}.nama_resp`} 
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -974,9 +942,9 @@ export default function AdministrativeForm({
                     </div>
                     <div id="nip">
                       <FormLabel>NIP</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`responsible_persons.${index}.nip`}
+                      <FormField 
+                        control={form.control} 
+                        name={`responsible_persons.${index}.nip`} 
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -991,36 +959,23 @@ export default function AdministrativeForm({
                   <div className="grid grid-cols-2 gap-4">
                     <div id="peran">
                       <FormLabel>Peran</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`responsible_persons.${index}.peran`}
+                      <FormField 
+                        control={form.control} 
+                        name={`responsible_persons.${index}.peran`} 
                         render={({ field }) => (
                           <FormItem>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="pelaksana">
-                                  Pelaksana Kalibrasi
-                                </SelectItem>
-                                <SelectItem value="penyelia">
-                                  Penyelia Kalibrasi
-                                </SelectItem>
-                                <SelectItem value="kepala">
-                                  Kepala Laboratorium
-                                </SelectItem>
-                                <SelectItem value="tk">
-                                  Direktur SNSU Termoelektrik dan Kimia
-                                </SelectItem>
-                                <SelectItem value="mrb">
-                                  Direktur SNSU Mekanika, Radiasi, dan Biologi
-                                </SelectItem>
+                                <SelectItem value="pelaksana">Pelaksana Kalibrasi</SelectItem>
+                                <SelectItem value="penyelia">Penyelia Kalibrasi</SelectItem>
+                                <SelectItem value="kepala">Kepala Laboratorium</SelectItem>
+                                <SelectItem value="tk">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
+                                <SelectItem value="mrb">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -1030,15 +985,12 @@ export default function AdministrativeForm({
                     </div>
                     <div id="main_signer">
                       <FormLabel>Main Signer</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`responsible_persons.${index}.main_signer`}
+                      <FormField 
+                        control={form.control} 
+                        name={`responsible_persons.${index}.main_signer`} 
                         render={({ field }) => (
                           <FormItem>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue />
@@ -1058,15 +1010,12 @@ export default function AdministrativeForm({
                   <div className="grid grid-cols-2 gap-4">
                     <div id="signature">
                       <FormLabel>Signature</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`responsible_persons.${index}.signature`}
+                      <FormField 
+                        control={form.control} 
+                        name={`responsible_persons.${index}.signature`} 
                         render={({ field }) => (
                           <FormItem>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue />
@@ -1084,15 +1033,9 @@ export default function AdministrativeForm({
                     </div>
                     <div id="timestamp">
                       <FormLabel>Timestamp</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`responsible_persons.${index}.timestamp`}
-                        render={({ field }) => (
+                      <FormField control={form.control} name={`responsible_persons.${index}.timestamp`} render={({ field }) => (
                           <FormItem>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue />
@@ -1117,13 +1060,13 @@ export default function AdministrativeForm({
               size="sm"
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() =>
-                appendPerson({
-                  nama_resp: "",
-                  nip: "",
-                  peran: "",
-                  main_signer: "",
-                  signature: "",
-                  timestamp: "",
+                appendPerson({ 
+                  nama_resp: "", 
+                  nip: "", 
+                  peran: "", 
+                  main_signer: "", 
+                  signature: "", 
+                  timestamp: "" 
                 })
               }
             >
@@ -1140,9 +1083,9 @@ export default function AdministrativeForm({
             <div className="grid gap-4">
               <div id="nama_cust">
                 <FormLabel>Nama</FormLabel>
-                <FormField
-                  control={form.control}
-                  name={`owner.nama_cust`}
+                <FormField 
+                  control={form.control} 
+                  name={`owner.nama_cust`} 
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -1156,9 +1099,9 @@ export default function AdministrativeForm({
               <div className="grid grid-cols-2 gap-4">
                 <div id="jalan_cust">
                   <FormLabel>Jalan</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.jalan_cust`}
+                  <FormField 
+                    control={form.control} 
+                    name={`owner.jalan_cust`} 
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
@@ -1171,9 +1114,9 @@ export default function AdministrativeForm({
                 </div>
                 <div id="no_jalan_cust">
                   <FormLabel>Nomor Jalan</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.no_jalan_cust`}
+                  <FormField 
+                    control={form.control} 
+                    name={`owner.no_jalan_cust`} 
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
@@ -1188,9 +1131,9 @@ export default function AdministrativeForm({
               <div className="grid grid-cols-2 gap-4">
                 <div id="kota_cust">
                   <FormLabel>Kota</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.kota_cust`}
+                  <FormField 
+                    control={form.control} 
+                    name={`owner.kota_cust`} 
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
@@ -1203,9 +1146,9 @@ export default function AdministrativeForm({
                 </div>
                 <div id="state_cust">
                   <FormLabel>Provinsi</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.state_cust`}
+                  <FormField 
+                    control={form.control} 
+                    name={`owner.state_cust`} 
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
@@ -1220,9 +1163,9 @@ export default function AdministrativeForm({
               <div className="grid grid-cols-2 gap-4">
                 <div id="pos_cust">
                   <FormLabel>Kode Pos</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.pos_cust`}
+                  <FormField 
+                    control={form.control} 
+                    name={`owner.pos_cust`} 
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
@@ -1235,9 +1178,9 @@ export default function AdministrativeForm({
                 </div>
                 <div id="negara_cust">
                   <FormLabel>Negara</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.negara_cust`}
+                  <FormField 
+                    control={form.control} 
+                    name={`owner.negara_cust`} 
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
