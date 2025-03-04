@@ -1,8 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronsUpDown } from "lucide-react";
+import { ChevronsUpDown, CalendarIcon } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,30 +38,64 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 
-const countries = [
-  { label: "Indonesia", value: "id" },
-  { label: "United States", value: "us" },
-  { label: "United Kingdom", value: "uk" },
-  { label: "Germany", value: "de" },
-  { label: "France", value: "fr" },
-  { label: "Japan", value: "jp" },
-  { label: "China", value: "cn" },
-] as const;
+type Country = { label: string; value: string };
+const fetchCountries = async (): Promise<Country[]> => {
+  try {
+    const response = await axios.get("https://restcountries.com/v3.1/all");
 
-const languages = [
-  { label: "Bahasa Indonesia", value: "id" },
-  { label: "English", value: "en" },
-  { label: "Mandarin", value: "zh" },
-  { label: "French", value: "fr" },
-  { label: "German", value: "de" },
-  { label: "Japanese", value: "jp" },
-] as const;
+    return response.data
+      .map((country: any) => ({
+        label: country.name.common, // Get country name
+        value: country.cca2, // Use country ISO2 code
+      }))
+      .sort((a: Country, b: Country) => a.label.localeCompare(b.label)); // Sort alphabetically
+  } catch (error) {
+    console.error("Error fetching countries:", error);
+    return [];
+  }
+};
+
+type Language = { label: string; value: string };
+const fetchLanguages = async (): Promise<Language[]> => {
+  let allLanguages: Language[] = [];
+  let start = 0;
+  const limit = 100; // Max rows per request
+  let hasMore = true;
+
+  while (hasMore) {
+    try {
+      const response = await axios.get(
+        "https://public.opendatasoft.com/api/records/1.0/search/",
+        {
+          params: {
+            dataset: "iso-language-codes-639-1-and-639-2",
+            rows: limit,
+            start,
+          },
+        }
+      );
+
+      const languages = response.data.records.map((rec: any) => ({
+        label: rec.fields.english,
+        value: rec.fields.alpha2,
+      }));
+
+      allLanguages = [...allLanguages, ...languages.filter((c: Country) => c.label && c.value)];
+
+      start += limit;
+      hasMore = response.data.records.length === limit; // Stop when fewer than `limit` results are returned
+    } catch (error) {
+      console.error("Error fetching countries:", error);
+      return allLanguages.sort((a, b) => a.label.localeCompare(b.label)); // Sort before returning
+    }
+  }
+
+  return allLanguages.sort((a, b) => a.label.localeCompare(b.label)); // Sort alphabetically
+};
 
 const empty_field_error_message = "Input diperlukan.";
-
 const FormSchema = z.object({
   software: z.string().min(1, { message: empty_field_error_message }),
   version: z.string().min(1, { message: empty_field_error_message }),
@@ -167,14 +202,15 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
     return () => subscription.unsubscribe();
   }, [form.watch]);
 
-  const {
-    fields: statementFields,
-    append: appendStatement,
-    remove: removeStatement,
-  } = useFieldArray({
-    control: form.control,
-    name: "statements",
-  });
+  const [countries, setCountries] = useState<Country[]>([]);
+  useEffect(() => {
+    fetchCountries().then(setCountries);
+  }, []);
+
+  const [languages, setLanguages] = useState<Country[]>([]);
+  useEffect(() => {
+    fetchLanguages().then(setLanguages);
+  }, []);
 
   const {
     fields: usedFields,
@@ -210,6 +246,15 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
   } = useFieldArray({
     control: form.control,
     name: "responsible_persons",
+  });
+
+  const {
+    fields: statementFields,
+    append: appendStatement,
+    remove: removeStatement,
+  } = useFieldArray({
+    control: form.control,
+    name: "statements",
   });
 
   const onSubmit = async (data: any) => {
@@ -425,7 +470,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                             />
                             <CommandList>
                               <CommandEmpty>
-                                Negara tidak ditemukan.
+                                Sedang memuat...
                               </CommandEmpty>
                               <CommandGroup>
                                 {countries.map((country) => (

@@ -4,20 +4,20 @@
       <dcc:dccSoftware>
          <dcc:software>
             <dcc:name>
-               <dcc:content>.</dcc:content>
+               <dcc:content></dcc:content>
             </dcc:name>
-            <dcc:release>.</dcc:release>
+            <dcc:release></dcc:release>
          </dcc:software>
       </dcc:dccSoftware>
       <dcc:coreData>
-         <dcc:countryCodeISO3166_1>id</dcc:countryCodeISO3166_1>
-         <dcc:usedLangCodeISO639_1>jp</dcc:usedLangCodeISO639_1>
-         <dcc:mandatoryLangCodeISO639_1>fr</dcc:mandatoryLangCodeISO639_1>
-         <dcc:uniqueIdentifier>.</dcc:uniqueIdentifier>
+         <dcc:countryCodeISO3166_1>AQ</dcc:countryCodeISO3166_1>
+         <dcc:usedLangCodeISO639_1></dcc:usedLangCodeISO639_1>
+         <dcc:mandatoryLangCodeISO639_1></dcc:mandatoryLangCodeISO639_1>
+         <dcc:uniqueIdentifier></dcc:uniqueIdentifier>
          <dcc:identifications>
             <dcc:identification>
-               <dcc:issuer>manufacturer</dcc:issuer>
-               <dcc:value>.</dcc:value>
+               <dcc:issuer></dcc:issuer>
+               <dcc:value></dcc:value>
                <dcc:name>
                   <dcc:content>Nomor Order</dcc:content>
                </dcc:name>
@@ -25,19 +25,19 @@
          </dcc:identifications>
          <dcc:beginPerformanceDate>2025-03-03</dcc:beginPerformanceDate>
          <dcc:endPerformanceDate>2025-03-03</dcc:endPerformanceDate>
-         <dcc:performanceLocation>laboratory</dcc:performanceLocation>
+         <dcc:performanceLocation></dcc:performanceLocation>
          <dcc:issueDate>2025-03-03</dcc:issueDate>
       </dcc:coreData>
       <dcc:items>
          <dcc:item>
-            <dcc:name>.</dcc:name>
-            <dcc:manufacturer>.</dcc:manufacturer>
-            <dcc:model>.</dcc:model>
+            <dcc:name></dcc:name>
+            <dcc:manufacturer></dcc:manufacturer>
+            <dcc:model></dcc:model>
             <dcc:identification>
-               <dcc:issuer>manufacturer</dcc:issuer>
-               <dcc:value>.</dcc:value>
+               <dcc:issuer></dcc:issuer>
+               <dcc:value></dcc:value>
                <dcc:name>
-                  <dcc:content>.</dcc:content>
+                  <dcc:content></dcc:content>
                </dcc:name>
             </dcc:identification>
          </dcc:item>
@@ -67,31 +67,31 @@
          <dcc:respPerson>
             <dcc:person>
                <dcc:name>
-                  <dcc:content>.</dcc:content>
+                  <dcc:content></dcc:content>
                </dcc:name>
             </dcc:person>
             <dcc:description>
                <dcc:name>
-                  <dcc:content>.</dcc:content>
+                  <dcc:content></dcc:content>
                </dcc:name>
             </dcc:description>
-            <dcc:role>pelaksana</dcc:role>
-            <dcc:mainSigner>true</dcc:mainSigner>
-            <dcc:cryptElectronicSignature>true</dcc:cryptElectronicSignature>
-            <dcc:cryptElectronicTimeStamp>true</dcc:cryptElectronicTimeStamp>
+            <dcc:role></dcc:role>
+            <dcc:mainSigner></dcc:mainSigner>
+            <dcc:cryptElectronicSignature></dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp></dcc:cryptElectronicTimeStamp>
          </dcc:respPerson>
       </dcc:respPersons>
       <dcc:customer>
          <dcc:name>
-            <dcc:content>.</dcc:content>
+            <dcc:content></dcc:content>
          </dcc:name>
          <dcc:location>
-            <dcc:city>.</dcc:city>
-            <dcc:countryCode>.</dcc:countryCode>
-            <dcc:postCode>.</dcc:postCode>
-            <dcc:state>.</dcc:state>
-            <dcc:street>.</dcc:street>
-            <dcc:streetNo>.</dcc:streetNo>
+            <dcc:city></dcc:city>
+            <dcc:countryCode></dcc:countryCode>
+            <dcc:postCode></dcc:postCode>
+            <dcc:state></dcc:state>
+            <dcc:street></dcc:street>
+            <dcc:streetNo></dcc:streetNo>
          </dcc:location>
       </dcc:customer>
       <dcc:statement>
