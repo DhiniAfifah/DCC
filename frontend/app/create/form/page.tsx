@@ -5,6 +5,7 @@ import Stepper from "@/components/ui/stepper";
 import AdministrativeForm from "@/components/administrative-form";
 import MeasurementForm from "@/components/measurement-form";
 import { Button } from "@/components/ui/button";
+import Statements from "@/components/statements";
 
 export default function CreateDCC() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -171,7 +172,8 @@ export default function CreateDCC() {
         {currentStep === 0 && (
           <AdministrativeForm updateFormData={updateFormData} />
         )}
-        {currentStep === 1 && <MeasurementForm />}
+        {currentStep === 1 && <MeasurementForm updateFormData={updateFormData} />}
+        {currentStep === 2 && <Statements updateFormData={updateFormData} />}
       </div>
 
       <div className="flex justify-between max-w-4xl mx-auto px-4 mt-8">

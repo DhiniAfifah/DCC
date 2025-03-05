@@ -29,7 +29,6 @@ import {
 } from "@/components/ui/popover";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectTrigger,
@@ -102,10 +101,12 @@ const FormSchema = z.object({
   core_issuer: z.string({ required_error: empty_field_error_message }),
   country_code: z.string({ required_error: empty_field_error_message }),
   used_languages: z.array(
-    z.object({ value: z.string().min(1, empty_field_error_message) })
+    z.object({ 
+      value: z.string().min(1, empty_field_error_message) })
   ),
   mandatory_languages: z.array(
-    z.object({ value: z.string().min(1, empty_field_error_message) })
+    z.object({ 
+      value: z.string().min(1, empty_field_error_message) })
   ),
   sertifikat: z.string().min(1, { message: empty_field_error_message }),
   order: z.string().min(1, { message: empty_field_error_message }),
@@ -142,9 +143,6 @@ const FormSchema = z.object({
     pos_cust: z.string().min(1, { message: empty_field_error_message }),
     negara_cust: z.string().min(1, { message: empty_field_error_message }),
   }),
-  statements: z.array(
-    z.object({ value: z.string().min(1, empty_field_error_message) })
-  ),
 });
 
 export default function AdministrativeForm({updateFormData}: {updateFormData: (data: any) => void;}) {
@@ -190,7 +188,6 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
         pos_cust: "", 
         negara_cust: "" 
       },
-      statements: [{ value: "" }],
     },
   });
 
@@ -246,15 +243,6 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
   } = useFieldArray({
     control: form.control,
     name: "responsible_persons",
-  });
-
-  const {
-    fields: statementFields,
-    append: appendStatement,
-    remove: removeStatement,
-  } = useFieldArray({
-    control: form.control,
-    name: "statements",
   });
 
   const onSubmit = async (data: any) => {
@@ -946,7 +934,7 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
           </CardContent>
         </Card>
 
-        <Card id="resp-person">
+        <Card id="resp_person">
           <CardHeader><CardTitle>Penanggung Jawab</CardTitle></CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
@@ -1238,49 +1226,6 @@ export default function AdministrativeForm({updateFormData}: {updateFormData: (d
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card id="statement">
-          <CardHeader>
-            <CardTitle>Statements/Pernyataan</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-1">
-            {statementFields.map((field, index) => (
-              <FormField
-                control={form.control}
-                key={field.id}
-                name={`statements.${index}.value`}
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center gap-2">
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      {statementFields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => removeStatement(index)}
-                        >
-                          ✕
-                        </Button>
-                      )}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            ))}
-            <Button
-              type="button"
-              size="sm"
-              className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={() => appendStatement({ value: "" })}
-            >
-              <p className="text-xl">+</p>
-            </Button>
           </CardContent>
         </Card>
       </form>
