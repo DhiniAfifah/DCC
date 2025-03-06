@@ -16,26 +16,39 @@ from yattag import Doc, indent
 logging.basicConfig(level=logging.DEBUG)
 
 def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
-    logging.info("Starting DCC creation process")
+    logging.info(f"Received request with tgl_mulai: {dcc.tgl_mulai}, tgl_akhir: {dcc.tgl_akhir}, tgl_pengesahan: {dcc.tgl_pengesahan}")
 
     try:
+        # Validasi jika tanggal kosong
+        if not dcc.tgl_mulai or not dcc.tgl_akhir or not dcc.tgl_pengesahan:
+            raise ValueError("Tanggal tidak boleh kosong")
+
+        # Mengonversi tanggal ke format datetime
+        tgl_mulai = datetime.strptime(dcc.tgl_mulai, "%Y-%m-%d").date()
+        tgl_akhir = datetime.strptime(dcc.tgl_akhir, "%Y-%m-%d").date()
+        tgl_pengesahan = datetime.strptime(dcc.tgl_pengesahan, "%Y-%m-%d").date()
+
+        # Menyimpan data DCC ke dalam database
         db_dcc = models.DCC(
             software_name=dcc.software,
             software_version=dcc.version,
             core_issuer=dcc.core_issuer,
             country_code=dcc.country_code,
-            used_languages=json.dumps([lang.value for lang in dcc.used_languages]),
+            used_languages=json.dumps([lang.value for lang in dcc.used_languages]), 
             mandatory_languages=json.dumps([lang.value for lang in dcc.mandatory_languages]),
             sertifikat_number=dcc.sertifikat,
             order_number=dcc.order,
-            tgl_mulai=datetime.strptime(dcc.tgl_mulai, "%Y-%m-%d").date(),
-            tgl_akhir=datetime.strptime(dcc.tgl_akhir, "%Y-%m-%d").date(),
-            tgl_pengesahan=datetime.strptime(dcc.tgl_pengesahan, "%Y-%m-%d").date(),
+            tgl_mulai=tgl_mulai,
+            tgl_akhir=tgl_akhir,
+            tgl_pengesahan=tgl_pengesahan,
             tempat_kalibrasi=dcc.tempat,
-            objects_description=json.dumps([obj.dict() for obj in dcc.objects]),
-            responsible_persons=json.dumps([resp.dict() for resp in dcc.responsible_persons]),
-            owner=json.dumps(dcc.owner.dict()),
-            statements=json.dumps(dcc.statements)
+            objects_description=json.dumps([obj.dict() for obj in dcc.objects]),  
+            responsible_persons=json.dumps([resp.dict() for resp in dcc.responsible_persons]),  
+            owner=json.dumps(dcc.owner.dict()),  
+            statements=json.dumps([stmt.statement for stmt in dcc.statements]),  
+            methods=json.dumps([method.dict() for method in dcc.methods]),  
+            equipments=json.dumps([equipment.dict() for equipment in dcc.equipments]),  
+            conditions=json.dumps([condition.dict() for condition in dcc.conditions]),  
         )
 
         logging.info(f"Saving DCC: {dcc.sertifikat} to the database")
@@ -43,6 +56,18 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         db.commit()
         db.refresh(db_dcc)
         logging.info(f"DCC {dcc.sertifikat} saved successfully with ID {db_dcc.id}")
+
+        return {"message": "DCC created successfully!", "dcc_id": db_dcc.id}
+
+    except Exception as e:
+        logging.error(f"Error occurred while saving DCC {dcc.sertifikat}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error saving data to database: {str(e)}")
+    
+    except Exception as e:
+        logging.error(f"Unexpected error occurred: {str(e)}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
         # Path to generate XML file
         xml_file_path = f"./dcc_files/{db_dcc.id}_sertifikat.xml"
@@ -74,61 +99,36 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                 with tag('dcc:endPerformanceDate'): text(dcc.tgl_akhir)
                 with tag('dcc:performanceLocation'): text(dcc.tempat)
                 with tag('dcc:issueDate'): text(dcc.tgl_pengesahan)
-            with tag("dcc:items"):
-                for obj in dcc.objects:
-                    with tag("dcc:item"):
-                        with tag("dcc:name"): text(obj.jenis)
-                        with tag("dcc:manufacturer"): text(obj.merek)
-                        with tag("dcc:model"): text(obj.tipe)
-                        with tag("dcc:identification"):
-                            with tag("dcc:issuer"): text(obj.item_issuer)
-                            with tag("dcc:value"): text(obj.seri_item)
-                            with tag("dcc:name"):
-                                with tag("dcc:content"): text(obj.id_lain)
-            with tag('dcc:calibrationLaboratory'): 
-                with tag('dcc:calibrationLaboratoryCode'): text('LK-070-IDN')
-                with tag('dcc:contact'): 
-                    with tag('dcc:name'): 
-                        with tag('dcc:content'): text('Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)')
-                    with tag('dcc:eMail'): text('nmi@bsn.go.id')
-                    with tag('dcc:phone'): text('Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833')
-                    with tag('dcc:link'): text('www.bsn.go.id')
-                    with tag('dcc:location'): 
-                        with tag('dcc:city'): text('Tangerang Selatan')
-                        with tag('dcc:countryCode'): text('ID')
-                        with tag('dcc:postCode'): text('15314')
-                        with tag('dcc:state'): text('Banten')
-                        with tag('dcc:street'): text('KST BJ Habibie Setu')
-                        with tag('dcc:streetNo'): text('Gedung 420')
-                with tag('dcc:cryptElectronicSignature'): pass
-                with tag('dcc:cryptElectronicTimeStamp'): pass
-            with tag('dcc:respPersons'): 
-                for resp in dcc.responsible_persons:
-                    with tag('dcc:respPerson'): 
-                        with tag('dcc:person'): 
-                            with tag('dcc:name'): 
-                                with tag('dcc:content'): text(resp.nama_resp)
-                        with tag('dcc:description'): 
-                            with tag('dcc:name'): 
-                                with tag('dcc:content'): text(resp.nip)
-                        with tag('dcc:role'): text(resp.peran)
-                        with tag('dcc:mainSigner'): text(resp.main_signer)
-                        with tag('dcc:cryptElectronicSignature'): text(resp.signature)
-                        with tag('dcc:cryptElectronicTimeStamp'): text(resp.timestamp)
-            with tag('dcc:customer'): 
-                with tag('dcc:name'): 
-                    with tag('dcc:content'): text(dcc.owner.nama_cust)
-                with tag('dcc:location'): 
-                    with tag('dcc:city'): text(dcc.owner.kota_cust)
-                    with tag('dcc:countryCode'): text(dcc.owner.negara_cust)
-                    with tag('dcc:postCode'): text(dcc.owner.pos_cust)
-                    with tag('dcc:state'): text(dcc.owner.state_cust)
-                    with tag('dcc:street'): text(dcc.owner.jalan_cust)
-                    with tag('dcc:streetNo'): text(dcc.owner.no_jalan_cust)
-            with tag('dcc:statement'): 
-                with tag('dcc:name'): 
-                    for stmt in dcc.statements:
-                        with tag('dcc:content'): text(stmt)
+
+        # Handle methods, equipments, and conditions
+        with tag('dcc:measurementResults'):
+            for method in dcc.methods:
+                with tag('dcc:usedMethods'):
+                    with tag('dcc:usedMethod'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text(method.method_name)
+                        with tag('dcc:description'):
+                            with tag('dcc:content'): text(method.method_desc)
+                        with tag('dcc:norm'): text(method.norm)
+
+            with tag('dcc:measuringEquipments'):
+                for equipment in dcc.equipments:
+                    with tag('dcc:measuringEquipment'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text(equipment.nama_alat)
+                        with tag('dcc:identifications'):
+                            with tag('dcc:identification'):
+                                with tag('dcc:issuer'): text(equipment.manuf_model)
+                                with tag('dcc:value'): text(equipment.seri_measuring)
+
+            with tag('dcc:influenceConditions'):
+                for condition in dcc.conditions:
+                    with tag('dcc:influenceCondition'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text(condition.kondisi)
+                        with tag('dcc:description'):
+                            with tag('dcc:content'): text(condition.kondisi_desc)
+                        
         # with tag('dcc:measurementResults'): 
         #     with tag('dcc:measurementResult'):
         #         with tag('dcc:name'): 
@@ -226,6 +226,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         #                                 with tag('si:realListXMLList'):
         #                                     with tag('si:valueXMLList'): text(value12)
         #                                     with tag('si:unitXMLList'): text(unit12)
+        
         doc.asis('</dcc:digitalCalibrationCertificate>')
 
         result = indent( 

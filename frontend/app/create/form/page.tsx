@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useForm, FormProvider, useFieldArray } from "react-hook-form"; // Import useFieldArray untuk menangani array
 import Stepper from "@/components/ui/stepper";
 import AdministrativeForm from "@/components/administrative-form";
 import MeasurementForm from "@/components/measurement-form";
+import Statements from "@/components/statements"; // Import Statements component
 import { Button } from "@/components/ui/button";
 
 export default function CreateDCC() {
@@ -15,124 +17,118 @@ export default function CreateDCC() {
     "Preview",
   ];
 
-  // Simpan data form di state
-  const [formData, setFormData] = useState({
-    software: "",
-    version: "",
-    core_issuer: "",
-    country_code: "",
-    used_languages: [],
-    mandatory_languages: [],
-    sertifikat: "",
-    order: "",
-    tgl_mulai: "",
-    tgl_akhir: "",
-    tempat: "",
-    tgl_pengesahan: "",
-    objects: [
-      {
-        jenis: "",
-        merek: "",
-        tipe: "",
-        item_issuer: "",
-        seri_item: "",
-        id_lain: "",
+  const formMethods = useForm({
+    defaultValues: {
+      software: "",
+      version: "",
+      core_issuer: "",
+      country_code: "",
+      used_languages: [],
+      mandatory_languages: [],
+      sertifikat: "",
+      order: "",
+      tgl_mulai: "",
+      tgl_akhir: "",
+      tempat: "",
+      tgl_pengesahan: "",
+      objects: [
+        {
+          jenis: "",
+          merek: "",
+          tipe: "",
+          item_issuer: "",
+          seri_item: "",
+          id_lain: "",
+        },
+      ],
+      responsible_persons: [
+        {
+          nama_resp: "",
+          nip: "",
+          peran: "",
+          main_signer: "",
+          signature: "",
+          timestamp: "",
+        },
+      ],
+      owner: {
+        nama_cust: "",
+        jalan_cust: "",
+        no_jalan_cust: "",
+        kota_cust: "",
+        state_cust: "",
+        pos_cust: "",
+        negara_cust: "",
       },
-    ],
-    responsible_persons: [
-      {
-        nama_resp: "",
-        nip: "",
-        peran: "",
-        main_signer: "",
-        signature: "",
-        timestamp: "",
-      },
-    ],
-    owner: {
-      nama_cust: "",
-      jalan_cust: "",
-      no_jalan_cust: "",
-      kota_cust: "",
-      state_cust: "",
-      pos_cust: "",
-      negara_cust: "",
+      statements: [{ statement: "" }],
+      methods: [{ name: "", norm: "", description: "" }],
+      equipments: [{ name: "", manufacturer_model: "", serial_number: "" }],
+      conditions: [
+        {
+          condition_type: "",
+          description: "",
+          center_point: 0,
+          center_unit: "",
+          range_value: 0,
+          range_unit: "",
+        },
+      ],
     },
-    statements: [""],
+  });
+
+  const { handleSubmit, setValue, getValues, control } = formMethods;
+
+  const {
+    fields: methodsFields,
+    append: appendMethod,
+    remove: removeMethod,
+  } = useFieldArray({
+    control,
+    name: "methods",
+  });
+
+  const {
+    fields: equipmentFields,
+    append: appendEquipment,
+    remove: removeEquipment,
+  } = useFieldArray({
+    control,
+    name: "equipments",
+  });
+
+  const {
+    fields: conditionsFields,
+    append: appendCondition,
+    remove: removeCondition,
+  } = useFieldArray({
+    control,
+    name: "conditions",
+  });
+
+  const {
+    fields: statementsFields,
+    append: appendStatement,
+    remove: removeStatement,
+  } = useFieldArray({
+    control,
+    name: "statements",
   });
 
   const [downloadLink, setDownloadLink] = useState<string | null>(null);
 
   const updateFormData = (data: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      ...data,
-      used_languages: data.used_languages
-        ? data.used_languages
-        : prev.used_languages,
-      mandatory_languages: data.mandatory_languages
-        ? data.mandatory_languages
-        : prev.mandatory_languages,
-      sertifikat: data.sertifikat?.toString() || "",
-      order: data.order?.toString() || "",
-      tgl_mulai: data.tgl_mulai
-        ? new Date(data.tgl_mulai).toISOString().split("T")[0]
-        : prev.tgl_mulai,
-      tgl_akhir: data.tgl_akhir
-        ? new Date(data.tgl_akhir).toISOString().split("T")[0]
-        : prev.tgl_akhir,
-      tgl_pengesahan: data.tgl_pengesahan
-        ? new Date(data.tgl_pengesahan).toISOString().split("T")[0]
-        : prev.tgl_pengesahan,
-      statements: Array.isArray(data.statements)
-        ? data.statements.map((stmt: string) =>
-            typeof stmt === "string" ? stmt.trim() : ""
-          )
-        : prev.statements,
-      responsible_persons: Array.isArray(data.responsible_persons)
-        ? data.responsible_persons.map((resp: any) => ({
-            nama_resp: resp.nama_resp || "",
-            nip: resp.nip || "",
-            peran: resp.peran || "",
-            main_signer: resp.main_signer || "",
-            signature: resp.signature || "",
-            timestamp: resp.timestamp || "",
-          }))
-        : prev.responsible_persons,
-      objects: Array.isArray(data.objects)
-        ? data.objects.map((obj: any) => ({
-            jenis: obj.jenis || "",
-            merek: obj.merek || "",
-            tipe: obj.tipe || "",
-            item_issuer: obj.item_issuer || "",
-            seri_item: obj.seri_item || "",
-            id_lain: obj.id_lain || "",
-          }))
-        : prev.objects,
-    }));
+    setValue("methods", data.methods || getValues("methods"));
+    setValue("equipments", data.equipments || getValues("equipments"));
+    setValue("conditions", data.conditions || getValues("conditions"));
+    setValue("statements", data.statements || getValues("statements"));
   };
 
-  const nextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  // Fungsi untuk kembali ke langkah sebelumnya
-  const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleSubmit = async () => {
-    console.log("Data yang dikirim ke backend:", formData);
-
+  const handleFormSubmit = async (data: any) => {
     try {
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
@@ -142,66 +138,68 @@ export default function CreateDCC() {
         );
       }
 
-      const data = await response.json();
-      console.log("Response from backend:", data);
-
-      if (data.download_link) {
-        setDownloadLink(data.download_link);
-        alert(`DCC Created! Click the button below to download.`);
+      const responseData = await response.json();
+      if (responseData.download_link) {
+        setDownloadLink(responseData.download_link);
+        alert("DCC Created! Klik tombol di bawah untuk mengunduh.");
       } else {
-        alert("DCC Created, but download link is missing.");
+        alert("DCC Created, tetapi link unduhan tidak ditemukan.");
       }
     } catch (error: unknown) {
-      console.error("Error submitting form:", error);
-
-      // Cek apakah error adalah instance dari Error
+      let errorMessage = "Unknown error occurred.";
       if (error instanceof Error) {
-        alert(`Failed to create DCC. Error: ${error.message}`);
-      } else {
-        alert("An unknown error occurred.");
+        errorMessage = error.message;
       }
+      alert(`Failed to create DCC. Error: ${errorMessage}`);
     }
   };
 
   return (
-    <div className="container mx-auto py-8 pt-20">
-      <Stepper currentStep={currentStep} steps={steps} />
+    <FormProvider {...formMethods}>
+      <div className="container mx-auto py-8 pt-20">
+        <Stepper currentStep={currentStep} steps={steps} />
 
-      <div className="mt-12 space-y-10">
-        {currentStep === 0 && (
-          <AdministrativeForm updateFormData={updateFormData} />
-        )}
-        {currentStep === 1 && <MeasurementForm />}
-      </div>
-
-      <div className="flex justify-between max-w-4xl mx-auto px-4 mt-8">
-        <Button
-          variant="outline"
-          onClick={prevStep}
-          disabled={currentStep === 0}
-        >
-          Previous
-        </Button>
-
-        {currentStep === steps.length - 1 ? (
-          <Button onClick={handleSubmit}>Submit</Button>
-        ) : (
-          <Button onClick={nextStep}>Next</Button>
-        )}
-      </div>
-
-      {downloadLink && (
-        <div className="text-center mt-6">
-          <p className="text-green-500 font-semibold">
-            DCC Created Successfully!
-          </p>
-          <a href={downloadLink} target="_blank" rel="noopener noreferrer">
-            <Button variant="default" className="mt-2">
-              Download DCC
-            </Button>
-          </a>
+        <div className="mt-12 space-y-10">
+          {currentStep === 0 && (
+            <AdministrativeForm updateFormData={updateFormData} />
+          )}
+          {currentStep === 1 && (
+            <MeasurementForm updateFormData={updateFormData} />
+          )}
+          {currentStep === 2 && <Statements form={formMethods} />}
         </div>
-      )}
-    </div>
+
+        <div className="flex justify-between max-w-4xl mx-auto px-4 mt-8">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentStep(currentStep - 1)}
+            disabled={currentStep === 0}
+          >
+            Previous
+          </Button>
+
+          {currentStep === steps.length - 1 ? (
+            <Button onClick={handleSubmit(handleFormSubmit)}>Submit</Button>
+          ) : (
+            <Button onClick={() => setCurrentStep(currentStep + 1)}>
+              Next
+            </Button>
+          )}
+        </div>
+
+        {downloadLink && (
+          <div className="text-center mt-6">
+            <p className="text-green-500 font-semibold">
+              DCC Created Successfully!
+            </p>
+            <a href={downloadLink} target="_blank" rel="noopener noreferrer">
+              <Button variant="default" className="mt-2">
+                Download DCC
+              </Button>
+            </a>
+          </div>
+        )}
+      </div>
+    </FormProvider>
   );
 }
