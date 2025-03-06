@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm, FormProvider } from "react-hook-form";
+import { useFieldArray, useForm, FormProvider, useFormContext } from "react-hook-form";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -34,7 +34,7 @@ const FormSchema = z.object({
       rentang_unit: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
-  file: z.instanceof(FileList).optional(),
+  file: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
   results: z.array(
     z.object({
       parameter: z.string().min(1, { message: empty_field_error_message }),
@@ -52,6 +52,185 @@ const FormSchema = z.object({
     })
   )
 });
+
+interface RealList {
+  value: string,
+  unit: string
+}
+
+interface Column {
+  kolom: string,
+  real_list: RealList[]
+}
+
+interface Result {
+  parameter: string,
+  columns: Column[]
+}
+
+interface FormValues {
+  results: Result[];
+}
+
+interface ColumnsProps {
+  resultIndex: number;
+}
+
+interface RealListProps {
+  resultIndex: number;
+  columnIndex: number;
+}
+
+const RealLists = ({ resultIndex, columnIndex }: RealListProps) => {
+  const { control, register } = useFormContext();
+  const {
+    fields: realListFields,
+    append: appendRealList,
+    remove: removeRealList,
+  } = useFieldArray<FormValues>({
+    name: `results.${resultIndex}.columns.${columnIndex}.real_list`
+  });
+
+  return (
+    <div id="real_list">
+      <div className="space-y-2">
+      {realListFields.map((realListField, realListIndex) => (
+        <div key={realListField.id} className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div id="value">
+                <FormLabel>Nilai</FormLabel>
+                <FormField 
+                  control={control} 
+                  name={`results.${resultIndex}.columns.${columnIndex}.real_list.${realListIndex}.value`} 
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div id="unit">
+                <FormLabel>Satuan</FormLabel>
+                <FormField 
+                  control={control} 
+                  name={`results.${resultIndex}.columns.${columnIndex}.real_list.${realListIndex}.unit`} 
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+            {realListFields.length > 1 && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                onClick={() => removeRealList(realListIndex)}
+              >
+                ✕
+              </Button>
+            )}
+          </div>
+          <FormMessage />
+        </div>
+      ))}
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="mt-2"
+        onClick={() => appendRealList({ value: "", unit: "" })}
+      >
+        <p className="text-xl">+</p>
+      </Button>
+    </div>
+  );
+};
+
+const Columns = ({ resultIndex }: ColumnsProps) => {
+  const { control, register } = useFormContext();
+  const {
+    fields: columnFields,
+    append: appendColumn,
+    remove: removeColumn,
+  } = useFieldArray<FormValues>({
+    name: `results.${resultIndex}.columns`
+  });
+
+  return (
+    <div id="columns" className="grid grid-cols-2 gap-4">
+      <Card id="kolom">
+        <CardHeader></CardHeader>
+        <CardContent className="grid gap-6">
+          <div className="grid gap-4">
+            {columnFields.map((columnField, columnIndex) => (
+              <div key={columnField.id} className="grid gap-4 border-b pb-4 relative">
+                <p className="text-sm text-muted-foreground">Kolom {columnIndex + 1}</p>
+
+                {columnFields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-0 right-0"
+                    onClick={() => removeColumn(columnIndex)}
+                  >
+                    ✕
+                  </Button>
+                )}
+
+                <div id="kolom">
+                  <FormLabel>Nama Kolom</FormLabel>
+                  <FormField 
+                    control={control} 
+                    name={`results.${resultIndex}.columns.${columnIndex}.kolom`} 
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <RealLists resultIndex={resultIndex} columnIndex={columnIndex} />
+              </div>
+            ))}
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+            onClick={() =>
+              appendColumn({ 
+                kolom: "", 
+                real_list: [{ 
+                  value: "", 
+                  unit: ""
+                }]
+              })
+            }
+          >
+            <p className="text-xl">+</p>
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 export default function MeasurementForm({updateFormData}: {updateFormData: (data: any) => void;}) {
   const form = useForm({
@@ -98,26 +277,32 @@ export default function MeasurementForm({updateFormData}: {updateFormData: (data
 
   const fileRef = form.register("file");
 
-  const { fields: resultFields, append: appendResult, remove: removeResult, } = useFieldArray({
-    control: form.control,
-    name: "results",
+  // const { fields: resultFields, append: appendResult, remove: removeResult, } = useFieldArray({
+  //   control: form.control,
+  //   name: "results",
+  // });
+
+  // const columnFieldsArray = resultFields.map((_, index) =>
+  //   useFieldArray({
+  //     control: form.control,
+  //     name: `results.${index}.columns`,
+  //   })
+  // );
+
+  // const realListFieldsArray = columnFieldsArray.map((columnFields, resultIndex) =>
+  //   columnFields.fields.map((_, columnIndex) =>
+  //     useFieldArray({
+  //       control: form.control,
+  //       name: `results.${resultIndex}.columns.${columnIndex}.real_list`,
+  //     })
+  //   )
+  // );
+
+  const { control, handleSubmit, register } = form;
+  const { fields: resultFields, append: appendResult, remove: removeResult } = useFieldArray({
+    control,
+    name: "results"
   });
-
-  const columnFieldsArray = resultFields.map((_, index) =>
-    useFieldArray({
-      control: form.control,
-      name: `results.${index}.columns`,
-    })
-  );
-
-  const realListFieldsArray = columnFieldsArray.map((columnFields, resultIndex) =>
-    columnFields.fields.map((_, columnIndex) =>
-      useFieldArray({
-        control: form.control,
-        name: `results.${resultIndex}.columns.${columnIndex}.real_list`,
-      })
-    )
-  );
 
   const onSubmit = async (data: any) => {
     try {
@@ -487,178 +672,41 @@ export default function MeasurementForm({updateFormData}: {updateFormData: (data
 
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
-                {resultFields.map((resultField, resultIndex) => {
-                  const { 
-                    fields: columnFields, 
-                    append: appendColumn, 
-                    remove: removeColumn 
-                  } = columnFieldsArray[resultIndex];
+                {resultFields.map((resultField, resultIndex) => (
+                  <div key={resultField.id} className="grid gap-4 border-b pb-4 relative">
+                    <p className="text-sm text-muted-foreground">Parameter {resultIndex  + 1}</p>
 
-                  return (
-                    <div key={resultField.id} className="grid gap-4 border-b pb-4 relative">
-                      <p className="text-sm text-muted-foreground">Parameter {resultIndex  + 1}</p>
+                    {resultFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removeResult(resultIndex)}
+                      >
+                        ✕
+                      </Button>
+                    )}
 
-                      {resultFields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-0 right-0"
-                          onClick={() => removeResult(resultIndex)}
-                        >
-                          ✕
-                        </Button>
-                      )}
-
-                      <div id="parameter">
-                        <FormLabel>Parameter (Judul Tabel)</FormLabel>
-                        <FormField 
-                          control={form.control} 
-                          name={`results.${resultIndex}.parameter`} 
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div id="columns" className="grid grid-cols-2 gap-4">
-                          <Card id="kolom">
-                            <CardHeader></CardHeader>
-                            <CardContent className="grid gap-6">
-                              <div className="grid gap-4">
-                                {columnFields.map((columnField, columnIndex) => {
-                                  const { 
-                                    fields: realListFields, 
-                                    append: appendRealList, 
-                                    remove: removeRealList 
-                                  } = realListFieldsArray[resultIndex][columnIndex];
-
-                                  return (
-                                    <div key={columnField.id} className="grid gap-4 border-b pb-4 relative">
-                                      <p className="text-sm text-muted-foreground">Kolom {columnIndex + 1}</p>
-
-                                      {columnFields.length > 1 && (
-                                        <Button
-                                          type="button"
-                                          variant="destructive"
-                                          size="icon"
-                                          className="absolute top-0 right-0"
-                                          onClick={() => removeColumn(columnIndex)}
-                                        >
-                                          ✕
-                                        </Button>
-                                      )}
-
-                                      <div id="kolom">
-                                        <FormLabel>Nama Kolom</FormLabel>
-                                        <FormField 
-                                          control={form.control} 
-                                          name={`results.${resultIndex}.columns.${columnIndex}.kolom`} 
-                                          render={({ field }) => (
-                                            <FormItem>
-                                              <FormControl>
-                                                <Input {...field} />
-                                              </FormControl>
-                                              <FormMessage />
-                                            </FormItem>
-                                          )}
-                                        />
-                                      </div>
-
-                                      <div id="real_list">
-                                        <div className="space-y-2">
-                                        {realListFields.map((realListField, realListIndex) => (
-                                          <div key={realListField.id} className="flex flex-col">
-                                            <div className="flex items-center gap-2">
-                                              <div className="grid grid-cols-2 gap-4">
-                                                <div id="value">
-                                                  <FormLabel>Nilai</FormLabel>
-                                                  <FormField 
-                                                    control={form.control} 
-                                                    name={`results.${resultIndex}.columns.${columnIndex}.real_list.${realListIndex}.value`} 
-                                                    render={({ field }) => (
-                                                      <FormItem>
-                                                        <FormControl>
-                                                          <Input {...field} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                      </FormItem>
-                                                    )}
-                                                  />
-                                                </div>
-
-                                                <div id="unit">
-                                                  <FormLabel>Satuan</FormLabel>
-                                                  <FormField 
-                                                    control={form.control} 
-                                                    name={`results.${resultIndex}.columns.${columnIndex}.real_list.${realListIndex}.unit`} 
-                                                    render={({ field }) => (
-                                                      <FormItem>
-                                                        <FormControl>
-                                                          <Input {...field} />
-                                                        </FormControl>
-                                                        <FormMessage />
-                                                      </FormItem>
-                                                    )}
-                                                  />
-                                                </div>
-                                              </div>
-                                              {realListFields.length > 1 && (
-                                                <Button
-                                                  type="button"
-                                                  variant="destructive"
-                                                  size="icon"
-                                                  onClick={() => removeRealList(realListIndex)}
-                                                >
-                                                  ✕
-                                                </Button>
-                                              )}
-                                            </div>
-                                            <FormMessage />
-                                          </div>
-                                        ))}
-                                        </div>
-                                        <Button
-                                          type="button"
-                                          variant="outline"
-                                          size="sm"
-                                          className="mt-2"
-                                          onClick={() => appendRealList({ value: "", unit: "" })}
-                                        >
-                                          <p className="text-xl">+</p>
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                              <Button
-                                type="button"
-                                size="sm"
-                                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-                                onClick={() =>
-                                  appendColumn({ 
-                                    kolom: "", 
-                                    real_list: [{ 
-                                      value: "", 
-                                      unit: ""
-                                    }]
-                                  })
-                                }
-                              >
-                                <p className="text-xl">+</p>
-                              </Button>
-                            </CardContent>
-                          </Card>
-                      </div>
+                    <div id="parameter">
+                      <FormLabel>Parameter (Judul Tabel)</FormLabel>
+                      <FormField 
+                        control={form.control} 
+                        name={`results.${resultIndex}.parameter`} 
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                  );
-                })}
+
+                    <Columns resultIndex={resultIndex} />
+                  </div>
+                ))}
               </div>
               <Button
                 type="button"
