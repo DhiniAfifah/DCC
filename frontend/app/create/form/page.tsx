@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Stepper from "@/components/ui/stepper";
 import AdministrativeForm from "@/components/administrative-form";
 import MeasurementForm from "@/components/measurement-form";
-import { Button } from "@/components/ui/button";
 import Statements from "@/components/statements";
+import { Button } from "@/components/ui/button";
 
 export default function CreateDCC() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -61,6 +61,21 @@ export default function CreateDCC() {
     },
     statements: [""],
   });
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = ""; // Show warning when user attempts to leave
+    };
+  
+    if (formData) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
+  
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [formData]); // Depend on formData to track changes  
 
   const [downloadLink, setDownloadLink] = useState<string | null>(null);
 
