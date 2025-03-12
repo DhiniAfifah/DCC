@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" schemaVersion="3.3.0">
+   <dcc:administrativeData>
+      <dcc:dccSoftware>
+         <dcc:software>
+            <dcc:name>
+               <dcc:content>tes</dcc:content>
+            </dcc:name>
+            <dcc:release>1</dcc:release>
+         </dcc:software>
+      </dcc:dccSoftware>
+      <dcc:coreData>
+         <dcc:countryCodeISO3166_1>BR</dcc:countryCodeISO3166_1>
+         <dcc:usedLangCodeISO639_1>en</dcc:usedLangCodeISO639_1>
+         <dcc:mandatoryLangCodeISO639_1>id</dcc:mandatoryLangCodeISO639_1>
+         <dcc:uniqueIdentifier></dcc:uniqueIdentifier>
+         <dcc:identifications>
+            <dcc:identification>
+               <dcc:issuer>calibrationLaboratory</dcc:issuer>
+               <dcc:value></dcc:value>
+               <dcc:name>
+                  <dcc:content>Nomor Order</dcc:content>
+               </dcc:name>
+            </dcc:identification>
+         </dcc:identifications>
+         <dcc:beginPerformanceDate>2025-02-01</dcc:beginPerformanceDate>
+         <dcc:endPerformanceDate>2025-02-15</dcc:endPerformanceDate>
+         <dcc:performanceLocation>laboratoryBranch</dcc:performanceLocation>
+         <dcc:issueDate>2025-03-03</dcc:issueDate>
+      </dcc:coreData>
+      <dcc:items>
+         <dcc:item>
+            <dcc:name>palu</dcc:name>
+            <dcc:manufacturer>huhu</dcc:manufacturer>
+            <dcc:model>m11</dcc:model>
+            <dcc:identification>
+               <dcc:issuer>calibrationLaboratory</dcc:issuer>
+               <dcc:value>0009</dcc:value>
+               <dcc:name>
+                  <dcc:content>n/a</dcc:content>
+               </dcc:name>
+            </dcc:identification>
+         </dcc:item>
+      </dcc:items>
+      <dcc:calibrationLaboratory>
+         <dcc:calibrationLaboratoryCode>LK-070-IDN</dcc:calibrationLaboratoryCode>
+         <dcc:contact>
+            <dcc:name>
+               <dcc:content>Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)</dcc:content>
+            </dcc:name>
+            <dcc:eMail>nmi@bsn.go.id</dcc:eMail>
+            <dcc:phone>Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833</dcc:phone>
+            <dcc:link>www.bsn.go.id</dcc:link>
+            <dcc:location>
+               <dcc:city>Tangerang Selatan</dcc:city>
+               <dcc:countryCode>ID</dcc:countryCode>
+               <dcc:postCode>15314</dcc:postCode>
+               <dcc:state>Banten</dcc:state>
+               <dcc:street>KST BJ Habibie Setu</dcc:street>
+               <dcc:streetNo>Gedung 420</dcc:streetNo>
+            </dcc:location>
+         </dcc:contact>
+         <dcc:cryptElectronicSignature></dcc:cryptElectronicSignature>
+         <dcc:cryptElectronicTimeStamp></dcc:cryptElectronicTimeStamp>
+      </dcc:calibrationLaboratory>
+      <dcc:respPersons>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>juju</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:name>
+                  <dcc:content>0000064536</dcc:content>
+               </dcc:name>
+            </dcc:description>
+            <dcc:role>tk</dcc:role>
+            <dcc:mainSigner></dcc:mainSigner>
+            <dcc:cryptElectronicSignature></dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp></dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+      </dcc:respPersons>
+      <dcc:customer>
+         <dcc:name>
+            <dcc:content>bsn snsu</dcc:content>
+         </dcc:name>
+         <dcc:location>
+            <dcc:city>tangerang</dcc:city>
+            <dcc:countryCode>Indonesia</dcc:countryCode>
+            <dcc:postCode>15875</dcc:postCode>
+            <dcc:state>banten</dcc:state>
+            <dcc:street>puspitek</dcc:street>
+            <dcc:streetNo>18</dcc:streetNo>
+         </dcc:location>
+      </dcc:customer>
+      <dcc:statement>
+         <dcc:name>
+            <dcc:content></dcc:content>
+         </dcc:name>
+      </dcc:statement>
+   </dcc:administrativeData>
+</dcc:digitalCalibrationCertificate>
