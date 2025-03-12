@@ -15,7 +15,6 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -145,50 +144,17 @@ const FormSchema = z.object({
   }),
 });
 
-export default function AdministrativeForm({updateFormData}: {updateFormData: (data: any) => void;}) {
+export default function AdministrativeForm({
+  formData,
+  updateFormData,
+}: {
+  formData: any;
+  updateFormData: (data: any) => void;
+}) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
     mode: "onChange",
-    defaultValues: {
-      software: "",
-      version: "",
-      core_issuer: "",
-      country_code: "",
-      used_languages: [{ value: "" }],
-      mandatory_languages: [{ value: "" }],
-      sertifikat: "",
-      order: "",
-      tempat: "",
-      objects: [
-        {
-          jenis: "",
-          merek: "",
-          tipe: "",
-          item_issuer: "",
-          seri_item: "",
-          id_lain: "",
-        },
-      ],
-      responsible_persons: [
-        {
-          nama_resp: "",
-          nip: "",
-          peran: "",
-          main_signer: "",
-          signature: "",
-          timestamp: "",
-        },
-      ],
-      owner: { 
-        nama_cust: "", 
-        jalan_cust: "", 
-        no_jalan_cust: "", 
-        kota_cust: "", 
-        state_cust: "", 
-        pos_cust: "", 
-        negara_cust: "" 
-      },
-    },
+    defaultValues: formData,
   });
 
   useEffect(() => {

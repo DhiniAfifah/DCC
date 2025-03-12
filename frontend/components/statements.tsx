@@ -1,16 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -23,13 +19,17 @@ const FormSchema = z.object({
 	),
 });
 
-export default function Statements({updateFormData}: {updateFormData: (data: any) => void;}) {
+export default function Statements({
+  formData,
+  updateFormData,
+}: {
+  formData: any;
+  updateFormData: (data: any) => void;
+}) {
 	const form = useForm({
 		resolver: zodResolver(FormSchema),
 		mode: "onChange",
-		defaultValues: {
-			statements: [{ value: "" }],
-		},
+		defaultValues: formData,
 	});
 
 	useEffect(() => {
