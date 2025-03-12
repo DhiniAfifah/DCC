@@ -40,6 +40,25 @@ class OwnerIdentity(BaseModel):
     state_cust: str
     pos_cust: str
     negara_cust: str
+    
+# New classes for "Method", "Equipment", and "Condition"
+class Method(BaseModel):
+    method_name: str
+    norm: str
+    method_desc: str
+
+class Equipment(BaseModel):
+    nama_alat: str
+    manuf_model: str
+    seri_measuring: str
+
+class Condition(BaseModel):
+    kondisi: str
+    kondisi_desc: str
+    tengah_value: str
+    tengah_unit: str
+    rentang_value: str
+    rentang_unit: str
 
 class DCCFormCreate(BaseModel):
     software: str  # software
@@ -58,3 +77,6 @@ class DCCFormCreate(BaseModel):
     responsible_persons: List[ResponsiblePerson]  # Penanggung jawab
     owner: OwnerIdentity  # Identitas pemilik
     statements: List[str]  # Catatan
+    methods: List[Method]  # Add methods
+    equipments: List[Equipment]  # Add equipments
+    conditions: List[Condition]  # Add conditions

@@ -21,3 +21,6 @@ class DCC(Base):
     responsible_persons = Column(Text)  # Simpan JSON dalam bentuk teks
     owner = Column(Text)  # Simpan JSON dalam bentuk teks
     statements = Column(Text) 
+    methods = Column(Text)  # Add methods column
+    equipments = Column(Text)  # Add equipments column
+    conditions = Column(Text)  # Add conditions column

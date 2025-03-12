@@ -35,7 +35,10 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             objects_description=json.dumps([obj.dict() for obj in dcc.objects]),
             responsible_persons=json.dumps([resp.dict() for resp in dcc.responsible_persons]),
             owner=json.dumps(dcc.owner.dict()),
-            statements=json.dumps(dcc.statements)
+            statements=json.dumps(dcc.statements),
+            methods=json.dumps([method.dict() for method in dcc.methods]),  # Adding Metode
+            equipments=json.dumps([equip.dict() for equip in dcc.equipments]),  # Adding Alat Pengukuran
+            conditions=json.dumps([cond.dict() for cond in dcc.conditions])  # Adding Kondisi Ruangan
         )
 
         logging.info(f"Saving DCC: {dcc.sertifikat} to the database")
@@ -125,10 +128,58 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                     with tag('dcc:state'): text(dcc.owner.state_cust)
                     with tag('dcc:street'): text(dcc.owner.jalan_cust)
                     with tag('dcc:streetNo'): text(dcc.owner.no_jalan_cust)
-            with tag('dcc:statement'): 
-                with tag('dcc:name'): 
-                    for stmt in dcc.statements:
-                        with tag('dcc:content'): text(stmt)
+             # Statements Section
+        with tag('dcc:statement'):
+            for stmt in dcc.statements:
+                with tag('dcc:name'):
+                    with tag('dcc:content'): text(stmt)
+
+        # Measurement Results Section
+        with tag('dcc:measurementResults'):
+            # Adding Metode (Methods)
+            with tag('dcc:usedMethods'):
+                for method in dcc.methods:
+                    with tag('dcc:usedMethod'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text(method.method_name)
+                        with tag('dcc:description'):
+                            with tag('dcc:content'): text(method.method_desc)
+                        with tag('dcc:norm'): text(method.norm)
+
+            # Adding Measuring Equipment (Alat Pengukuran)
+            with tag('dcc:measuringEquipments'):
+                for equip in dcc.equipments:
+                    with tag('dcc:measuringEquipment'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text(equip.nama_alat)
+                        with tag('dcc:identifications'):
+                            with tag('dcc:identification'):
+                                with tag('dcc:issuer'): text('manufacturer')
+                                with tag('dcc:value'): text(equip.seri_measuring)
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text(equip.manuf_model)
+
+            # Adding Room Conditions (Kondisi Ruangan)
+            with tag('dcc:influenceConditions'):
+                for condition in dcc.conditions:
+                    with tag('dcc:influenceCondition'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text(condition.kondisi)
+                        with tag('dcc:description'):
+                            with tag('dcc:content'): text(condition.kondisi_desc)
+                        with tag('dcc:data'):
+                            with tag('dcc:quantity'):
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text('Titik Tengah')
+                                with tag('si:real'):
+                                    with tag('si:value'): text(condition.tengah_value)
+                                    with tag('si:unit'): text(condition.tengah_unit)
+                            with tag('dcc:quantity'):
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text('Rentang')
+                                with tag('si:real'):
+                                    with tag('si:value'): text(condition.rentang_value)
+                                    with tag('si:unit'): text(condition.rentang_unit)                
         # with tag('dcc:measurementResults'): 
         #     with tag('dcc:measurementResult'):
         #         with tag('dcc:name'): 
