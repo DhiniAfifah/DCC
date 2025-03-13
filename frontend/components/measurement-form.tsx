@@ -619,7 +619,11 @@ export default function MeasurementForm({
                       return (
                         <FormItem>
                           <FormControl>
-                            <Input type="file" {...fileRef} />
+                          <Input
+                            type="file"
+                            accept=".xlsx, .xls"
+                            {...fileRef}
+                          />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
