@@ -51,6 +51,9 @@ export default function Statements({
 
   const usedLanguages = form.watch("used_languages") || [];
 
+  const fileRefGambar = form.register("gambar");
+  const fileRefRumus = form.register("rumus");
+
 	const onSubmit = async (data: any) => {
     try {
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
@@ -132,6 +135,66 @@ export default function Statements({
             >
               <p className="text-xl">+</p>
             </Button>
+          </CardContent>
+        </Card>
+
+        <Card id="gambar">
+          <CardHeader>
+            <CardTitle>Gambar</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            <div className="grid gap-4">
+              <div>
+                <FormField
+                  control={form.control}
+                  name="gambar"
+                  render={({ field }) => {
+                    return (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept=".jpg, .jpeg, .png"
+                            {...fileRefGambar}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card id="rumus">
+          <CardHeader>
+            <CardTitle>Rumus (sebagai gambar)</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-6">
+            <div className="grid gap-4">
+              <div>
+                <FormField
+                  control={form.control}
+                  name="rumus"
+                  render={({ field }) => {
+                    return (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept=".jpg, .jpeg, .png"
+                            {...fileRefRumus}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </form>
