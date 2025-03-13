@@ -22,34 +22,30 @@ export default function CreateDCC() {
     version: "",
     core_issuer: "",
     country_code: "",
-    used_languages: [],
-    mandatory_languages: [],
+    used_languages: [{ value: "" }],
+    mandatory_languages: [{ value: "" }],
     sertifikat: "",
     order: "",
     tgl_mulai: "",
     tgl_akhir: "",
     tempat: "",
     tgl_pengesahan: "",
-    objects: [
-      {
-        jenis: "",
-        merek: "",
-        tipe: "",
-        item_issuer: "",
-        seri_item: "",
-        id_lain: "",
-      },
-    ],
-    responsible_persons: [
-      {
-        nama_resp: "",
-        nip: "",
-        peran: "",
-        main_signer: "",
-        signature: "",
-        timestamp: "",
-      },
-    ],
+    objects: [{
+      jenis: "",
+      merek: "",
+      tipe: "",
+      item_issuer: "",
+      seri_item: "",
+      id_lain: "",
+    }],
+    responsible_persons: [{
+      nama_resp: "",
+      nip: "",
+      peran: "",
+      main_signer: "",
+      signature: "",
+      timestamp: "",
+    }],
     owner: {
       nama_cust: "",
       jalan_cust: "",
@@ -59,7 +55,36 @@ export default function CreateDCC() {
       pos_cust: "",
       negara_cust: "",
     },
-    statements: [""],
+    methods: [{ 
+      method_name: "", 
+      method_desc: "", 
+      norm: "" 
+    }],
+    equipments: [{ 
+      nama_alat: "", 
+      manuf_model: "", 
+      seri_measuring: "" 
+    }],
+    conditions: [{ 
+      kondisi: "", 
+      kondisi_desc: "", 
+      tengah_value: "", 
+      tengah_unit: "", 
+      rentang_value: "", 
+      rentang_unit: "" 
+    }],
+    sheet_name: "",
+    results: [{ 
+      parameter: "", 
+      columns: [{ 
+        kolom: "", 
+        real_list: [{ 
+          value: "", 
+          unit: ""
+        }] 
+      }] 
+    }],
+    statements: [{ value: "" }],
   });
 
   useEffect(() => {
@@ -185,12 +210,14 @@ export default function CreateDCC() {
 
       <div className="mt-12 space-y-10">
         {currentStep === 0 && (
-          <AdministrativeForm updateFormData={updateFormData} />
+          <AdministrativeForm formData={formData} updateFormData={updateFormData} />
         )}
         {currentStep === 1 && (
-          <MeasurementForm updateFormData={updateFormData} />
+          <MeasurementForm formData={formData} updateFormData={updateFormData} />
         )}
-        {currentStep === 2 && <Statements updateFormData={updateFormData} />}
+        {currentStep === 2 && (
+          <Statements formData={formData} updateFormData={updateFormData} />
+        )}
       </div>
 
       <div className="flex justify-between max-w-4xl mx-auto px-4 mt-8">

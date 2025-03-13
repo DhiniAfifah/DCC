@@ -6,10 +6,8 @@ import {
   useFormContext,
 } from "react-hook-form";
 import { z } from "zod";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -18,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const empty_field_error_message = "Input diperlukan.";
 const FormSchema = z.object({
@@ -46,7 +44,8 @@ const FormSchema = z.object({
       rentang_unit: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
-  file: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
+  excel: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
+  sheet_name: z.string().min(1, { message: empty_field_error_message }),
   results: z.array(
     z.object({
       parameter: z.string().min(1, { message: empty_field_error_message }),
@@ -242,42 +241,15 @@ const Columns = ({ resultIndex }: ColumnsProps) => {
 };
 
 export default function MeasurementForm({
+  formData,
   updateFormData,
 }: {
+  formData: any;
   updateFormData: (data: any) => void;
 }) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
-    defaultValues: {
-      methods: [{ method_name: "", method_desc: "", norm: "" }],
-      equipments: [{ nama_alat: "", manuf_model: "", seri_measuring: "" }],
-      conditions: [
-        {
-          kondisi: "",
-          kondisi_desc: "",
-          tengah_value: "",
-          tengah_unit: "",
-          rentang_value: "",
-          rentang_unit: "",
-        },
-      ],
-      results: [
-        {
-          parameter: "",
-          columns: [
-            {
-              kolom: "",
-              real_list: [
-                {
-                  value: "",
-                  unit: "",
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
+    defaultValues: formData,
   });
 
   useEffect(() => {
@@ -315,7 +287,7 @@ export default function MeasurementForm({
     name: "conditions",
   });
 
-  const fileRef = form.register("file");
+  const fileRef = form.register("excel");
 
   const { control, handleSubmit, register } = form;
   const {
@@ -697,7 +669,7 @@ export default function MeasurementForm({
                   <FormLabel>Upload File Excel</FormLabel>
                   <FormField
                     control={form.control}
-                    name="file"
+                    name="excel"
                     render={({ field }) => {
                       return (
                         <FormItem>
@@ -709,6 +681,21 @@ export default function MeasurementForm({
                       );
                     }}
                   />
+                </div>
+                <div id="sheet">
+                   <FormLabel>Nama Sheet Laporan</FormLabel>
+                   <FormField 
+                     control={form.control} 
+                     name="sheet_name"
+                     render={({ field }) => (
+                       <FormItem>
+                         <FormControl>
+                           <Input {...field} />
+                         </FormControl>
+                         <FormMessage />
+                       </FormItem>
+                     )}
+                   />
                 </div>
               </div>
             </CardContent>
