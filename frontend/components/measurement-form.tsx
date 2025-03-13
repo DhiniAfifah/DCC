@@ -44,7 +44,7 @@ const FormSchema = z.object({
       rentang_unit: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
-  excel: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
+  excel: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
   sheet_name: z.string().min(1, { message: empty_field_error_message }),
   results: z.array(
     z.object({
@@ -683,19 +683,21 @@ export default function MeasurementForm({
                   />
                 </div>
                 <div id="sheet">
-                   <FormLabel>Nama Sheet Laporan</FormLabel>
-                   <FormField 
-                     control={form.control} 
-                     name="sheet_name"
-                     render={({ field }) => (
-                       <FormItem>
-                         <FormControl>
-                           <Input {...field} />
-                         </FormControl>
-                         <FormMessage />
-                       </FormItem>
-                     )}
-                   />
+                  <FormLabel>Nama Sheet Laporan</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="excel"
+                    render={({ field }) => {
+                      return (
+                        <FormItem>
+                          <FormControl>
+                            <Input type="file" accept=".xls,.xlsx" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
+                  />
                 </div>
               </div>
             </CardContent>
