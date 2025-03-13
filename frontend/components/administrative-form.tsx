@@ -300,8 +300,10 @@ export default function AdministrativeForm({
                   render={({ field }) => (
                     <FormItem>
                       <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}>
+                        value="calibrationLaboratory"
+                        defaultValue="calibrationLaboratory"
+                        disabled
+                      >
                         <FormControl>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                         </FormControl>
