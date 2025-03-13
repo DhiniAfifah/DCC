@@ -208,6 +208,22 @@ export default function CreateDCC() {
     <div className="container mx-auto py-8 pt-20">
       <Stepper currentStep={currentStep} steps={steps} />
 
+      <div className="flex justify-between max-w-4xl mx-auto px-4 mt-8">
+        <Button
+          variant="outline"
+          onClick={prevStep}
+          disabled={currentStep === 0}
+        >
+          Previous
+        </Button>
+
+        {currentStep === steps.length - 1 ? (
+          <Button onClick={handleSubmit}>Submit</Button>
+        ) : (
+          <Button onClick={nextStep}>Next</Button>
+        )}
+      </div>
+
       <div className="mt-12 space-y-10">
         {currentStep === 0 && (
           <AdministrativeForm formData={formData} updateFormData={updateFormData} />

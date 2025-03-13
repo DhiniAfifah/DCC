@@ -49,6 +49,8 @@ export default function Statements({
     name: "statements",
   });
 
+  const usedLanguages = form.watch("used_languages") || [];
+
 	const onSubmit = async (data: any) => {
     try {
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
@@ -90,32 +92,37 @@ export default function Statements({
             <CardTitle>Statements/Pernyataan</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-1">
-            {statementFields.map((field, index) => (
-              <FormField
-                control={form.control}
-                key={field.id}
-                name={`statements.${index}.value`}
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center gap-2">
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      {statementFields.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => removeStatement(index)}
-                        >
-                          ✕
-                        </Button>
-                      )}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {statementFields.map((field, statementIndex) => (
+              <div key={field.id} className="grid gap-1 border-b pb-4 relative">
+                <p className="text-sm text-muted-foreground">Statement {statementIndex + 1}</p>
+                {usedLanguages.map((lang: { value: string }, langIndex: number) => (
+                  <FormField
+                    control={form.control}
+                    key={`${field.id}-${langIndex}`}
+                    name={`statements.${statementIndex}.values.${langIndex}`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center gap-2">
+                          <FormControl>
+                            <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
+                          </FormControl>
+                          {statementFields.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => removeStatement(statementIndex)}
+                            >
+                              ✕
+                            </Button>
+                          )}
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
             ))}
             <Button
               type="button"

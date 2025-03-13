@@ -74,6 +74,7 @@ interface FormValues {
 
 interface ColumnsProps {
   resultIndex: number;
+  usedLanguages: { value: string }[];
 }
 
 interface RealListProps {
@@ -158,7 +159,7 @@ const RealLists = ({ resultIndex, columnIndex }: RealListProps) => {
   );
 };
 
-const Columns = ({ resultIndex }: ColumnsProps) => {
+const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
   const { control, register } = useFormContext();
   const {
     fields: columnFields,
@@ -191,18 +192,25 @@ const Columns = ({ resultIndex }: ColumnsProps) => {
 
               <div id="kolom">
                 <FormLabel>Nama Kolom</FormLabel>
-                <FormField 
-                  control={control} 
-                  name={`results.${resultIndex}.columns.${columnIndex}.kolom`} 
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-2">
+                  {usedLanguages.map((lang: { value: string }, langIndex: number) => (
+                    <FormField 
+                      key={langIndex} 
+                      control={control} 
+                      name={`results.${resultIndex}.columns.${columnIndex}.kolom`}
+                      render={({ field }) => (
+                        <>
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        </>
+                      )}
+                    />
+                  ))}
+                </div>
               </div>
 
               <RealLists resultIndex={resultIndex} columnIndex={columnIndex} />
@@ -269,6 +277,8 @@ export default function MeasurementForm({
     control,
     name: "results"
   });
+
+  const usedLanguages = form.watch("used_languages") || [];
 
   const onSubmit = async (data: any) => {
     try {
@@ -675,21 +685,28 @@ export default function MeasurementForm({
 
                     <div id="parameter">
                       <FormLabel>Parameter (Judul Tabel)</FormLabel>
-                      <FormField 
-                        control={form.control} 
-                        name={`results.${resultIndex}.parameter`} 
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="space-y-2">
+                        {usedLanguages.map((lang: { value: string }, langIndex: number) => (
+                          <FormField 
+                            key={langIndex} 
+                            control={form.control} 
+                            name={`results.${resultIndex}.parameters.${langIndex}`}
+                            render={({ field }) => (
+                              <>
+                                <FormItem>
+                                  <FormControl>
+                                    <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              </>
+                            )}
+                          />
+                        ))}
+                      </div>
                     </div>
 
-                    <Columns resultIndex={resultIndex} />
+                    <Columns resultIndex={resultIndex} usedLanguages={usedLanguages} />
                   </div>
                 ))}
               </div>
