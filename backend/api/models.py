@@ -20,7 +20,9 @@ class DCC(Base):
     objects_description = Column(Text)  # Simpan JSON dalam bentuk teks
     responsible_persons = Column(Text)  # Simpan JSON dalam bentuk teks
     owner = Column(Text)  # Simpan JSON dalam bentuk teks
-    statements = Column(Text) 
     methods = Column(Text)  # Add methods column
     equipments = Column(Text)  # Add equipments column
     conditions = Column(Text)  # Add conditions column
+    excel = Column(String)
+    sheet_name = Column(String)
+    statements = Column(Text) 

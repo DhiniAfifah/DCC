@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Any, Union
+from fastapi import UploadFile
 
 class Language(BaseModel):
     value: str
@@ -60,6 +61,9 @@ class Condition(BaseModel):
     rentang_value: str
     rentang_unit: str
 
+class Statement(BaseModel):
+    value: str
+
 class DCCFormCreate(BaseModel):
     software: str  # software
     version: str  # versi
@@ -76,7 +80,9 @@ class DCCFormCreate(BaseModel):
     objects: List[ObjectDescription]  # Deskripsi objek yang diukur
     responsible_persons: List[ResponsiblePerson]  # Penanggung jawab
     owner: OwnerIdentity  # Identitas pemilik
-    statements: List[str]  # Catatan
     methods: List[Method]  # Add methods
     equipments: List[Equipment]  # Add equipments
     conditions: List[Condition]  # Add conditions
+    excel: Union[Any, List[UploadFile]]
+    sheet_name: str
+    statements: List[Statement]  # Catatan

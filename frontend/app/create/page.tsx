@@ -126,9 +126,7 @@ export default function CreateDCC() {
         ? new Date(data.tgl_pengesahan).toISOString().split("T")[0]
         : prev.tgl_pengesahan,
       statements: Array.isArray(data.statements)
-        ? data.statements.map((stmt: string) =>
-            typeof stmt === "string" ? stmt.trim() : ""
-          )
+        ? data.statements
         : prev.statements,
       responsible_persons: Array.isArray(data.responsible_persons)
         ? data.responsible_persons.map((resp: any) => ({

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const empty_field_error_message = "Input diperlukan.";
 const FormSchema = z.object({
@@ -325,21 +325,26 @@ export default function MeasurementForm({
     }
   };
 
+  const [fileName, setFileName] = useState<string>("");
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      setFileName(file.name); // Save only the file name
+
       const formData = new FormData();
-      formData.append("file", event.target.files[0]);
-  
+      formData.append("file", file);
+
       try {
         const response = await fetch("http://127.0.0.1:8000/upload-excel/", {
           method: "POST",
           body: formData,
         });
-  
+
         if (!response.ok) {
           throw new Error("Failed to upload file");
         }
-  
+
         const result = await response.json();
         console.log("File uploaded:", result);
         alert(`File uploaded successfully: ${result.filename}`);
@@ -348,7 +353,7 @@ export default function MeasurementForm({
         alert("File upload failed.");
       }
     }
-  };  
+  };
 
   return (
     <FormProvider {...form}>
