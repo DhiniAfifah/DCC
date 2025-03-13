@@ -325,6 +325,31 @@ export default function MeasurementForm({
     }
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const formData = new FormData();
+      formData.append("file", event.target.files[0]);
+  
+      try {
+        const response = await fetch("http://127.0.0.1:8000/upload-excel/", {
+          method: "POST",
+          body: formData,
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to upload file");
+        }
+  
+        const result = await response.json();
+        console.log("File uploaded:", result);
+        alert(`File uploaded successfully: ${result.filename}`);
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("File upload failed.");
+      }
+    }
+  };  
+
   return (
     <FormProvider {...form}>
       <form
@@ -674,7 +699,7 @@ export default function MeasurementForm({
                       return (
                         <FormItem>
                           <FormControl>
-                            <Input type="file" {...fileRef} />
+                            <Input type="file" {...fileRef} accept=".xls,.xlsx" onChange={handleFileUpload} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

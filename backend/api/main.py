@@ -1,5 +1,5 @@
 import logging
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,6 +8,7 @@ import api.models as models
 import api.schemas as schemas
 import api.database as database
 import os
+import shutil
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
@@ -21,6 +22,9 @@ app.add_middleware(
     allow_methods=["*"],  # Mengizinkan semua HTTP methods
     allow_headers=["*"],  # Mengizinkan semua headers
 )
+
+UPLOAD_DIR = "./uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.get("/")
 async def read_root():
@@ -45,6 +49,17 @@ async def create_dcc(dcc: schemas.DCCFormCreate, db: Session = Depends(get_db)):
     except Exception as e:
         logging.error(f"Error occurred while creating DCC: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+@app.post("/upload-excel/")
+async def upload_excel(file: UploadFile = File(...)):
+    try:
+        file_location = os.path.join(UPLOAD_DIR, file.filename)
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        return {"filename": file.filename, "location": file_location}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 
 # Route untuk download-dcc
 @app.get("/download-dcc/{dcc_id}")
