@@ -237,7 +237,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             f.write(result)
 
         # Generating the download link
-        download_link = f"http://127.0.0.1:8000/download-dcc/{db_dcc.id}_sertifikat.xml"
+        download_link = f"http://127.0.0.1:8000/download-dcc/{db_dcc.id}"
         logging.info(f"Generated download link: {download_link}")
 
         return {"download_link": download_link}
