@@ -284,7 +284,7 @@ export default function AdministrativeForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

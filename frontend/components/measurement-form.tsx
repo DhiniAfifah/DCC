@@ -301,12 +301,22 @@ export default function MeasurementForm({
 
   const onSubmit = async (data: any) => {
     try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("software", data.software);
+      formDataToSend.append("version", data.version);
+      formDataToSend.append("sertifikat", data.sertifikat);
+      formDataToSend.append("order", data.order);
+      formDataToSend.append("methods", JSON.stringify(data.methods));
+      formDataToSend.append("equipments", JSON.stringify(data.equipments));
+      formDataToSend.append("conditions", JSON.stringify(data.conditions));
+      formDataToSend.append("file", data.excel ? data.excel[0] : "");
+
+      // Debugging: Lihat isi dari formData
+      console.log("FormData sent:", formDataToSend);
+
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        body: formDataToSend,
       });
 
       if (!response.ok) {
@@ -658,32 +668,14 @@ export default function MeasurementForm({
               </Button>
             </CardContent>
           </Card>
-
           <Card id="excel">
             <CardHeader>
               <CardTitle>Excel</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
-                <div id="excel_file">
-                  <FormLabel>Upload File Excel</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name="excel"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormControl>
-                            <Input type="file" {...fileRef} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                </div>
                 <div id="sheet">
-                  <FormLabel>Nama Sheet Laporan</FormLabel>
+                  <FormLabel>Upload file Excel</FormLabel>
                   <FormField
                     control={form.control}
                     name="excel"
@@ -691,7 +683,13 @@ export default function MeasurementForm({
                       return (
                         <FormItem>
                           <FormControl>
-                            <Input type="file" accept=".xls,.xlsx" {...field} />
+                            <Input
+                              type="file"
+                              accept=".xls,.xlsx"
+                              onChange={(e) => {
+                                field.onChange(e);
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

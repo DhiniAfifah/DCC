@@ -30,22 +30,26 @@ export default function CreateDCC() {
     tgl_akhir: "",
     tempat: "",
     tgl_pengesahan: "",
-    objects: [{
-      jenis: "",
-      merek: "",
-      tipe: "",
-      item_issuer: "",
-      seri_item: "",
-      id_lain: "",
-    }],
-    responsible_persons: [{
-      nama_resp: "",
-      nip: "",
-      peran: "",
-      main_signer: "",
-      signature: "",
-      timestamp: "",
-    }],
+    objects: [
+      {
+        jenis: "",
+        merek: "",
+        tipe: "",
+        item_issuer: "",
+        seri_item: "",
+        id_lain: "",
+      },
+    ],
+    responsible_persons: [
+      {
+        nama_resp: "",
+        nip: "",
+        peran: "",
+        main_signer: "",
+        signature: "",
+        timestamp: "",
+      },
+    ],
     owner: {
       nama_cust: "",
       jalan_cust: "",
@@ -55,35 +59,47 @@ export default function CreateDCC() {
       pos_cust: "",
       negara_cust: "",
     },
-    methods: [{ 
-      method_name: "", 
-      method_desc: "", 
-      norm: "" 
-    }],
-    equipments: [{ 
-      nama_alat: "", 
-      manuf_model: "", 
-      seri_measuring: "" 
-    }],
-    conditions: [{ 
-      kondisi: "", 
-      kondisi_desc: "", 
-      tengah_value: "", 
-      tengah_unit: "", 
-      rentang_value: "", 
-      rentang_unit: "" 
-    }],
+    methods: [
+      {
+        method_name: "",
+        method_desc: "",
+        norm: "",
+      },
+    ],
+    equipments: [
+      {
+        nama_alat: "",
+        manuf_model: "",
+        seri_measuring: "",
+      },
+    ],
+    conditions: [
+      {
+        kondisi: "",
+        kondisi_desc: "",
+        tengah_value: "",
+        tengah_unit: "",
+        rentang_value: "",
+        rentang_unit: "",
+      },
+    ],
     sheet_name: "",
-    results: [{ 
-      parameter: "", 
-      columns: [{ 
-        kolom: "", 
-        real_list: [{ 
-          value: "", 
-          unit: ""
-        }] 
-      }] 
-    }],
+    results: [
+      {
+        parameter: "",
+        columns: [
+          {
+            kolom: "",
+            real_list: [
+              {
+                value: "",
+                unit: "",
+              },
+            ],
+          },
+        ],
+      },
+    ],
     statements: [{ value: "" }],
   });
 
@@ -210,10 +226,16 @@ export default function CreateDCC() {
 
       <div className="mt-12 space-y-10">
         {currentStep === 0 && (
-          <AdministrativeForm formData={formData} updateFormData={updateFormData} />
+          <AdministrativeForm
+            formData={formData}
+            updateFormData={updateFormData}
+          />
         )}
         {currentStep === 1 && (
-          <MeasurementForm formData={formData} updateFormData={updateFormData} />
+          <MeasurementForm
+            formData={formData}
+            updateFormData={updateFormData}
+          />
         )}
         {currentStep === 2 && (
           <Statements formData={formData} updateFormData={updateFormData} />
