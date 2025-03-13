@@ -211,6 +211,18 @@ export default function AdministrativeForm({
     name: "responsible_persons",
   });
 
+  const [selectedRoles, setSelectedRoles] = useState(
+    personFields.map(() => "")
+  );
+  
+  const handleRoleChange = (index: number, value: string) => {
+    setSelectedRoles((prevRoles) => {
+      const newRoles = [...prevRoles];
+      newRoles[index] = value;
+      return newRoles;
+    });
+  };
+
   const onSubmit = async (data: any) => {
     try {
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
@@ -912,7 +924,7 @@ export default function AdministrativeForm({
                   className="grid gap-4 border-b pb-4 relative"
                 >
                   <p className="text-sm text-muted-foreground">
-                    Orang {index + 1}
+                    {selectedRoles[index] || ""}
                   </p>
                   {personFields.length > 1 && (
                     <Button
@@ -965,18 +977,24 @@ export default function AdministrativeForm({
                         name={`responsible_persons.${index}.peran`} 
                         render={({ field }) => (
                           <FormItem>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select 
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                handleRoleChange(index, value);
+                              }} 
+                              defaultValue={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="pelaksana">Pelaksana Kalibrasi</SelectItem>
-                                <SelectItem value="penyelia">Penyelia Kalibrasi</SelectItem>
-                                <SelectItem value="kepala">Kepala Laboratorium</SelectItem>
-                                <SelectItem value="tk">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
-                                <SelectItem value="mrb">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
+                                <SelectItem value="Pelaksana Kalibrasi">Pelaksana Kalibrasi</SelectItem>
+                                <SelectItem value="Penyelia Kalibrasi">Penyelia Kalibrasi</SelectItem>
+                                <SelectItem value="Kepala Laboratorium">Kepala Laboratorium</SelectItem>
+                                <SelectItem value="Direktur SNSU Termoelektrik dan Kimia">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
+                                <SelectItem value="Direktur SNSU Mekanika, Radiasi, dan Biologi">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
