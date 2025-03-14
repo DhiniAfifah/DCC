@@ -42,8 +42,8 @@ def get_db():
 @app.post("/create-dcc/")
 async def create_dcc(dcc: schemas.DCCFormCreate, db: Session = Depends(get_db)):
     try:
-        logging.info("Received request to create DCC")
-        result = crud.create_dcc(db=db, dcc=dcc)
+        logging.info(f"Received request to create DCC with Excel file: {dcc.excel}")
+        result = crud.create_dcc(db=db, dcc=dcc)  # Ensure the excel filename is saved in DB
         logging.info(f"DCC Created Successfully: {result}")
         return result
     except Exception as e:
@@ -51,13 +51,15 @@ async def create_dcc(dcc: schemas.DCCFormCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Internal Server Error")
     
 @app.post("/upload-excel/")
-async def upload_excel(file: UploadFile = File(...)):
+async def upload_excel(excel: UploadFile = File(...)):
     try:
-        file_location = os.path.join(UPLOAD_DIR, file.filename)
+        file_location = os.path.join(UPLOAD_DIR, excel.filename)
         with open(file_location, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+            shutil.copyfileobj(excel.file, buffer)
+        
+        print(f"Received file: {excel.filename}, Content-Type: {excel.content_type}")
 
-        return {"filename": file.filename, "location": file_location}
+        return {"filename": excel.filename, "location": file_location}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 

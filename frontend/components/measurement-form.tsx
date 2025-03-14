@@ -64,6 +64,12 @@ const FormSchema = z.object({
   ),
 });
 
+interface MeasurementFormProps {
+  formData: any;
+  updateFormData: (data: any) => void;
+  setFileName: (name: string) => void; // Accept setFileName prop
+}
+
 interface RealList {
   value: string;
   unit: string;
@@ -299,59 +305,62 @@ export default function MeasurementForm({
     name: "results",
   });
 
+  const [fileName, setFileName] = useState<string>("");
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+  
+      const formData = new FormData();
+      formData.append("excel", file); // Ensure the key matches the backend
+  
+      try {
+        const response = await fetch("http://127.0.0.1:8000/upload-excel/", {
+          method: "POST",
+          body: formData,
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to upload file");
+        }
+  
+        const result = await response.json();
+        console.log("File uploaded:", result);
+        
+        setFileName(result.filename); // Store the filename after upload
+        alert(`File uploaded successfully: ${result.filename}`);
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("File upload failed.");
+      }
+    }
+  };
+
   const onSubmit = async (data: any) => {
     try {
+      const formData = { ...data, excel: fileName }; // Include the uploaded file name
+  
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formData),
       });
-
+  
       if (!response.ok) {
         const errorResult = await response.json();
         console.error("Error response from server:", errorResult);
         alert(`Failed to create DCC: ${errorResult.detail}`);
         return;
       }
-
+  
       const result = await response.json();
       console.log("DCC Created:", result);
       alert(`DCC Created! Download: ${result.download_link}`);
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("An error occurred while submitting the form.");
-    }
-  };
-
-  const [fileName, setFileName] = useState<string>("");
-
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      setFileName(file.name); // Save only the file name
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const response = await fetch("http://127.0.0.1:8000/upload-excel/", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to upload file");
-        }
-
-        const result = await response.json();
-        console.log("File uploaded:", result);
-        alert(`File uploaded successfully: ${result.filename}`);
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("File upload failed.");
-      }
     }
   };
 

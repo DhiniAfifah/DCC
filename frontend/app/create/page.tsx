@@ -16,6 +16,8 @@ export default function CreateDCC() {
     "Preview",
   ];
 
+  const [fileName, setFileName] = useState<string>(""); 
+
   // Simpan data form di state
   const [formData, setFormData] = useState({
     software: "",
@@ -165,25 +167,27 @@ export default function CreateDCC() {
   };
 
   const handleSubmit = async () => {
-    console.log("Data yang dikirim ke backend:", formData);
-
+    const modifiedFormData = { ...formData, excel: fileName }; // Ensure excel contains only the filename
+  
+    console.log("Data yang dikirim ke backend:", modifiedFormData);
+  
     try {
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(modifiedFormData),
       });
-
+  
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
           `HTTP error! Status: ${response.status}, Message: ${errorText}`
         );
       }
-
+  
       const data = await response.json();
       console.log("Response from backend:", data);
-
+  
       if (data.download_link) {
         setDownloadLink(data.download_link);
         alert(`DCC Created! Click the button below to download.`);
@@ -192,15 +196,14 @@ export default function CreateDCC() {
       }
     } catch (error: unknown) {
       console.error("Error submitting form:", error);
-
-      // Cek apakah error adalah instance dari Error
+  
       if (error instanceof Error) {
         alert(`Failed to create DCC. Error: ${error.message}`);
       } else {
         alert("An unknown error occurred.");
       }
     }
-  };
+  };  
 
   return (
     <div className="container mx-auto py-8 pt-20">

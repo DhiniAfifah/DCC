@@ -83,6 +83,6 @@ class DCCFormCreate(BaseModel):
     methods: List[Method]  # Add methods
     equipments: List[Equipment]  # Add equipments
     conditions: List[Condition]  # Add conditions
-    excel: Union[Any, List[UploadFile]]
+    excel: str
     sheet_name: str
     statements: List[Statement]  # Catatan
