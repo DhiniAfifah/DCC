@@ -20,6 +20,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
     logging.info("Starting DCC creation process")
     
     try:
+        logging.debug("Creating DCC model instance")
         db_dcc = models.DCC(
             software_name=dcc.software,
             software_version=dcc.version,
@@ -36,10 +37,10 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             objects_description=json.dumps([obj.dict() for obj in dcc.objects]),
             responsible_persons=json.dumps([resp.dict() for resp in dcc.responsible_persons]),
             owner=json.dumps(dcc.owner.dict()),
-            methods=json.dumps([method.dict() for method in dcc.methods]),  # Adding Metode
-            equipments=json.dumps([equip.dict() for equip in dcc.equipments]),  # Adding Alat Pengukuran
-            conditions=json.dumps([cond.dict() for cond in dcc.conditions]),  # Adding Kondisi Ruangan
-            excel = dcc.excel,
+            methods=json.dumps([method.dict() for method in dcc.methods]),
+            equipments=json.dumps([equip.dict() for equip in dcc.equipments]),
+            conditions=json.dumps([cond.dict() for cond in dcc.conditions]),
+            excel=dcc.excel,
             sheet_name=dcc.sheet_name,
             statements=json.dumps([stmt.dict() for stmt in dcc.statements]),
         )
@@ -50,18 +51,20 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         db.refresh(db_dcc)
         logging.info(f"DCC {dcc.sertifikat} saved successfully with ID {db_dcc.id}")
 
-        excel_path = './uploads/' + dcc.excel
+        excel_path = fr'C:\Users\a516e\Documents\GitHub\DCC\backend\uploads\{dcc.excel}'
         sheet_name = dcc.sheet_name
-        word_path = './assets/template DCC.docx'
-        new_word_path = f'./dcc_files/word_{str(db_dcc.id)}.docx'
+        word_path = r'C:\Users\a516e\Documents\GitHub\DCC\backend\assets\template DCC.docx'
+        new_word_path = fr'C:\Users\a516e\Documents\GitHub\DCC\backend\dcc_files\word_{str(db_dcc.id)}.docx'
 
+        logging.info("Initializing Excel and Word applications")
         excel = win32.Dispatch("Excel.Application")
         word = win32.Dispatch("Word.Application")
         excel.Visible = False
         word.Visible = True
 
+        logging.debug("Opening Excel file")
         wb = excel.Workbooks.Open(excel_path)
-        ws = wb.Sheets(sheet_name)
+        ws = wb.Sheets(dcc.sheet_name)
 
         first_row, last_row = None, None
         first_col, last_col = None, None
@@ -76,6 +79,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                     first_row = row - 1
                 last_row = row
 
+        logging.debug(f"Detected first row: {first_row}, last row: {last_row}")
+
         if first_row is not None and last_row is not None:
             for col in range(1, max_columns + 1):
                 col_has_data = any(ws.Cells(row, col).Value not in [None, ""] for row in range(first_row, last_row + 1))
@@ -83,15 +88,18 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                     if first_col is None:
                         first_col = col
                     last_col = col
+
+            logging.debug(f"Detected first column: {first_col}, last column: {last_col}")
             
             if first_row and first_col and last_row and last_col:
                 start_cell = ws.Cells(first_row, first_col).Address.replace("$", "")
                 end_cell = ws.Cells(last_row, last_col).Address.replace("$", "")
-                print(f"Detected table range: {start_cell}:{end_cell}")
+                logging.info(f"Detected table range: {start_cell}:{end_cell}")
                 
                 table_range = f"{start_cell}:{end_cell}"
                 ws.Range(table_range).Copy()
                 
+                logging.info("Opening Word template")
                 doc = word.Documents.Open(word_path)
                 find_text = "{{ tabel }}"
                 find = word.Selection.Find
@@ -99,21 +107,22 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                 find.Execute()
                 
                 if find.Found:
-                    print("Placeholder found. Inserting table...")
+                    logging.info("Placeholder found. Inserting table...")
                     word.Selection.Paste()
                 else:
-                    print("Placeholder '{{ tabel }}' not found in the document.")
+                    logging.warning("Placeholder '{{ tabel }}' not found in the document.")
                 
                 doc.SaveAs(new_word_path)
                 doc.Close()
-                print(f"Tabel berhasil disalin ke {new_word_path}")
+                logging.info(f"Table successfully copied to {new_word_path}")
 
+        logging.info("Closing Excel and Word applications")
         word.Quit()
         wb.Close(False)
         excel.Close(True)
         excel.Quit()
         
     except Exception as e:
-        logging.error(f"Error occurred while saving DCC {dcc.sertifikat}: {e}")
+        logging.error(f"Error occurred while saving DCC {dcc.sertifikat}: {e}", exc_info=True)
         db.rollback()
         raise HTTPException(status_code=400, detail=f"Error saving data to database: {str(e)}")

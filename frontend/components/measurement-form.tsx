@@ -64,12 +64,6 @@ const FormSchema = z.object({
   ),
 });
 
-interface MeasurementFormProps {
-  formData: any;
-  updateFormData: (data: any) => void;
-  setFileName: (name: string) => void; // Accept setFileName prop
-}
-
 interface RealList {
   value: string;
   unit: string;
@@ -249,9 +243,11 @@ const Columns = ({ resultIndex }: ColumnsProps) => {
 export default function MeasurementForm({
   formData,
   updateFormData,
+  setFileName
 }: {
   formData: any;
   updateFormData: (data: any) => void;
+  setFileName: (name: string) => void;
 }) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
@@ -305,7 +301,7 @@ export default function MeasurementForm({
     name: "results",
   });
 
-  const [fileName, setFileName] = useState<string>("");
+  const [fileName] = useState<string>("");
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {

@@ -214,7 +214,7 @@ export default function CreateDCC() {
           <AdministrativeForm formData={formData} updateFormData={updateFormData} />
         )}
         {currentStep === 1 && (
-          <MeasurementForm formData={formData} updateFormData={updateFormData} />
+          <MeasurementForm formData={formData} updateFormData={updateFormData} setFileName={setFileName} />
         )}
         {currentStep === 2 && (
           <Statements formData={formData} updateFormData={updateFormData} />
