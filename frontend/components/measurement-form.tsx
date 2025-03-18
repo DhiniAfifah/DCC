@@ -85,6 +85,7 @@ interface FormValues {
 
 interface ColumnsProps {
   resultIndex: number;
+  usedLanguages: { value: string }[];
 }
 
 interface RealListProps {
@@ -169,7 +170,7 @@ const RealLists = ({ resultIndex, columnIndex }: RealListProps) => {
   );
 };
 
-const Columns = ({ resultIndex }: ColumnsProps) => {
+const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
   const { control, register } = useFormContext();
   const {
     fields: columnFields,
@@ -204,21 +205,26 @@ const Columns = ({ resultIndex }: ColumnsProps) => {
 
               <div id="kolom">
                 <FormLabel>Nama Kolom</FormLabel>
-                <FormField
-                  control={control}
-                  name={`results.${resultIndex}.columns.${columnIndex}.kolom`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-2">
+                  {usedLanguages.map((lang: { value: string }, langIndex: number) => (
+                    <FormField 
+                      key={langIndex} 
+                      control={control} 
+                      name={`results.${resultIndex}.columns.${columnIndex}.kolom`}
+                      render={({ field }) => (
+                        <>
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        </>
+                      )}
+                    />
+                  ))}
+                </div>
               </div>
-
-              <RealLists resultIndex={resultIndex} columnIndex={columnIndex} />
             </div>
           </CardContent>
         </Card>
@@ -331,6 +337,8 @@ export default function MeasurementForm({
       }
     }
   };
+
+  const usedLanguages = form.watch("used_languages") || [];
 
   const onSubmit = async (data: any) => {
     try {
@@ -733,6 +741,78 @@ export default function MeasurementForm({
                    />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card id="hasil">
+            <CardHeader>
+              <CardTitle>Hasil</CardTitle>
+            </CardHeader>
+
+            <CardContent className="grid gap-6">
+              <div className="grid gap-4">
+                {resultFields.map((resultField, resultIndex) => (
+                  <div key={resultField.id} className="grid gap-4 border-b pb-4 relative">
+                    <p className="text-sm text-muted-foreground">Parameter {resultIndex  + 1}</p>
+
+                    {resultFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removeResult(resultIndex)}
+                      >
+                        ✕
+                      </Button>
+                    )}
+
+                    <div id="parameter">
+                      <FormLabel>Parameter (Judul Tabel)</FormLabel>
+                      <div className="space-y-2">
+                         {usedLanguages.map((lang: { value: string }, langIndex: number) => (
+                           <FormField 
+                             key={langIndex} 
+                             control={form.control} 
+                             name={`results.${resultIndex}.parameters.${langIndex}`}
+                             render={({ field }) => (
+                               <>
+                                 <FormItem>
+                                   <FormControl>
+                                     <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
+                                   </FormControl>
+                                   <FormMessage />
+                                 </FormItem>
+                               </>
+                             )}
+                           />
+                         ))}
+                       </div>
+                    </div>
+
+                    <Columns resultIndex={resultIndex} usedLanguages={usedLanguages} />
+                  </div>
+                ))}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                onClick={() =>
+                  appendResult({ 
+                    parameter: "", 
+                    columns: [{ 
+                      kolom: "", 
+                      real_list: [{ 
+                        value: "", 
+                        unit: ""
+                      }]
+                    }]  
+                  })
+                }
+              >
+                <p className="text-xl">+</p>
+              </Button>
             </CardContent>
           </Card>
         </div>
