@@ -8,6 +8,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -17,6 +18,12 @@ const empty_field_error_message = "Input diperlukan.";
 const FormSchema = z.object({
   statements: z.array(
     z.object({ value: z.string().min(1, empty_field_error_message) })
+  ),
+  images: z.array(
+    z.object({ 
+      gambar: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
+      caption: z.string().min(1, { message: empty_field_error_message }),
+    })
   ),
 });
 
@@ -48,6 +55,15 @@ export default function Statements({
   } = useFieldArray({
     control: form.control,
     name: "statements",
+  });
+
+  const {
+    fields: imageFields,
+    append: appendImage,
+    remove: removeImage,
+  } = useFieldArray({
+    control: form.control,
+    name: "images",
   });
 
   const usedLanguages = form.watch("used_languages") || [];
@@ -143,27 +159,76 @@ export default function Statements({
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
-              <div>
-                <FormField
-                  control={form.control}
-                  name="gambar"
-                  render={({ field }) => {
-                    return (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept=".jpg, .jpeg, .png"
-                            {...fileRefGambar}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
+            {imageFields.map((field, index) => (
+              <div
+                key={field.id}
+                className="grid gap-4 border-b pb-4 relative"
+              >
+                <p className="text-sm text-muted-foreground">
+                  Gambar {index + 1}
+                </p>
+                {imageFields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-0 right-0"
+                    onClick={() => removeImage(index)}
+                  >
+                    ✕
+                  </Button>
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div id="upload">
+                    <FormLabel>Upload File Gambar</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name={`images.${index}.gambar`}
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                type="file"
+                                accept=".jpg, .jpeg, .png"
+                                {...fileRefGambar}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  </div>
+                  <div id="caption">
+                    <FormLabel>Caption Gambar</FormLabel>
+                    <FormField 
+                      control={form.control} 
+                      name={`images.${index}.caption`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
               </div>
+            ))}
             </div>
+            <Button
+              type="button"
+              size="sm"
+              className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+              onClick={() =>
+                appendImage({ gambar: "", caption: "" })
+              }
+            >
+              <p className="text-xl">+</p>
+            </Button>
           </CardContent>
         </Card>
       </form>

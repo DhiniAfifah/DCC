@@ -87,6 +87,7 @@ export default function CreateDCC() {
       }] 
     }],
     statements: [{ value: "" }],
+    caption: "",
   });
 
   useEffect(() => {

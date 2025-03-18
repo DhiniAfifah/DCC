@@ -708,37 +708,39 @@ export default function MeasurementForm({
             </CardHeader>
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
-                <div id="excel_file">
-                  <FormLabel>Upload File Excel</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name="excel"
-                    render={({ field }) => {
-                      return (
+                <div className="grid grid-cols-2 gap-4">
+                  <div id="excel_file">
+                    <FormLabel>Upload File Excel</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="excel"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormControl>
+                              <Input type="file" {...fileRef} accept=".xls,.xlsx" onChange={handleFileUpload} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  </div>
+                  <div id="sheet">
+                    <FormLabel>Nama Sheet Laporan</FormLabel>
+                    <FormField 
+                      control={form.control} 
+                      name="sheet_name"
+                      render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input type="file" {...fileRef} accept=".xls,.xlsx" onChange={handleFileUpload} />
+                            <Input {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
-                      );
-                    }}
-                  />
-                </div>
-                <div id="sheet">
-                   <FormLabel>Nama Sheet Laporan</FormLabel>
-                   <FormField 
-                     control={form.control} 
-                     name="sheet_name"
-                     render={({ field }) => (
-                       <FormItem>
-                         <FormControl>
-                           <Input {...field} />
-                         </FormControl>
-                         <FormMessage />
-                       </FormItem>
-                     )}
-                   />
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
             </CardContent>
