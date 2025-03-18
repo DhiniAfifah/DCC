@@ -34,16 +34,18 @@ const FormSchema = z.object({
       seri_measuring: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
-  conditions: z.array(
-    z.object({
-      kondisi: z.string().min(1, { message: empty_field_error_message }),
-      kondisi_desc: z.string().min(1, { message: empty_field_error_message }),
-      tengah_value: z.string().min(1, { message: empty_field_error_message }),
-      tengah_unit: z.string().min(1, { message: empty_field_error_message }),
-      rentang_value: z.string().min(1, { message: empty_field_error_message }),
-      rentang_unit: z.string().min(1, { message: empty_field_error_message }),
-    })
-  ),
+  conditions: z.object({
+    suhu_desc: z.string().min(1, { message: empty_field_error_message }),
+    suhu: z.string().min(1, { message: empty_field_error_message }),
+    suhu_tengah_unit: z.string().min(1, { message: empty_field_error_message }),
+    rentang_suhu: z.string().min(1, { message: empty_field_error_message }),
+    suhu_rentang_unit: z.string().min(1, { message: empty_field_error_message }),
+    lembap_desc: z.string().min(1, { message: empty_field_error_message }),
+    lembap: z.string().min(1, { message: empty_field_error_message }),
+    lembap_tengah_unit: z.string().min(1, { message: empty_field_error_message }),
+    rentang_lembap: z.string().min(1, { message: empty_field_error_message }),
+    lembap_rentang_unit: z.string().min(1, { message: empty_field_error_message }),
+  }),
   excel: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
   sheet_name: z.string().min(1, { message: empty_field_error_message }),
   results: z.array(
@@ -284,15 +286,6 @@ export default function MeasurementForm({
   } = useFieldArray({
     control: form.control,
     name: "equipments",
-  });
-
-  const {
-    fields: conditionFields,
-    append: appendCondition,
-    remove: removeCondition,
-  } = useFieldArray({
-    control: form.control,
-    name: "conditions",
   });
 
   const fileRef = form.register("excel");
@@ -564,141 +557,115 @@ export default function MeasurementForm({
             </CardHeader>
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
-                {conditionFields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="grid gap-4 border-b pb-4 relative"
-                  >
-                    <p className="text-sm text-muted-foreground">
-                      Kondisi {index + 1}
-                    </p>
-                    {conditionFields.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-0 right-0"
-                        onClick={() => removeCondition(index)}
-                      >
-                        ✕
-                      </Button>
-                    )}
-                    <div className="grid gap-4">
-                      <div id="kondisi">
-                        <FormLabel>Jenis Kondisi</FormLabel>
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.kondisi`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid gap-4">
-                      <div id="kondisi_desc">
-                        <FormLabel>Deskripsi</FormLabel>
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.kondisi_desc`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <FormLabel>Titik Tengah</FormLabel>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div id="tengah_value">
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.tengah_value`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input placeholder="Nilai" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div id="tengah_unit">
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.tengah_unit`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input placeholder="Satuan" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <FormLabel>Rentang</FormLabel>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div id="rentang_value">
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.rentang_value`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input placeholder="Nilai" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div id="rentang_unit">
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.rentang_unit`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input placeholder="Satuan" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                <div id="suhu" className="grid gap-4 border-b pb-4 relative">
+                  <p className="text-sm font-bold">
+                    Suhu
+                  </p>
+                  <div className="grid gap-4">
+                    <div id="suhu_desc">
+                      <FormLabel>Deskripsi</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="suhu_desc"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
-                ))}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div id="titik_tengah">
+                      <FormLabel>Titik Tengah</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="suhu"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div id="rentang">
+                      <FormLabel>Rentang</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="rentang_suhu"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div id="lembap" className="grid gap-4 pb-4 relative">
+                  <p className="text-sm font-bold">
+                    Kelembapan
+                  </p>
+                  <div className="grid gap-4">
+                    <div id="lembap_desc">
+                      <FormLabel>Deskripsi</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="lembap_desc"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div id="titik_tengah">
+                      <FormLabel>Titik Tengah</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="lembap"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div id="rentang">
+                      <FormLabel>Rentang</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="rentang_lembap"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <Button
-                type="button"
-                size="sm"
-                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-                onClick={() =>
-                  appendCondition({
-                    kondisi: "",
-                    kondisi_desc: "",
-                    tengah_value: "",
-                    tengah_unit: "",
-                    rentang_value: "",
-                    rentang_unit: "",
-                  })
-                }
-              >
-                <p className="text-xl">+</p>
-              </Button>
             </CardContent>
           </Card>
 

@@ -67,14 +67,14 @@ export default function CreateDCC() {
       manuf_model: "", 
       seri_measuring: "" 
     }],
-    conditions: [{ 
-      kondisi: "", 
-      kondisi_desc: "", 
-      tengah_value: "", 
-      tengah_unit: "", 
-      rentang_value: "", 
-      rentang_unit: "" 
-    }],
+    conditions: { 
+      suhu_desc: "", 
+      suhu: "", 
+      rentang_suhu: "", 
+      lembap_desc: "",
+      lembap: "", 
+      rentang_lembap: "",
+    },
     sheet_name: "",
     results: [{ 
       parameter: "", 

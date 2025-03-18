@@ -39,7 +39,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             owner=json.dumps(dcc.owner.dict()),
             methods=json.dumps([method.dict() for method in dcc.methods]),
             equipments=json.dumps([equip.dict() for equip in dcc.equipments]),
-            conditions=json.dumps([cond.dict() for cond in dcc.conditions]),
+            condition=json.dumps(dcc.condition.dict()),
             excel=dcc.excel,
             sheet_name=dcc.sheet_name,
             statements=json.dumps([stmt.dict() for stmt in dcc.statements]),

@@ -54,12 +54,12 @@ class Equipment(BaseModel):
     seri_measuring: str
 
 class Condition(BaseModel):
-    kondisi: str
-    kondisi_desc: str
-    tengah_value: str
-    tengah_unit: str
-    rentang_value: str
-    rentang_unit: str
+    suhu_desc: str
+    suhu: str
+    rentang_suhu: str
+    lembap_desc: str
+    lembap: str
+    rentang_lembap: str
 
 class Statement(BaseModel):
     value: str
@@ -82,7 +82,7 @@ class DCCFormCreate(BaseModel):
     owner: OwnerIdentity  # Identitas pemilik
     methods: List[Method]  # Add methods
     equipments: List[Equipment]  # Add equipments
-    conditions: List[Condition]  # Add conditions
+    condition: Condition  # Add condition
     excel: str
     sheet_name: str
     statements: List[Statement]  # Catatan
