@@ -967,119 +967,215 @@ export default function AdministrativeForm({
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
-              {personFields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="grid gap-4 border-b pb-4 relative"
-                >
-                  <p className="text-sm text-muted-foreground">
-                    {selectedRoles[index] || ""}
-                  </p>
-                  {personFields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-0 right-0"
-                      onClick={() => removePerson(index)}
-                    >
-                      ✕
-                    </Button>
-                  )}
-                  <div id="peran">
-                    <FormLabel>Peran</FormLabel>
+              <div id="pelaksana" className="grid gap-4 border-b pb-4 relative">
+                <p className="text-sm font-bold">
+                  Pelaksana Kalibrasi
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div id="nama_resp">
+                    <FormLabel>Nama</FormLabel>
                     <FormField
                       control={form.control}
-                      name={`responsible_persons.${index}.peran`}
+                      name="nama_resp"
                       render={({ field }) => (
                         <FormItem>
-                          <Select
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              handleRoleChange(index, value);
-                            }} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Pelaksana Kalibrasi">
-                                Pelaksana Kalibrasi
-                              </SelectItem>
-                              <SelectItem value="Penyelia Kalibrasi">
-                                Penyelia Kalibrasi
-                              </SelectItem>
-                              <SelectItem value="Kepala Laboratorium">
-                                Kepala Laboratorium
-                              </SelectItem>
-                              <SelectItem value="Direktur SNSU Termoelektrik dan Kimia">
-                                Direktur SNSU Termoelektrik dan Kimia
-                              </SelectItem>
-                              <SelectItem value="Direktur SNSU Mekanika, Radiasi, dan Biologi">
-                                Direktur SNSU Mekanika, Radiasi, dan Biologi
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div id="nama_resp">
-                      <FormLabel>Nama</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`responsible_persons.${index}.nama_resp`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div id="nip">
-                      <FormLabel>NIP</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`responsible_persons.${index}.nip`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  <div id="nip">
+                    <FormLabel>NIP</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="nip"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
-              ))}
+              </div>
+              <div id="penyelia" className="grid gap-4 border-b pb-4 relative">
+                <p className="text-sm font-bold">
+                  Penyelia Kalibrasi
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div id="nama_resp">
+                    <FormLabel>Nama</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="nama_resp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div id="nip">
+                    <FormLabel>NIP</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="nip"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div id="kepala" className="grid gap-4 border-b pb-4 relative">
+                <p className="text-sm font-bold">
+                  Kepala Laboratorium
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div id="nama_resp">
+                    <FormLabel>Nama</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="nama_resp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div id="nip">
+                    <FormLabel>NIP</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="nip"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                <div id="lab">
+                  <FormLabel>Laboratorium</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="lab"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="SNSU Suhu">SNSU Suhu</SelectItem>
+                            <SelectItem value="SNSU Kelistrikan">SNSU Kelistrikan</SelectItem>
+                            <SelectItem value="SNSU Waktu & Frekuensi">SNSU Waktu & Frekuensi</SelectItem>
+                            <SelectItem value="SNSU Fotometri & Radiometri">SNSU Fotometri & Radiometri</SelectItem>
+                            <SelectItem value="SNSU Kimia">SNSU Kimia</SelectItem>
+                            <SelectItem value="SNSU Panjang">SNSU Panjang</SelectItem>
+                            <SelectItem value="SNSU Massa">SNSU Massa</SelectItem>
+                            <SelectItem value="SNSU Akustik & Vibrasi">SNSU Akustik & Vibrasi</SelectItem>
+                            <SelectItem value="SNSU Biologi">SNSU Biologi</SelectItem>
+                            <SelectItem value="SNSU Radiasi Ringan">SNSU Radiasi Ringan</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              <div id="direktur" className="grid gap-4 pb-4 relative">
+                <p className="text-sm font-bold">
+                  Direktur
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div id="nama_resp">
+                    <FormLabel>Nama</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="nama_resp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div id="nip">
+                    <FormLabel>NIP</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="nip"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                <div id="jabatan">
+                  <FormLabel>Jabatan</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="jabatan"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Direktur SNSU Termoelektrik dan Kimia">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
+                            <SelectItem value="Direktur SNSU Mekanika, Radiasi, dan Biologi">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             </div>
-            <Button
-              type="button"
-              size="sm"
-              className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={() =>
-                appendPerson({
-                  nama_resp: "",
-                  nip: "",
-                  peran: "",
-                  main_signer: "",
-                  signature: "",
-                  timestamp: "",
-                })
-              }
-            >
-              <p className="text-xl">+</p>
-            </Button>
           </CardContent>
         </Card>
 

@@ -561,22 +561,20 @@ export default function MeasurementForm({
                   <p className="text-sm font-bold">
                     Suhu
                   </p>
-                  <div className="grid gap-4">
-                    <div id="suhu_desc">
-                      <FormLabel>Deskripsi</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name="suhu_desc"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  <div id="suhu_desc">
+                    <FormLabel>Deskripsi</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="suhu_desc"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div id="titik_tengah">
@@ -615,22 +613,20 @@ export default function MeasurementForm({
                   <p className="text-sm font-bold">
                     Kelembapan
                   </p>
-                  <div className="grid gap-4">
-                    <div id="lembap_desc">
-                      <FormLabel>Deskripsi</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name="lembap_desc"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  <div id="lembap_desc">
+                    <FormLabel>Deskripsi</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="lembap_desc"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div id="titik_tengah">
