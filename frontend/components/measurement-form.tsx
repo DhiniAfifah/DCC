@@ -34,17 +34,26 @@ const FormSchema = z.object({
       seri_measuring: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
-  conditions: z.array(
-    z.object({
-      kondisi: z.string().min(1, { message: empty_field_error_message }),
-      kondisi_desc: z.string().min(1, { message: empty_field_error_message }),
-      tengah_value: z.string().min(1, { message: empty_field_error_message }),
-      tengah_unit: z.string().min(1, { message: empty_field_error_message }),
-      rentang_value: z.string().min(1, { message: empty_field_error_message }),
-      rentang_unit: z.string().min(1, { message: empty_field_error_message }),
-    })
-  ),
-  excel: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
+  conditions: z.object({
+    suhu_desc: z.string().min(1, { message: empty_field_error_message }),
+    suhu: z.string().min(1, { message: empty_field_error_message }),
+    suhu_tengah_unit: z.string().min(1, { message: empty_field_error_message }),
+    rentang_suhu: z.string().min(1, { message: empty_field_error_message }),
+    suhu_rentang_unit: z
+      .string()
+      .min(1, { message: empty_field_error_message }),
+    lembap_desc: z.string().min(1, { message: empty_field_error_message }),
+    lembap: z.string().min(1, { message: empty_field_error_message }),
+    lembap_tengah_unit: z
+      .string()
+      .min(1, { message: empty_field_error_message }),
+    rentang_lembap: z.string().min(1, { message: empty_field_error_message }),
+    lembap_rentang_unit: z
+      .string()
+      .min(1, { message: empty_field_error_message }),
+  }),
+
+  excel: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
   sheet_name: z.string().min(1, { message: empty_field_error_message }),
   results: z.array(
     z.object({
@@ -85,6 +94,7 @@ interface FormValues {
 
 interface ColumnsProps {
   resultIndex: number;
+  usedLanguages: { value: string }[];
 }
 
 interface RealListProps {
@@ -169,7 +179,7 @@ const RealLists = ({ resultIndex, columnIndex }: RealListProps) => {
   );
 };
 
-const Columns = ({ resultIndex }: ColumnsProps) => {
+const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
   const { control, register } = useFormContext();
   const {
     fields: columnFields,
@@ -204,21 +214,31 @@ const Columns = ({ resultIndex }: ColumnsProps) => {
 
               <div id="kolom">
                 <FormLabel>Nama Kolom</FormLabel>
-                <FormField
-                  control={control}
-                  name={`results.${resultIndex}.columns.${columnIndex}.kolom`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                <div className="space-y-2">
+                  {usedLanguages.map(
+                    (lang: { value: string }, langIndex: number) => (
+                      <FormField
+                        key={langIndex}
+                        control={control}
+                        name={`results.${resultIndex}.columns.${columnIndex}.kolom`}
+                        render={({ field }) => (
+                          <>
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  placeholder={`Bahasa: ${lang.value}`}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          </>
+                        )}
+                      />
+                    )
                   )}
-                />
+                </div>
               </div>
-
-              <RealLists resultIndex={resultIndex} columnIndex={columnIndex} />
             </div>
           </CardContent>
         </Card>
@@ -243,7 +263,7 @@ const Columns = ({ resultIndex }: ColumnsProps) => {
 export default function MeasurementForm({
   formData,
   updateFormData,
-  setFileName
+  setFileName,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
@@ -280,15 +300,6 @@ export default function MeasurementForm({
     name: "equipments",
   });
 
-  const {
-    fields: conditionFields,
-    append: appendCondition,
-    remove: removeCondition,
-  } = useFieldArray({
-    control: form.control,
-    name: "conditions",
-  });
-
   const fileRef = form.register("excel");
 
   const { control, handleSubmit, register } = form;
@@ -303,26 +314,28 @@ export default function MeasurementForm({
 
   const [fileName] = useState<string>("");
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
-  
+
       const formData = new FormData();
       formData.append("excel", file); // Ensure the key matches the backend
-  
+
       try {
         const response = await fetch("http://127.0.0.1:8000/upload-excel/", {
           method: "POST",
           body: formData,
         });
-  
+
         if (!response.ok) {
           throw new Error("Failed to upload file");
         }
-  
+
         const result = await response.json();
         console.log("File uploaded:", result);
-        
+
         setFileName(result.filename); // Store the filename after upload
         alert(`File uploaded successfully: ${result.filename}`);
       } catch (error) {
@@ -332,10 +345,12 @@ export default function MeasurementForm({
     }
   };
 
+  const usedLanguages = form.watch("used_languages") || [];
+
   const onSubmit = async (data: any) => {
     try {
       const formData = { ...data, excel: fileName }; // Include the uploaded file name
-  
+
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
         headers: {
@@ -343,14 +358,14 @@ export default function MeasurementForm({
         },
         body: JSON.stringify(formData),
       });
-  
+
       if (!response.ok) {
         const errorResult = await response.json();
         console.error("Error response from server:", errorResult);
         alert(`Failed to create DCC: ${errorResult.detail}`);
         return;
       }
-  
+
       const result = await response.json();
       console.log("DCC Created:", result);
       alert(`DCC Created! Download: ${result.download_link}`);
@@ -556,141 +571,112 @@ export default function MeasurementForm({
             </CardHeader>
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
-                {conditionFields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="grid gap-4 border-b pb-4 relative"
-                  >
-                    <p className="text-sm text-muted-foreground">
-                      Kondisi {index + 1}
-                    </p>
-                    {conditionFields.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-0 right-0"
-                        onClick={() => removeCondition(index)}
-                      >
-                        ✕
-                      </Button>
-                    )}
-                    <div className="grid gap-4">
-                      <div id="kondisi">
-                        <FormLabel>Jenis Kondisi</FormLabel>
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.kondisi`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid gap-4">
-                      <div id="kondisi_desc">
-                        <FormLabel>Deskripsi</FormLabel>
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.kondisi_desc`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <FormLabel>Titik Tengah</FormLabel>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div id="tengah_value">
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.tengah_value`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input placeholder="Nilai" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div id="tengah_unit">
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.tengah_unit`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input placeholder="Satuan" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <FormLabel>Rentang</FormLabel>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div id="rentang_value">
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.rentang_value`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input placeholder="Nilai" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div id="rentang_unit">
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.rentang_unit`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input placeholder="Satuan" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                <div id="suhu" className="grid gap-4 border-b pb-4 relative">
+                  <p className="text-sm font-bold">Suhu</p>
+                  <div className="grid gap-4">
+                    <div id="suhu_desc">
+                      <FormLabel>Deskripsi</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="conditions[0].suhu_desc" // Update this to access the first item in conditions
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
-                ))}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div id="titik_tengah">
+                      <FormLabel>Titik Tengah</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="conditions[0].suhu" // Make sure this is part of the first condition object
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div id="rentang">
+                      <FormLabel>Rentang</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="conditions[0].rentang_suhu" // Same here, ensure it maps correctly to the conditions array
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div id="lembap" className="grid gap-4 pb-4 relative">
+                  <p className="text-sm font-bold">Kelembapan</p>
+                  <div className="grid gap-4">
+                    <div id="lembap_desc">
+                      <FormLabel>Deskripsi</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="conditions[0].lembap_desc" // Update this to access the first item in conditions
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div id="titik_tengah">
+                      <FormLabel>Titik Tengah</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="conditions[0].lembap" // Same as above, reference to the first condition in the array
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div id="rentang">
+                      <FormLabel>Rentang</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name="conditions[0].rentang_lembap" // Correct path to rentang_lembap for the first condition
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <Button
-                type="button"
-                size="sm"
-                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-                onClick={() =>
-                  appendCondition({
-                    kondisi: "",
-                    kondisi_desc: "",
-                    tengah_value: "",
-                    tengah_unit: "",
-                    rentang_value: "",
-                    rentang_unit: "",
-                  })
-                }
-              >
-                <p className="text-xl">+</p>
-              </Button>
             </CardContent>
           </Card>
 
@@ -700,39 +686,136 @@ export default function MeasurementForm({
             </CardHeader>
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
-                <div id="excel_file">
-                  <FormLabel>Upload File Excel</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name="excel"
-                    render={({ field }) => {
-                      return (
+                <div className="grid grid-cols-2 gap-4">
+                  <div id="excel_file">
+                    <FormLabel>Upload File Excel</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="excel"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                type="file"
+                                {...fileRef}
+                                accept=".xls,.xlsx"
+                                onChange={handleFileUpload}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  </div>
+                  <div id="sheet">
+                    <FormLabel>Nama Sheet Laporan</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="sheet_name"
+                      render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input type="file" {...fileRef} accept=".xls,.xlsx" onChange={handleFileUpload} />
+                            <Input {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
-                      );
-                    }}
-                  />
-                </div>
-                <div id="sheet">
-                   <FormLabel>Nama Sheet Laporan</FormLabel>
-                   <FormField 
-                     control={form.control} 
-                     name="sheet_name"
-                     render={({ field }) => (
-                       <FormItem>
-                         <FormControl>
-                           <Input {...field} />
-                         </FormControl>
-                         <FormMessage />
-                       </FormItem>
-                     )}
-                   />
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card id="hasil">
+            <CardHeader>
+              <CardTitle>Hasil</CardTitle>
+            </CardHeader>
+
+            <CardContent className="grid gap-6">
+              <div className="grid gap-4">
+                {resultFields.map((resultField, resultIndex) => (
+                  <div
+                    key={resultField.id}
+                    className="grid gap-4 border-b pb-4 relative"
+                  >
+                    <p className="text-sm text-muted-foreground">
+                      Parameter {resultIndex + 1}
+                    </p>
+
+                    {resultFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removeResult(resultIndex)}
+                      >
+                        ✕
+                      </Button>
+                    )}
+
+                    <div id="parameter">
+                      <FormLabel>Parameter (Judul Tabel)</FormLabel>
+                      <div className="space-y-2">
+                        {usedLanguages.map(
+                          (lang: { value: string }, langIndex: number) => (
+                            <FormField
+                              key={langIndex}
+                              control={form.control}
+                              name={`results.${resultIndex}.parameters.${langIndex}`}
+                              render={({ field }) => (
+                                <>
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        placeholder={`Bahasa: ${lang.value}`}
+                                        {...field}
+                                        value={field.value || ""}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                </>
+                              )}
+                            />
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    <Columns
+                      resultIndex={resultIndex}
+                      usedLanguages={usedLanguages}
+                    />
+                  </div>
+                ))}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                onClick={() =>
+                  appendResult({
+                    parameter: "",
+                    columns: [
+                      {
+                        kolom: "",
+                        real_list: [
+                          {
+                            value: "",
+                            unit: "",
+                          },
+                        ],
+                      },
+                    ],
+                  })
+                }
+              >
+                <p className="text-xl">+</p>
+              </Button>
             </CardContent>
           </Card>
         </div>

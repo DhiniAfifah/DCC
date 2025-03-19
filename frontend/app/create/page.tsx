@@ -16,7 +16,7 @@ export default function CreateDCC() {
     "Preview",
   ];
 
-  const [fileName, setFileName] = useState<string>(""); 
+  const [fileName, setFileName] = useState<string>("");
 
   // Simpan data form di state
   const [formData, setFormData] = useState({
@@ -32,22 +32,26 @@ export default function CreateDCC() {
     tgl_akhir: "",
     tempat: "",
     tgl_pengesahan: "",
-    objects: [{
-      jenis: "",
-      merek: "",
-      tipe: "",
-      item_issuer: "",
-      seri_item: "",
-      id_lain: "",
-    }],
-    responsible_persons: [{
-      nama_resp: "",
-      nip: "",
-      peran: "",
-      main_signer: "",
-      signature: "",
-      timestamp: "",
-    }],
+    objects: [
+      {
+        jenis: "",
+        merek: "",
+        tipe: "",
+        item_issuer: "",
+        seri_item: "",
+        id_lain: "",
+      },
+    ],
+    responsible_persons: [
+      {
+        nama_resp: "",
+        nip: "",
+        peran: "",
+        main_signer: "",
+        signature: "",
+        timestamp: "",
+      },
+    ],
     owner: {
       nama_cust: "",
       jalan_cust: "",
@@ -57,36 +61,49 @@ export default function CreateDCC() {
       pos_cust: "",
       negara_cust: "",
     },
-    methods: [{ 
-      method_name: "", 
-      method_desc: "", 
-      norm: "" 
-    }],
-    equipments: [{ 
-      nama_alat: "", 
-      manuf_model: "", 
-      seri_measuring: "" 
-    }],
-    conditions: [{ 
-      kondisi: "", 
-      kondisi_desc: "", 
-      tengah_value: "", 
-      tengah_unit: "", 
-      rentang_value: "", 
-      rentang_unit: "" 
-    }],
+    methods: [
+      {
+        method_name: "",
+        method_desc: "",
+        norm: "",
+      },
+    ],
+    equipments: [
+      {
+        nama_alat: "",
+        manuf_model: "",
+        seri_measuring: "",
+      },
+    ],
+    conditions: [
+      {
+        suhu_desc: "",
+        suhu: "",
+        rentang_suhu: "",
+        lembap_desc: "",
+        lembap: "",
+        rentang_lembap: "",
+      },
+    ],
     sheet_name: "",
-    results: [{ 
-      parameter: "", 
-      columns: [{ 
-        kolom: "", 
-        real_list: [{ 
-          value: "", 
-          unit: ""
-        }] 
-      }] 
-    }],
+    results: [
+      {
+        parameter: "",
+        columns: [
+          {
+            kolom: "",
+            real_list: [
+              {
+                value: "",
+                unit: "",
+              },
+            ],
+          },
+        ],
+      },
+    ],
     statements: [{ value: "" }],
+    caption: "",
   });
 
   useEffect(() => {
@@ -127,6 +144,9 @@ export default function CreateDCC() {
       tgl_pengesahan: data.tgl_pengesahan
         ? new Date(data.tgl_pengesahan).toISOString().split("T")[0]
         : prev.tgl_pengesahan,
+      conditions: Array.isArray(data.conditions)
+        ? data.conditions
+        : prev.conditions,
       statements: Array.isArray(data.statements)
         ? data.statements
         : prev.statements,
@@ -168,26 +188,26 @@ export default function CreateDCC() {
 
   const handleSubmit = async () => {
     const modifiedFormData = { ...formData, excel: fileName }; // Ensure excel contains only the filename
-  
+
     console.log("Data yang dikirim ke backend:", modifiedFormData);
-  
+
     try {
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(modifiedFormData),
       });
-  
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
           `HTTP error! Status: ${response.status}, Message: ${errorText}`
         );
       }
-  
+
       const data = await response.json();
       console.log("Response from backend:", data);
-  
+
       if (data.download_link) {
         setDownloadLink(data.download_link);
         alert(`DCC Created! Click the button below to download.`);
@@ -196,14 +216,14 @@ export default function CreateDCC() {
       }
     } catch (error: unknown) {
       console.error("Error submitting form:", error);
-  
+
       if (error instanceof Error) {
         alert(`Failed to create DCC. Error: ${error.message}`);
       } else {
         alert("An unknown error occurred.");
       }
     }
-  };  
+  };
 
   return (
     <div className="container mx-auto py-8 pt-20">
@@ -211,10 +231,17 @@ export default function CreateDCC() {
 
       <div className="mt-12 space-y-10">
         {currentStep === 0 && (
-          <AdministrativeForm formData={formData} updateFormData={updateFormData} />
+          <AdministrativeForm
+            formData={formData}
+            updateFormData={updateFormData}
+          />
         )}
         {currentStep === 1 && (
-          <MeasurementForm formData={formData} updateFormData={updateFormData} setFileName={setFileName} />
+          <MeasurementForm
+            formData={formData}
+            updateFormData={updateFormData}
+            setFileName={setFileName}
+          />
         )}
         {currentStep === 2 && (
           <Statements formData={formData} updateFormData={updateFormData} />
