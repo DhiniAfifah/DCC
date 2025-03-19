@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronsUpDown, CalendarIcon } from "lucide-react";
+import { ChevronsUpDown, CalendarIcon, Plus, X } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
@@ -614,7 +614,7 @@ export default function AdministrativeForm({
                                 size="icon"
                                 onClick={() => removeUsed(index)}
                               >
-                                ✕
+                                <X />
                               </Button>
                             )}
                           </div>
@@ -628,10 +628,10 @@ export default function AdministrativeForm({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="mt-2"
+                  className="mt-2 w-10 h-10"
                   onClick={() => appendUsed({ value: "" })}
                 >
-                  <p className="text-xl">+</p>
+                  <p className="text-xl"><Plus /></p>
                 </Button>
               </div>
               <div id="mandatory_language">
@@ -701,7 +701,7 @@ export default function AdministrativeForm({
                                 size="icon"
                                 onClick={() => removeMandatory(index)}
                               >
-                                ✕
+                                <X />
                               </Button>
                             )}
                           </div>
@@ -714,11 +714,11 @@ export default function AdministrativeForm({
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  className="mt-2"
+                  size="icon"
+                  className="mt-2 w-10 h-10"
                   onClick={() => appendMandatory({ value: "" })}
                 >
-                  <p className="text-xl">+</p>
+                  <p className="text-xl"><Plus /></p>
                 </Button>
               </div>
             </div>
@@ -865,7 +865,7 @@ export default function AdministrativeForm({
                       className="absolute top-0 right-0"
                       onClick={() => removeItem(index)}
                     >
-                      ✕
+                      <X />
                     </Button>
                   )}
                   <div className="grid grid-cols-2 gap-4">
@@ -1002,7 +1002,7 @@ export default function AdministrativeForm({
                 })
               }
             >
-              <p className="text-xl">+</p>
+              <p className="text-xl"><Plus /></p>
             </Button>
           </CardContent>
         </Card>
@@ -1027,7 +1027,7 @@ export default function AdministrativeForm({
                         className="absolute top-0 right-0"
                         onClick={() => removePelaksana(index)}
                       >
-                        ✕
+                        <X />
                       </Button>
                     )}
                     <div className="grid grid-cols-2 gap-4">
@@ -1079,7 +1079,7 @@ export default function AdministrativeForm({
                     })
                   }
                 >
-                  <p className="text-xl">+</p>
+                  <p className="text-xl"><Plus /></p>
                 </Button>
               </div>
               <div id="penyelia" className="grid gap-4 border-b pb-4">
@@ -1096,7 +1096,7 @@ export default function AdministrativeForm({
                         className="absolute top-0 right-0"
                         onClick={() => removePenyelia(index)}
                       >
-                        ✕
+                        <X />
                       </Button>
                     )}
                     <div className="grid grid-cols-2 gap-4">
@@ -1148,7 +1148,7 @@ export default function AdministrativeForm({
                     })
                   }
                 >
-                  <p className="text-xl">+</p>
+                  <p className="text-xl"><Plus /></p>
                 </Button>
               </div>
               <div id="kepala" className="grid gap-4 border-b pb-4 relative">

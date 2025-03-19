@@ -6,6 +6,7 @@ import AdministrativeForm from "@/components/administrative-form";
 import MeasurementForm from "@/components/measurement-form";
 import Statements from "@/components/statements";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 export default function CreateDCC() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -257,13 +258,13 @@ export default function CreateDCC() {
           onClick={prevStep}
           disabled={currentStep === 0}
         >
-          Previous
+          <ArrowLeft />
         </Button>
 
         {currentStep === steps.length - 1 ? (
           <Button onClick={handleSubmit}>Submit</Button>
         ) : (
-          <Button onClick={nextStep}>Next</Button>
+          <Button onClick={nextStep}><ArrowRight /></Button>
         )}
       </div>
 

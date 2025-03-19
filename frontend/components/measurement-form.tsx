@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, X } from "lucide-react";
 import {
   useFieldArray,
   useForm,
@@ -161,7 +162,7 @@ const RealLists = ({ resultIndex, columnIndex }: RealListProps) => {
                 onClick={() => removeRealList(realListIndex)}
                 className="self-end" // Aligns button with input fields
               >
-                ✕
+                <X />
               </Button>
             )}
           </div>
@@ -174,7 +175,7 @@ const RealLists = ({ resultIndex, columnIndex }: RealListProps) => {
         className="mt-2"
         onClick={() => appendRealList({ value: "", unit: "" })}
       >
-        <p className="text-xl">+</p>
+        <p className="text-xl"><Plus /></p>
       </Button>
     </div>
   );
@@ -209,7 +210,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
                   className="absolute top-0 right-0"
                   onClick={() => removeColumn(columnIndex)}
                 >
-                  ✕
+                  <X />
                 </Button>
               )}
 
@@ -250,7 +251,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
           })
         }
       >
-        <p className="text-xl">+</p>
+        <p className="text-xl"><Plus /></p>
       </Button>
     </div>
   );
@@ -402,7 +403,7 @@ export default function MeasurementForm({
                         className="absolute top-0 right-0"
                         onClick={() => removeMethod(index)}
                       >
-                        ✕
+                        <X />
                       </Button>
                     )}
                     <div className="grid grid-cols-2 gap-4">
@@ -463,7 +464,7 @@ export default function MeasurementForm({
                   appendMethod({ method_name: "", method_desc: "", norm: "" })
                 }
               >
-                <p className="text-xl">+</p>
+                <p className="text-xl"><Plus /></p>
               </Button>
             </CardContent>
           </Card>
@@ -490,7 +491,7 @@ export default function MeasurementForm({
                         className="absolute top-0 right-0"
                         onClick={() => removeEquipment(index)}
                       >
-                        ✕
+                        <X />
                       </Button>
                     )}
                     <div id="nama_alat">
@@ -555,7 +556,7 @@ export default function MeasurementForm({
                   })
                 }
               >
-                <p className="text-xl">+</p>
+                <p className="text-xl"><Plus /></p>
               </Button>
             </CardContent>
           </Card>
@@ -751,7 +752,7 @@ export default function MeasurementForm({
                         className="absolute top-0 right-0"
                         onClick={() => removeResult(resultIndex)}
                       >
-                        ✕
+                        <X />
                       </Button>
                     )}
 
@@ -799,7 +800,7 @@ export default function MeasurementForm({
                   })
                 }
               >
-                <p className="text-xl">+</p>
+                <p className="text-xl"><Plus /></p>
               </Button>
             </CardContent>
           </Card>

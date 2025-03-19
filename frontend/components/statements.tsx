@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, X } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
@@ -131,7 +132,7 @@ export default function Statements({
                               size="icon"
                               onClick={() => removeStatement(statementIndex)}
                             >
-                              ✕
+                              <X />
                             </Button>
                           )}
                         </div>
@@ -148,7 +149,7 @@ export default function Statements({
               className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() => appendStatement({ value: "" })}
             >
-              <p className="text-xl">+</p>
+              <p className="text-xl"><Plus /></p>
             </Button>
           </CardContent>
         </Card>
@@ -175,7 +176,7 @@ export default function Statements({
                     className="absolute top-0 right-0"
                     onClick={() => removeImage(index)}
                   >
-                    ✕
+                    <X />
                   </Button>
                 )}
                 <div className="grid grid-cols-2 gap-4">
@@ -227,7 +228,7 @@ export default function Statements({
                 appendImage({ gambar: "", caption: "" })
               }
             >
-              <p className="text-xl">+</p>
+              <p className="text-xl"><Plus /></p>
             </Button>
           </CardContent>
         </Card>
