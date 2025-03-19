@@ -969,8 +969,17 @@ export default function AdministrativeForm({
             <div className="grid gap-4">
               <div id="pelaksana" className="grid gap-4 border-b pb-4 relative">
                 <p className="text-sm font-bold">
-                  Pelaksana Kalibrasi
+                  Pelaksana Kalibrasi 1
                 </p>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-0 right-0"
+                  onClick={() => remove(index)}
+                >
+                  ✕
+                </Button>
                 <div className="grid grid-cols-2 gap-4">
                   <div id="nama_resp">
                     <FormLabel>Nama</FormLabel>
@@ -1003,11 +1012,32 @@ export default function AdministrativeForm({
                     />
                   </div>
                 </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                  onClick={() =>
+                    append({
+                      
+                    })
+                  }
+                >
+                  <p className="text-xl">+</p>
+                </Button>
               </div>
               <div id="penyelia" className="grid gap-4 border-b pb-4 relative">
                 <p className="text-sm font-bold">
-                  Penyelia Kalibrasi
+                  Penyelia Kalibrasi 1
                 </p>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-0 right-0"
+                  onClick={() => remove(index)}
+                >
+                  ✕
+                </Button>
                 <div className="grid grid-cols-2 gap-4">
                   <div id="nama_resp">
                     <FormLabel>Nama</FormLabel>
@@ -1040,6 +1070,18 @@ export default function AdministrativeForm({
                     />
                   </div>
                 </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                  onClick={() =>
+                    append({
+                      
+                    })
+                  }
+                >
+                  <p className="text-xl">+</p>
+                </Button>
               </div>
               <div id="kepala" className="grid gap-4 border-b pb-4 relative">
                 <p className="text-sm font-bold">
