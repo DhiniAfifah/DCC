@@ -29,6 +29,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox"
 import { useEffect, useState } from "react";
 
 const empty_field_error_message = "Input diperlukan.";
@@ -38,6 +39,8 @@ const FormSchema = z.object({
       method_name: z.string().min(1, { message: empty_field_error_message }),
       method_desc: z.string().min(1, { message: empty_field_error_message }),
       norm: z.string().min(1, { message: empty_field_error_message }),
+      has_formula: z.boolean().default(false),
+      formula: z.string().optional(),
     })
   ),
   equipments: z.array(
@@ -345,6 +348,15 @@ export default function MeasurementForm({
 
   const onSubmit = async (data: any) => {
     try {
+      const cleanedMethods = data.methods.map((method: any, index: number) => {
+        if (!method.has_formula) {
+          form.setValue(`methods.${index}.formula`, ""); // Clear formula in form state
+          const { formula, ...rest } = method;
+          return rest;
+        }
+        return method;
+      });
+      
       const formData = { ...data, excel: fileName }; // Include the uploaded file name
   
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
@@ -422,6 +434,7 @@ export default function MeasurementForm({
                           )}
                         />
                       </div>
+                      
                       <div id="norm">
                         <FormLabel>Norm</FormLabel>
                         <FormField
@@ -438,6 +451,7 @@ export default function MeasurementForm({
                         />
                       </div>
                     </div>
+
                     <div id="method_desc">
                       <FormLabel>Deskripsi</FormLabel>
                       <FormField
@@ -453,6 +467,48 @@ export default function MeasurementForm({
                         )}
                       />
                     </div>
+
+                    <div id="checkbox_rumus">
+                      <FormField
+                        control={form.control}
+                        name={`methods.${index}.has_formula`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <Checkbox 
+                                checked={field.value}
+                                onCheckedChange={(checked) => field.onChange(checked)}
+                              />
+                            </FormControl>
+                            <FormLabel>Ada rumus di metode ini</FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {useEffect(() => {
+                      if (!form.watch(`methods.${index}.has_formula`)) {
+                        form.setValue(`methods.${index}.formula`, ""); // Reset the formula field
+                      }
+                    }, [form.watch(`methods.${index}.has_formula`), form, index])}
+
+                    {form.watch(`methods.${index}.has_formula`) && (
+                      <div id="rumus">
+                        <FormLabel>Rumus</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`methods.${index}.formula`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -461,7 +517,7 @@ export default function MeasurementForm({
                 size="sm"
                 className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
                 onClick={() =>
-                  appendMethod({ method_name: "", method_desc: "", norm: "" })
+                  appendMethod({ method_name: "", method_desc: "", norm: "", has_formula: false, formula: "" })
                 }
               >
                 <p className="text-xl"><Plus /></p>

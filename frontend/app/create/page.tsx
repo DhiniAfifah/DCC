@@ -87,7 +87,9 @@ export default function CreateDCC() {
     methods: [{ 
       method_name: "", 
       method_desc: "", 
-      norm: "" 
+      norm: "",
+      has_formula: false,
+      formula: "",
     }],
     equipments: [{ 
       nama_alat: "", 
@@ -113,7 +115,11 @@ export default function CreateDCC() {
         }] 
       }] 
     }],
-    statements: [{ values: "" }],
+    statements: [{ 
+      values: "",
+      has_formula: false,
+      formula: "",
+    }],
     images: [{ 
       gambar: "", 
       caption: "" 

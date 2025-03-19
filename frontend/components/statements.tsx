@@ -14,11 +14,16 @@ import {
 } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox"
 
 const empty_field_error_message = "Input diperlukan.";
 const FormSchema = z.object({
   statements: z.array(
-    z.object({ value: z.string().min(1, empty_field_error_message) })
+    z.object({ 
+      values: z.string().min(1, empty_field_error_message),
+      has_formula: z.boolean().default(false),
+      formula: z.string().optional(),
+    })
   ),
   images: z.array(
     z.object({ 
@@ -141,6 +146,47 @@ export default function Statements({
                     )}
                   />
                 ))}
+                <div id="checkbox_rumus" className="mt-3">
+                  <FormField
+                    control={form.control}
+                    name={`statements.${statementIndex}.has_formula`}
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <Checkbox 
+                            checked={field.value}
+                            onCheckedChange={(checked) => field.onChange(checked)}
+                          />
+                        </FormControl>
+                        <FormLabel>Ada rumus di statement ini</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {useEffect(() => {
+                  if (!form.watch(`statements.${statementIndex}.has_formula`)) {
+                    form.setValue(`statements.${statementIndex}.formula`, ""); // Reset the formula field
+                  }
+                }, [form.watch(`statements.${statementIndex}.has_formula`), form, statementIndex])}
+
+                {form.watch(`statements.${statementIndex}.has_formula`) && (
+                  <div id="rumus">
+                    <FormLabel>Rumus</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name={`statements.${statementIndex}.formula`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
               </div>
             ))}
             <Button
