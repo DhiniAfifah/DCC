@@ -37,14 +37,10 @@ const FormSchema = z.object({
   conditions: z.object({
     suhu_desc: z.string().min(1, { message: empty_field_error_message }),
     suhu: z.string().min(1, { message: empty_field_error_message }),
-    suhu_tengah_unit: z.string().min(1, { message: empty_field_error_message }),
     rentang_suhu: z.string().min(1, { message: empty_field_error_message }),
-    suhu_rentang_unit: z.string().min(1, { message: empty_field_error_message }),
     lembap_desc: z.string().min(1, { message: empty_field_error_message }),
     lembap: z.string().min(1, { message: empty_field_error_message }),
-    lembap_tengah_unit: z.string().min(1, { message: empty_field_error_message }),
     rentang_lembap: z.string().min(1, { message: empty_field_error_message }),
-    lembap_rentang_unit: z.string().min(1, { message: empty_field_error_message }),
   }),
   excel: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
   sheet_name: z.string().min(1, { message: empty_field_error_message }),
@@ -565,7 +561,7 @@ export default function MeasurementForm({
                     <FormLabel>Deskripsi</FormLabel>
                     <FormField
                       control={form.control}
-                      name="suhu_desc"
+                      name={`conditions.suhu_desc`}
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
@@ -581,7 +577,7 @@ export default function MeasurementForm({
                       <FormLabel>Titik Tengah</FormLabel>
                       <FormField
                         control={form.control}
-                        name="suhu"
+                        name={`conditions.suhu`}
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -596,7 +592,7 @@ export default function MeasurementForm({
                       <FormLabel>Rentang</FormLabel>
                       <FormField
                         control={form.control}
-                        name="rentang_suhu"
+                        name={`conditions.rentang_suhu`}
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -617,7 +613,7 @@ export default function MeasurementForm({
                     <FormLabel>Deskripsi</FormLabel>
                     <FormField
                       control={form.control}
-                      name="lembap_desc"
+                      name={`conditions.lembap_desc`}
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
@@ -633,7 +629,7 @@ export default function MeasurementForm({
                       <FormLabel>Titik Tengah</FormLabel>
                       <FormField
                         control={form.control}
-                        name="lembap"
+                        name={`conditions.lembap`}
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -648,7 +644,7 @@ export default function MeasurementForm({
                       <FormLabel>Rentang</FormLabel>
                       <FormField
                         control={form.control}
-                        name="rentang_lembap"
+                        name={`conditions.rentang_lembap`}
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>

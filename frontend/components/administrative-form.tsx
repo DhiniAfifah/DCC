@@ -128,16 +128,44 @@ const FormSchema = z.object({
       id_lain: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
-  responsible_persons: z.array(
-    z.object({
+  responsible_persons: z.object({
+    pelaksana: z.array(
+      z.object({
+        nama_resp: z.string().min(1, { message: empty_field_error_message }),
+        nip: z.string().min(1, { message: empty_field_error_message }),
+        peran: z.string().min(1, { message: empty_field_error_message }),
+        main_signer: z.string().min(1, { message: empty_field_error_message }),
+        signature: z.string().min(1, { message: empty_field_error_message }),
+        timestamp: z.string().min(1, { message: empty_field_error_message }),
+      })
+    ),
+    penyelia: z.array(
+      z.object({
+        nama_resp: z.string().min(1, { message: empty_field_error_message }),
+        nip: z.string().min(1, { message: empty_field_error_message }),
+        peran: z.string().min(1, { message: empty_field_error_message }),
+        main_signer: z.string().min(1, { message: empty_field_error_message }),
+        signature: z.string().min(1, { message: empty_field_error_message }),
+        timestamp: z.string().min(1, { message: empty_field_error_message }),
+      })
+    ),
+    kepala: z.object({
       nama_resp: z.string().min(1, { message: empty_field_error_message }),
       nip: z.string().min(1, { message: empty_field_error_message }),
       peran: z.string().min(1, { message: empty_field_error_message }),
       main_signer: z.string().min(1, { message: empty_field_error_message }),
       signature: z.string().min(1, { message: empty_field_error_message }),
       timestamp: z.string().min(1, { message: empty_field_error_message }),
-    })
-  ),
+    }),
+    direktur: z.object({
+      nama_resp: z.string().min(1, { message: empty_field_error_message }),
+      nip: z.string().min(1, { message: empty_field_error_message }),
+      peran: z.string().min(1, { message: empty_field_error_message }),
+      main_signer: z.string().min(1, { message: empty_field_error_message }),
+      signature: z.string().min(1, { message: empty_field_error_message }),
+      timestamp: z.string().min(1, { message: empty_field_error_message }),
+    }),
+  }),  
   owner: z.object({
     nama_cust: z.string().min(1, { message: empty_field_error_message }),
     jalan_cust: z.string().min(1, { message: empty_field_error_message }),
@@ -214,6 +242,24 @@ export default function AdministrativeForm({
   } = useFieldArray({
     control: form.control,
     name: "responsible_persons",
+  });
+
+  const {
+    fields: pelaksanaFields,
+    append: appendPelaksana,
+    remove: removePelaksana,
+  } = useFieldArray({
+    control: form.control,
+    name: "responsible_persons.pelaksana",
+  });
+  
+  const {
+    fields: penyeliaFields,
+    append: appendPenyelia,
+    remove: removePenyelia,
+  } = useFieldArray({
+    control: form.control,
+    name: "responsible_persons.penyelia",
   });
 
   const [selectedRoles, setSelectedRoles] = useState(
@@ -967,116 +1013,138 @@ export default function AdministrativeForm({
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
-              <div id="pelaksana" className="grid gap-4 border-b pb-4 relative">
-                <p className="text-sm font-bold">
-                  Pelaksana Kalibrasi 1
-                </p>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-0 right-0"
-                  onClick={() => remove(index)}
-                >
-                  ✕
-                </Button>
-                <div className="grid grid-cols-2 gap-4">
-                  <div id="nama_resp">
-                    <FormLabel>Nama</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name="nama_resp"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <div id="pelaksana" className="grid gap-4 border-b pb-4">
+                {pelaksanaFields.map((field, index) => (
+                  <div key={field.id} className="relative">
+                    <p className="text-sm font-bold">
+                      Pelaksana Kalibrasi {index + 1}
+                    </p>
+                    {pelaksanaFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removePelaksana(index)}
+                      >
+                        ✕
+                      </Button>
+                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div id="nama_resp">
+                        <FormLabel>Nama</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`responsible_persons.pelaksana.${index}.nama_resp`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div id="nip">
+                        <FormLabel>NIP</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`responsible_persons.pelaksana.${index}.nip`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div id="nip">
-                    <FormLabel>NIP</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name="nip"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+                ))}
                 <Button
                   type="button"
                   size="sm"
                   className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
                   onClick={() =>
-                    append({
-                      
+                    appendPelaksana({
+                      nama_resp: "",
+                      nip: "",
+                      peran: "Pelaksana Kalibrasi",
+                      main_signer: "false",
+                      signature: "false",
+                      timestamp: "false",
                     })
                   }
                 >
                   <p className="text-xl">+</p>
                 </Button>
               </div>
-              <div id="penyelia" className="grid gap-4 border-b pb-4 relative">
-                <p className="text-sm font-bold">
-                  Penyelia Kalibrasi 1
-                </p>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-0 right-0"
-                  onClick={() => remove(index)}
-                >
-                  ✕
-                </Button>
-                <div className="grid grid-cols-2 gap-4">
-                  <div id="nama_resp">
-                    <FormLabel>Nama</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name="nama_resp"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+              <div id="penyelia" className="grid gap-4 border-b pb-4">
+                {penyeliaFields.map((field, index) => (
+                  <div key={field.id} className="relative">
+                    <p className="text-sm font-bold">
+                      Penyelia Kalibrasi {index + 1}
+                    </p>
+                    {penyeliaFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removePenyelia(index)}
+                      >
+                        ✕
+                      </Button>
+                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div id="nama_resp">
+                        <FormLabel>Nama</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`responsible_persons.penyelia.${index}.nama_resp`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div id="nip">
+                        <FormLabel>NIP</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`responsible_persons.penyelia.${index}.nip`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div id="nip">
-                    <FormLabel>NIP</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name="nip"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+                ))}
                 <Button
                   type="button"
                   size="sm"
                   className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
                   onClick={() =>
-                    append({
-                      
+                    appendPenyelia({
+                      nama_resp: "",
+                      nip: "",
+                      peran: "Penyelia Kalibrasi",
+                      main_signer: "false",
+                      signature: "false",
+                      timestamp: "false",
                     })
                   }
                 >
@@ -1092,7 +1160,7 @@ export default function AdministrativeForm({
                     <FormLabel>Nama</FormLabel>
                     <FormField
                       control={form.control}
-                      name="nama_resp"
+                      name="responsible_persons.kepala.nama_resp"
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
@@ -1107,7 +1175,7 @@ export default function AdministrativeForm({
                     <FormLabel>NIP</FormLabel>
                     <FormField
                       control={form.control}
-                      name="nip"
+                      name="responsible_persons.kepala.nip"
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
@@ -1123,7 +1191,7 @@ export default function AdministrativeForm({
                   <FormLabel>Laboratorium</FormLabel>
                   <FormField
                     control={form.control}
-                    name="lab"
+                    name="responsible_persons.kepala.peran"
                     render={({ field }) => (
                       <FormItem>
                         <Select
@@ -1136,16 +1204,16 @@ export default function AdministrativeForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="SNSU Suhu">SNSU Suhu</SelectItem>
-                            <SelectItem value="SNSU Kelistrikan">SNSU Kelistrikan</SelectItem>
-                            <SelectItem value="SNSU Waktu & Frekuensi">SNSU Waktu & Frekuensi</SelectItem>
-                            <SelectItem value="SNSU Fotometri & Radiometri">SNSU Fotometri & Radiometri</SelectItem>
-                            <SelectItem value="SNSU Kimia">SNSU Kimia</SelectItem>
-                            <SelectItem value="SNSU Panjang">SNSU Panjang</SelectItem>
-                            <SelectItem value="SNSU Massa">SNSU Massa</SelectItem>
-                            <SelectItem value="SNSU Akustik & Vibrasi">SNSU Akustik & Vibrasi</SelectItem>
-                            <SelectItem value="SNSU Biologi">SNSU Biologi</SelectItem>
-                            <SelectItem value="SNSU Radiasi Ringan">SNSU Radiasi Ringan</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Suhu">SNSU Suhu</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Kelistrikan">SNSU Kelistrikan</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Waktu & Frekuensi">SNSU Waktu & Frekuensi</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Fotometri & Radiometri">SNSU Fotometri & Radiometri</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Kimia">SNSU Kimia</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Panjang">SNSU Panjang</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Massa">SNSU Massa</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Akustik & Vibrasi">SNSU Akustik & Vibrasi</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Biologi">SNSU Biologi</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Radiasi Ringan">SNSU Radiasi Ringan</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -1163,7 +1231,7 @@ export default function AdministrativeForm({
                     <FormLabel>Nama</FormLabel>
                     <FormField
                       control={form.control}
-                      name="nama_resp"
+                      name="responsible_persons.direktur.nama_resp"
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
@@ -1178,7 +1246,7 @@ export default function AdministrativeForm({
                     <FormLabel>NIP</FormLabel>
                     <FormField
                       control={form.control}
-                      name="nip"
+                      name="responsible_persons.direktur.nip"
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
@@ -1194,7 +1262,7 @@ export default function AdministrativeForm({
                   <FormLabel>Jabatan</FormLabel>
                   <FormField
                     control={form.control}
-                    name="jabatan"
+                    name="responsible_persons.direktur.peran"
                     render={({ field }) => (
                       <FormItem>
                         <Select

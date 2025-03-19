@@ -22,7 +22,7 @@ export default function CreateDCC() {
   const [formData, setFormData] = useState({
     software: "",
     version: "",
-    core_issuer: "",
+    core_issuer: "calibrationLaboratory",
     country_code: "",
     used_languages: [{ value: "" }],
     mandatory_languages: [{ value: "" }],
@@ -40,14 +40,40 @@ export default function CreateDCC() {
       seri_item: "",
       id_lain: "",
     }],
-    responsible_persons: [{
-      nama_resp: "",
-      nip: "",
-      peran: "",
-      main_signer: "",
-      signature: "",
-      timestamp: "",
-    }],
+    responsible_persons: {
+      pelaksana: [{ 
+        nama_resp: "",
+        nip: "",
+        peran: "Pelaksana Kalibrasi",
+        main_signer: "false",
+        signature: "false",
+        timestamp: "false",
+      }],
+      penyelia: [{ 
+        nama_resp: "",
+        nip: "",
+        peran: "Penyelia Kalibrasi",
+        main_signer: "false",
+        signature: "false",
+        timestamp: "false",
+      }],
+      kepala: { 
+        nama_resp: "",
+        nip: "",
+        peran: "",
+        main_signer: "false",
+        signature: "false",
+        timestamp: "false",
+      },
+      direktur: { 
+        nama_resp: "",
+        nip: "",
+        peran: "",
+        main_signer: "true",
+        signature: "true",
+        timestamp: "true", 
+      },
+    },
     owner: {
       nama_cust: "",
       jalan_cust: "",
@@ -77,7 +103,7 @@ export default function CreateDCC() {
     },
     sheet_name: "",
     results: [{ 
-      parameter: "", 
+      parameters: "", 
       columns: [{ 
         kolom: "", 
         real_list: [{ 
@@ -86,8 +112,11 @@ export default function CreateDCC() {
         }] 
       }] 
     }],
-    statements: [{ value: "" }],
-    caption: "",
+    statements: [{ values: "" }],
+    images: [{ 
+      gambar: "", 
+      caption: "" 
+    }],
   });
 
   useEffect(() => {
