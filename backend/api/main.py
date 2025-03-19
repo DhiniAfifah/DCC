@@ -9,6 +9,7 @@ import api.schemas as schemas
 import api.database as database
 import os
 import shutil
+import pandas as pd
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
@@ -59,7 +60,9 @@ async def upload_excel(excel: UploadFile = File(...)):
         
         print(f"Received file: {excel.filename}, Content-Type: {excel.content_type}")
 
-        return {"filename": excel.filename, "location": file_location}
+        sheets = pd.ExcelFile(file_location).sheet_names
+
+        return {"filename": excel.filename, "location": file_location, "sheets": sheets}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 

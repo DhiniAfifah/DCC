@@ -14,8 +14,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardContent 
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { useEffect, useState } from "react";
 
 const empty_field_error_message = "Input diperlukan.";
@@ -296,7 +308,9 @@ export default function MeasurementForm({
     name: "results",
   });
 
-  const [fileName] = useState<string>("");
+  const [fileName] = useState<string | null>(null);
+  const [sheets, setSheets] = useState<string[]>([]);
+  const [selectedSheet, setSelectedSheet] = useState<string>("");
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -311,14 +325,13 @@ export default function MeasurementForm({
           body: formData,
         });
   
-        if (!response.ok) {
-          throw new Error("Failed to upload file");
-        }
+        if (!response.ok) throw new Error("Failed to upload file");
   
         const result = await response.json();
         console.log("File uploaded:", result);
         
         setFileName(result.filename); // Store the filename after upload
+        setSheets(result.sheets || []); // Store the extracted sheet names
         alert(`File uploaded successfully: ${result.filename}`);
       } catch (error) {
         console.error("Error uploading file:", error);
@@ -692,9 +705,23 @@ export default function MeasurementForm({
                       name="sheet_name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {sheets.map((sheet, index) => (
+                                <SelectItem key={index} value={sheet}>
+                                  {sheet}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
