@@ -12,123 +12,53 @@ from docx2pdf import convert
 import xml.etree.ElementTree as ET
 from yattag import Doc, indent
 import win32com.client as win32
+from docxtpl import DocxTemplate
+from spire.pdf.common import *
+from spire.pdf import *
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
 
 def populate_template(dcc_data, word_path, new_word_path):
-    doc = Document(word_path)
+    doc = DocxTemplate(word_path)
     logging.debug(f"DCC data: {dcc_data}")
 
-    # Mengganti placeholder dengan data yang sesuai dari form
-    for paragraph in doc.paragraphs:
-        # Mengganti placeholder untuk data tunggal
-        if "{{ certificate }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ certificate }}", dcc_data['sertifikat'])
-        if "{{ order }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ order }}", dcc_data['order'])
-        if "{{ tgl_pengesahan }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ tgl_pengesahan }}", dcc_data['tgl_pengesahan'])
-        
-        # Menambahkan bagian baru sesuai dengan template
-        if "{{ tgl_mulai }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ tgl_mulai }}", dcc_data['tgl_mulai'])
-        if "{{ tgl_akhir }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ tgl_akhir }}", dcc_data['tgl_akhir'])
-        if "{{ tempat }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ tempat }}", dcc_data['tempat'])
+    context = {
+        'certificate': dcc_data['sertifikat'],
+        'order': dcc_data['order'],
+        'jenis': dcc_data['objects'][0]['jenis'],
+        'merek': dcc_data['objects'][0]['merek'],
+        'tipe': dcc_data['objects'][0]['tipe'],
+        'item_issuer': dcc_data['objects'][0]['item_issuer'],
+        'seri_item': dcc_data['objects'][0]['seri_item'],
+        'id_lain': dcc_data['objects'][0]['id_lain'],
+        'nama_cust': dcc_data['owner']['nama_cust'],
+        'jalan_cust': dcc_data['owner']['jalan_cust'],
+        'no_jalan_cust': dcc_data['owner']['no_jalan_cust'],
+        'kota_cust': dcc_data['owner']['kota_cust'],
+        'state_cust': dcc_data['owner']['state_cust'],
+        'pos_cust': dcc_data['owner']['pos_cust'],
+        'negara_cust': dcc_data['owner']['negara_cust'],
+        'peran': dcc_data['responsible_persons'][0]['peran'],
+        'nama_resp': dcc_data['responsible_persons'][0]['nama_resp'],
+        'nip_resp': dcc_data['responsible_persons'][0]['nip'],
+        'tgl_pengesahan': dcc_data['tgl_pengesahan'],
+        'tgl_mulai': dcc_data['tgl_mulai'],
+        'tgl_akhir': dcc_data['tgl_akhir'],
+        'tempat': dcc_data['tempat'],
+        'suhu': dcc_data['conditions'][0]['suhu'],
+        'rentang_suhu': dcc_data['conditions'][0]['rentang_suhu'],
+        'lembap': dcc_data['conditions'][0]['lembap'],
+        'rentang_lembap': dcc_data['conditions'][0]['rentang_lembap'],
+        'statements': dcc_data['statements'][0]['values'][0],
+        'tabel': "{{ tabel }}",
+    }
 
-        # Kondisi Ruangan: Suhu dan Kelembapan
-    for condition in dcc_data.get('conditions', []):
-        # Langsung mengakses kondisi suhu
-        if 'suhu_desc' in condition:
-            if "{{ suhu }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ suhu }}", str(condition['suhu']))
-            if "{{ rentang_suhu }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ rentang_suhu }}", str(condition['rentang_suhu']))
-        # Menambahkan satuan suhu
-            if "{{ suhu_satuan }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ suhu_satuan }}", condition['suhu_satuan'])
-
-    # Langsung mengakses kondisi kelembapan
-        if 'lembap_desc' in condition:
-            if "{{ lembap }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ lembap }}", str(condition['lembap']))
-            if "{{ rentang_lembap }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ rentang_lembap }}", str(condition['rentang_lembap']))
-        # Menambahkan satuan kelembapan
-            if "{{ lembap_satuan }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ lembap_satuan }}", condition['lembap_satuan'])
-                
-
-        # Statements/Pernyataan
-        if "{{ statements }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ statements }}", dcc_data['statements'])
-
-        # Deskripsi Objek yang Dikalibrasi (untuk lebih dari satu)
-        for idx, obj in enumerate(dcc_data['objects']):
-            if "{{ jenis }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ jenis }}", obj['jenis'])
-            if "{{ merek }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ merek }}", obj['merek'])
-            if "{{ tipe }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ tipe }}", obj['tipe'])
-            if "{{ item_issuer }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ item_issuer }}", obj['item_issuer'])
-            if "{{ seri_item }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ seri_item }}", obj['seri_item'])
-            if "{{ id_lain }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ id_lain }}", obj['id_lain'])
-
-        # Penanggung Jawab (untuk lebih dari satu)
-        for idx, resp in enumerate(dcc_data['responsible_persons']):
-            if "{{ nama_resp }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ nama_resp }}", resp['nama_resp'])
-            if "{{ nip }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ nip }}", resp['nip'])
-            if "{{ peran }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ peran }}", resp['peran'])
-
-        # Identitas Pemilik
-        if "{{ nama_cust }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ nama_cust }}", dcc_data['owner']['nama_cust'])
-        if "{{ jalan_cust }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ jalan_cust }}", dcc_data['owner']['jalan_cust'])
-        if "{{ no_jalan_cust }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ no_jalan_cust }}", dcc_data['owner']['no_jalan_cust'])
-        if "{{ kota_cust }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ kota_cust }}", dcc_data['owner']['kota_cust'])
-        if "{{ state_cust }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ state_cust }}", dcc_data['owner']['state_cust'])
-        if "{{ pos_cust }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ pos_cust }}", dcc_data['owner']['pos_cust'])
-        if "{{ negara_cust }}" in paragraph.text:
-            paragraph.text = paragraph.text.replace("{{ negara_cust }}", dcc_data['owner']['negara_cust'])
-
-        # Data lainnya (Metode, Statements, dll)
-        for idx, method in enumerate(dcc_data['methods']):
-            if "{{ method_name }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ method_name }}", method['method_name'])
-            if "{{ method_desc }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ method_desc }}", method['method_desc'])
-            if "{{ norm }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ norm }}", method['norm'])
-
-        for idx, equip in enumerate(dcc_data['equipments']):
-            if "{{ alat }}" in paragraph.text:
-                paragraph.text = paragraph.text.replace("{{ alat }}", equip['nama_alat'])
-
-
-    # Menyimpan dokumen yang sudah diubah
-    doc.SaveAs(new_word_path)
+    doc.render(context)
+    doc.save(new_word_path)
     logging.info(f"Saving modified template to {new_word_path}")
 
-    # Menutup dokumen dan aplikasi Word
-    doc.Close()
-    word.Quit()
-
     return new_word_path
-
 
 def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
     logging.info("Starting DCC creation process")
@@ -181,21 +111,28 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         db.refresh(db_dcc)
         logging.info(f"DCC {dcc.sertifikat} saved successfully with ID {db_dcc.id}")
         
-        # Path untuk template dan output
-        template_path = r'C:\Users\dhini\Desktop\DCC\backend\assets\template DCC.docx'
-        output_path = fr"C:\Users\dhini\Desktop\DCC\backend\dcc_files\{dcc.sertifikat}_filled.docx"
+        # # Path untuk template dan output (Dhini)
+        # template_path = r'C:\Users\dhini\Desktop\DCC\backend\assets\template DCC.docx'
+        # output_path = fr"C:\Users\dhini\Desktop\DCC\backend\dcc_files\{dcc.sertifikat}_filled.docx"
+
+        # Path untuk template dan output (Rachelle)
+        template_path = r'C:\Users\a516e\Documents\GitHub\DCC\backend\assets\template DCC.docx'
+        new_word_path = fr"C:\Users\a516e\Documents\GitHub\DCC\backend\dcc_files\{dcc.sertifikat}.docx"
 
         # Mengisi template Word dengan data input manual
-        populated_template = populate_template(dcc.dict(), template_path, output_path)
+        populated_template = populate_template(dcc.dict(), template_path, new_word_path)
 
         # Generating the download link
         download_link = f"http://127.0.0.1:8000/download-dcc/{db_dcc.id}.xml"
         logging.info(f"Generated download link: {download_link}")
 
-        excel_path = fr'C:\Users\dhini\Desktop\DCC\backend\uploads\{dcc.excel}'
+        # # Dhini
+        # excel_path = fr'C:\Users\dhini\Desktop\DCC\backend\uploads\{dcc.excel}'
+        # sheet_name = dcc.sheet_name
+
+        # Rachelle
+        excel_path = fr'C:\Users\a516e\Documents\GitHub\DCC\backend\uploads\{dcc.excel}'
         sheet_name = dcc.sheet_name
-        word_path = r'C:\Users\dhini\Desktop\DCC\backend\assets\template DCC.docx'
-        new_word_path = fr'C:\Users\dhini\Desktop\DCC\backend\dcc_files\word_{str(db_dcc.id)}.docx'
 
         logging.info("Initializing Excel and Word applications")
         excel = win32.Dispatch("Excel.Application")
@@ -241,11 +178,11 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                 ws.Range(table_range).Copy()
                 
                 logging.info("Opening Word template")
-                doc = word.Documents.Open(word_path)
+                doc = word.Documents.Open(new_word_path)
                 find_text = "{{ tabel }}"
                 find = word.Selection.Find
                 find.Text = find_text
-                find.ClearFormatting()  # Menghapus formatting pencarian yang mungkin mengganggu
+                # find.ClearFormatting()  # Menghapus formatting pencarian yang mungkin mengganggu
                 find.MatchCase = False  # Tidak case-sensitive
                 find.MatchWholeWord = True  # Pencarian sesuai dengan kata lengkap
                 find.Execute()
@@ -263,8 +200,17 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         logging.info("Closing Excel and Word applications")
         word.Quit()
         wb.Close(False)
-        excel.Close(True)
+        # excel.Close(True)
         excel.Quit()
+
+        # Konversi ke PDF
+        convert(new_word_path)
+
+        pdf_path = fr"C:\Users\a516e\Documents\GitHub\DCC\backend\dcc_files\{dcc.sertifikat}.pdf"
+
+        converter = PdfStandardsConverter(pdf_path)
+        converter.ToPdfA3A(pdf_path)
+        logging.info(f"Converted {new_word_path} to PDFA/3-A")
 
         return {"download_link": download_link}
 

@@ -61,8 +61,8 @@ class Condition(BaseModel):
     lembap: str
     rentang_lembap: str
 
-class Statement(BaseModel):
-    value: str
+class Statements(BaseModel):
+    values: List[str]
 
 class DCCFormCreate(BaseModel):
     software: str  # software
@@ -85,4 +85,4 @@ class DCCFormCreate(BaseModel):
     conditions: List[Condition]  # Kondisi (Suhu dan Kelembapan)
     excel: str
     sheet_name: str
-    statements: List[Statement]  # Catatan
+    statements: List[Statements]  # Catatan

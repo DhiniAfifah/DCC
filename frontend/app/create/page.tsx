@@ -22,7 +22,7 @@ export default function CreateDCC() {
   const [formData, setFormData] = useState({
     software: "",
     version: "",
-    core_issuer: "",
+    core_issuer: "calibrationLaboratory",
     country_code: "",
     used_languages: [{ value: "" }],
     mandatory_languages: [{ value: "" }],
@@ -88,7 +88,7 @@ export default function CreateDCC() {
     sheet_name: "",
     results: [
       {
-        parameter: "",
+        parameters: "",
         columns: [
           {
             kolom: "",
@@ -102,8 +102,11 @@ export default function CreateDCC() {
         ],
       },
     ],
-    statements: [{ value: "" }],
-    caption: "",
+    statements: [{ values: "" }],
+    images: [{ 
+      gambar: null, 
+      caption: "" 
+    }],
   });
 
   useEffect(() => {

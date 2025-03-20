@@ -18,7 +18,9 @@ const empty_field_error_message = "Input diperlukan.";
 
 const FormSchema = z.object({
   statements: z.array(
-    z.object({ value: z.string().min(1, empty_field_error_message) })
+    z.object({ values: z.array(
+      z.string().min(1, empty_field_error_message) 
+    )})
   ),
   images: z.array(
     z.object({
@@ -38,10 +40,7 @@ export default function Statements({
   const form = useForm({
     resolver: zodResolver(FormSchema),
     mode: "onChange",
-    defaultValues: {
-      statements: formData.statements || [{ value: "" }],
-      images: formData.images || [{ gambar: null, caption: "" }],
-    },
+    defaultValues: formData,
   });
 
   useEffect(() => {
@@ -50,7 +49,7 @@ export default function Statements({
     });
 
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form.watch]);
 
   const {
     fields: statementFields,
@@ -69,6 +68,8 @@ export default function Statements({
     control: form.control,
     name: "images",
   });
+
+  const fileRefGambar = form.register("gambar");
 
   const onSubmit = async (data: any) => {
     try {
@@ -152,7 +153,7 @@ export default function Statements({
               type="button"
               size="sm"
               className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={() => appendStatement({ value: "" })}
+              onClick={() => appendStatement({ values: "" })}
             >
               <p className="text-xl">+</p>
             </Button>
@@ -196,7 +197,7 @@ export default function Statements({
                               <Input
                                 type="file"
                                 accept=".jpg, .jpeg, .png"
-                                {...field} // form.field disini menggantikan fileRefGambar
+                                {...fileRefGambar}
                               />
                             </FormControl>
                             <FormMessage />
