@@ -472,7 +472,13 @@ export default function AdministrativeForm({
                           <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date: Date | undefined) => {
+                              if (date) {
+                                const adjustedDate = new Date(date);
+                                adjustedDate.setMinutes(adjustedDate.getMinutes() - adjustedDate.getTimezoneOffset());
+                                field.onChange(adjustedDate);
+                              }
+                            }}                            
                             disabled={(date) =>
                               date > new Date() || date < new Date("1900-01-01")
                             }
@@ -784,7 +790,13 @@ export default function AdministrativeForm({
                           <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date: Date | undefined) => {
+                              if (date) {
+                                const adjustedDate = new Date(date);
+                                adjustedDate.setMinutes(adjustedDate.getMinutes() - adjustedDate.getTimezoneOffset());
+                                field.onChange(adjustedDate);
+                              }
+                            }}
                             disabled={(date) =>
                               date > new Date() || date < new Date("1900-01-01")
                             }
@@ -826,7 +838,13 @@ export default function AdministrativeForm({
                           <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date: Date | undefined) => {
+                              if (date) {
+                                const adjustedDate = new Date(date);
+                                adjustedDate.setMinutes(adjustedDate.getMinutes() - adjustedDate.getTimezoneOffset());
+                                field.onChange(adjustedDate);
+                              }
+                            }}
                             disabled={(date) =>
                               date > new Date() || date < new Date("1900-01-01")
                             }

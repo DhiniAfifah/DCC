@@ -143,6 +143,15 @@ export default function CreateDCC() {
 
   const [downloadLink, setDownloadLink] = useState<string | null>(null);
 
+  const formatDate = (date: Date | string | null): string | null => {
+    if (!date) return null;
+    
+    const localDate = new Date(date);
+    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset()); // Adjust for timezone
+  
+    return localDate.toISOString().split("T")[0];
+  };  
+
   const updateFormData = (data: any) => {
     setFormData((prev) => ({
       ...prev,
@@ -156,13 +165,13 @@ export default function CreateDCC() {
       sertifikat: data.sertifikat?.toString() || "",
       order: data.order?.toString() || "",
       tgl_mulai: data.tgl_mulai
-        ? new Date(data.tgl_mulai).toISOString().split("T")[0]
+        ? formatDate(new Date(data.tgl_mulai))
         : prev.tgl_mulai,
       tgl_akhir: data.tgl_akhir
-        ? new Date(data.tgl_akhir).toISOString().split("T")[0]
+        ? formatDate(new Date(data.tgl_akhir))
         : prev.tgl_akhir,
       tgl_pengesahan: data.tgl_pengesahan
-        ? new Date(data.tgl_pengesahan).toISOString().split("T")[0]
+        ? formatDate(new Date(data.tgl_pengesahan))
         : prev.tgl_pengesahan,
       statements: Array.isArray(data.statements)
         ? data.statements
