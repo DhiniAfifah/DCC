@@ -97,12 +97,30 @@ export default function CreateDCC() {
       seri_measuring: "" 
     }],
     conditions: { 
-      suhu_desc: "", 
-      suhu: "", 
-      rentang_suhu: "", 
-      lembap_desc: "",
-      lembap: "", 
-      rentang_lembap: "",
+      suhu: {
+        jenis_kondisi: "Suhu",
+        desc: "", 
+        tengah: "", 
+        tengah_unit: "", 
+        rentang: "",
+        rentang_unit: "",
+      },
+      lembap: {
+        jenis_kondisi: "Kelembapan",
+        desc: "", 
+        tengah: "", 
+        tengah_unit: "", 
+        rentang: "",
+        rentang_unit: "",
+      },
+      other: [{
+        jenis_kondisi: "",
+        desc: "", 
+        tengah: "", 
+        tengah_unit: "", 
+        rentang: "",
+        rentang_unit: "",
+      }],
     },
     sheet_name: "",
     results: [{ 
