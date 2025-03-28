@@ -110,14 +110,14 @@ export default function Statements({
         },
         body: JSON.stringify(data),
       });
-
+  
       if (!response.ok) {
         const errorResult = await response.json();
         console.error("Error response from server:", errorResult);
         alert(`Failed to create DCC: ${errorResult.detail}`);
         return;
       }
-
+  
       const result = await response.json();
       console.log("DCC Created:", result);
       alert(`DCC Created! Download: ${result.download_link}`);
@@ -175,6 +175,7 @@ export default function Statements({
                       )}
                     />
                   ))}
+                  
                   <div id="checkbox_rumus" className="mt-3">
                     <FormField
                       control={form.control}

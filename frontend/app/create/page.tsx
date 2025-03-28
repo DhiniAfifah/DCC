@@ -231,7 +231,23 @@ export default function CreateDCC() {
   };
 
   const handleSubmit = async () => {
-    const modifiedFormData = { ...formData, excel: fileName }; // Ensure excel contains only the filename
+    // Ensure formula is empty when has_formula is false
+    const modifiedStatements = formData.statements.map((statement) => ({
+      ...statement,
+      formula: statement.has_formula ? statement.formula : "", // Clear formula if checkbox is false
+    }));
+
+    const modifiedMethods = formData.methods.map((method) => ({
+      ...method,
+      formula: method.has_formula ? method.formula : "", // Clear formula if checkbox is false
+    }));
+    
+    const modifiedFormData = { 
+      ...formData, 
+      statements: modifiedStatements, 
+      methods: modifiedMethods,
+      excel: fileName // Ensure excel contains only the filename
+    };
   
     console.log("Data yang dikirim ke backend:", modifiedFormData);
   
