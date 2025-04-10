@@ -127,11 +127,14 @@ export default function CreateDCC() {
       parameters: "", 
       columns: [{ 
         kolom: "", 
-        real_list: [{ 
-          value: "", 
-          unit: ""
-        }] 
-      }] 
+        real_list: "1",
+      }],
+      uncertainty: {
+        factor: "2", 
+        probability: "0.95",
+        distribution: "",
+        real_list: "1",
+      },
     }],
     statements: [{ 
       values: "",

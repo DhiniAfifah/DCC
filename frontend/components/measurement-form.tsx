@@ -90,12 +90,15 @@ const FormSchema = z.object({
       columns: z.array(
         z.object({
           kolom: z.string().min(1, { message: empty_field_error_message }),
-          real_list: z.array(
-            z.object({
-              value: z.string().min(1, { message: empty_field_error_message }),
-              unit: z.string().min(1, { message: empty_field_error_message }),
-            })
-          ),
+          real_list: z.string().min(1, { message: empty_field_error_message }),
+        })
+      ),
+      uncertainty: z.array(
+        z.object({
+          factor: z.string().min(1, { message: empty_field_error_message }),
+          probability: z.string().min(1, { message: empty_field_error_message }),
+          distribution: z.string().min(1, { message: empty_field_error_message }),
+          real_list: z.string().min(1, { message: empty_field_error_message }),
         })
       ),
     })
@@ -131,85 +134,86 @@ interface RealListProps {
   columnIndex: number;
 }
 
-const RealLists = ({ resultIndex, columnIndex }: RealListProps) => {
-  const { control, register } = useFormContext();
-  const {
-    fields: realListFields,
-    append: appendRealList,
-    remove: removeRealList,
-  } = useFieldArray<FormValues>({
-    name: `results.${resultIndex}.columns.${columnIndex}.real_list`,
-  });
+// const RealLists = ({ resultIndex, columnIndex }: RealListProps) => {
+//   const { control, register } = useFormContext();
+//   const {
+//     fields: realListFields,
+//     append: appendRealList,
+//     remove: removeRealList,
+//   } = useFieldArray<FormValues>({
+//     name: `results.${resultIndex}.columns.${columnIndex}.real_list`,
+//   });
 
-  return (
-    <div id="real_list">
-      <div className="space-y-2">
-        <div className="grid grid-cols-2 gap-4">
-          <FormLabel>Nilai</FormLabel>
-          <FormLabel>Satuan</FormLabel>
-        </div>
-        {realListFields.map((realListField, realListIndex) => (
-          <div key={realListField.id} className="flex items-center gap-2">
-            <div className="grid grid-cols-2 gap-4 flex-1">
-              <div id="value">
-                <FormField
-                  control={control}
-                  name={`results.${resultIndex}.columns.${columnIndex}.real_list.${realListIndex}.value`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+//   return (
+//     <div id="real_list">
+//       <div className="space-y-2">
+//         <div className="grid grid-cols-2 gap-4">
+//           <FormLabel>Nilai</FormLabel>
+//           <FormLabel>Satuan</FormLabel>
+//         </div>
+//         {realListFields.map((realListField, realListIndex) => (
+//           <div key={realListField.id} className="flex items-center gap-2">
+//             <div className="grid grid-cols-2 gap-4 flex-1">
+//               <div id="value">
+//                 <FormField
+//                   control={control}
+//                   name={`results.${resultIndex}.columns.${columnIndex}.real_list.${realListIndex}.value`}
+//                   render={({ field }) => (
+//                     <FormItem>
+//                       <FormControl>
+//                         <Input {...field} />
+//                       </FormControl>
+//                       <FormMessage />
+//                     </FormItem>
+//                   )}
+//                 />
+//               </div>
 
-              <div id="unit">
-                <FormField
-                  control={control}
-                  name={`results.${resultIndex}.columns.${columnIndex}.real_list.${realListIndex}.unit`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-            {realListFields.length > 1 && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => removeRealList(realListIndex)}
-                className="self-end" // Aligns button with input fields
-              >
-                <X />
-              </Button>
-            )}
-          </div>
-        ))}
-      </div>
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        className="mt-2"
-        onClick={() => appendRealList({ value: "", unit: "" })}
-      >
-        <p className="text-xl"><Plus /></p>
-      </Button>
-    </div>
-  );
-};
+//               <div id="unit">
+//                 <FormField
+//                   control={control}
+//                   name={`results.${resultIndex}.columns.${columnIndex}.real_list.${realListIndex}.unit`}
+//                   render={({ field }) => (
+//                     <FormItem>
+//                       <FormControl>
+//                         <Input {...field} />
+//                       </FormControl>
+//                       <FormMessage />
+//                     </FormItem>
+//                   )}
+//                 />
+//               </div>
+//             </div>
+//             {realListFields.length > 1 && (
+//               <Button
+//                 type="button"
+//                 variant="destructive"
+//                 size="icon"
+//                 onClick={() => removeRealList(realListIndex)}
+//                 className="self-end" // Aligns button with input fields
+//               >
+//                 <X />
+//               </Button>
+//             )}
+//           </div>
+//         ))}
+//       </div>
+//       <Button
+//         type="button"
+//         variant="outline"
+//         size="sm"
+//         className="mt-2"
+//         onClick={() => appendRealList({ value: "", unit: "" })}
+//       >
+//         <p className="text-xl"><Plus /></p>
+//       </Button>
+//     </div>
+//   );
+// };
 
 const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
   const { control, register } = useFormContext();
+  const [selectedDistribution, setDistribution] = useState<string>("");
   const {
     fields: columnFields,
     append: appendColumn,
@@ -241,27 +245,41 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
                 </Button>
               )}
 
-              <div id="kolom">
+              <div id="nama">
                 <FormLabel>Nama Kolom</FormLabel>
-                <div className="space-y-2">
-                  {usedLanguages.map((lang: { value: string }, langIndex: number) => (
-                    <FormField 
-                      key={langIndex} 
-                      control={control} 
-                      name={`results.${resultIndex}.columns.${columnIndex}.kolom`}
-                      render={({ field }) => (
-                        <>
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        </>
-                      )}
-                    />
-                  ))}
-                </div>
+                {usedLanguages.map((lang: { value: string }, langIndex: number) => (
+                  <FormField 
+                    key={langIndex} 
+                    control={control} 
+                    name={`results.${resultIndex}.columns.${columnIndex}.kolom`}
+                    render={({ field }) => (
+                      <>
+                        <FormItem>
+                          <FormControl>
+                            <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      </>
+                    )}
+                  />
+                ))}
+              </div>
+
+              <div id="realList">
+                <FormLabel>Jumlah Sub-kolom (nilai dan satuan)</FormLabel>
+                <FormField
+                  control={control}
+                  name={`results.${resultIndex}.columns.${columnIndex}.real_list`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input type="number" min="1" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
           </CardContent>
@@ -280,6 +298,108 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
       >
         <p className="text-xl"><Plus /></p>
       </Button>
+
+      <Card id="uncertainty">
+        <CardHeader>
+          <h3 className="text-sm font-semibold">Uncertainty</h3>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div id="factor" className="grid gap-1">
+            <FormLabel>Coverage Factor</FormLabel>
+            <FormField
+              control={control}
+              name={`results.${resultIndex}.uncertainty.factor`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      {...field} 
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*\.?\d{0,2}$/.test(value)) {
+                          field.onChange(e);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div id="probability" className="grid gap-1">
+            <FormLabel>Coverage Probability</FormLabel>
+            <FormField
+              control={control}
+              name={`results.${resultIndex}.uncertainty.probability`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      max="1"
+                      step={"0.1"}
+                      {...field} 
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*\.?\d{0,2}$/.test(value)) {
+                          field.onChange(e);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div id="distribution" className="grid gap-1">
+            <FormLabel>Distribution</FormLabel>
+            <FormField
+              control={control}
+              name={`results.${resultIndex}.uncertainty.distribution`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <FormItem>
+                      <Select
+                        onValueChange={(value) => {
+                          setDistribution(value);
+                          field.onChange(value);
+                        }}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="segiempat">Segiempat</SelectItem>
+                          <SelectItem value="segitiga">Segitiga</SelectItem>
+                          <SelectItem value="other">other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {selectedDistribution === "other" && (
+                        <Input
+                          placeholder="Masukkan distribusi lain"
+                          onChange={(e) => field.onChange(e.target.value)}
+                        />
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -364,6 +484,9 @@ export default function MeasurementForm({
   
     form.setValue(`methods.${methodIndex}.formula`, updatedFormula);
   };
+
+  const [selectedSuhuTengahUnit, setSelectedSuhuTengahUnit] = useState("");
+  const [selectedSuhuRentangUnit, setSelectedSuhuRentangUnit] = useState("");
 
   const [fileName] = useState<string | null>(null);
   const [sheets, setSheets] = useState<string[]>([]);
@@ -816,9 +939,31 @@ export default function MeasurementForm({
                           name={`conditions.suhu.tengah_unit`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormControl>
-                                <Input placeholder="Satuan" {...field} />
-                              </FormControl>
+                              <Select
+                                onValueChange={(value) => {
+                                  setSelectedSuhuTengahUnit(value);
+                                  field.onChange(value);
+                                }}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Satuan" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="°C">°C</SelectItem>
+                                  <SelectItem value="°F">°F</SelectItem>
+                                  <SelectItem value="K">K</SelectItem>
+                                  <SelectItem value="other">other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {selectedSuhuTengahUnit === "other" && (
+                                <Input
+                                  placeholder="Masukkan satuan lain"
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                />
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}
@@ -849,9 +994,31 @@ export default function MeasurementForm({
                           name={`conditions.suhu.rentang_unit`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormControl>
-                                <Input placeholder="Satuan" {...field} />
-                              </FormControl>
+                              <Select
+                                onValueChange={(value) => {
+                                  setSelectedSuhuRentangUnit(value);
+                                  field.onChange(value);
+                                }}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Satuan" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="°C">°C</SelectItem>
+                                  <SelectItem value="°F">°F</SelectItem>
+                                  <SelectItem value="K">K</SelectItem>
+                                  <SelectItem value="other">other</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {selectedSuhuRentangUnit === "other" && (
+                                <Input
+                                  placeholder="Masukkan satuan lain"
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                />
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}
