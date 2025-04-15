@@ -301,7 +301,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
 
       <Card id="uncertainty">
         <CardHeader>
-          <h3 className="text-sm font-semibold">Uncertainty</h3>
+          <h3 className="text-sm font-semibold">Ketidakpastian</h3>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div id="factor" className="grid gap-1">
