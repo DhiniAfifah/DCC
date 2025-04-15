@@ -33,8 +33,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
-import { latexSymbols } from "@/utils/latexSymbols";
-import { latexOperations } from "@/utils/latexOperations";
 
 const empty_field_error_message = "Input diperlukan.";
 const FormSchema = z.object({
@@ -44,7 +42,10 @@ const FormSchema = z.object({
       method_desc: z.string().min(1, { message: empty_field_error_message }),
       norm: z.string().min(1, { message: empty_field_error_message }),
       has_formula: z.boolean().default(false),
-      formula: z.string().optional(),
+      formula: z.object({
+        latex: z.string().optional(),
+        mathml: z.string().optional(),
+      }).optional(),
     })
   ),
   equipments: z.array(
@@ -128,13 +129,6 @@ interface ColumnsProps {
   resultIndex: number;
   usedLanguages: { value: string }[];
 }
-
-interface RealListProps {
-  resultIndex: number;
-  columnIndex: number;
-}
-
-// const RealLists = ({ resultIndex, columnIndex }: RealListProps) => {
 //   const { control, register } = useFormContext();
 //   const {
 //     fields: realListFields,
@@ -465,26 +459,6 @@ export default function MeasurementForm({
     name: "results",
   });
 
-  useEffect(() => {
-    methodFields.forEach((_, index) => {
-      if (!form.watch(`methods.${index}.has_formula`)) {
-        form.setValue(`methods.${index}.formula`, ""); // Reset formula field
-      }
-    });
-  }, [form.watch, form, methodFields]);
-
-  const [latexInput, setLatexInput] = useState("");
-  const latexInputRef = useRef<HTMLInputElement>(null);
-  const insertSymbol = (latex: string, methodIndex: number, event?: React.MouseEvent<HTMLButtonElement>) => {
-    event?.preventDefault();
-    event?.stopPropagation();
-  
-    const currentFormula = form.getValues(`methods.${methodIndex}.formula`) || "";
-    const updatedFormula = currentFormula + latex;
-  
-    form.setValue(`methods.${methodIndex}.formula`, updatedFormula);
-  };
-
   const [selectedSuhuTengahUnit, setSelectedSuhuTengahUnit] = useState("");
   const [selectedSuhuRentangUnit, setSelectedSuhuRentangUnit] = useState("");
 
@@ -675,113 +649,65 @@ export default function MeasurementForm({
                       />
                     </div>
 
+                    {useEffect(() => {
+                      if (!form.watch(`methods.${index}.has_formula`)) {
+                        form.setValue(`methods.${index}.formula`, ""); // Reset the formula field
+                      }
+                    }, [form.watch(`methods.${index}.has_formula`), form, index])}
+
                     {form.watch(`methods.${index}.has_formula`) && (
-                      <MathJaxContext>
-                        <div id="rumus" className="mt-2">
-                          <FormLabel>Rumus</FormLabel>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-4">
-                              <FormField
-                                control={form.control}
-                                name={`methods.${index}.formula`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormControl>
-                                      <Input
-                                        ref={latexInputRef}  // Attach ref here
-                                        value={form.watch(`methods.${index}.formula`)}
-                                        onChange={(e) => form.setValue(`methods.${index}.formula`, e.target.value)}
-                                        placeholder="LaTeX"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              <Card>
-                                <CardContent>
-                                  <MathJax>{`$$${form.watch(`methods.${index}.formula`) || ""}$$`}</MathJax>
-                                </CardContent>
-                              </Card>
-                            </div>
-                            <ScrollArea className="h-40 w-full border rounded-md p-2">
-                              <div className="p-2">
-                                <div className="grid grid-cols-2 gap-2">
-                                  {latexSymbols.map((group) => (
-                                    <div key={group.category}>
-                                      <Select onValueChange={(value) => insertSymbol(value, index)}>
-                                        <SelectTrigger>
-                                          <span>{group.category}</span>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {group.symbols.map(({ latex, description }) => (
-                                            <SelectItem key={latex} value={latex}>
-                                              <span className="inline-flex items-center">
-                                                <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                                <span className="ml-1">{description}</span>
-                                              </span>
-                                            </SelectItem>
-                                          ))}
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                              <div className="p-2">
-                                <div className="grid grid-cols-8 gap-1">
-                                  {latexOperations
-                                    .find((group) => group.category === "small")
-                                    ?.symbols.map(({ latex }) => (
-                                    <Button
-                                      variant="secondary"
-                                      key={latex}
-                                      onClick={(e) => insertSymbol(latex, index, e)}
-                                    >
-                                      <span className="text-lg">
-                                        <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                      </span>
-                                    </Button>
-                                  ))}
-                                </div>
-                                <div className="grid grid-cols-5 gap-1 mt-1">
-                                  {latexOperations
-                                    .find((group) => group.category === "long")
-                                    ?.symbols.map(({ latex }) => (
-                                      <Button
-                                        variant="secondary"
-                                        key={latex}
-                                        value={latex}
-                                        onClick={(e) => insertSymbol(latex, index, e)}
-                                      >
-                                        <span>
-                                          <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                        </span>
-                                      </Button>
-                                    ))}
-                                </div>
-                                <div className="grid grid-cols-5 gap-1 mt-1">
-                                  {latexOperations
-                                    .find((group) => group.category === "big")
-                                    ?.symbols.map(({ latex }) => (
-                                      <Button
-                                        variant="secondary"
-                                        key={latex}
-                                        value={latex}
-                                        onClick={(e) => insertSymbol(latex, index, e)}
-                                        className="h-15"
-                                      >
-                                        <span>
-                                          <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                        </span>
-                                      </Button>
-                                    ))}
-                                </div>
-                              </div>
-                            </ScrollArea>
+                      <div id="rumus" className="mt-2">
+                        <FormLabel>Rumus</FormLabel>
+                          <div className="grid grid-cols-2 gap-1">
+                            <FormField
+                              control={form.control}
+                              name={`methods.${index}.formula.latex`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input placeholder="LaTeX" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`methods.${index}.formula.mathml`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input placeholder="MathML" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
                           </div>
-                        </div>
-                      </MathJaxContext>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="mt-1"
+                            onClick={() => {
+                              const latex = form.getValues(`methods.${index}.formula.latex`);
+                              const encodedLatex = encodeURIComponent(latex || "");
+
+                              const popup = window.open(
+                                `/editor_latex.html?latex=${encodedLatex}`, // adjust to your actual path
+                                'mathEditorPopup',
+                                'width=800,height=600'
+                              );
+                          
+                              // Define the callback function to receive LaTeX from the popup
+                              window.ShowLatexResult = (latex, mathml) => {
+                                form.setValue(`methods.${index}.formula.latex`, latex);
+                                form.setValue(`methods.${index}.formula.mathml`, mathml);
+                              };                          
+                            }}
+                          >
+                            Buka editor
+                          </Button>
+                      </div>
                     )}
                   </div>
                 ))}
