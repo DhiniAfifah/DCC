@@ -54,9 +54,11 @@ class Equipment(BaseModel):
     seri_measuring: str
 
 class Condition(BaseModel):
+    #suhu
     suhu_desc: str
-    suhu: str
+    suhu: str 
     rentang_suhu: str
+    #lembab
     lembap_desc: str
     lembap: str
     rentang_lembap: str

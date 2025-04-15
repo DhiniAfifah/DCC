@@ -17,10 +17,25 @@ import win32com.client as win32
 from docxtpl import DocxTemplate
 from spire.pdf.common import *
 from spire.pdf import *
+from pikepdf import Pdf, AttachedFileSpec
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
 
+input_tables = {
+    "Resistansi DC": {
+        "Arus Uji Nominal": 1, 
+        "Resistansi Terukur": 1, 
+        "Ketidakpastian": 1
+    },
+    "Resistansi AC": {
+        "Arus Uji Nominal": 2, 
+        "Resistansi Terukur": 1, 
+        "Ketidakpastian": 1
+    },
+}
+
+#path
 def get_project_paths(dcc: schemas.DCCFormCreate):
     """Mengambil semua path berdasarkan struktur folder proyek"""
     try:
@@ -47,7 +62,7 @@ def get_project_paths(dcc: schemas.DCCFormCreate):
         logging.error(f"Error mendapatkan path: {str(e)}")
         raise
 
-
+#template word
 def populate_template(dcc_data, word_path, new_word_path):
     doc = DocxTemplate(word_path)
     logging.debug(f"DCC data: {dcc_data}")
@@ -89,6 +104,327 @@ def populate_template(dcc_data, word_path, new_word_path):
 
     return new_word_path
 
+# Memproses data Excel dan mengembalikan hasil terstruktur untuk XML
+def process_excel_data(excel_path, sheet_name, input_tables):
+    
+    logging.info(f"Memproses data Excel dari {excel_path}, sheet: {sheet_name}")
+    
+    table_data = {}
+    pythoncom.CoInitialize() 
+    
+    try:
+        excel = win32.Dispatch("Excel.Application")
+        excel.Visible = False
+        wb = excel.Workbooks.Open(excel_path)
+        ws = wb.Sheets(sheet_name)
+
+        max_columns = ws.UsedRange.Columns.Count
+        max_rows = ws.UsedRange.Rows.Count
+
+        # Deteksi tabel dalam worksheet
+        tables = []
+        in_table = False
+        first_row, last_row = None, None
+
+        # Deteksi batas baris tiap tabel
+        for row in range(1, max_rows + 1):
+            filled_cells = [ws.Cells(row, col).Value for col in range(1, max_columns + 1)]
+            filled_cells = [cell for cell in filled_cells if cell not in [None, ""]]
+
+            if len(filled_cells) > 2:
+                if not in_table:
+                    first_row = row
+                    in_table = True
+                last_row = row
+            else:
+                if in_table:
+                    tables.append((first_row, last_row))
+                    in_table = False
+
+        if in_table:
+            tables.append((first_row, last_row))
+
+        # nama-nama tabel dari input
+        table_names = list(input_tables.keys())
+
+         # ambil data dari setiap tabel
+        for idx, (first_row, last_row) in enumerate(tables):
+            if idx >= len(table_names):
+                continue  
+                
+            first_col, last_col = None, None
+
+            for col in range(1, max_columns + 1):
+                col_has_data = any(ws.Cells(row, col).Value not in [None, ""] for row in range(first_row, last_row + 1))
+                if col_has_data:
+                    if first_col is None:
+                        first_col = col
+                    last_col = col
+
+            extracted_data = []
+
+            for col in range(first_col, last_col + 1):
+                numbers = []
+                units = []
+                has_data = False
+
+                for row in range(first_row, last_row + 1):
+                    value = ws.Cells(row, col).Value
+                    if isinstance(value, (int, float)):
+                        numbers.append(str(value))
+                        has_data = True
+
+                        unit = ws.Cells(row, col + 1).Value
+                        if isinstance(unit, str):
+                            units.append(unit)
+                        else:
+                            units.append("")
+
+                if has_data:
+                    extracted_data.append((numbers, units))
+
+            table_name = table_names[idx]
+            table_data[table_name] = extracted_data
+
+        return table_data
+    
+    except Exception as e:
+        logging.error(f"Error saat memproses Excel: {str(e)}")
+        raise
+    finally:
+        if 'wb' in locals() and wb:
+            wb.Close(False)
+        if 'excel' in locals() and excel:
+            excel.Quit()
+        pythoncom.CoUninitialize()
+
+#XML
+def generate_xml(dcc, table_data):
+    table_data = some_function_to_get_table_data(dcc)
+    for table_name, flat_columns in table_data.items():
+        #Generate XML for DCC
+        doc, tag, text = Doc().tagtext() 
+
+        doc.asis('<?xml version="1.0" encoding="UTF-8"?>')
+        doc.asis('<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" schemaVersion="3.3.0">')
+        with tag('dcc:administrativeData'): 
+            with tag('dcc:dccSoftware'): 
+                with tag('dcc:software'): 
+                    with tag('dcc:name'): 
+                        with tag('dcc:content'): text(dcc.software)
+                    with tag('dcc:release'): text(dcc.version)
+            with tag('dcc:coreData'): 
+                with tag('dcc:countryCodeISO3166_1'): text(dcc.country_code)
+                for lang in dcc.used_languages:
+                    with tag('dcc:usedLangCodeISO639_1'): text(lang.value)
+                for lang in dcc.mandatory_languages:
+                    with tag('dcc:mandatoryLangCodeISO639_1'): text(lang.value)
+                with tag('dcc:uniqueIdentifier'): text(dcc.sertifikat)
+                with tag('dcc:identifications'):
+                    with tag('dcc:identification'):
+                        with tag('dcc:issuer'): text(dcc.core_issuer)
+                        with tag('dcc:value'): text(dcc.order)
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text('Nomor Order')
+                with tag('dcc:beginPerformanceDate'): text(dcc.tgl_mulai)
+                with tag('dcc:endPerformanceDate'): text(dcc.tgl_akhir)
+                with tag('dcc:performanceLocation'): text(dcc.tempat)
+                with tag('dcc:issueDate'): text(dcc.tgl_pengesahan)
+            with tag("dcc:items"):
+                for obj in dcc.objects:
+                    with tag("dcc:item"):
+                        with tag("dcc:name"): text(obj.jenis)
+                        with tag("dcc:manufacturer"): text(obj.merek)
+                        with tag("dcc:model"): text(obj.tipe)
+                        with tag("dcc:identification"):
+                            with tag("dcc:issuer"): text(obj.item_issuer)
+                            with tag("dcc:value"): text(obj.seri_item)
+                            with tag("dcc:name"):
+                                with tag("dcc:content"): text(obj.id_lain)
+            with tag('dcc:calibrationLaboratory'): 
+                with tag('dcc:calibrationLaboratoryCode'): text('LK-070-IDN')
+                with tag('dcc:contact'): 
+                    with tag('dcc:name'): 
+                        with tag('dcc:content'): text('Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)')
+                    with tag('dcc:eMail'): text('nmi@bsn.go.id')
+                    with tag('dcc:phone'): text('Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833')
+                    with tag('dcc:link'): text('www.bsn.go.id')
+                    with tag('dcc:location'): 
+                        with tag('dcc:city'): text('Tangerang Selatan')
+                        with tag('dcc:countryCode'): text('ID')
+                        with tag('dcc:postCode'): text('15314')
+                        with tag('dcc:state'): text('Banten')
+                        with tag('dcc:street'): text('KST BJ Habibie Setu')
+                        with tag('dcc:streetNo'): text('Gedung 420')
+                with tag('dcc:cryptElectronicSignature'): pass
+                with tag('dcc:cryptElectronicTimeStamp'): pass
+            with tag('dcc:respPersons'): 
+                for resp in dcc.responsible_persons:
+                    with tag('dcc:respPerson'): 
+                        with tag('dcc:person'): 
+                            with tag('dcc:name'): 
+                                with tag('dcc:content'): text(resp.nama_resp)
+                        with tag('dcc:description'): 
+                            with tag('dcc:name'): 
+                                with tag('dcc:content'): text(resp.nip)
+                        with tag('dcc:role'): text(resp.peran)
+                        with tag('dcc:mainSigner'): text(resp.main_signer)
+                        with tag('dcc:cryptElectronicSignature'): text(resp.signature)
+                        with tag('dcc:cryptElectronicTimeStamp'): text(resp.timestamp)
+            with tag('dcc:customer'): 
+                with tag('dcc:name'): 
+                    with tag('dcc:content'): text(dcc.owner.nama_cust)
+                with tag('dcc:location'): 
+                    with tag('dcc:city'): text(dcc.owner.kota_cust)
+                    with tag('dcc:countryCode'): text(dcc.owner.negara_cust)
+                    with tag('dcc:postCode'): text(dcc.owner.pos_cust)
+                    with tag('dcc:state'): text(dcc.owner.state_cust)
+                    with tag('dcc:street'): text(dcc.owner.jalan_cust)
+                    with tag('dcc:streetNo'): text(dcc.owner.no_jalan_cust)
+             # Statements Section
+        with tag('dcc:statement'):
+            for stmt in dcc.statements:
+                for value in stmt.values:
+                    with tag('dcc:name'):
+                        with tag('dcc:content'): text(value)
+
+        # Measurement Results Section
+        with tag('dcc:measurementResults'):
+            # Adding Metode (Methods)
+            with tag('dcc:usedMethods'):
+                for method in dcc.methods:
+                    with tag('dcc:usedMethod'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text(method.method_name)
+                        with tag('dcc:description'):
+                            with tag('dcc:content'): text(method.method_desc)
+                        with tag('dcc:norm'): text(method.norm)
+
+            # Adding Measuring Equipment (Alat Pengukuran)
+            with tag('dcc:measuringEquipments'):
+                for equip in dcc.equipments:
+                    with tag('dcc:measuringEquipment'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text(equip.nama_alat)
+                        with tag('dcc:identifications'):
+                            with tag('dcc:identification'):
+                                with tag('dcc:issuer'): text('manufacturer')
+                                with tag('dcc:value'): text(equip.seri_measuring)
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text(equip.manuf_model)
+
+            # Adding Room Conditions (Kondisi Ruangan)
+            with tag('dcc:influenceConditions'):
+                for condition in dcc.conditions:
+                    # Kondisi Suhu
+                    with tag('dcc:influenceCondition'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text('Suhu')
+                        with tag('dcc:description'):
+                            with tag('dcc:content'): text(condition.suhu_desc)
+                        with tag('dcc:data'):
+                            with tag('dcc:quantity'):
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text('Titik Tengah')
+                                with tag('si:real'):
+                                    with tag('si:value'): text('')
+                                    with tag('si:unit'): text(condition.suhu)
+                            with tag('dcc:quantity'):
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text('Rentang')
+                                with tag('si:real'):
+                                    with tag('si:value'): text(condition.rentang_suhu)
+                                    with tag('si:unit'): text(condition.suhu)
+
+                    # Kondisi Lembap
+                    with tag('dcc:influenceCondition'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text('Kelembapan')
+                        with tag('dcc:description'):
+                            with tag('dcc:content'): text(condition.lembap_desc)
+                        with tag('dcc:data'):
+                            with tag('dcc:quantity'):
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text('Titik Tengah')
+                                with tag('si:real'):
+                                    with tag('si:value'): text('') 
+                                    with tag('si:unit'): text(condition.lembap)
+                            with tag('dcc:quantity'):
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text('Rentang')
+                                with tag('si:real'):
+                                    with tag('si:value'): text(condition.rentang_lembap)
+                                    with tag('si:unit'): text(condition.lembap)
+                                    
+            # results dari Excel
+            with tag('dcc:results'):
+                for table_name, flat_columns in table_data.items():
+                    column_map = input_tables.get(table_name, {})
+                    column_names = list(column_map.keys())
+                    subcol_counts = list(column_map.values())
+
+                    flat_index = 0
+
+                    with tag('dcc:result'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'):
+                                text(table_name)
+                        with tag('dcc:data'):
+                            with tag('dcc:list'):
+                                for col_idx, col_name in enumerate(column_names):
+                                    subcol_count = subcol_counts[col_idx]
+
+                                    # Check if this is the last column → Uncertainty
+                                    is_uncertainty = (col_idx == len(column_names) - 1)
+
+                                    with tag('dcc:quantity'):
+                                        with tag('dcc:name'):
+                                            with tag('dcc:content'):
+                                                text(col_name)
+                                        with tag('si:hybrid'):
+                                            for _ in range(subcol_count):
+                                                if flat_index >= len(flat_columns):
+                                                    break
+                                                numbers, units = flat_columns[flat_index]
+                                                flat_index += 1
+
+                                                if is_uncertainty:
+                                                    with tag('si:realListXMLList'):
+                                                        with tag('si:expandedUncXMLList'):
+                                                            with tag('si:uncertaintyXMLList'):
+                                                                text(" ".join(numbers))
+                                                            with tag('si:unitXMLList'):
+                                                                text(" ".join(unit if unit else "" for unit in units))
+                                                            with tag('si:coverageFactorXMLList'):
+                                                                text("2")  # Default value
+                                                            with tag('si:coverageProbabilityXMLList'):
+                                                                text("0.95")  # Default value
+                                                            with tag('si:distributionXMLList'):
+                                                                text("normal")  # Default value
+                                                else:
+                                                    with tag('si:realListXMLList'):
+                                                        with tag('si:valueXMLList'):
+                                                            text(" ".join(numbers))
+                                                        with tag('si:unitXMLList'):
+                                                            text(" ".join(unit if unit else "" for unit in units))
+
+                                    
+            
+        doc.asis('</dcc:digitalCalibrationCertificate>')
+
+        result = indent(doc.getvalue(), indentation='   ')
+        return result
+
+
+def embed_xml_in_pdf(pdf_path, xml_path, output_path):
+    pdf = Pdf.open(pdf_path)
+    filespec = AttachedFileSpec.from_filepath(pdf, xml_path, mime_type="application/xml")
+    pdf.attachments[xml_path.name] = filespec
+    pdf.save(output_path)
+
+
+
+#db n excel 
 def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
     logging.info("Starting DCC creation process")
     
@@ -100,19 +436,16 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
     try:
         logging.debug("Creating DCC model instance")
         
-        # Saat memproses data kondisi
         conditions_data = []
-        for condition in dcc.conditions:
-            condition_data = {
-                'suhu_desc': condition.suhu_desc,
-                'suhu': condition.suhu,
-                'rentang_suhu': condition.rentang_suhu,
-                'lembap_desc': condition.lembap_desc,
-                'lembap': condition.lembap,
-                'rentang_lembap': condition.rentang_lembap,
-            }
-            conditions_data.append(condition_data)
-
+        for condition in dcc.conditions:  # pastikan baris ini tidak lebih banyak indentasinya
+            conditions_data.append({
+                "suhu_desc": condition.suhu_desc,
+                "suhu": condition.suhu,
+                "rentang_suhu": condition.rentang_suhu,
+                "lembap_desc": condition.lembap_desc,
+                "lembap": condition.lembap,
+                "rentang_lembap": condition.rentang_lembap,
+            })
 
         # Membuat instansi model DCC dan menyimpan data ke database
         db_dcc = models.DCC(
@@ -154,10 +487,22 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         # semua path
         paths = get_project_paths(dcc)
         new_word_path = str(paths['word_output'])
+        new_pdf_path = str(paths['pdf_output'])
+        xml_path = str(paths['word_output'].with_suffix('.xml'))
 
         
-        # Buat folder output jika belum ada
+        # Buat folder output (jika belum ada)
         os.makedirs(paths['word_output'].parent, exist_ok=True)
+        
+        # Ambil table_data dari process_excel_data
+        table_data = process_excel_data(dcc.excel, dcc.sheet_name, input_tables)
+        
+        # Generate XML
+        xml_content = generate_xml(dcc, table_data)
+        with open(xml_path, "w", encoding="utf-8") as f:
+            f.write(xml_content)
+        logging.info(f"XML file generated at {xml_path}")
+        
         
         # Proses template Word
         populate_template(
@@ -165,36 +510,6 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             str(paths['template']),
             new_word_path
         )
-        
-        
-        #Path untuk template dan output (Dhini)
-        # template_path = r'C:\Users\dhini\Desktop\DCC\backend\assets\template DCC.docx'
-        # output_path = fr"C:\Users\dhini\Desktop\DCC\backend\dcc_files\{dcc.sertifikat}_filled.docx"
-
-        # Path untuk template dan output (Rachelle)
-        # template_path = r'C:\Users\a516e\Documents\GitHub\DCC\backend\assets\template DCC.docx'
-        #new_word_path = fr"C:\Users\a516e\Documents\GitHub\DCC\backend\dcc_files\{dcc.sertifikat}.docx"
-
-        # Mengisi template Word dengan data input manual
-        #populated_template = populate_template(dcc.dict(), template_path, new_word_path)
-
-        # Generating the download link
-        #download_link = f"http://127.0.0.1:8000/download-dcc/{db_dcc.id}.xml"
-        #logging.info(f"Generated download link: {download_link}")
-
-        # # Dhini
-        # excel_path = fr'C:\Users\dhini\Desktop\DCC\backend\uploads\{dcc.excel}'
-        # sheet_name = dcc.sheet_name
-
-        # Rachelle
-        #excel_path = fr'C:\Users\a516e\Documents\GitHub\DCC\backend\uploads\{dcc.excel}'
-        #sheet_name = dcc.sheet_name
-
-        #logging.info("Initializing Excel and Word applications")
-        #excel = win32.Dispatch("Excel.Application")
-        #word = win32.Dispatch("Word.Application")
-        #excel.Visible = False
-        #word.Visible = True
 
         # Proses Excel
         try:
@@ -284,21 +599,27 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         converter.ToPdfA3A(str(paths['pdf_output']))
         logging.info(f"Converted {new_word_path} to PDFA/3-A")
         
-        return {"download_link": f"http://127.0.0.1:8000/download-dcc/{db_dcc.id}.xml"}
+        # XML -> PDF/A-3
+        embedded_pdf_path = str(paths['pdf_output'].with_name(f"{dcc.sertifikat}_embedded.pdf"))
+        embed_xml_in_pdf(str(paths['pdf_output']), xml_path, embedded_pdf_path)
+        logging.info(f"Embedded XML into PDF: {embedded_pdf_path}")
+        
+        return {"download_link": f"http://127.0.0.1:8000/download-dcc/{dcc.sertifikat}_embedded.pdf"}
     
     except Exception as e:
         logging.error(f"Error occurred: {e}", exc_info=True)
         db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
         
-        # Pastikan aplikasi ditutup
-    if word.Documents.Count > 0:  # Line 296 (TAMBAHKAN TITIK DUA)
-        try:                      # Line 297 (INDENTASI)
+    finally:
+        if wb:
+            wb.Close(False)
+        if excel:
+            excel.Quit()
+        if word:
             for doc in word.Documents:
                 doc.Close(SaveChanges=False)
             word.Quit()
-        except Exception as e:
-            logging.error(f"Error closing Word: {str(e)}")
 
     #except Exception as e:
      #   logging.error(f"Error occurred while saving DCC {dcc.sertifikat}: {e}", exc_info=True)
