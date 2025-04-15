@@ -241,23 +241,25 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
 
               <div id="nama">
                 <FormLabel>Nama Kolom</FormLabel>
-                {usedLanguages.map((lang: { value: string }, langIndex: number) => (
-                  <FormField 
-                    key={langIndex} 
-                    control={control} 
-                    name={`results.${resultIndex}.columns.${columnIndex}.kolom`}
-                    render={({ field }) => (
-                      <>
-                        <FormItem>
-                          <FormControl>
-                            <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      </>
-                    )}
-                  />
-                ))}
+                <div className="grid gap-1">
+                  {usedLanguages.map((lang: { value: string }, langIndex: number) => (
+                    <FormField 
+                      key={langIndex} 
+                      control={control} 
+                      name={`results.${resultIndex}.columns.${columnIndex}.kolom.${langIndex}`}
+                      render={({ field }) => (
+                        <>
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        </>
+                      )}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div id="realList">
@@ -1267,7 +1269,7 @@ export default function MeasurementForm({
 
                     <div id="parameter">
                       <FormLabel>Parameter (Judul Tabel)</FormLabel>
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                          {usedLanguages.map((lang: { value: string }, langIndex: number) => (
                            <FormField 
                              key={langIndex} 
@@ -1285,7 +1287,7 @@ export default function MeasurementForm({
                              )}
                            />
                          ))}
-                       </div>
+                      </div>
                     </div>
 
                     <Columns resultIndex={resultIndex} usedLanguages={usedLanguages} />
