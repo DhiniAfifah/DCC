@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus, X } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
@@ -13,18 +14,23 @@ import {
 } from "@/components/ui/form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const empty_field_error_message = "Input diperlukan.";
-
 const FormSchema = z.object({
   statements: z.array(
-    z.object({ values: z.array(
-      z.string().min(1, empty_field_error_message) 
-    )})
+    z.object({ 
+      values: z.string().min(1, empty_field_error_message),
+      has_formula: z.boolean().default(false),
+      formula: z.object({
+        latex: z.string().optional(),
+        mathml: z.string().optional(),
+      }).optional(),
+    })
   ),
   images: z.array(
-    z.object({
-      gambar: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
+    z.object({ 
+      gambar: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
       caption: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
@@ -69,6 +75,8 @@ export default function Statements({
     name: "images",
   });
 
+  const usedLanguages = form.watch("used_languages") || [];
+
   const fileRefGambar = form.register("gambar");
 
   const onSubmit = async (data: any) => {
@@ -80,14 +88,14 @@ export default function Statements({
         },
         body: JSON.stringify(data),
       });
-
+  
       if (!response.ok) {
         const errorResult = await response.json();
         console.error("Error response from server:", errorResult);
         alert(`Failed to create DCC: ${errorResult.detail}`);
         return;
       }
-
+  
       const result = await response.json();
       console.log("DCC Created:", result);
       alert(`DCC Created! Download: ${result.download_link}`);
@@ -101,6 +109,7 @@ export default function Statements({
     <FormProvider {...form}>
       <form
         onSubmit={(e) => {
+          console.log("Form submitted!");
           form.handleSubmit(onSubmit)(e);
         }}
         className="space-y-6 max-w-4xl mx-auto p-4"
@@ -109,14 +118,25 @@ export default function Statements({
           <CardHeader>
             <CardTitle>Statements/Pernyataan</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-1">
-            {statementFields.map((field, statementIndex) => (
-              <div key={field.id} className="grid gap-1 border-b pb-4 relative">
-                <p className="text-sm text-muted-foreground">
-                  Statement {statementIndex + 1}
-                </p>
-                {formData.used_languages.map(
-                  (lang: { value: string }, langIndex: number) => (
+          <CardContent className="grid gap-6">
+            <div className="grid gap-4">
+              {statementFields.map((field, statementIndex) => (
+                <div key={field.id} className="grid gap-1 border-b pb-4 relative">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">Statement {statementIndex + 1}</p>
+                    {statementFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="flex items-center justify-center"
+                        onClick={() => removeStatement(statementIndex)}
+                      >
+                        <X />
+                      </Button>
+                    )}
+                  </div>
+                  {usedLanguages.map((lang: { value: string }, langIndex: number) => (
                     <FormField
                       control={form.control}
                       key={`${field.id}-${langIndex}`}
@@ -125,38 +145,104 @@ export default function Statements({
                         <FormItem>
                           <div className="flex items-center gap-2">
                             <FormControl>
-                              <Input
-                                placeholder={`Bahasa: ${lang.value}`}
-                                {...field}
-                              />
+                              <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
                             </FormControl>
-                            {statementFields.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                onClick={() => removeStatement(statementIndex)}
-                              >
-                                ✕
-                              </Button>
-                            )}
                           </div>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  )
-                )}
-              </div>
-            ))}
-            <Button
-              type="button"
-              size="sm"
-              className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={() => appendStatement({ values: "" })}
-            >
-              <p className="text-xl">+</p>
-            </Button>
+                  ))}
+                  
+                  <div id="checkbox_rumus" className="mt-3">
+                    <FormField
+                      control={form.control}
+                      name={`statements.${statementIndex}.has_formula`}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <Checkbox 
+                              checked={field.value}
+                              onCheckedChange={(checked) => field.onChange(checked)}
+                            />
+                          </FormControl>
+                          <FormLabel>Ada rumus di statement ini</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {useEffect(() => {
+                    if (!form.watch(`statements.${statementIndex}.has_formula`)) {
+                      form.setValue(`statements.${statementIndex}.formula`, ""); // Reset the formula field
+                    }
+                  }, [form.watch(`statements.${statementIndex}.has_formula`), form, statementIndex])}
+
+                  {form.watch(`statements.${statementIndex}.has_formula`) && (
+                    <div id="rumus" className="mt-2">
+                      <FormLabel>Rumus</FormLabel>
+                      <div className="grid grid-cols-2 gap-1">
+                        <FormField
+                          control={form.control}
+                          name={`statements.${statementIndex}.formula.latex`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input placeholder="LaTeX" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`statements.${statementIndex}.formula.mathml`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input placeholder="MathML" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="mt-1"
+                        onClick={() => {
+                          const latex = form.getValues(`statements.${statementIndex}.formula.latex`);
+                          const encodedLatex = encodeURIComponent(latex || "");
+                          
+                          const popup = window.open(
+                            `/imatheq.html?latex=${encodedLatex}`, // pre-fill using URL parameter
+                            'mathEditorPopup',
+                            'width=800,height=600'
+                          );
+                      
+                          // Define the callback function to receive LaTeX from the popup
+                          window.ShowLatexResult = (latex, mathml) => {
+                            form.setValue(`statements.${statementIndex}.formula.latex`, latex);
+                            form.setValue(`statements.${statementIndex}.formula.mathml`, mathml);
+                          };                          
+                        }}
+                      >
+                        Buka editor
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                size="sm"
+                className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
+                onClick={() => appendStatement({ values: "" })}
+              >
+                <p className="text-xl"><Plus /></p>
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -166,32 +252,33 @@ export default function Statements({
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
-              {imageFields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="grid gap-4 border-b pb-4 relative"
-                >
-                  <p className="text-sm text-muted-foreground">
-                    Gambar {index + 1}
-                  </p>
-                  {imageFields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-0 right-0"
-                      onClick={() => removeImage(index)}
-                    >
-                      ✕
-                    </Button>
-                  )}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div id="upload">
-                      <FormLabel>Upload File Gambar</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`images.${index}.gambar`}
-                        render={({ field }) => (
+            {imageFields.map((field, index) => (
+              <div
+                key={field.id}
+                className="grid gap-4 border-b pb-4 relative"
+              >
+                <p className="text-sm text-muted-foreground">
+                  Gambar {index + 1}
+                </p>
+                {imageFields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-0 right-0"
+                    onClick={() => removeImage(index)}
+                  >
+                    <X />
+                  </Button>
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div id="upload">
+                    <FormLabel>Upload File Gambar</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name={`images.${index}.gambar`}
+                      render={({ field }) => {
+                        return (
                           <FormItem>
                             <FormControl>
                               <Input
@@ -202,35 +289,38 @@ export default function Statements({
                             </FormControl>
                             <FormMessage />
                           </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div id="caption">
-                      <FormLabel>Caption Gambar</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`images.${index}.caption`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                        );
+                      }}
+                    />
+                  </div>
+                  <div id="caption">
+                    <FormLabel>Caption Gambar</FormLabel>
+                    <FormField 
+                      control={form.control} 
+                      name={`images.${index}.caption`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
             </div>
             <Button
               type="button"
               size="sm"
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={() => appendImage({ gambar: null, caption: "" })}
+              onClick={() =>
+                appendImage({ gambar: "", caption: "" })
+              }
             >
-              <p className="text-xl">+</p>
+              <p className="text-xl"><Plus /></p>
             </Button>
           </CardContent>
         </Card>

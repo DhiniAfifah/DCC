@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronsUpDown, CalendarIcon } from "lucide-react";
+import { ChevronsUpDown, CalendarIcon, Plus, X } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
@@ -128,16 +128,44 @@ const FormSchema = z.object({
       id_lain: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
-  responsible_persons: z.array(
-    z.object({
+  responsible_persons: z.object({
+    pelaksana: z.array(
+      z.object({
+        nama_resp: z.string().min(1, { message: empty_field_error_message }),
+        nip: z.string().min(1, { message: empty_field_error_message }),
+        peran: z.string().min(1, { message: empty_field_error_message }),
+        main_signer: z.string().min(1, { message: empty_field_error_message }),
+        signature: z.string().min(1, { message: empty_field_error_message }),
+        timestamp: z.string().min(1, { message: empty_field_error_message }),
+      })
+    ),
+    penyelia: z.array(
+      z.object({
+        nama_resp: z.string().min(1, { message: empty_field_error_message }),
+        nip: z.string().min(1, { message: empty_field_error_message }),
+        peran: z.string().min(1, { message: empty_field_error_message }),
+        main_signer: z.string().min(1, { message: empty_field_error_message }),
+        signature: z.string().min(1, { message: empty_field_error_message }),
+        timestamp: z.string().min(1, { message: empty_field_error_message }),
+      })
+    ),
+    kepala: z.object({
       nama_resp: z.string().min(1, { message: empty_field_error_message }),
       nip: z.string().min(1, { message: empty_field_error_message }),
       peran: z.string().min(1, { message: empty_field_error_message }),
       main_signer: z.string().min(1, { message: empty_field_error_message }),
       signature: z.string().min(1, { message: empty_field_error_message }),
       timestamp: z.string().min(1, { message: empty_field_error_message }),
-    })
-  ),
+    }),
+    direktur: z.object({
+      nama_resp: z.string().min(1, { message: empty_field_error_message }),
+      nip: z.string().min(1, { message: empty_field_error_message }),
+      peran: z.string().min(1, { message: empty_field_error_message }),
+      main_signer: z.string().min(1, { message: empty_field_error_message }),
+      signature: z.string().min(1, { message: empty_field_error_message }),
+      timestamp: z.string().min(1, { message: empty_field_error_message }),
+    }),
+  }),  
   owner: z.object({
     nama_cust: z.string().min(1, { message: empty_field_error_message }),
     jalan_cust: z.string().min(1, { message: empty_field_error_message }),
@@ -216,10 +244,28 @@ export default function AdministrativeForm({
     name: "responsible_persons",
   });
 
+  const {
+    fields: pelaksanaFields,
+    append: appendPelaksana,
+    remove: removePelaksana,
+  } = useFieldArray({
+    control: form.control,
+    name: "responsible_persons.pelaksana",
+  });
+  
+  const {
+    fields: penyeliaFields,
+    append: appendPenyelia,
+    remove: removePenyelia,
+  } = useFieldArray({
+    control: form.control,
+    name: "responsible_persons.penyelia",
+  });
+
   const [selectedRoles, setSelectedRoles] = useState(
     personFields.map(() => "")
   );
-
+  
   const handleRoleChange = (index: number, value: string) => {
     setSelectedRoles((prevRoles) => {
       const newRoles = [...prevRoles];
@@ -426,7 +472,13 @@ export default function AdministrativeForm({
                           <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date: Date | undefined) => {
+                              if (date) {
+                                const adjustedDate = new Date(date);
+                                adjustedDate.setMinutes(adjustedDate.getMinutes() - adjustedDate.getTimezoneOffset());
+                                field.onChange(adjustedDate);
+                              }
+                            }}                            
                             disabled={(date) =>
                               date > new Date() || date < new Date("1900-01-01")
                             }
@@ -568,7 +620,7 @@ export default function AdministrativeForm({
                                 size="icon"
                                 onClick={() => removeUsed(index)}
                               >
-                                ✕
+                                <X />
                               </Button>
                             )}
                           </div>
@@ -582,10 +634,10 @@ export default function AdministrativeForm({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="mt-2"
+                  className="mt-2 w-10 h-10"
                   onClick={() => appendUsed({ value: "" })}
                 >
-                  <p className="text-xl">+</p>
+                  <p className="text-xl"><Plus /></p>
                 </Button>
               </div>
               <div id="mandatory_language">
@@ -655,7 +707,7 @@ export default function AdministrativeForm({
                                 size="icon"
                                 onClick={() => removeMandatory(index)}
                               >
-                                ✕
+                                <X />
                               </Button>
                             )}
                           </div>
@@ -668,11 +720,11 @@ export default function AdministrativeForm({
                 <Button
                   type="button"
                   variant="outline"
-                  size="sm"
-                  className="mt-2"
+                  size="icon"
+                  className="mt-2 w-10 h-10"
                   onClick={() => appendMandatory({ value: "" })}
                 >
-                  <p className="text-xl">+</p>
+                  <p className="text-xl"><Plus /></p>
                 </Button>
               </div>
             </div>
@@ -738,7 +790,13 @@ export default function AdministrativeForm({
                           <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date: Date | undefined) => {
+                              if (date) {
+                                const adjustedDate = new Date(date);
+                                adjustedDate.setMinutes(adjustedDate.getMinutes() - adjustedDate.getTimezoneOffset());
+                                field.onChange(adjustedDate);
+                              }
+                            }}
                             disabled={(date) =>
                               date > new Date() || date < new Date("1900-01-01")
                             }
@@ -780,7 +838,13 @@ export default function AdministrativeForm({
                           <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date: Date | undefined) => {
+                              if (date) {
+                                const adjustedDate = new Date(date);
+                                adjustedDate.setMinutes(adjustedDate.getMinutes() - adjustedDate.getTimezoneOffset());
+                                field.onChange(adjustedDate);
+                              }
+                            }}
                             disabled={(date) =>
                               date > new Date() || date < new Date("1900-01-01")
                             }
@@ -819,7 +883,7 @@ export default function AdministrativeForm({
                       className="absolute top-0 right-0"
                       onClick={() => removeItem(index)}
                     >
-                      ✕
+                      <X />
                     </Button>
                   )}
                   <div className="grid grid-cols-2 gap-4">
@@ -956,7 +1020,7 @@ export default function AdministrativeForm({
                 })
               }
             >
-              <p className="text-xl">+</p>
+              <p className="text-xl"><Plus /></p>
             </Button>
           </CardContent>
         </Card>
@@ -967,119 +1031,279 @@ export default function AdministrativeForm({
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
-              {personFields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className="grid gap-4 border-b pb-4 relative"
+              <div id="pelaksana" className="grid gap-4 border-b pb-4">
+                {pelaksanaFields.map((field, index) => (
+                  <div key={field.id} className="relative">
+                    <p className="text-sm font-bold">
+                      Pelaksana Kalibrasi {index + 1}
+                    </p>
+                    {pelaksanaFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removePelaksana(index)}
+                      >
+                        <X />
+                      </Button>
+                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div id="nama_resp">
+                        <FormLabel>Nama</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`responsible_persons.pelaksana.${index}.nama_resp`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div id="nip">
+                        <FormLabel>NIP</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`responsible_persons.pelaksana.${index}.nip`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  size="sm"
+                  className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                  onClick={() =>
+                    appendPelaksana({
+                      nama_resp: "",
+                      nip: "",
+                      peran: "Pelaksana Kalibrasi",
+                      main_signer: "false",
+                      signature: "false",
+                      timestamp: "false",
+                    })
+                  }
                 >
-                  <p className="text-sm text-muted-foreground">
-                    {selectedRoles[index] || ""}
-                  </p>
-                  {personFields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-0 right-0"
-                      onClick={() => removePerson(index)}
-                    >
-                      ✕
-                    </Button>
-                  )}
-                  <div id="peran">
-                    <FormLabel>Peran</FormLabel>
+                  <p className="text-xl"><Plus /></p>
+                </Button>
+              </div>
+              <div id="penyelia" className="grid gap-4 border-b pb-4">
+                {penyeliaFields.map((field, index) => (
+                  <div key={field.id} className="relative">
+                    <p className="text-sm font-bold">
+                      Penyelia Kalibrasi {index + 1}
+                    </p>
+                    {penyeliaFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0"
+                        onClick={() => removePenyelia(index)}
+                      >
+                        <X />
+                      </Button>
+                    )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div id="nama_resp">
+                        <FormLabel>Nama</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`responsible_persons.penyelia.${index}.nama_resp`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div id="nip">
+                        <FormLabel>NIP</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`responsible_persons.penyelia.${index}.nip`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  size="sm"
+                  className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                  onClick={() =>
+                    appendPenyelia({
+                      nama_resp: "",
+                      nip: "",
+                      peran: "Penyelia Kalibrasi",
+                      main_signer: "false",
+                      signature: "false",
+                      timestamp: "false",
+                    })
+                  }
+                >
+                  <p className="text-xl"><Plus /></p>
+                </Button>
+              </div>
+              <div id="kepala" className="grid gap-4 border-b pb-4 relative">
+                <p className="text-sm font-bold">
+                  Kepala Laboratorium
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div id="nama_resp">
+                    <FormLabel>Nama</FormLabel>
                     <FormField
                       control={form.control}
-                      name={`responsible_persons.${index}.peran`}
+                      name="responsible_persons.kepala.nama_resp"
                       render={({ field }) => (
                         <FormItem>
-                          <Select
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              handleRoleChange(index, value);
-                            }}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Pelaksana Kalibrasi">
-                                Pelaksana Kalibrasi
-                              </SelectItem>
-                              <SelectItem value="Penyelia Kalibrasi">
-                                Penyelia Kalibrasi
-                              </SelectItem>
-                              <SelectItem value="Kepala Laboratorium">
-                                Kepala Laboratorium
-                              </SelectItem>
-                              <SelectItem value="Direktur SNSU Termoelektrik dan Kimia">
-                                Direktur SNSU Termoelektrik dan Kimia
-                              </SelectItem>
-                              <SelectItem value="Direktur SNSU Mekanika, Radiasi, dan Biologi">
-                                Direktur SNSU Mekanika, Radiasi, dan Biologi
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div id="nama_resp">
-                      <FormLabel>Nama</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`responsible_persons.${index}.nama_resp`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div id="nip">
-                      <FormLabel>NIP</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`responsible_persons.${index}.nip`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  <div id="nip">
+                    <FormLabel>NIP</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="responsible_persons.kepala.nip"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
-              ))}
+                <div id="lab">
+                  <FormLabel>Laboratorium</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="responsible_persons.kepala.peran"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Kepala Laboratorium SNSU Suhu">SNSU Suhu</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Kelistrikan">SNSU Kelistrikan</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Waktu & Frekuensi">SNSU Waktu & Frekuensi</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Fotometri & Radiometri">SNSU Fotometri & Radiometri</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Kimia">SNSU Kimia</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Panjang">SNSU Panjang</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Massa">SNSU Massa</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Akustik & Vibrasi">SNSU Akustik & Vibrasi</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Biologi">SNSU Biologi</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Radiasi Ringan">SNSU Radiasi Ringan</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              <div id="direktur" className="grid gap-4 pb-4 relative">
+                <p className="text-sm font-bold">
+                  Direktur
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div id="nama_resp">
+                    <FormLabel>Nama</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="responsible_persons.direktur.nama_resp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div id="nip">
+                    <FormLabel>NIP</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name="responsible_persons.direktur.nip"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+                <div id="jabatan">
+                  <FormLabel>Jabatan</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="responsible_persons.direktur.peran"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Direktur SNSU Termoelektrik dan Kimia">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
+                            <SelectItem value="Direktur SNSU Mekanika, Radiasi, dan Biologi">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
             </div>
-            <Button
-              type="button"
-              size="sm"
-              className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={() =>
-                appendPerson({
-                  nama_resp: "",
-                  nip: "",
-                  peran: "",
-                  main_signer: "",
-                  signature: "",
-                  timestamp: "",
-                })
-              }
-            >
-              <p className="text-xl">+</p>
-            </Button>
           </CardContent>
         </Card>
 

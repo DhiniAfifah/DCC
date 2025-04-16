@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<title>iMathEQ | Math Equation Editor for MathML and Latex</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<!--meta name="viewport" content="width=device-width, initial-scale=1.0"/-->
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+		<meta name="keywords" content="iMathEQ, math equation editor, mathematics, tools, formula editor, equation editor, 
+		education, mathematics expression, iMathEQ editor, math formulas, math editor, html math editor, 
+		mathematics and science symbols, math symbols, online math editor, MATHML, graphical representation."/>
+		<meta name="Description" content="iMathEQ online mathematics equation editor or formula editor. 
+		It allows users to input, edit, print math equation or expressions. Provide interface for easy 
+		integration with web site or mobile app at affordable price. It adds mathematics 
+		formula/equation/expression based communication, chatting, publishing, ect., functions to a web 
+		site or mobile app. It support a rich set of mathematics and science symbols. It supports popular 
+		browsers and platforms including Android and iOS." />
+		<link rel="alternate" hreflang="zh-hans" href="//www.imatheq.com/imatheq/com/imatheq/exp_zh_cn.html" />
+		<link rel="apple-touch-icon" sizes="60x60" href="icons/apple-touch-icon-60x60.png" />
+		<link rel="apple-touch-icon" sizes="72x72" href="icons/apple-touch-icon-72x72.png" />
+		<link rel="apple-touch-icon" sizes="76x76" href="icons/apple-touch-icon-76x76.png" />
+		<link rel="apple-touch-icon" sizes="114x114" href="icons/apple-touch-icon-114x114.png" />
+		<link rel="apple-touch-icon" sizes="120x120" href="icons/apple-touch-icon-120x120.png" />
+		<link rel="apple-touch-icon" sizes="144x144" href="icons/apple-touch-icon-144x144.png" />
+		<link rel="apple-touch-icon" sizes="152x152" href="icons/apple-touch-icon-152x152.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180x180.png" />
+		<link rel="icon" type="image/png" href="icons/favicon-32x32.png" sizes="32x32" />
+		<link rel="icon" type="image/png" href="icons/android-chrome-192x192.png" sizes="192x192" />
+		<link rel="icon" type="image/png" href="icons/favicon-96x96.png" sizes="96x96" />
+		<link rel="icon" type="image/png" href="icons/favicon-16x16.png" sizes="16x16" />
+		<link rel="manifest" href="icons/manifest.json" />
+		<link rel="mask-icon" href="icons/safari-pinned-tab.svg" color="#5bbad5"-->
+		<link rel="icon" href="icons/favicon.ico" />
+		<script type='text/javascript' charset = "utf-8" src='//www.imatheq.com/imatheq/com/imatheq/scripts/imatheqfunctions.js'></script>
+		<script type="module" src="//www.imatheq.com/imatheq/com/imatheq/tolatex/tolatex.min.js"></script>
+		<script type="module" src="//www.imatheq.com/imatheq/com/imatheq/tomml/tomml.min.js"></script>
+
+		<Style>
+			.modal {
+				display: none; /* Hidden by default */
+				position: fixed; /* Stay in place */
+				z-index: 999; /* Sit on top */
+				left: 20%;
+				top: 30%;
+				overflow: auto; /* Enable scroll if needed */
+				background-color: #FFFFFF; /* Fallback color */
+				border: 1px solid #000000;
+				width: 60%;
+				height: 50%
+			}
+			.modal-content {
+				background-color: #fefefe;
+				padding-right:5px;
+				border: 1px solid #888;
+				width: 100%; /* Could be more or less, depending on screen size */
+				/*height: 24px;*/
+				font-size: 22px;
+			}
+			.resultclose {
+				color: #000000;
+				float: right;
+				font-size: 22px;
+				border-left: 1 solid #000000;
+				border-bottom: 1 solid #000000;
+				font-weight: bold;
+			}
+			.resultclose:hover,
+			.resultclose:focus {
+				color: black;
+				text-decoration: none;
+				cursor: pointer;
+			}
+		</Style>
+
+		<script type="text/javascript" charset = "utf-8" >
+			var editor;
+			var oResultPopup, oResultClose;
+			var lskey;
+			var input;
+			var pre_mml;
+			var setingMMLLatex = false;
+
+			window.onload=function () 
+			{
+				lskey = "RuKqamSuNzbB3uEhsDIF%2f3g5klaoIc7UPq3AeHBOPZOan8Oga0MC%2b63haSFHEfyq";
+				editor = org.imatheq.formulaeditor.createEditor(document.getElementById('myEditor'), 
+					lskey, "EN", null/*width*/, 500/*height*/, null/*fontName*/, null/*fontSize*/, null/*mobileFontSize*/, null/*defAutoItalic*/, null/*defSymmetric*/, null/*stretchMOBrackets*/, null/*hideFontTools*/);
+				
+				editor.registerCallback(setMMLLatexAuto);
+				var tex = getParameterByName("latex");
+				updateLatex(tex);
+			}
+			
+			function getParameterByName(name, url = window.location.href) {
+				name = name.replace(/[\[\]]/g, '\\$&');
+				var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+					results = regex.exec(url);
+				if (!results) return null;
+				if (!results[2]) return '';
+				return decodeURIComponent(results[2].replace(/\+/g, ' '));
+			}
+
+			function getMathML()
+			{
+				var mathml = editor.getMathML();
+				var obj = document.getElementById("imatheqmmloutput");
+				obj.value = mathml;	
+			}
+
+			function setMathML()
+			{
+				setingMMLLatex = true;
+				var mml = document.getElementById("imatheqmmloutput").value;
+				if(mml != "") {
+					editor.setMathML(mml);
+				}
+				getLatex();
+			}
+
+			function updateMathML(mml)
+			{
+				if(mml != "") {
+					if(editor.setMathML) {
+						editor.setMathML(mml);
+					} else {
+						window.setTimeout(setMathML(mml), 200);
+					}
+				}
+			}
+
+			function updateLatex(tex)
+			{
+				if(tex.trim() != "") {
+					setingMMLLatex = true;
+					document.getElementById("imatheqlatexoutput").value = tex;
+					if(editor.setMathML) {
+						setTimeout(setLatex,1000);
+					} else {
+						window.setTimeout(updateLatex(tex), 200);
+					}
+				}
+			}
+
+			function getLatex() 
+			{
+				var mathml = editor.getMathML();
+				var tex = convert(editor, mathml);
+				document.getElementById("imatheqlatexoutput").value = tex;	
+			}
+
+			function setLatex() 
+			{
+				setingMMLLatex = true;
+				var obj = document.getElementById("imatheqmmloutput");
+				var tex = document.getElementById("imatheqlatexoutput").value;
+				var tex1 = tex.replace(/\s+/g, '');
+				if(tex1 != "") {
+					var mml = tomml.renderToString(editor, tex);
+					editor.setMathML(mml);
+					obj.value = mml;	
+				} else {
+					obj.value = "";
+					editor.setMathML("<math/>");		
+				}
+			}
+
+			function setMMLLatexAuto()
+			{
+				var mathml = editor.getMathML();
+				if(!setingMMLLatex && pre_mml != mathml) {
+					//set mml
+					var obj = document.getElementById("imatheqmmloutput");
+					obj.value = mathml;	
+
+					//set latex
+					var tex = convert(editor, mathml);
+					document.getElementById("imatheqlatexoutput").value = tex;	
+				} else
+					setingMMLLatex = false;
+			}
+
+			function setLatexAuto() 
+			{
+				var tex = document.getElementById("imatheqlatexoutput").value;
+				var tex1 = tex.replace(/\s+/g, '');
+				if(tex1 != "") {
+					var mml = tomml.renderToString(editor, tex);
+					if(mml.substr(0,25) != "<span class=\"tomml-error\"" && mml.substr(0,5) == "<math") {
+						editor.setMathML(mml);
+						var obj = document.getElementById("imatheqmmloutput");
+						obj.value = mml;
+						input.focus();
+					}
+				} else {
+					obj.value = "";
+					editor.setMathML("<math></math>");		
+				}
+			}
+
+			function gotoDoc() {
+				var tex = document.getElementById("imatheqlatexoutput").value;
+				var mml = document.getElementById("imatheqmmloutput").value;
+
+				try {
+					window.opener.ShowLatexResult(tex, mml); // now sending both
+				} catch (err) {}
+
+				window.close(); // optional: auto-close after sending
+				return false;
+			}
+		</script>
+		<!-- Google Analytics -->
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+			(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+			m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+			ga('create', 'UA-81271057-1', 'auto');
+			ga('send', 'pageview');
+		</script>
+	</head>
+
+	<body>
+		<div id="myEditor" class="imatheqvisibletextarea"></div>
+		<br>
+		<span>LaTeX</span>
+		<textarea id="imatheqlatexoutput" autocapitalize="off" spellcheck="false" style="width: 100%; height: 100px; box-sizing: border-box; "></textarea>
+		<br>
+		<br>
+		<span>MathML</span>
+		<textarea id="imatheqmmloutput" autocapitalize="off" spellcheck="false" style="width: 100%; height: 100px; box-sizing: border-box; "></textarea>
+		<br>
+		<br>
+		<input type="button" onclick="javascript:gotoDoc()" value="Submit Rumus" />
+		<span style="float:right"><a target="blank"  href="https://www.imatheq.com/corpsite/index.html">iMathEQ.com</a>&nbsp;&nbsp;</span>
+		<div id="myResult" class="modal">
+			<!-- Modal content -->
+			<div class="modal-content">
+				View Result&nbsp;&nbsp;&nbsp;<span class="resultclose">x</span>
+			</div>
+		</div>
+	</body>
+</html>
