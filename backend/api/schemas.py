@@ -25,13 +25,47 @@ class ObjectDescription(BaseModel):
     seri_item: str
     id_lain: str
 
-class ResponsiblePerson(BaseModel):
+# START ResponsiblePersons
+
+class Pelaksana(BaseModel):
     nama_resp: str
     nip: str
-    peran: str
-    main_signer: str
-    signature: str
-    timestamp: str
+    peran: str = "Pelaksana"
+    main_signer: bool = False
+    signature: bool = False
+    timestamp: bool = False
+
+class Penyelia(BaseModel):
+    nama_resp: str
+    nip: str
+    peran: str = "Penyelia"
+    main_signer: bool = False
+    signature: bool = False
+    timestamp: bool = False
+
+class KepalaLaboratorium(BaseModel):
+    nama_resp: str
+    nip: str
+    peran: str  
+    main_signer: bool = False
+    signature: bool = False
+    timestamp: bool = False
+
+class Direktur(BaseModel):
+    nama_resp: str
+    nip: str
+    peran: str  
+    main_signer: bool = True
+    signature: bool = True
+    timestamp: bool = True
+
+class ResponsiblePersons(BaseModel):
+    pelaksana: List[Pelaksana]
+    penyelia: List[Penyelia]
+    kepala: KepalaLaboratorium
+    direktur: Direktur
+
+# END ResponsiblePersons
 
 class OwnerIdentity(BaseModel):
     nama_cust: str
@@ -42,7 +76,6 @@ class OwnerIdentity(BaseModel):
     pos_cust: str
     negara_cust: str
     
-# New classes for "Method", "Equipment", and "Condition"
 class Method(BaseModel):
     method_name: str
     norm: str
@@ -53,15 +86,29 @@ class Equipment(BaseModel):
     manuf_model: str
     seri_measuring: str
 
-class Condition(BaseModel):
-    #suhu
+# START Kondisi
+class Suhu(BaseModel):
     suhu_desc: str
-    suhu: str 
+    suhu: str
     rentang_suhu: str
-    #lembab
+
+class Lembap(BaseModel):
     lembap_desc: str
     lembap: str
     rentang_lembap: str
+
+class OtherCondition(BaseModel):
+    jenis_kondisi: str 
+    deskripsi: str
+    titik_tengah: str  
+    rentang: str      
+
+class Condition(BaseModel):
+    suhu: Suhu
+    lembap: Lembap
+    other: Optional[List[OtherCondition]] = []
+
+#END Kondisi
 
 class Statements(BaseModel):
     values: List[str]
@@ -80,11 +127,11 @@ class DCCFormCreate(BaseModel):
     tempat: str  # tempat kalibrasi
     tgl_pengesahan: str  # tanggal pengesahan
     objects: List[ObjectDescription]  # Deskripsi objek yang diukur
-    responsible_persons: List[ResponsiblePerson]  # Penanggung jawab
+    responsible_persons: ResponsiblePersons  # Penanggung jawab
     owner: OwnerIdentity  # Identitas pemilik
     methods: List[Method]  # Metode
     equipments: List[Equipment]  # Peralatan
-    conditions: List[Condition]  # Kondisi (Suhu dan Kelembapan)
+    conditions: Condition  # Kondisi (Suhu dan Kelembapan)
     excel: str
     sheet_name: str
     statements: List[Statements]  # Catatan

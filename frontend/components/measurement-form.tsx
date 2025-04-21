@@ -16,12 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent 
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -30,7 +25,13 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox"
+import { Checkbox } from "@/components/ui/checkbox";
+
+declare global {
+  interface Window {
+    ShowLatexResult: (latex: string, mathml: string) => void;
+  }
+}
 
 const empty_field_error_message = "Input diperlukan.";
 const FormSchema = z.object({
@@ -40,10 +41,12 @@ const FormSchema = z.object({
       method_desc: z.string().min(1, { message: empty_field_error_message }),
       norm: z.string().min(1, { message: empty_field_error_message }),
       has_formula: z.boolean().default(false),
-      formula: z.object({
-        latex: z.string().optional(),
-        mathml: z.string().optional(),
-      }).optional(),
+      formula: z
+        .object({
+          latex: z.string().optional(),
+          mathml: z.string().optional(),
+        })
+        .optional(),
     })
   ),
   equipments: z.array(
@@ -72,16 +75,18 @@ const FormSchema = z.object({
     }),
     other: z.array(
       z.object({
-        jenis_kondisi: z.string().min(1, { message: empty_field_error_message }),
+        jenis_kondisi: z
+          .string()
+          .min(1, { message: empty_field_error_message }),
         desc: z.string().min(1, { message: empty_field_error_message }),
         tengah: z.string().min(1, { message: empty_field_error_message }),
         tengah_unit: z.string().min(1, { message: empty_field_error_message }),
         rentang: z.string().min(1, { message: empty_field_error_message }),
         rentang_unit: z.string().min(1, { message: empty_field_error_message }),
-      }),
+      })
     ),
   }),
-  excel: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
+  excel: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
   sheet_name: z.string().min(1, { message: empty_field_error_message }),
   results: z.array(
     z.object({
@@ -95,8 +100,12 @@ const FormSchema = z.object({
       uncertainty: z.array(
         z.object({
           factor: z.string().min(1, { message: empty_field_error_message }),
-          probability: z.string().min(1, { message: empty_field_error_message }),
-          distribution: z.string().min(1, { message: empty_field_error_message }),
+          probability: z
+            .string()
+            .min(1, { message: empty_field_error_message }),
+          distribution: z
+            .string()
+            .min(1, { message: empty_field_error_message }),
           real_list: z.string().min(1, { message: empty_field_error_message }),
         })
       ),
@@ -165,23 +174,28 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
               <div id="nama">
                 <FormLabel>Nama Kolom</FormLabel>
                 <div className="grid gap-1">
-                  {usedLanguages.map((lang: { value: string }, langIndex: number) => (
-                    <FormField 
-                      key={langIndex} 
-                      control={control} 
-                      name={`results.${resultIndex}.columns.${columnIndex}.kolom.${langIndex}`}
-                      render={({ field }) => (
-                        <>
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        </>
-                      )}
-                    />
-                  ))}
+                  {usedLanguages.map(
+                    (lang: { value: string }, langIndex: number) => (
+                      <FormField
+                        key={langIndex}
+                        control={control}
+                        name={`results.${resultIndex}.columns.${columnIndex}.kolom.${langIndex}`}
+                        render={({ field }) => (
+                          <>
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  placeholder={`Bahasa: ${lang.value}`}
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          </>
+                        )}
+                      />
+                    )
+                  )}
                 </div>
               </div>
 
@@ -215,12 +229,18 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
           })
         }
       >
-        <p className="text-xl"><Plus /></p>
+        <p className="text-xl">
+          <Plus />
+        </p>
       </Button>
 
       <Card id="uncertainty">
         <CardHeader>
           <h3 className="text-sm font-semibold">Ketidakpastian</h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            Data ketidakpastian hanya akan tampil di XML, tidak di template Word
+            atau PDF
+          </p>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div id="factor" className="grid gap-1">
@@ -231,10 +251,10 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
-                      {...field} 
+                    <Input
+                      type="number"
+                      min="0"
+                      {...field}
                       onChange={(e) => {
                         const value = e.target.value;
                         if (/^\d*\.?\d{0,2}$/.test(value)) {
@@ -256,12 +276,12 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      min="0" 
+                    <Input
+                      type="number"
+                      min="0"
                       max="1"
                       step={"0.1"}
-                      {...field} 
+                      {...field}
                       onChange={(e) => {
                         const value = e.target.value;
                         if (/^\d*\.?\d{0,2}$/.test(value)) {
@@ -326,7 +346,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
 export default function MeasurementForm({
   formData,
   updateFormData,
-  setFileName
+  setFileName,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
@@ -392,26 +412,29 @@ export default function MeasurementForm({
   const [selectedSheet, setSelectedSheet] = useState<string>("");
   const [showFields, setShowFields] = useState(false);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
-  
+
       const formData = new FormData();
       formData.append("excel", file); // Ensure the key matches the backend
-  
+
       try {
         const response = await fetch("http://127.0.0.1:8000/upload-excel/", {
           method: "POST",
           body: formData,
         });
-  
+
         if (!response.ok) throw new Error("Failed to upload file");
-  
+
         const result = await response.json();
         console.log("File uploaded:", result);
-        
+
         setFileName(result.filename); // Store the filename after upload
         setSheets(result.sheets || []); // Store the extracted sheet names
+
         alert(`File uploaded successfully: ${result.filename}`);
       } catch (error) {
         console.error("Error uploading file:", error);
@@ -444,9 +467,9 @@ export default function MeasurementForm({
         }
         return method;
       });
-      
+
       const formData = { ...data, excel: fileName }; // Include the uploaded file name
-  
+
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
         headers: {
@@ -454,14 +477,14 @@ export default function MeasurementForm({
         },
         body: JSON.stringify(formData),
       });
-  
+
       if (!response.ok) {
         const errorResult = await response.json();
         console.error("Error response from server:", errorResult);
         alert(`Failed to create DCC: ${errorResult.detail}`);
         return;
       }
-  
+
       const result = await response.json();
       console.log("DCC Created:", result);
       alert(`DCC Created! Download: ${result.download_link}`);
@@ -522,7 +545,7 @@ export default function MeasurementForm({
                           )}
                         />
                       </div>
-                      
+
                       <div id="norm">
                         <FormLabel>Norm</FormLabel>
                         <FormField
@@ -563,9 +586,11 @@ export default function MeasurementForm({
                         render={({ field }) => (
                           <FormItem className="flex flex-row items-center space-x-2 space-y-0">
                             <FormControl>
-                              <Checkbox 
+                              <Checkbox
                                 checked={field.value}
-                                onCheckedChange={(checked) => field.onChange(checked)}
+                                onCheckedChange={(checked) =>
+                                  field.onChange(checked)
+                                }
                               />
                             </FormControl>
                             <FormLabel>Ada rumus di metode ini</FormLabel>
@@ -578,60 +603,74 @@ export default function MeasurementForm({
                       if (!form.watch(`methods.${index}.has_formula`)) {
                         form.setValue(`methods.${index}.formula`, ""); // Reset the formula field
                       }
-                    }, [form.watch(`methods.${index}.has_formula`), form, index])}
+                    }, [
+                      form.watch(`methods.${index}.has_formula`),
+                      form,
+                      index,
+                    ])}
 
                     {form.watch(`methods.${index}.has_formula`) && (
                       <div id="rumus" className="mt-2">
                         <FormLabel>Rumus</FormLabel>
-                          <div className="grid grid-cols-2 gap-1">
-                            <FormField
-                              control={form.control}
-                              name={`methods.${index}.formula.latex`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input placeholder="LaTeX" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name={`methods.${index}.formula.mathml`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input placeholder="MathML" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="mt-1"
-                            onClick={() => {
-                              const latex = form.getValues(`methods.${index}.formula.latex`);
-                              const encodedLatex = encodeURIComponent(latex || "");
+                        <div className="grid grid-cols-2 gap-1">
+                          <FormField
+                            control={form.control}
+                            name={`methods.${index}.formula.latex`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input placeholder="LaTeX" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`methods.${index}.formula.mathml`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input placeholder="MathML" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="mt-1"
+                          onClick={() => {
+                            const latex = form.getValues(
+                              `methods.${index}.formula.latex`
+                            );
+                            const encodedLatex = encodeURIComponent(
+                              latex || ""
+                            );
 
-                              const popup = window.open(
-                                `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
-                                'mathEditorPopup',
-                                'width=800,height=600'
+                            const popup = window.open(
+                              `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
+                              "mathEditorPopup",
+                              "width=800,height=600"
+                            );
+
+                            // Define the callback function to receive LaTeX from the popup
+                            window.ShowLatexResult = (latex, mathml) => {
+                              form.setValue(
+                                `methods.${index}.formula.latex`,
+                                latex
                               );
-                          
-                              // Define the callback function to receive LaTeX from the popup
-                              window.ShowLatexResult = (latex, mathml) => {
-                                form.setValue(`methods.${index}.formula.latex`, latex);
-                                form.setValue(`methods.${index}.formula.mathml`, mathml);
-                              };                          
-                            }}
-                          >
-                            Buka editor
-                          </Button>
+                              form.setValue(
+                                `methods.${index}.formula.mathml`,
+                                mathml
+                              );
+                            };
+                          }}
+                        >
+                          Buka editor
+                        </Button>
                       </div>
                     )}
                   </div>
@@ -642,10 +681,18 @@ export default function MeasurementForm({
                 size="sm"
                 className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
                 onClick={() =>
-                  appendMethod({ method_name: "", method_desc: "", norm: "", has_formula: false, formula: "" })
+                  appendMethod({
+                    method_name: "",
+                    method_desc: "",
+                    norm: "",
+                    has_formula: false,
+                    formula: "",
+                  })
                 }
               >
-                <p className="text-xl"><Plus /></p>
+                <p className="text-xl">
+                  <Plus />
+                </p>
               </Button>
             </CardContent>
           </Card>
@@ -737,7 +784,9 @@ export default function MeasurementForm({
                   })
                 }
               >
-                <p className="text-xl"><Plus /></p>
+                <p className="text-xl">
+                  <Plus />
+                </p>
               </Button>
             </CardContent>
           </Card>
@@ -749,9 +798,7 @@ export default function MeasurementForm({
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
                 <div id="suhu" className="grid gap-4 border-b pb-4 relative">
-                  <p className="text-sm font-bold">
-                    Suhu
-                  </p>
+                  <p className="text-sm font-bold">Suhu</p>
                   <div id="suhu_desc">
                     <FormLabel>Deskripsi</FormLabel>
                     <FormField
@@ -812,7 +859,9 @@ export default function MeasurementForm({
                               {selectedSuhuTengahUnit === "other" && (
                                 <Input
                                   placeholder="Masukkan satuan lain"
-                                  onChange={(e) => field.onChange(e.target.value)}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.value)
+                                  }
                                 />
                               )}
                               <FormMessage />
@@ -867,7 +916,9 @@ export default function MeasurementForm({
                               {selectedSuhuRentangUnit === "other" && (
                                 <Input
                                   placeholder="Masukkan satuan lain"
-                                  onChange={(e) => field.onChange(e.target.value)}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.value)
+                                  }
                                 />
                               )}
                               <FormMessage />
@@ -879,9 +930,7 @@ export default function MeasurementForm({
                   </div>
                 </div>
                 <div id="lembap" className="grid gap-4 border-b pb-4 relative">
-                  <p className="text-sm font-bold">
-                    Kelembapan
-                  </p>
+                  <p className="text-sm font-bold">Kelembapan</p>
                   <div id="lembap_desc">
                     <FormLabel>Deskripsi</FormLabel>
                     <FormField
@@ -974,84 +1023,34 @@ export default function MeasurementForm({
                     <Plus />
                   </Button>
                 )}
-                {showFields && conditionFields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="grid gap-4 border-b pb-4 relative"
-                  >
-                    <p className="text-sm font-bold">
-                      Kondisi {index + 1}
-                    </p>
-                    {conditionFields.length > 0 && (
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-0 right-0"
-                        onClick={() => removeCondition(index)}
-                      >
-                        <X />
-                      </Button>
-                    )}
-                    <div className="grid gap-4">
-                      <div id="kondisi">
-                        <FormLabel>Jenis Kondisi</FormLabel>
-                        <FormField
-                          control={form.control}
-                          name={`conditions.other.${index}.jenis_kondisi`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <div className="grid gap-4">
-                      <div id="kondisi_desc">
-                        <FormLabel>Deskripsi</FormLabel>
-                        <FormField
-                          control={form.control}
-                          name={`conditions.other.${index}.desc`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                    <div id="tengah">
-                      <FormLabel>Titik Tengah</FormLabel>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div id="tengah_value">
+                {showFields &&
+                  conditionFields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="grid gap-4 border-b pb-4 relative"
+                    >
+                      <p className="text-sm font-bold">Kondisi {index + 1}</p>
+                      {conditionFields.length > 0 && (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-0 right-0"
+                          onClick={() => removeCondition(index)}
+                        >
+                          <X />
+                        </Button>
+                      )}
+                      <div className="grid gap-4">
+                        <div id="kondisi">
+                          <FormLabel>Jenis Kondisi</FormLabel>
                           <FormField
                             control={form.control}
-                            name={`conditions.other.${index}.tengah`}
+                            name={`conditions.other.${index}.jenis_kondisi`}
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
-                                  <Input placeholder="Nilai" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="tengah_unit">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.other.${index}.tengah_unit`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input placeholder="Satuan" {...field} />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -1059,32 +1058,16 @@ export default function MeasurementForm({
                           />
                         </div>
                       </div>
-                    </div>
-                    <div id="rentang">
-                      <FormLabel>Rentang</FormLabel>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div id="rentang_value">
+                      <div className="grid gap-4">
+                        <div id="kondisi_desc">
+                          <FormLabel>Deskripsi</FormLabel>
                           <FormField
                             control={form.control}
-                            name={`conditions.other.${index}.rentang`}
+                            name={`conditions.other.${index}.desc`}
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
-                                  <Input placeholder="Nilai" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="rentang_unit">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.other.${index}.rentang_unit`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input placeholder="Satuan" {...field} />
+                                  <Input {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -1092,9 +1075,74 @@ export default function MeasurementForm({
                           />
                         </div>
                       </div>
+                      <div id="tengah">
+                        <FormLabel>Titik Tengah</FormLabel>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div id="tengah_value">
+                            <FormField
+                              control={form.control}
+                              name={`conditions.other.${index}.tengah`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input placeholder="Nilai" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div id="tengah_unit">
+                            <FormField
+                              control={form.control}
+                              name={`conditions.other.${index}.tengah_unit`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input placeholder="Satuan" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div id="rentang">
+                        <FormLabel>Rentang</FormLabel>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div id="rentang_value">
+                            <FormField
+                              control={form.control}
+                              name={`conditions.other.${index}.rentang`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input placeholder="Nilai" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div id="rentang_unit">
+                            <FormField
+                              control={form.control}
+                              name={`conditions.other.${index}.rentang_unit`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input placeholder="Satuan" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
               {showFields && (
                 <Button
@@ -1125,7 +1173,12 @@ export default function MeasurementForm({
                         return (
                           <FormItem>
                             <FormControl>
-                              <Input type="file" {...fileRef} accept=".xls,.xlsx" onChange={handleFileUpload} />
+                              <Input
+                                type="file"
+                                {...fileRef}
+                                accept=".xls,.xlsx"
+                                onChange={handleFileUpload}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -1135,8 +1188,8 @@ export default function MeasurementForm({
                   </div>
                   <div id="sheet">
                     <FormLabel>Nama Sheet Laporan</FormLabel>
-                    <FormField 
-                      control={form.control} 
+                    <FormField
+                      control={form.control}
                       name="sheet_name"
                       render={({ field }) => (
                         <FormItem>
@@ -1175,8 +1228,13 @@ export default function MeasurementForm({
             <CardContent className="grid gap-6">
               <div className="grid gap-4">
                 {resultFields.map((resultField, resultIndex) => (
-                  <div key={resultField.id} className="grid gap-4 border-b pb-4 relative">
-                    <p className="text-sm text-muted-foreground">Parameter {resultIndex  + 1}</p>
+                  <div
+                    key={resultField.id}
+                    className="grid gap-4 border-b pb-4 relative"
+                  >
+                    <p className="text-sm text-muted-foreground">
+                      Parameter {resultIndex + 1}
+                    </p>
 
                     {resultFields.length > 1 && (
                       <Button
@@ -1193,27 +1251,35 @@ export default function MeasurementForm({
                     <div id="parameter">
                       <FormLabel>Parameter (Judul Tabel)</FormLabel>
                       <div className="space-y-1">
-                         {usedLanguages.map((lang: { value: string }, langIndex: number) => (
-                           <FormField 
-                             key={langIndex} 
-                             control={form.control} 
-                             name={`results.${resultIndex}.parameters.${langIndex}`}
-                             render={({ field }) => (
-                               <>
-                                 <FormItem>
-                                   <FormControl>
-                                     <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
-                                   </FormControl>
-                                   <FormMessage />
-                                 </FormItem>
-                               </>
-                             )}
-                           />
-                         ))}
+                        {usedLanguages.map(
+                          (lang: { value: string }, langIndex: number) => (
+                            <FormField
+                              key={langIndex}
+                              control={form.control}
+                              name={`results.${resultIndex}.parameters.${langIndex}`}
+                              render={({ field }) => (
+                                <>
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        placeholder={`Bahasa: ${lang.value}`}
+                                        {...field}
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                </>
+                              )}
+                            />
+                          )
+                        )}
                       </div>
                     </div>
 
-                    <Columns resultIndex={resultIndex} usedLanguages={usedLanguages} />
+                    <Columns
+                      resultIndex={resultIndex}
+                      usedLanguages={usedLanguages}
+                    />
                   </div>
                 ))}
               </div>
@@ -1222,19 +1288,25 @@ export default function MeasurementForm({
                 size="sm"
                 className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
                 onClick={() =>
-                  appendResult({ 
-                    parameter: "", 
-                    columns: [{ 
-                      kolom: "", 
-                      real_list: [{ 
-                        value: "", 
-                        unit: ""
-                      }]
-                    }]  
+                  appendResult({
+                    parameter: "",
+                    columns: [
+                      {
+                        kolom: "",
+                        real_list: [
+                          {
+                            value: "",
+                            unit: "",
+                          },
+                        ],
+                      },
+                    ],
                   })
                 }
               >
-                <p className="text-xl"><Plus /></p>
+                <p className="text-xl">
+                  <Plus />
+                </p>
               </Button>
             </CardContent>
           </Card>

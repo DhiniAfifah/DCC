@@ -45,10 +45,10 @@ const fetchCountries = async (): Promise<Country[]> => {
 
     return response.data
       .map((country: any) => ({
-        label: country.name.common, // Get country name
-        value: country.cca2, // Use country ISO2 code
+        label: country.name.common,
+        value: country.cca2,
       }))
-      .sort((a: Country, b: Country) => a.label.localeCompare(b.label)); // Sort alphabetically
+      .sort((a: Country, b: Country) => a.label.localeCompare(b.label));
   } catch (error) {
     console.error("Error fetching countries:", error);
     return [];
@@ -59,7 +59,7 @@ type Language = { label: string; value: string };
 const fetchLanguages = async (): Promise<Language[]> => {
   let allLanguages: Language[] = [];
   let start = 0;
-  const limit = 100; // Max rows per request
+  const limit = 100;
   let hasMore = true;
 
   while (hasMore) {
@@ -86,14 +86,14 @@ const fetchLanguages = async (): Promise<Language[]> => {
       ];
 
       start += limit;
-      hasMore = response.data.records.length === limit; // Stop when fewer than `limit` results are returned
+      hasMore = response.data.records.length === limit;
     } catch (error) {
       console.error("Error fetching countries:", error);
-      return allLanguages.sort((a, b) => a.label.localeCompare(b.label)); // Sort before returning
+      return allLanguages.sort((a, b) => a.label.localeCompare(b.label));
     }
   }
 
-  return allLanguages.sort((a, b) => a.label.localeCompare(b.label)); // Sort alphabetically
+  return allLanguages.sort((a, b) => a.label.localeCompare(b.label));
 };
 
 const empty_field_error_message = "Input diperlukan.";
@@ -134,9 +134,9 @@ const FormSchema = z.object({
         nama_resp: z.string().min(1, { message: empty_field_error_message }),
         nip: z.string().min(1, { message: empty_field_error_message }),
         peran: z.string().min(1, { message: empty_field_error_message }),
-        main_signer: z.string().min(1, { message: empty_field_error_message }),
-        signature: z.string().min(1, { message: empty_field_error_message }),
-        timestamp: z.string().min(1, { message: empty_field_error_message }),
+        main_signer: z.boolean(),
+        signature: z.boolean(),
+        timestamp: z.boolean(),
       })
     ),
     penyelia: z.array(
@@ -144,28 +144,28 @@ const FormSchema = z.object({
         nama_resp: z.string().min(1, { message: empty_field_error_message }),
         nip: z.string().min(1, { message: empty_field_error_message }),
         peran: z.string().min(1, { message: empty_field_error_message }),
-        main_signer: z.string().min(1, { message: empty_field_error_message }),
-        signature: z.string().min(1, { message: empty_field_error_message }),
-        timestamp: z.string().min(1, { message: empty_field_error_message }),
+        main_signer: z.boolean(),
+        signature: z.boolean(),
+        timestamp: z.boolean(),
       })
     ),
     kepala: z.object({
       nama_resp: z.string().min(1, { message: empty_field_error_message }),
       nip: z.string().min(1, { message: empty_field_error_message }),
       peran: z.string().min(1, { message: empty_field_error_message }),
-      main_signer: z.string().min(1, { message: empty_field_error_message }),
-      signature: z.string().min(1, { message: empty_field_error_message }),
-      timestamp: z.string().min(1, { message: empty_field_error_message }),
+      main_signer: z.boolean(),
+      signature: z.boolean(),
+      timestamp: z.boolean(),
     }),
     direktur: z.object({
       nama_resp: z.string().min(1, { message: empty_field_error_message }),
       nip: z.string().min(1, { message: empty_field_error_message }),
       peran: z.string().min(1, { message: empty_field_error_message }),
-      main_signer: z.string().min(1, { message: empty_field_error_message }),
-      signature: z.string().min(1, { message: empty_field_error_message }),
-      timestamp: z.string().min(1, { message: empty_field_error_message }),
+      main_signer: z.boolean(),
+      signature: z.boolean(),
+      timestamp: z.boolean(),
     }),
-  }),  
+  }),
   owner: z.object({
     nama_cust: z.string().min(1, { message: empty_field_error_message }),
     jalan_cust: z.string().min(1, { message: empty_field_error_message }),
@@ -236,15 +236,6 @@ export default function AdministrativeForm({
   });
 
   const {
-    fields: personFields,
-    append: appendPerson,
-    remove: removePerson,
-  } = useFieldArray({
-    control: form.control,
-    name: "responsible_persons",
-  });
-
-  const {
     fields: pelaksanaFields,
     append: appendPelaksana,
     remove: removePelaksana,
@@ -252,7 +243,7 @@ export default function AdministrativeForm({
     control: form.control,
     name: "responsible_persons.pelaksana",
   });
-  
+
   const {
     fields: penyeliaFields,
     append: appendPenyelia,
@@ -262,10 +253,32 @@ export default function AdministrativeForm({
     name: "responsible_persons.penyelia",
   });
 
+  const {
+    fields: kepalaFields,
+    append: appendKepala,
+    remove: removeKepala,
+  } = useFieldArray({
+    control: form.control,
+    name: "responsible_persons.kepala",
+  });
+
+  const {
+    fields: direkturFields,
+    append: appendDirektur,
+    remove: removeDirektur,
+  } = useFieldArray({
+    control: form.control,
+    name: "responsible_persons.direktur",
+  });
+
+  // Initial state untuk peran pada pelaksana, penyelia, kepala, dan direktur
   const [selectedRoles, setSelectedRoles] = useState(
-    personFields.map(() => "")
+    pelaksanaFields
+      .concat(penyeliaFields, kepalaFields, direkturFields)
+      .map(() => "")
   );
-  
+
+  // Mengubah peran yang dipilih pada masing-masing pelaksana atau penyelia
   const handleRoleChange = (index: number, value: string) => {
     setSelectedRoles((prevRoles) => {
       const newRoles = [...prevRoles];
@@ -274,23 +287,27 @@ export default function AdministrativeForm({
     });
   };
 
+  // Fungsi onSubmit
   const onSubmit = async (data: any) => {
-    // Loop untuk setiap orang yang bertanggung jawab
-    data.responsible_persons.forEach((person: any) => {
-      // Cek jika peran orang tersebut adalah "Direktur SNSU Termoelektrik dan Kimia" atau "Direktur SNSU Mekanika, Radiasi, dan Biologi"
+    const allResponsiblePersons = [
+      ...data.responsible_persons.pelaksana,
+      ...data.responsible_persons.penyelia,
+      data.responsible_persons.kepala, // Kepala sudah sebagai objek tunggal
+      data.responsible_persons.direktur, // Direktur juga objek tunggal
+    ];
+
+    allResponsiblePersons.forEach((person: any) => {
       if (
-        person.peran === "Direktur SNSU Termoelektrik dan Kimia" || // Direktur SNSU Termoelektrik dan Kimia
-        person.peran === "Direktur SNSU Mekanika, Radiasi, dan Biologi" // Direktur SNSU Mekanika, Radiasi, dan Biologi
+        person.peran === "Direktur SNSU Termoelektrik dan Kimia" ||
+        person.peran === "Direktur SNSU Mekanika, Radiasi, dan Biologi"
       ) {
-        // Set Main Signer, Signature, dan Timestamp ke true
-        person.main_signer = "true";
-        person.signature = "true";
-        person.timestamp = "true";
+        person.main_signer = true;
+        person.signature = true;
+        person.timestamp = true;
       } else {
-        // Set Main Signer, Signature, dan Timestamp ke false untuk peran lainnya
-        person.main_signer = "false";
-        person.signature = "false";
-        person.timestamp = "false";
+        person.main_signer = false;
+        person.signature = false;
+        person.timestamp = false;
       }
     });
 
@@ -475,10 +492,13 @@ export default function AdministrativeForm({
                             onSelect={(date: Date | undefined) => {
                               if (date) {
                                 const adjustedDate = new Date(date);
-                                adjustedDate.setMinutes(adjustedDate.getMinutes() - adjustedDate.getTimezoneOffset());
+                                adjustedDate.setMinutes(
+                                  adjustedDate.getMinutes() -
+                                    adjustedDate.getTimezoneOffset()
+                                );
                                 field.onChange(adjustedDate);
                               }
-                            }}                            
+                            }}
                             disabled={(date) =>
                               date > new Date() || date < new Date("1900-01-01")
                             }
@@ -637,7 +657,9 @@ export default function AdministrativeForm({
                   className="mt-2 w-10 h-10"
                   onClick={() => appendUsed({ value: "" })}
                 >
-                  <p className="text-xl"><Plus /></p>
+                  <p className="text-xl">
+                    <Plus />
+                  </p>
                 </Button>
               </div>
               <div id="mandatory_language">
@@ -724,7 +746,9 @@ export default function AdministrativeForm({
                   className="mt-2 w-10 h-10"
                   onClick={() => appendMandatory({ value: "" })}
                 >
-                  <p className="text-xl"><Plus /></p>
+                  <p className="text-xl">
+                    <Plus />
+                  </p>
                 </Button>
               </div>
             </div>
@@ -793,7 +817,10 @@ export default function AdministrativeForm({
                             onSelect={(date: Date | undefined) => {
                               if (date) {
                                 const adjustedDate = new Date(date);
-                                adjustedDate.setMinutes(adjustedDate.getMinutes() - adjustedDate.getTimezoneOffset());
+                                adjustedDate.setMinutes(
+                                  adjustedDate.getMinutes() -
+                                    adjustedDate.getTimezoneOffset()
+                                );
                                 field.onChange(adjustedDate);
                               }
                             }}
@@ -841,7 +868,10 @@ export default function AdministrativeForm({
                             onSelect={(date: Date | undefined) => {
                               if (date) {
                                 const adjustedDate = new Date(date);
-                                adjustedDate.setMinutes(adjustedDate.getMinutes() - adjustedDate.getTimezoneOffset());
+                                adjustedDate.setMinutes(
+                                  adjustedDate.getMinutes() -
+                                    adjustedDate.getTimezoneOffset()
+                                );
                                 field.onChange(adjustedDate);
                               }
                             }}
@@ -1020,7 +1050,9 @@ export default function AdministrativeForm({
                 })
               }
             >
-              <p className="text-xl"><Plus /></p>
+              <p className="text-xl">
+                <Plus />
+              </p>
             </Button>
           </CardContent>
         </Card>
@@ -1091,13 +1123,15 @@ export default function AdministrativeForm({
                       nama_resp: "",
                       nip: "",
                       peran: "Pelaksana Kalibrasi",
-                      main_signer: "false",
-                      signature: "false",
-                      timestamp: "false",
+                      main_signer: false,
+                      signature: false,
+                      timestamp: false,
                     })
                   }
                 >
-                  <p className="text-xl"><Plus /></p>
+                  <p className="text-xl">
+                    <Plus />
+                  </p>
                 </Button>
               </div>
               <div id="penyelia" className="grid gap-4 border-b pb-4">
@@ -1160,19 +1194,19 @@ export default function AdministrativeForm({
                       nama_resp: "",
                       nip: "",
                       peran: "Penyelia Kalibrasi",
-                      main_signer: "false",
-                      signature: "false",
-                      timestamp: "false",
+                      main_signer: false,
+                      signature: false,
+                      timestamp: false,
                     })
                   }
                 >
-                  <p className="text-xl"><Plus /></p>
+                  <p className="text-xl">
+                    <Plus />
+                  </p>
                 </Button>
               </div>
               <div id="kepala" className="grid gap-4 border-b pb-4 relative">
-                <p className="text-sm font-bold">
-                  Kepala Laboratorium
-                </p>
+                <p className="text-sm font-bold">Kepala Laboratorium</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div id="nama_resp">
                     <FormLabel>Nama</FormLabel>
@@ -1222,16 +1256,36 @@ export default function AdministrativeForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Kepala Laboratorium SNSU Suhu">SNSU Suhu</SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Kelistrikan">SNSU Kelistrikan</SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Waktu & Frekuensi">SNSU Waktu & Frekuensi</SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Fotometri & Radiometri">SNSU Fotometri & Radiometri</SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Kimia">SNSU Kimia</SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Panjang">SNSU Panjang</SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Massa">SNSU Massa</SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Akustik & Vibrasi">SNSU Akustik & Vibrasi</SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Biologi">SNSU Biologi</SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Radiasi Ringan">SNSU Radiasi Ringan</SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Suhu">
+                              SNSU Suhu
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Kelistrikan">
+                              SNSU Kelistrikan
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Waktu & Frekuensi">
+                              SNSU Waktu & Frekuensi
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Fotometri & Radiometri">
+                              SNSU Fotometri & Radiometri
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Kimia">
+                              SNSU Kimia
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Panjang">
+                              SNSU Panjang
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Massa">
+                              SNSU Massa
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Akustik & Vibrasi">
+                              SNSU Akustik & Vibrasi
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Biologi">
+                              SNSU Biologi
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Radiasi Ringan">
+                              SNSU Radiasi Ringan
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -1241,9 +1295,7 @@ export default function AdministrativeForm({
                 </div>
               </div>
               <div id="direktur" className="grid gap-4 pb-4 relative">
-                <p className="text-sm font-bold">
-                  Direktur
-                </p>
+                <p className="text-sm font-bold">Direktur</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div id="nama_resp">
                     <FormLabel>Nama</FormLabel>
@@ -1293,8 +1345,12 @@ export default function AdministrativeForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Direktur SNSU Termoelektrik dan Kimia">Direktur SNSU Termoelektrik dan Kimia</SelectItem>
-                            <SelectItem value="Direktur SNSU Mekanika, Radiasi, dan Biologi">Direktur SNSU Mekanika, Radiasi, dan Biologi</SelectItem>
+                            <SelectItem value="Direktur SNSU Termoelektrik dan Kimia">
+                              Direktur SNSU Termoelektrik dan Kimia
+                            </SelectItem>
+                            <SelectItem value="Direktur SNSU Mekanika, Radiasi, dan Biologi">
+                              Direktur SNSU Mekanika, Radiasi, dan Biologi
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />

@@ -3,12 +3,14 @@ from fastapi import FastAPI, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from api.constants import kepala_lab_roles, direktur_roles
 import api.crud as crud
 import api.models as models
 import api.schemas as schemas
 import api.database as database
 import os
 import shutil
+import pandas as pd
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
@@ -49,7 +51,8 @@ async def create_dcc(dcc: schemas.DCCFormCreate, db: Session = Depends(get_db)):
     except Exception as e:
         logging.error(f"Error occurred while creating DCC: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
-    
+
+#Excel
 @app.post("/upload-excel/")
 async def upload_excel(excel: UploadFile = File(...)):
     try:
@@ -57,9 +60,12 @@ async def upload_excel(excel: UploadFile = File(...)):
         with open(file_location, "wb") as buffer:
             shutil.copyfileobj(excel.file, buffer)
         
-        print(f"Received file: {excel.filename}, Content-Type: {excel.content_type}")
+        excel_file = pd.ExcelFile(file_location)
+        sheet_names = excel_file.sheet_names
+        #print(f"Received file: {excel.filename}, Content-Type: {excel.content_type}")
 
-        return {"filename": excel.filename, "location": file_location}
+        return {"filename": excel.filename, "sheets": sheet_names}
+        #return {"filename": excel.filename, "location": file_location}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 
@@ -77,3 +83,5 @@ async def download_dcc(dcc_id: int):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error downloading DCC: {str(e)}")
+
+    
