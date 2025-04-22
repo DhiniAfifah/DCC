@@ -47,7 +47,7 @@ export default function Importer({
                                     return (
                                         <FormItem>
                                             <FormControl>
-                                                <Input type="file" {...fileRef} accept=".xml" />
+                                                <Input type="file" {...fileRef} accept=".pdf, .xml" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

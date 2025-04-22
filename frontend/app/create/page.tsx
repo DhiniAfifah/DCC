@@ -312,7 +312,7 @@ export default function CreateDCC() {
 
       <div className="flex justify-between max-w-4xl mx-auto px-4 mt-8">
         <Button
-          variant="outline"
+          variant="blue"
           onClick={prevStep}
           disabled={currentStep === 0}
         >
@@ -320,9 +320,9 @@ export default function CreateDCC() {
         </Button>
 
         {currentStep === steps.length - 1 ? (
-          <Button onClick={handleSubmit}>Submit</Button>
+          <Button onClick={handleSubmit} variant="green">Submit</Button>
         ) : (
-          <Button onClick={nextStep}><ArrowRight /></Button>
+          <Button onClick={nextStep} variant="blue"><ArrowRight /></Button>
         )}
       </div>
 

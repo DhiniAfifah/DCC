@@ -19,11 +19,9 @@ const Navbar = () => {
             </Link>
           </div>
           <div className="flex space-x-4">
-            <NavLink href="/">Home</NavLink>
-            <NavLink href="/about">About Us</NavLink>
-            <NavLink href="/contact" isContact>
-              Contact Us
-            </NavLink>
+            {/* <NavLink href="/">Home</NavLink> */}
+            <NavLink href="/about">About</NavLink>
+            {/* <NavLink href="/contact" isContact>Contact Us</NavLink> */}
           </div>
         </div>
       </div>

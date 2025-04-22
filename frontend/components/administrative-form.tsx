@@ -326,7 +326,7 @@ export default function AdministrativeForm({
           console.log("Form submitted!");
           form.handleSubmit(onSubmit)(e);
         }}
-        className="space-y-6 max-w-4xl mx-auto p-4"
+        className="space-y-16 max-w-4xl mx-auto p-4"
       >
         <Card id="software">
           <CardHeader>
@@ -1006,6 +1006,7 @@ export default function AdministrativeForm({
               ))}
             </div>
             <Button
+              variant="green"
               type="button"
               size="sm"
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
@@ -1083,6 +1084,7 @@ export default function AdministrativeForm({
                   </div>
                 ))}
                 <Button
+                  variant="green"
                   type="button"
                   size="sm"
                   className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
@@ -1152,6 +1154,7 @@ export default function AdministrativeForm({
                   </div>
                 ))}
                 <Button
+                  variant="green"
                   type="button"
                   size="sm"
                   className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
