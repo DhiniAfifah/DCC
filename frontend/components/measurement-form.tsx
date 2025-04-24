@@ -446,12 +446,12 @@ export default function MeasurementForm({
   const handleAddCondition = () => {
     setShowFields(true);
     appendCondition({
-      jenis_kondisi: "",
-      desc: "",
-      tengah: "",
-      tengah_unit: "",
-      rentang: "",
-      rentang_unit: "",
+      jenis_kondisi: "", // Initialize with empty string to avoid undefined issues
+      desc: "", // Default empty value for desc
+      titik_tengah: "", // Default empty value for titik_tengah
+      rentang: "", // Default empty value for rentang
+      rentang_unit: "", // Default empty value for rentang_unit
+      tengah_unit: "", // Default empty value for tengah_unit
     });
   };
 
@@ -468,7 +468,37 @@ export default function MeasurementForm({
         return method;
       });
 
-      const formData = { ...data, excel: fileName }; // Include the uploaded file name
+      const cleanedConditions = {
+        suhu: {
+          desc: data.conditions.suhu.desc,
+          tengah: data.conditions.suhu.tengah,
+          rentang: data.conditions.suhu.rentang,
+          rentang_unit: data.conditions.suhu.rentang_unit,
+          tengah_unit: data.conditions.suhu.tengah_unit,
+        },
+        lembap: {
+          desc: data.conditions.lembap.desc,
+          tengah: data.conditions.lembap.tengah,
+          rentang: data.conditions.lembap.rentang,
+          rentang_unit: data.conditions.lembap.rentang_unit,
+          tengah_unit: data.conditions.lembap.tengah_unit,
+        },
+        other: data.conditions.other.map((condition: any) => ({
+          jenis_kondisi: condition.jenis_kondisi,
+          desc: condition.desc,
+          tengah: condition.titik_tengah,
+          rentang: condition.rentang,
+          rentang_unit: condition.rentang_unit,
+          tengah_unit: condition.tengah_unit,
+        })),
+      };
+
+      // Combine the cleaned conditions with the form data
+      const formData = {
+        ...data,
+        conditions: cleanedConditions, // Attach cleaned conditions
+        excel: fileName, // Include the uploaded file name
+      };
 
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
@@ -939,7 +969,7 @@ export default function MeasurementForm({
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input {...field} />
+                            <Input {...field} value={field.value || ""} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

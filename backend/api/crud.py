@@ -584,16 +584,33 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
     try:
         logging.debug("Creating DCC model instance")
         
-        conditions_data = []
-        for condition in dcc.conditions: 
-            conditions_data.append({
-                "suhu_desc": condition.suhu_desc,
-                "suhu": condition.suhu,
-                "rentang_suhu": condition.rentang_suhu,
-                "lembap_desc": condition.lembap_desc,
-                "lembap": condition.lembap,
-                "rentang_lembap": condition.rentang_lembap,
-            })
+        # Prepare the conditions data
+        conditions_data = {
+            "desc": dcc.conditions.suhu.desc,
+            "tengah": dcc.conditions.suhu.tengah,
+            "rentang": dcc.conditions.suhu.rentang,
+            "rentang_unit_suhu": dcc.conditions.suhu.rentang_unit, 
+            "tengah_unit_suhu": dcc.conditions.suhu.tengah_unit, 
+            
+            "desc": dcc.conditions.lembap.desc,
+            "tengah": dcc.conditions.lembap.tengah,
+            "rentang": dcc.conditions.lembap.rentang,
+            "rentang_unit_lembap": dcc.conditions.lembap.rentang_unit,  
+            "tengah_unit_lembap": dcc.conditions.lembap.tengah_unit,  
+        }
+        if dcc.conditions.other:
+            other_conditions_data = [
+                {
+                    "jenis_kondisi": condition.jenis_kondisi,
+                    "desc": condition.desc,
+                    "tengah": condition.tengah,
+                    "titik_tengah_unit": condition.tengah_unit,  # Titik tengah unit untuk kondisi lainnya
+                    "rentang": condition.rentang,
+                    "rentang_unit": condition.rentang_unit,  # Rentang unit untuk kondisi lainnya
+                }
+                for condition in dcc.conditions.other
+            ]
+            conditions_data["other"] = other_conditions_data
             
         responsible_persons_data = {
             "pelaksana": [p.dict() for p in dcc.responsible_persons.pelaksana],
@@ -623,7 +640,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             owner=json.dumps(dcc.owner.dict()),
             methods=json.dumps([method.dict() for method in dcc.methods]),
             equipments=json.dumps([equip.dict() for equip in dcc.equipments]),
-            conditions=json.dumps(conditions_data), 
+            conditions=conditions_data, 
             excel=dcc.excel,
             sheet_name=dcc.sheet_name,
             statements=json.dumps([stmt.dict() for stmt in dcc.statements]),

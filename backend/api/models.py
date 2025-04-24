@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Date, Text
+from sqlalchemy import Column, String, Integer, Date, Text, JSON
 from .database import Base
 
 class DCC(Base):
@@ -22,7 +22,7 @@ class DCC(Base):
     owner = Column(Text)  # Simpan JSON dalam bentuk teks
     methods = Column(Text)  # Simpan JSON dalam bentuk teks
     equipments = Column(Text)  # Simpan JSON dalam bentuk teks
-    conditions = Column(Text)  # Simpan JSON untuk kondisi (suhu, kelembapan)
+    conditions = Column(JSON)  # Simpan JSON untuk kondisi (suhu, kelembapan)
     excel = Column(String)
     sheet_name = Column(String)
     statements = Column(Text)  # Simpan JSON dalam bentuk teks

@@ -88,20 +88,26 @@ class Equipment(BaseModel):
 
 # START Kondisi
 class Suhu(BaseModel):
-    suhu_desc: str
-    suhu: str
-    rentang_suhu: str
+    desc: str
+    tengah: str
+    rentang: str
+    rentang_unit: str  
+    tengah_unit: str  
 
 class Lembap(BaseModel):
-    lembap_desc: str
-    lembap: str
-    rentang_lembap: str
+    desc: str
+    tengah: str
+    rentang: str
+    rentang_unit: str  # Menambahkan rentang_unit
+    tengah_unit: str  # Menambahkan tengah_unit
 
 class OtherCondition(BaseModel):
     jenis_kondisi: str 
-    deskripsi: str
-    titik_tengah: str  
-    rentang: str      
+    desc: str
+    tengah: str  
+    rentang: str  
+    rentang_unit: str 
+    tengah_unit: str    
 
 class Condition(BaseModel):
     suhu: Suhu

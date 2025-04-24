@@ -6,7 +6,7 @@ import AdministrativeForm from "@/components/administrative-form";
 import MeasurementForm from "@/components/measurement-form";
 import Statements from "@/components/statements";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function CreateDCC() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -17,7 +17,7 @@ export default function CreateDCC() {
     "Preview",
   ];
 
-  const [fileName, setFileName] = useState<string>(""); 
+  const [fileName, setFileName] = useState<string>("");
 
   // Simpan data form di state
   const [formData, setFormData] = useState({
@@ -33,32 +33,38 @@ export default function CreateDCC() {
     tgl_akhir: "",
     tempat: "",
     tgl_pengesahan: "",
-    objects: [{
-      jenis: "",
-      merek: "",
-      tipe: "",
-      item_issuer: "",
-      seri_item: "",
-      id_lain: "",
-    }],
+    objects: [
+      {
+        jenis: "",
+        merek: "",
+        tipe: "",
+        item_issuer: "",
+        seri_item: "",
+        id_lain: "",
+      },
+    ],
     responsible_persons: {
-      pelaksana: [{ 
-        nama_resp: "",
-        nip: "",
-        peran: "Pelaksana Kalibrasi",
-        main_signer: "false",
-        signature: "false",
-        timestamp: "false",
-      }],
-      penyelia: [{ 
-        nama_resp: "",
-        nip: "",
-        peran: "Penyelia Kalibrasi",
-        main_signer: "false",
-        signature: "false",
-        timestamp: "false",
-      }],
-      kepala: { 
+      pelaksana: [
+        {
+          nama_resp: "",
+          nip: "",
+          peran: "Pelaksana Kalibrasi",
+          main_signer: "false",
+          signature: "false",
+          timestamp: "false",
+        },
+      ],
+      penyelia: [
+        {
+          nama_resp: "",
+          nip: "",
+          peran: "Penyelia Kalibrasi",
+          main_signer: "false",
+          signature: "false",
+          timestamp: "false",
+        },
+      ],
+      kepala: {
         nama_resp: "",
         nip: "",
         peran: "",
@@ -66,13 +72,13 @@ export default function CreateDCC() {
         signature: "false",
         timestamp: "false",
       },
-      direktur: { 
+      direktur: {
         nama_resp: "",
         nip: "",
         peran: "",
         main_signer: "true",
         signature: "true",
-        timestamp: "true", 
+        timestamp: "true",
       },
     },
     owner: {
@@ -84,73 +90,85 @@ export default function CreateDCC() {
       pos_cust: "",
       negara_cust: "",
     },
-    methods: [{ 
-      method_name: "", 
-      method_desc: "", 
-      norm: "",
-      has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
+    methods: [
+      {
+        method_name: "",
+        method_desc: "",
+        norm: "",
+        has_formula: false,
+        formula: {
+          latex: "",
+          mathml: "",
+        },
       },
-    }],
-    equipments: [{ 
-      nama_alat: "", 
-      manuf_model: "", 
-      seri_measuring: "" 
-    }],
-    conditions: { 
+    ],
+    equipments: [
+      {
+        nama_alat: "",
+        manuf_model: "",
+        seri_measuring: "",
+      },
+    ],
+    conditions: {
       suhu: {
-        jenis_kondisi: "Suhu",
-        desc: "", 
-        tengah: "", 
-        tengah_unit: "°C", 
-        rentang: "",
-        rentang_unit: "°C",
-      },
-      lembap: {
-        jenis_kondisi: "Kelembapan",
-        desc: "", 
-        tengah: "", 
-        tengah_unit: "%rh", 
-        rentang: "",
-        rentang_unit: "%rh",
-      },
-      other: [{
-        jenis_kondisi: "",
-        desc: "", 
-        tengah: "", 
-        tengah_unit: "", 
+        desc: "",
+        tengah: "",
         rentang: "",
         rentang_unit: "",
-      }],
+        tengah_unit: "",
+      },
+      lembap: {
+        desc: "",
+        tengah: "",
+        rentang: "",
+        rentang_unit: "",
+        tengah_unit: "",
+      },
+      other: [
+        {
+          jenis_kondisi: "",
+          desc: "",
+          tengah: "",
+          rentang: "",
+          rentang_unit: "",
+          tengah_unit: "",
+        },
+      ],
     },
     sheet_name: "",
-    results: [{ 
-      parameters: "", 
-      columns: [{ 
-        kolom: "", 
-        real_list: "1",
-      }],
-      uncertainty: {
-        factor: "2", 
-        probability: "0.95",
-        distribution: "",
-        real_list: "1",
+    results: [
+      {
+        parameters: "",
+        columns: [
+          {
+            kolom: "",
+            real_list: "1",
+          },
+        ],
+        uncertainty: {
+          factor: "2",
+          probability: "0.95",
+          distribution: "",
+          real_list: "1",
+        },
       },
-    }],
-    statements: [{ 
-      values: "",
-      has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
+    ],
+    statements: [
+      {
+        values: "",
+        has_formula: false,
+        formula: {
+          latex: "",
+          mathml: "",
+        },
       },
-    }],
-    images: [{ 
-      gambar: null, 
-      caption: "" 
-    }],
+    ],
+    images: [
+      {
+        gambar: null,
+        caption: "",
+      },
+    ],
   });
 
   useEffect(() => {
@@ -172,12 +190,14 @@ export default function CreateDCC() {
 
   const formatDate = (date: Date | string | null): string | null => {
     if (!date) return null;
-    
+
     const localDate = new Date(date);
-    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset()); // Adjust for timezone
-  
+    localDate.setMinutes(
+      localDate.getMinutes() - localDate.getTimezoneOffset()
+    ); // Adjust for timezone
+
     return localDate.toISOString().split("T")[0];
-  };  
+  };
 
   const updateFormData = (data: any) => {
     setFormData((prev) => ({
@@ -203,15 +223,21 @@ export default function CreateDCC() {
       statements: Array.isArray(data.statements)
         ? data.statements
         : prev.statements,
-      responsible_persons: Array.isArray(data.responsible_persons)
-        ? data.responsible_persons.map((resp: any) => ({
-            nama_resp: resp.nama_resp || "",
-            nip: resp.nip || "",
-            peran: resp.peran || "",
-            main_signer: resp.main_signer || "",
-            signature: resp.signature || "",
-            timestamp: resp.timestamp || "",
-          }))
+      responsible_persons: data.responsible_persons
+        ? {
+            pelaksana:
+              data.responsible_persons.pelaksana ??
+              prev.responsible_persons.pelaksana,
+            penyelia:
+              data.responsible_persons.penyelia ??
+              prev.responsible_persons.penyelia,
+            kepala:
+              data.responsible_persons.kepala ??
+              prev.responsible_persons.kepala,
+            direktur:
+              data.responsible_persons.direktur ??
+              prev.responsible_persons.direktur,
+          }
         : prev.responsible_persons,
       objects: Array.isArray(data.objects)
         ? data.objects.map((obj: any) => ({
@@ -250,33 +276,33 @@ export default function CreateDCC() {
       ...method,
       formula: method.has_formula ? method.formula : "", // Clear formula if checkbox is false
     }));
-    
-    const modifiedFormData = { 
-      ...formData, 
-      statements: modifiedStatements, 
+
+    const modifiedFormData = {
+      ...formData,
+      statements: modifiedStatements,
       methods: modifiedMethods,
-      excel: fileName // Ensure excel contains only the filename
+      excel: fileName, // Ensure excel contains only the filename
     };
-  
+
     console.log("Data yang dikirim ke backend:", modifiedFormData);
-  
+
     try {
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(modifiedFormData),
       });
-  
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
           `HTTP error! Status: ${response.status}, Message: ${errorText}`
         );
       }
-  
+
       const data = await response.json();
       console.log("Response from backend:", data);
-  
+
       if (data.download_link) {
         setDownloadLink(data.download_link);
         alert(`DCC Created! Click the button below to download.`);
@@ -285,14 +311,14 @@ export default function CreateDCC() {
       }
     } catch (error: unknown) {
       console.error("Error submitting form:", error);
-  
+
       if (error instanceof Error) {
         alert(`Failed to create DCC. Error: ${error.message}`);
       } else {
         alert("An unknown error occurred.");
       }
     }
-  };  
+  };
 
   return (
     <div className="container mx-auto py-8 pt-20">
@@ -300,10 +326,17 @@ export default function CreateDCC() {
 
       <div className="mt-12 space-y-10">
         {currentStep === 0 && (
-          <AdministrativeForm formData={formData} updateFormData={updateFormData} />
+          <AdministrativeForm
+            formData={formData}
+            updateFormData={updateFormData}
+          />
         )}
         {currentStep === 1 && (
-          <MeasurementForm formData={formData} updateFormData={updateFormData} setFileName={setFileName} />
+          <MeasurementForm
+            formData={formData}
+            updateFormData={updateFormData}
+            setFileName={setFileName}
+          />
         )}
         {currentStep === 2 && (
           <Statements formData={formData} updateFormData={updateFormData} />
@@ -322,7 +355,9 @@ export default function CreateDCC() {
         {currentStep === steps.length - 1 ? (
           <Button onClick={handleSubmit}>Submit</Button>
         ) : (
-          <Button onClick={nextStep}><ArrowRight /></Button>
+          <Button onClick={nextStep}>
+            <ArrowRight />
+          </Button>
         )}
       </div>
 
