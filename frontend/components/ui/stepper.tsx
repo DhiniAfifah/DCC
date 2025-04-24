@@ -18,7 +18,7 @@ export default function Stepper({ currentStep, steps }: StepperProps) {
                     currentStep > index
                       ? "bg-green-600 border-green-600"
                       : currentStep === index
-                      ? "border-blue-600 text-blue-600"
+                      ? "border-sky-500 text-sky-500"
                       : "border-gray-300 text-gray-300"
                   }`}
               >
@@ -31,7 +31,7 @@ export default function Stepper({ currentStep, steps }: StepperProps) {
               <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-max text-sm">
                 <span
                   className={
-                    currentStep >= index ? "text-blue-600" : "text-gray-400"
+                    currentStep >= index ? "text-sky-500" : "text-gray-400"
                   }
                 >
                   {step}

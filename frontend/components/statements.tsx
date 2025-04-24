@@ -57,6 +57,23 @@ export default function Statements({
     return () => subscription.unsubscribe();
   }, [form.watch]);
 
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (!name?.startsWith("statements.")) return;
+  
+      const match = name.match(/^statements\.(\d+)\.has_formula$/);
+      if (match) {
+        const index = Number(match[1]);
+        const hasFormula = value?.methods?.[index]?.has_formula;
+        if (!hasFormula) {
+          form.setValue(`statements.${index}.formula`, "");
+        }
+      }
+    });
+  
+    return () => subscription.unsubscribe();
+  }, [form]);  
+
   const {
     fields: statementFields,
     append: appendStatement,
@@ -112,7 +129,7 @@ export default function Statements({
           console.log("Form submitted!");
           form.handleSubmit(onSubmit)(e);
         }}
-        className="space-y-6 max-w-4xl mx-auto p-4"
+        className="space-y-16 max-w-4xl mx-auto p-4"
       >
         <Card id="statement">
           <CardHeader>
@@ -172,12 +189,6 @@ export default function Statements({
                     />
                   </div>
 
-                  {useEffect(() => {
-                    if (!form.watch(`statements.${statementIndex}.has_formula`)) {
-                      form.setValue(`statements.${statementIndex}.formula`, ""); // Reset the formula field
-                    }
-                  }, [form.watch(`statements.${statementIndex}.has_formula`), form, statementIndex])}
-
                   {form.watch(`statements.${statementIndex}.has_formula`) && (
                     <div id="rumus" className="mt-2">
                       <FormLabel>Rumus</FormLabel>
@@ -209,7 +220,7 @@ export default function Statements({
                       </div>
                       <Button
                         type="button"
-                        variant="outline"
+                        variant="blue"
                         className="mt-1"
                         onClick={() => {
                           const latex = form.getValues(`statements.${statementIndex}.formula.latex`);
@@ -235,6 +246,7 @@ export default function Statements({
                 </div>
               ))}
               <Button
+                variant="green"
                 type="button"
                 size="sm"
                 className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
@@ -313,6 +325,7 @@ export default function Statements({
             ))}
             </div>
             <Button
+              variant="green"
               type="button"
               size="sm"
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"

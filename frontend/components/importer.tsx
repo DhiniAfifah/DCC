@@ -37,7 +37,7 @@ export default function Importer({
                 <div className="space-y-6 max-w-4xl mx-auto p-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Upload XML</CardTitle>
+                            <CardTitle>Upload PDF</CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-6">
                             <FormField
@@ -47,7 +47,7 @@ export default function Importer({
                                     return (
                                         <FormItem>
                                             <FormControl>
-                                                <Input type="file" {...fileRef} accept=".xml" />
+                                                <Input type="file" {...fileRef} accept=".pdf, .xml" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
