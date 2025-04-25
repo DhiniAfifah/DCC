@@ -15,8 +15,9 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useLanguage } from '@/context/LanguageContext';
 
-const empty_field_error_message = "Input diperlukan.";
+const empty_field_error_message = "Input required.";
 const FormSchema = z.object({
   statements: z.array(
     z.object({ 
@@ -122,6 +123,8 @@ export default function Statements({
     }
   };
 
+  const { t } = useLanguage();
+
   return (
     <FormProvider {...form}>
       <form
@@ -133,14 +136,14 @@ export default function Statements({
       >
         <Card id="statement">
           <CardHeader>
-            <CardTitle>Statements/Pernyataan</CardTitle>
+            <CardTitle>{t('statements')}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
               {statementFields.map((field, statementIndex) => (
                 <div key={field.id} className="grid gap-1 border-b pb-4 relative">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">Statement {statementIndex + 1}</p>
+                    <p className="text-sm text-muted-foreground">{t('statement')} {statementIndex + 1}</p>
                     {statementFields.length > 1 && (
                       <Button
                         type="button"
@@ -162,7 +165,7 @@ export default function Statements({
                         <FormItem>
                           <div className="flex items-center gap-2">
                             <FormControl>
-                              <Input placeholder={`Bahasa: ${lang.value}`} {...field} />
+                              <Input placeholder={`${t('bahasa')} ${lang.value}`} {...field} />
                             </FormControl>
                           </div>
                           <FormMessage />
@@ -183,7 +186,7 @@ export default function Statements({
                               onCheckedChange={(checked) => field.onChange(checked)}
                             />
                           </FormControl>
-                          <FormLabel>Ada rumus di statement ini</FormLabel>
+                          <FormLabel>{t('cb_rumus_statement')}</FormLabel>
                         </FormItem>
                       )}
                     />
@@ -191,7 +194,7 @@ export default function Statements({
 
                   {form.watch(`statements.${statementIndex}.has_formula`) && (
                     <div id="rumus" className="mt-2">
-                      <FormLabel>Rumus</FormLabel>
+                      <FormLabel>{t('rumus')}</FormLabel>
                       <div className="grid grid-cols-2 gap-1">
                         <FormField
                           control={form.control}
@@ -239,7 +242,7 @@ export default function Statements({
                           };                          
                         }}
                       >
-                        Buka editor
+                        {t('editor')}
                       </Button>
                     </div>
                   )}
@@ -260,7 +263,7 @@ export default function Statements({
 
         <Card id="gambar">
           <CardHeader>
-            <CardTitle>Gambar</CardTitle>
+            <CardTitle>{t('gambar')}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
@@ -270,7 +273,7 @@ export default function Statements({
                 className="grid gap-4 border-b pb-4 relative"
               >
                 <p className="text-sm text-muted-foreground">
-                  Gambar {index + 1}
+                  {t('gambar')} {index + 1}
                 </p>
                 {imageFields.length > 1 && (
                   <Button
@@ -285,7 +288,7 @@ export default function Statements({
                 )}
                 <div className="grid grid-cols-2 gap-4">
                   <div id="upload">
-                    <FormLabel>Upload File Gambar</FormLabel>
+                    <FormLabel>{t('upload_gambar')}</FormLabel>
                     <FormField
                       control={form.control}
                       name={`images.${index}.gambar`}
@@ -306,7 +309,7 @@ export default function Statements({
                     />
                   </div>
                   <div id="caption">
-                    <FormLabel>Caption Gambar</FormLabel>
+                    <FormLabel>{t('caption')}</FormLabel>
                     <FormField 
                       control={form.control} 
                       name={`images.${index}.caption`}

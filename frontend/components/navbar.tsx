@@ -1,8 +1,13 @@
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
+import { useLanguage } from '@/context/LanguageContext';
 
 const Navbar = () => {
+  const { language, setLanguage } = useLanguage();
+
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md shadow-black/20 z-50">
       <div className="container mx-auto px-4">
@@ -22,6 +27,12 @@ const Navbar = () => {
             {/* <NavLink href="/">Home</NavLink> */}
             <NavLink href="/about">About Us</NavLink>
             {/* <NavLink href="/contact" isContact>Contact Us</NavLink> */}
+            <button onClick={() => setLanguage('id')} disabled={language === 'id'}>
+              ID
+            </button>
+            <button onClick={() => setLanguage('en')} disabled={language === 'en'}>
+              EN
+            </button>
           </div>
         </div>
       </div>
