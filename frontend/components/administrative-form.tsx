@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -28,7 +27,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -119,7 +118,8 @@ const FormSchema = z.object({
   order: z.string().min(1, { message: empty_field_error_message }),
   tgl_mulai: z.date({ required_error: empty_field_error_message }),
   tgl_akhir: z.date({ required_error: empty_field_error_message }),
-  tempat: z.string({ required_error: empty_field_error_message }),
+  tempat_xml: z.string({ required_error: empty_field_error_message }),
+  tempat_pdf: z.string().optional(),
   tgl_pengesahan: z.date({ required_error: empty_field_error_message }),
   objects: z.array(
     z.object({
@@ -188,6 +188,8 @@ export default function AdministrativeForm({
   updateFormData: (data: any) => void;
 }) {
   const { t } = useLanguage();
+
+  const [selectedPlace, setPlace] = useState<string>("");
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
@@ -396,126 +398,6 @@ export default function AdministrativeForm({
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
-              <div id="core_issuer">
-                <FormLabel>{t('penerbit_order')}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="core_issuer"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Select
-                        value="calibrationLaboratory"
-                        defaultValue="calibrationLaboratory"
-                        disabled
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="manufacturer">
-                            manufacturer
-                          </SelectItem>
-                          <SelectItem value="calibrationLaboratory">
-                            calibrationLaboratory
-                          </SelectItem>
-                          <SelectItem value="customer">customer</SelectItem>
-                          <SelectItem value="owner">owner</SelectItem>
-                          <SelectItem value="other">other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div id="tempat">
-                <FormLabel>{t('tempat')}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="tempat"
-                  render={({ field }) => (
-                    <FormItem>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="laboratory">laboratory</SelectItem>
-                          <SelectItem value="customer">customer</SelectItem>
-                          <SelectItem value="laboratoryBranch">
-                            laboratoryBranch
-                          </SelectItem>
-                          <SelectItem value="customerBranch">
-                            customerBranch
-                          </SelectItem>
-                          <SelectItem value="other">other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div id="tgl_pengesahan">
-                <FormLabel>{t('pengesahan')}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="tgl_pengesahan"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span></span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={(date: Date | undefined) => {
-                              if (date) {
-                                const adjustedDate = new Date(date);
-                                adjustedDate.setMinutes(
-                                  adjustedDate.getMinutes() -
-                                    adjustedDate.getTimezoneOffset()
-                                );
-                                field.onChange(adjustedDate);
-                              }
-                            }}
-                            disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
               <div id="country_code">
                 <FormLabel>{t('negara_calib')}</FormLabel>
                 <FormField
@@ -570,6 +452,51 @@ export default function AdministrativeForm({
                           </Command>
                         </PopoverContent>
                       </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div id="tempat">
+                <FormLabel>{t('tempat')}</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="tempat_xml"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={(value) => {
+                          setPlace(value);
+                          field.onChange(value);
+                          if (value === "laboratory") {
+                            form.setValue("tempat_pdf", "Laboratorium SNSU-BSN");
+                          } else {
+                            form.setValue("tempat_pdf", "");
+                          }
+                        }}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="laboratory">laboratory</SelectItem>
+                          <SelectItem value="customer">customer</SelectItem>
+                          <SelectItem value="laboratoryBranch">laboratoryBranch</SelectItem>
+                          <SelectItem value="customerBranch">customerBranch</SelectItem>
+                          <SelectItem value="other">{t('other')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {selectedPlace && selectedPlace !== "laboratory" && (
+                        <Input
+                          onChange={(e) => {
+                            field.onChange(e.target.value);
+                            form.setValue("tempat_pdf", e.target.value);
+                          }}
+                        />
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -751,21 +678,6 @@ export default function AdministrativeForm({
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div id="sertifikat">
-                <FormLabel>{t('sertifikat')}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="sertifikat"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
               <div id="order">
                 <FormLabel>{t('order')}</FormLabel>
                 <FormField
@@ -781,7 +693,66 @@ export default function AdministrativeForm({
                   )}
                 />
               </div>
+              <div id="core_issuer">
+                <FormLabel>{t('penerbit_order')}</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="core_issuer"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        value="calibrationLaboratory"
+                        defaultValue="calibrationLaboratory"
+                        disabled
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="manufacturer">
+                            manufacturer
+                          </SelectItem>
+                          <SelectItem value="calibrationLaboratory">
+                            calibrationLaboratory
+                          </SelectItem>
+                          <SelectItem value="customer">customer</SelectItem>
+                          <SelectItem value="owner">owner</SelectItem>
+                          <SelectItem value="other">other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
+            <div className="grid grid-cols gap-4">
+              <div id="sertifikat">
+                <FormLabel>{t('sertifikat')}</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="sertifikat"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card id="tanggal">
+          <CardHeader>
+            <CardTitle>{t('linimasa')}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
               <div id="tgl_mulai">
                 <FormLabel>{t('mulai')}</FormLabel>
@@ -886,6 +857,59 @@ export default function AdministrativeForm({
                 />
               </div>
             </div>
+            <div className="grid grid-cols gap-4">
+              <div id="tgl_pengesahan">
+                <FormLabel>{t('pengesahan')}</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="tgl_pengesahan"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span></span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={(date: Date | undefined) => {
+                              if (date) {
+                                const adjustedDate = new Date(date);
+                                adjustedDate.setMinutes(
+                                  adjustedDate.getMinutes() -
+                                    adjustedDate.getTimezoneOffset()
+                                );
+                                field.onChange(adjustedDate);
+                              }
+                            }}
+                            disabled={(date) =>
+                              date > new Date() || date < new Date("1900-01-01")
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -900,9 +924,7 @@ export default function AdministrativeForm({
                   key={field.id}
                   className="grid gap-4 border-b pb-4 relative"
                 >
-                  <p className="text-sm text-muted-foreground">
-                    {t('objek')} {index + 1}
-                  </p>
+                  <CardDescription>{t('objek')} {index + 1}</CardDescription>
                   {itemFields.length > 1 && (
                     <Button
                       type="button"
@@ -914,7 +936,7 @@ export default function AdministrativeForm({
                       <X />
                     </Button>
                   )}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols gap-4">
                     <div id="jenis">
                       <FormLabel>{t('jenis')}</FormLabel>
                       <FormField
@@ -930,6 +952,8 @@ export default function AdministrativeForm({
                         )}
                       />
                     </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
                     <div id="merek">
                       <FormLabel>{t('merek')}</FormLabel>
                       <FormField
@@ -945,8 +969,6 @@ export default function AdministrativeForm({
                         )}
                       />
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
                     <div id="tipe">
                       <FormLabel>{t('tipe')}</FormLabel>
                       <FormField
@@ -962,74 +984,84 @@ export default function AdministrativeForm({
                         )}
                       />
                     </div>
-                    <div id="item_issuer">
-                      <FormLabel>{t('penerbit_seri')}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.item_issuer`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="manufacturer">
-                                  manufacturer
-                                </SelectItem>
-                                <SelectItem value="calibrationLaboratory">
-                                  calibrationLaboratory
-                                </SelectItem>
-                                <SelectItem value="customer">
-                                  customer
-                                </SelectItem>
-                                <SelectItem value="owner">owner</SelectItem>
-                                <SelectItem value="other">other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div id="seri_item">
-                      <FormLabel>{t('seri')}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.seri_item`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div id="id_lain">
-                      <FormLabel>{t('id_lain')}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.id_lain`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
+
+                  <Card id="identifikasi-alat">
+                    <CardHeader>
+                      <CardTitle className="text-black">{t('identifikasi')}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-6">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div id="item_issuer">
+                          <FormLabel>{t('penerbit_seri')}</FormLabel>
+                          <FormField
+                            control={form.control}
+                            name={`objects.${index}.item_issuer`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <Select
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="manufacturer">
+                                      manufacturer
+                                    </SelectItem>
+                                    <SelectItem value="calibrationLaboratory">
+                                      calibrationLaboratory
+                                    </SelectItem>
+                                    <SelectItem value="customer">
+                                      customer
+                                    </SelectItem>
+                                    <SelectItem value="owner">owner</SelectItem>
+                                    <SelectItem value="other">other</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div id="seri_item">
+                          <FormLabel>{t('seri')}</FormLabel>
+                          <FormField
+                            control={form.control}
+                            name={`objects.${index}.seri_item`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols gap-4">
+                        <div id="id_lain">
+                          <FormLabel>{t('id_lain')}</FormLabel>
+                          <FormField
+                            control={form.control}
+                            name={`objects.${index}.id_lain`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               ))}
             </div>
@@ -1065,9 +1097,7 @@ export default function AdministrativeForm({
               <div id="pelaksana" className="grid gap-4 border-b pb-4">
                 {pelaksanaFields.map((field, index) => (
                   <div key={field.id} className="relative">
-                    <p className="text-sm font-bold">
-                      {t('pelaksana')} {index + 1}
-                    </p>
+                    <CardDescription>{t('pelaksana')} {index + 1}</CardDescription>
                     {pelaksanaFields.length > 1 && (
                       <Button
                         type="button"
@@ -1137,9 +1167,7 @@ export default function AdministrativeForm({
               <div id="penyelia" className="grid gap-4 border-b pb-4">
                 {penyeliaFields.map((field, index) => (
                   <div key={field.id} className="relative">
-                    <p className="text-sm font-bold">
-                      {t('penyelia')} {index + 1}
-                    </p>
+                    <CardDescription>{t('penyelia')} {index + 1}</CardDescription>
                     {penyeliaFields.length > 1 && (
                       <Button
                         type="button"
@@ -1385,102 +1413,111 @@ export default function AdministrativeForm({
                   )}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div id="jalan_cust">
-                  <FormLabel>{t('jalan')}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.jalan_cust`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div id="no_jalan_cust">
-                  <FormLabel>{t('no_jalan')}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.no_jalan_cust`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div id="kota_cust">
-                  <FormLabel>{t('kota')}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.kota_cust`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div id="state_cust">
-                  <FormLabel>{t('provinsi')}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.state_cust`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div id="pos_cust">
-                  <FormLabel>{t('pos')}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.pos_cust`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div id="negara_cust">
-                  <FormLabel>{t('negara_cust')}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`owner.negara_cust`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+
+              <Card id="alamat">
+                <CardHeader>
+                  <CardTitle className="text-black">{t('alamat')}</CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div id="jalan_cust">
+                      <FormLabel>{t('jalan')}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`owner.jalan_cust`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div id="no_jalan_cust">
+                      <FormLabel>{t('no_jalan')}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`owner.no_jalan_cust`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div id="kota_cust">
+                      <FormLabel>{t('kota')}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`owner.kota_cust`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div id="state_cust">
+                      <FormLabel>{t('provinsi')}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`owner.state_cust`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div id="pos_cust">
+                      <FormLabel>{t('pos')}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`owner.pos_cust`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div id="negara_cust">
+                      <FormLabel>{t('negara_cust')}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`owner.negara_cust`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
             </div>
           </CardContent>
         </Card>

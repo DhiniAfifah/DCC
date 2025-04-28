@@ -13,12 +13,13 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -50,6 +51,13 @@ const FormSchema = z.object({
           mathml: z.string().optional(),
         })
         .optional(),
+      has_image: z.boolean().default(false),
+      image: z
+        .object({ 
+          gambar: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
+          caption: z.string().optional(),
+        })
+      .optional(),
     })
   ),
   equipments: z.array(
@@ -59,36 +67,18 @@ const FormSchema = z.object({
       seri_measuring: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
-  conditions: z.object({
-    suhu: z.object({
-      jenis_kondisi: z.string().min(1, { message: empty_field_error_message }),
+  conditions: z.array(
+    z.object({
+      jenis_kondisi: z
+        .string()
+        .min(1, { message: empty_field_error_message }),
       desc: z.string().min(1, { message: empty_field_error_message }),
       tengah: z.string().min(1, { message: empty_field_error_message }),
       tengah_unit: z.string().min(1, { message: empty_field_error_message }),
       rentang: z.string().min(1, { message: empty_field_error_message }),
       rentang_unit: z.string().min(1, { message: empty_field_error_message }),
-    }),
-    lembap: z.object({
-      jenis_kondisi: z.string().min(1, { message: empty_field_error_message }),
-      desc: z.string().min(1, { message: empty_field_error_message }),
-      tengah: z.string().min(1, { message: empty_field_error_message }),
-      tengah_unit: z.string().min(1, { message: empty_field_error_message }),
-      rentang: z.string().min(1, { message: empty_field_error_message }),
-      rentang_unit: z.string().min(1, { message: empty_field_error_message }),
-    }),
-    other: z.array(
-      z.object({
-        jenis_kondisi: z
-          .string()
-          .min(1, { message: empty_field_error_message }),
-        desc: z.string().min(1, { message: empty_field_error_message }),
-        tengah: z.string().min(1, { message: empty_field_error_message }),
-        tengah_unit: z.string().min(1, { message: empty_field_error_message }),
-        rentang: z.string().min(1, { message: empty_field_error_message }),
-        rentang_unit: z.string().min(1, { message: empty_field_error_message }),
-      })
-    ),
-  }),
+    })
+  ),
   excel: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
   sheet_name: z.string().min(1, { message: empty_field_error_message }),
   results: z.array(
@@ -280,7 +270,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
                       type="number"
                       min="0"
                       max="1"
-                      step={"0.1"}
+                      step={"0.01"}
                       {...field}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -384,6 +374,23 @@ export default function MeasurementForm({
     return () => subscription.unsubscribe();
   }, [form]);
 
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (!name?.startsWith("methods.")) return;
+  
+      const match = name.match(/^methods\.(\d+)\.has_image$/);
+      if (match) {
+        const index = Number(match[1]);
+        const hasImage = value?.methods?.[index]?.has_image;
+        if (!hasImage) {
+          form.setValue(`methods.${index}.image`, "");
+        }
+      }
+    });
+  
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   const {
     fields: methodFields,
     append: appendMethod,
@@ -408,10 +415,13 @@ export default function MeasurementForm({
     remove: removeCondition,
   } = useFieldArray({
     control: form.control,
-    name: "conditions.other",
+    name: "conditions",
   });
 
-  const fileRef = form.register("excel");
+  const [selectedCondition, setCondition] = useState<string>("");
+
+  const fileRefExcel = form.register("excel");
+  const fileRefGambar = form.register("gambar");
 
   const { control, handleSubmit, register } = form;
   const {
@@ -423,13 +433,8 @@ export default function MeasurementForm({
     name: "results",
   });
 
-  const [selectedSuhuTengahUnit, setSelectedSuhuTengahUnit] = useState("");
-  const [selectedSuhuRentangUnit, setSelectedSuhuRentangUnit] = useState("");
-
   const [fileName] = useState<string | null>(null);
   const [sheets, setSheets] = useState<string[]>([]);
-  const [selectedSheet, setSelectedSheet] = useState<string>("");
-  const [showFields, setShowFields] = useState(false);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -462,18 +467,6 @@ export default function MeasurementForm({
     }
   };
 
-  const handleAddCondition = () => {
-    setShowFields(true);
-    appendCondition({
-      jenis_kondisi: "", // Initialize with empty string to avoid undefined issues
-      desc: "", // Default empty value for desc
-      titik_tengah: "", // Default empty value for titik_tengah
-      rentang: "", // Default empty value for rentang
-      rentang_unit: "", // Default empty value for rentang_unit
-      tengah_unit: "", // Default empty value for tengah_unit
-    });
-  };
-
   const usedLanguages = form.watch("used_languages") || [];
 
   const onSubmit = async (data: any) => {
@@ -487,35 +480,9 @@ export default function MeasurementForm({
         return method;
       });
 
-      const cleanedConditions = {
-        suhu: {
-          desc: data.conditions.suhu.desc,
-          tengah: data.conditions.suhu.tengah,
-          rentang: data.conditions.suhu.rentang,
-          rentang_unit: data.conditions.suhu.rentang_unit,
-          tengah_unit: data.conditions.suhu.tengah_unit,
-        },
-        lembap: {
-          desc: data.conditions.lembap.desc,
-          tengah: data.conditions.lembap.tengah,
-          rentang: data.conditions.lembap.rentang,
-          rentang_unit: data.conditions.lembap.rentang_unit,
-          tengah_unit: data.conditions.lembap.tengah_unit,
-        },
-        other: data.conditions.other.map((condition: any) => ({
-          jenis_kondisi: condition.jenis_kondisi,
-          desc: condition.desc,
-          tengah: condition.titik_tengah,
-          rentang: condition.rentang,
-          rentang_unit: condition.rentang_unit,
-          tengah_unit: condition.tengah_unit,
-        })),
-      };
-
       // Combine the cleaned conditions with the form data
       const formData = {
         ...data,
-        conditions: cleanedConditions, // Attach cleaned conditions
         excel: fileName, // Include the uploaded file name
       };
 
@@ -563,9 +530,7 @@ export default function MeasurementForm({
                   key={field.id}
                   className="grid gap-4 border-b pb-4 relative"
                 >
-                  <p className="text-sm text-muted-foreground">
-                    {t('metode')} {index + 1}
-                  </p>
+                  <CardDescription>{t('metode')} {index + 1}</CardDescription>
                   {methodFields.length > 1 && (
                     <Button
                       type="button"
@@ -647,18 +612,8 @@ export default function MeasurementForm({
                     />
                   </div>
 
-                  {useEffect(() => {
-                    if (!form.watch(`methods.${index}.has_formula`)) {
-                      form.setValue(`methods.${index}.formula`, ""); // Reset the formula field
-                    }
-                  }, [
-                    form.watch(`methods.${index}.has_formula`),
-                    form,
-                    index,
-                  ])}
-
                   {form.watch(`methods.${index}.has_formula`) && (
-                    <div id="rumus" className="mt-2">
+                    <div id="rumus" className="mb-2">
                       <FormLabel>{t('rumus')}</FormLabel>
                       <div className="grid grid-cols-2 gap-1">
                         <FormField
@@ -721,6 +676,69 @@ export default function MeasurementForm({
                       </Button>
                     </div>
                   )}
+
+                  <div id="checkbox_gambar">
+                    <FormField
+                      control={form.control}
+                      name={`methods.${index}.has_image`}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={(checked) =>
+                                field.onChange(checked)
+                              }
+                            />
+                          </FormControl>
+                          <FormLabel>{t('cb_gambar_metode')}</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {form.watch(`methods.${index}.has_image`) && (
+                    <div id="gambar">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div id="upload">
+                          <FormLabel>{t('upload_gambar')}</FormLabel>
+                          <FormField
+                            control={form.control}
+                            name={`images.${index}.gambar`}
+                            render={({ field }) => {
+                              return (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      type="file"
+                                      accept=".jpg, .jpeg, .png"
+                                      {...fileRefGambar}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        </div>
+                        <div id="caption">
+                          <FormLabel>{t('caption')}</FormLabel>
+                          <FormField 
+                            control={form.control} 
+                            name={`images.${index}.caption`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -735,7 +753,14 @@ export default function MeasurementForm({
                   method_desc: "",
                   norm: "",
                   has_formula: false,
-                  formula: "",
+                  formula: {
+                    latex: "",
+                    mathml: "",
+                  },
+                  image: {
+                    gambar: null,
+                    caption: "",
+                  },
                 })
               }
             >
@@ -757,9 +782,7 @@ export default function MeasurementForm({
                   key={field.id}
                   className="grid gap-4 border-b pb-4 relative"
                 >
-                  <p className="text-sm text-muted-foreground">
-                    {t('alat')} {index + 1}
-                  </p>
+                  <CardDescription>{t('alat')} {index + 1}</CardDescription>
                   {equipmentFields.length > 1 && (
                     <Button
                       type="button"
@@ -847,364 +870,163 @@ export default function MeasurementForm({
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
-              <div id="suhu" className="grid gap-4 border-b pb-4 relative">
-                <p className="text-sm font-bold">Suhu</p>
-                <div id="suhu_desc">
-                  <FormLabel>Deskripsi</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`conditions.suhu.desc`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div id="tengah">
-                  <FormLabel>Titik Tengah</FormLabel>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div id="tengah_value">
-                      <FormField
-                        control={form.control}
-                        name={`conditions.suhu.tengah`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="Nilai" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div id="tengah_unit">
-                      <FormField
-                        control={form.control}
-                        name={`conditions.suhu.tengah_unit`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select
-                              onValueChange={(value) => {
-                                setSelectedSuhuTengahUnit(value);
-                                field.onChange(value);
-                              }}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Satuan" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="°C">°C</SelectItem>
-                                <SelectItem value="°F">°F</SelectItem>
-                                <SelectItem value="K">K</SelectItem>
-                                <SelectItem value="other">other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {selectedSuhuTengahUnit === "other" && (
-                              <Input
-                                placeholder="Masukkan satuan lain"
-                                onChange={(e) =>
-                                  field.onChange(e.target.value)
-                                }
-                              />
-                            )}
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div id="rentang">
-                  <FormLabel>Rentang</FormLabel>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div id="rentang_value">
-                      <FormField
-                        control={form.control}
-                        name={`conditions.suhu.rentang`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="Nilai" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div id="rentang_unit">
-                      <FormField
-                        control={form.control}
-                        name={`conditions.suhu.rentang_unit`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <Select
-                              onValueChange={(value) => {
-                                setSelectedSuhuRentangUnit(value);
-                                field.onChange(value);
-                              }}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Satuan" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="°C">°C</SelectItem>
-                                <SelectItem value="°F">°F</SelectItem>
-                                <SelectItem value="K">K</SelectItem>
-                                <SelectItem value="other">other</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {selectedSuhuRentangUnit === "other" && (
-                              <Input
-                                placeholder="Masukkan satuan lain"
-                                onChange={(e) =>
-                                  field.onChange(e.target.value)
-                                }
-                              />
-                            )}
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div id="lembap" className="grid gap-4 border-b pb-4 relative">
-                <p className="text-sm font-bold">Kelembapan</p>
-                <div id="lembap_desc">
-                  <FormLabel>Deskripsi</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`conditions.lembap.desc`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} value={field.value || ""} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div id="tengah">
-                  <FormLabel>Titik Tengah</FormLabel>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div id="tengah_value">
-                      <FormField
-                        control={form.control}
-                        name={`conditions.lembap.tengah`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="Nilai" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div id="tengah_unit">
-                      <FormField
-                        control={form.control}
-                        name={`conditions.lembap.tengah_unit`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="Satuan" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div id="rentang">
-                  <FormLabel>Rentang</FormLabel>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div id="rentang_value">
-                      <FormField
-                        control={form.control}
-                        name={`conditions.lembap.rentang`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="Nilai" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div id="rentang_unit">
-                      <FormField
-                        control={form.control}
-                        name={`conditions.lembap.rentang_unit`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="Satuan" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {!showFields && (
-                <Button
-                  variant="green"
-                  type="button"
-                  size="sm"
-                  className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-                  onClick={handleAddCondition}
+              {conditionFields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="grid gap-4 border-b pb-4 relative"
                 >
-                  <Plus />
-                </Button>
-              )}
-              {showFields &&
-                conditionFields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className="grid gap-4 border-b pb-4 relative"
-                  >
-                    <p className="text-sm font-bold">Parameter {index + 1}</p>
-                    {conditionFields.length > 0 && (
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-0 right-0"
-                        onClick={() => removeCondition(index)}
-                      >
-                        <X />
-                      </Button>
-                    )}
-                    <div className="grid gap-4">
-                      <div id="kondisi">
-                        <FormLabel>{t('lingkungan')}</FormLabel>
+                  <CardDescription>Parameter {index + 1}</CardDescription>
+                  {conditionFields.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-0 right-0"
+                      onClick={() => removeCondition(index)}
+                    >
+                      <X />
+                    </Button>
+                  )}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div id="jenis_kondisi">
+                      <FormLabel>{t('lingkungan')}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`conditions.${index}.jenis_kondisi`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select
+                              onValueChange={(value) => {
+                                setCondition(value);
+                                field.onChange(value);
+                              }}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="Suhu">{t('suhu')}</SelectItem>
+                                <SelectItem value="Kelembapan Relatif">{t('lembap')}</SelectItem>
+                                <SelectItem value="other">{t('other')}</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {selectedCondition === "other" && (
+                              <Input
+                                placeholder={`${t('other_condition')}`}
+                                onChange={(e) => field.onChange(e.target.value)}
+                              />
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div id="kondisi_desc">
+                      <FormLabel>{t('deskripsi')}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`conditions.${index}.desc`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  <div id="tengah">
+                    <FormLabel>{t('tengah')}</FormLabel>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div id="tengah_value">
                         <FormField
                           control={form.control}
-                          name={`conditions.other.${index}.jenis_kondisi`}
+                          name={`conditions.${index}.tengah`}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input {...field} />
+                                <Input placeholder={t('nilai')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
-                    </div>
-                    <div className="grid gap-4">
-                      <div id="kondisi_desc">
-                        <FormLabel>{t('deskripsi')}</FormLabel>
+                      <div id="tengah_unit">
                         <FormField
                           control={form.control}
-                          name={`conditions.other.${index}.desc`}
+                          name={`conditions.${index}.tengah_unit`}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input {...field} />
+                                <Input placeholder={t('satuan')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      </div>
-                    </div>
-                    <div id="tengah">
-                      <FormLabel>{t('tengah')}</FormLabel>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div id="tengah_value">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.other.${index}.tengah`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input placeholder={t('nilai')} {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="tengah_unit">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.other.${index}.tengah_unit`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input placeholder={t('satuan')} {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div id="rentang">
-                      <FormLabel>{t('rentang')}</FormLabel>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div id="rentang_value">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.other.${index}.rentang`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input placeholder={t('nilai')} {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="rentang_unit">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.other.${index}.rentang_unit`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input placeholder={t('satuan')} {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
                       </div>
                     </div>
                   </div>
-                ))}
+                  <div id="rentang">
+                    <FormLabel>{t('rentang')}</FormLabel>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div id="rentang_value">
+                        <FormField
+                          control={form.control}
+                          name={`conditions.${index}.rentang`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input placeholder={t('nilai')} {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div id="rentang_unit">
+                        <FormField
+                          control={form.control}
+                          name={`conditions.${index}.rentang_unit`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input placeholder={t('satuan')} {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            {showFields && (
-              <Button
-                type="button"
-                size="sm"
-                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-                onClick={handleAddCondition}
-              >
-                <Plus />
-              </Button>
-            )}
+            <Button
+              variant="green"
+              type="button"
+              size="sm"
+              className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+              onClick={() =>
+                appendCondition({
+                  jenis_kondisi: "", // Initialize with empty string to avoid undefined issues
+                  desc: "", // Default empty value for desc
+                  titik_tengah: "", // Default empty value for titik_tengah
+                  rentang: "", // Default empty value for rentang
+                  rentang_unit: "", // Default empty value for rentang_unit
+                  tengah_unit: "", // Default empty value for tengah_unit
+                })
+              }
+            >
+              <Plus />
+            </Button>
           </CardContent>
         </Card>
 
@@ -1212,61 +1034,59 @@ export default function MeasurementForm({
           <CardHeader>
             <CardTitle>{t('lampiran')}</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-6">
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div id="excel_file">
-                  <FormLabel>{t('excel')}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name="excel"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormControl>
-                            <Input
-                              type="file"
-                              {...fileRef}
-                              accept=".xls,.xlsx"
-                              onChange={handleFileUpload}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-                </div>
-                <div id="sheet">
-                  <FormLabel>{t('sheet')}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name="sheet_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {sheets.map((sheet, index) => (
-                              <SelectItem key={index} value={sheet}>
-                                {sheet}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+          <CardContent className="grid grid-cols-2 gap-4">
+            <div id="excel_file">
+              <FormLabel>{t('excel')}</FormLabel>
+              <FormField
+                control={form.control}
+                name="excel"
+                render={({ field }) => {
+                  return (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          {...fileRefExcel}
+                          accept=".xls,.xlsx"
+                          onChange={handleFileUpload}
+                        />
+                      </FormControl>
+                      <FormDescription>{t('excel_desc')}</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+            </div>
+            <div id="sheet">
+              <FormLabel>{t('sheet')}</FormLabel>
+              <FormField
+                control={form.control}
+                name="sheet_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <FormDescription>{t('sheet_desc')}</FormDescription>
+                      <SelectContent>
+                        {sheets.map((sheet, index) => (
+                          <SelectItem key={index} value={sheet}>
+                            {sheet}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </CardContent>
         </Card>

@@ -20,6 +20,7 @@ const translations: Record<string, { id: string; en: string }> = {
   negara_calib: { id: 'Negara tempat kalibrasi', en: 'Country of calibration' },
   cari_negara: { id: 'Cari negara...', en: 'Search country...' },
   tempat: { id: 'Tempat kalibrasi', en: 'Calibration place' },
+  other: { id: 'lainnya', en: 'other' },
   used: { id: 'Bahasa yang digunakan', en: 'Used language' },
   cari_bahasa: { id: 'Cari bahasa...', en: 'Search language...' },
   mandatory: { id: 'Bahasa yang diwajibkan', en: 'Mandatory language' },
@@ -75,8 +76,8 @@ const translations: Record<string, { id: string; en: string }> = {
   editor: { id: 'Buka editor', en: 'Open editor' },
   cb_gambar_metode: { id: 'Metode ini disertai gambar', en: 'This method is accompanied by an image' },
   gambar: { id: 'Gambar', en: 'Image' },
-  upload_gambar: { id: 'Unggah gambar', en: 'Upload image' },
-  caption: { id: 'Keterangan', en: 'Caption' },
+  upload_gambar: { id: 'Unggah file gambar', en: 'Upload figure file' },
+  caption: { id: 'Keterangan gambar', en: 'Figure caption' },
 
   // Alat Pengukuran
   pengukuran: { id: 'Standar atau Alat Pengukuran', 
@@ -87,6 +88,9 @@ const translations: Record<string, { id: string; en: string }> = {
   // Kondisi
   kondisi: { id: 'Kondisi Lingkungan', en: 'Environmental Condition' },
   lingkungan: { id: 'Parameter lingkungan', en: 'Environmental parameter' },
+  suhu: { id: 'Suhu', en: 'Temperature' },
+  lembap: { id: 'Kelembapan', en: 'Humidity' },
+  other_condition: { id: 'Masukkan kondisi lain', en: 'Enter another condition' },
   tengah: { id: 'Titik tengah', en: 'Median' },
   nilai: { id: 'Nilai', en: 'Value' },
   satuan: { id: 'Satuan', en: 'Unit' },
@@ -117,7 +121,6 @@ const translations: Record<string, { id: string; en: string }> = {
   distribution: { id: 'Distribusi', en: 'Distribution' },
   segiempat: { id: 'Segiempat', en: 'Rectangular' },
   segitiga: { id: 'Segitiga', en: 'Triangular' },
-  other: { id: 'lain', en: 'other' },
   other_distribution: { id: 'Masukkan distribusi lain', en: 'Enter another distribution' },
 
   // === Statement ===

@@ -34,7 +34,8 @@ export default function CreateDCC() {
     order: "",
     tgl_mulai: "",
     tgl_akhir: "",
-    tempat: "",
+    tempat_xml: "",
+    tempat_pdf: "",
     tgl_pengesahan: "",
     objects: [
       {
@@ -103,6 +104,11 @@ export default function CreateDCC() {
           latex: "",
           mathml: "",
         },
+        has_image: false,
+        image: {
+          gambar: null,
+          caption: "",
+        },
       },
     ],
     equipments: [
@@ -112,32 +118,16 @@ export default function CreateDCC() {
         seri_measuring: "",
       },
     ],
-    conditions: {
-      suhu: {
+    conditions: [
+      {
+        jenis_kondisi: "",
         desc: "",
         tengah: "",
         rentang: "",
         rentang_unit: "",
         tengah_unit: "",
       },
-      lembap: {
-        desc: "",
-        tengah: "",
-        rentang: "",
-        rentang_unit: "",
-        tengah_unit: "",
-      },
-      other: [
-        {
-          jenis_kondisi: "",
-          desc: "",
-          tengah: "",
-          rentang: "",
-          rentang_unit: "",
-          tengah_unit: "",
-        },
-      ],
-    },
+    ],
     sheet_name: "",
     results: [
       {
@@ -164,12 +154,11 @@ export default function CreateDCC() {
           latex: "",
           mathml: "",
         },
-      },
-    ],
-    images: [
-      {
-        gambar: null,
-        caption: "",
+        has_image: false,
+        image: {
+          gambar: null,
+          caption: "",
+        },
       },
     ],
   });

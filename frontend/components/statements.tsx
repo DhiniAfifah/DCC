@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from '@/context/LanguageContext';
@@ -26,6 +26,11 @@ const FormSchema = z.object({
       formula: z.object({
         latex: z.string().optional(),
         mathml: z.string().optional(),
+      }).optional(),
+      has_image: z.boolean().default(false),
+      image: z.object({ 
+        gambar: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
+        caption: z.string().optional(),
       }).optional(),
     })
   ),
@@ -74,6 +79,23 @@ export default function Statements({
   
     return () => subscription.unsubscribe();
   }, [form]);  
+
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (!name?.startsWith("statements.")) return;
+  
+      const match = name.match(/^statements\.(\d+)\.has_image$/);
+      if (match) {
+        const index = Number(match[1]);
+        const hasImage = value?.methods?.[index]?.has_image;
+        if (!hasImage) {
+          form.setValue(`statements.${index}.image`, "");
+        }
+      }
+    });
+  
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   const {
     fields: statementFields,
@@ -143,7 +165,7 @@ export default function Statements({
               {statementFields.map((field, statementIndex) => (
                 <div key={field.id} className="grid gap-1 border-b pb-4 relative">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-muted-foreground">{t('statement')} {statementIndex + 1}</p>
+                    <CardDescription>{t('statement')} {statementIndex + 1}</CardDescription>
                     {statementFields.length > 1 && (
                       <Button
                         type="button"
@@ -246,6 +268,69 @@ export default function Statements({
                       </Button>
                     </div>
                   )}
+
+                  <div id="checkbox_gambar" className="mt-3 mb-1">
+                    <FormField
+                      control={form.control}
+                      name={`statements.${statementIndex}.has_image`}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={(checked) =>
+                                field.onChange(checked)
+                              }
+                            />
+                          </FormControl>
+                          <FormLabel>{t('cb_gambar_metode')}</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {form.watch(`statements.${statementIndex}.has_image`) && (
+                    <div id="gambar">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div id="upload">
+                          <FormLabel>{t('upload_gambar')}</FormLabel>
+                          <FormField
+                            control={form.control}
+                            name={`statements.${statementIndex}.gambar`}
+                            render={({ field }) => {
+                              return (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input
+                                      type="file"
+                                      accept=".jpg, .jpeg, .png"
+                                      {...fileRefGambar}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        </div>
+                        <div id="caption">
+                          <FormLabel>{t('caption')}</FormLabel>
+                          <FormField 
+                            control={form.control} 
+                            name={`statements.${statementIndex}.caption`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               <Button
@@ -253,91 +338,23 @@ export default function Statements({
                 type="button"
                 size="sm"
                 className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
-                onClick={() => appendStatement({ values: "" })}
+                onClick={() => appendStatement({ 
+                  values: "",
+                  has_formula: false,
+                  formula: {
+                    latex: "",
+                    mathml: "",
+                  },
+                  has_image: false,
+                  image: {
+                    gambar: null,
+                    caption: "",
+                  }, 
+                })}
               >
                 <p className="text-xl"><Plus /></p>
               </Button>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card id="gambar">
-          <CardHeader>
-            <CardTitle>{t('gambar')}</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-6">
-            <div className="grid gap-4">
-            {imageFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="grid gap-4 border-b pb-4 relative"
-              >
-                <p className="text-sm text-muted-foreground">
-                  {t('gambar')} {index + 1}
-                </p>
-                {imageFields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-0 right-0"
-                    onClick={() => removeImage(index)}
-                  >
-                    <X />
-                  </Button>
-                )}
-                <div className="grid grid-cols-2 gap-4">
-                  <div id="upload">
-                    <FormLabel>{t('upload_gambar')}</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name={`images.${index}.gambar`}
-                      render={({ field }) => {
-                        return (
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                type="file"
-                                accept=".jpg, .jpeg, .png"
-                                {...fileRefGambar}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        );
-                      }}
-                    />
-                  </div>
-                  <div id="caption">
-                    <FormLabel>{t('caption')}</FormLabel>
-                    <FormField 
-                      control={form.control} 
-                      name={`images.${index}.caption`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-            </div>
-            <Button
-              variant="green"
-              type="button"
-              size="sm"
-              className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={() =>
-                appendImage({ gambar: "", caption: "" })
-              }
-            >
-              <p className="text-xl"><Plus /></p>
-            </Button>
           </CardContent>
         </Card>
       </form>

@@ -79,7 +79,7 @@ def populate_template(dcc_data, word_path, new_word_path):
         'tgl_pengesahan': dcc_data['tgl_pengesahan'],
         'tgl_mulai': dcc_data['tgl_mulai'],
         'tgl_akhir': dcc_data['tgl_akhir'],
-        'tempat': dcc_data['tempat'],
+        'tempat': dcc_data['tempat_pdf'],
         'suhu': dcc_data['conditions'][0]['suhu'],
         'rentang_suhu': dcc_data['conditions'][0]['rentang_suhu'],
         'lembap': dcc_data['conditions'][0]['lembap'],
@@ -334,7 +334,7 @@ def generate_xml(dcc, table_data):
                             with tag('dcc:content'): text('Nomor Order')
                 with tag('dcc:beginPerformanceDate'): text(dcc.tgl_mulai)
                 with tag('dcc:endPerformanceDate'): text(dcc.tgl_akhir)
-                with tag('dcc:performanceLocation'): text(dcc.tempat)
+                with tag('dcc:performanceLocation'): text(dcc.tempat_xml)
                 with tag('dcc:issueDate'): text(dcc.tgl_pengesahan)
             with tag("dcc:items"):
                 for obj in dcc.objects:
@@ -634,7 +634,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             tgl_mulai=datetime.strptime(dcc.tgl_mulai, "%Y-%m-%d").date(),
             tgl_akhir=datetime.strptime(dcc.tgl_akhir, "%Y-%m-%d").date(),
             tgl_pengesahan=datetime.strptime(dcc.tgl_pengesahan, "%Y-%m-%d").date(),
-            tempat_kalibrasi=dcc.tempat,
+            tempat_kalibrasi_xml=dcc.tempat_xml,
+            tempat_kalibrasi_pdf=dcc.tempat_pdf,
             objects_description=json.dumps([obj.dict() for obj in dcc.objects]),
             responsible_persons=json.dumps(responsible_persons_data),
             owner=json.dumps(dcc.owner.dict()),
