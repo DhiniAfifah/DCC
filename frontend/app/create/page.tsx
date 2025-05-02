@@ -7,18 +7,13 @@ import MeasurementForm from "@/components/measurement-form";
 import Statements from "@/components/statements";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useLanguage } from '@/context/LanguageContext';
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function CreateDCC() {
   const { t } = useLanguage();
-  
+
   const [currentStep, setCurrentStep] = useState(0);
-  const steps = [
-    t('administrasi'),
-    t('hasil'),
-    t('statements'),
-    t('preview'),
-  ];
+  const steps = [t("administrasi"), t("hasil"), t("statements"), t("preview")];
 
   const [fileName, setFileName] = useState<string>("");
 
@@ -26,17 +21,21 @@ export default function CreateDCC() {
   const [formData, setFormData] = useState({
     software: "",
     version: "",
-    core_issuer: "calibrationLaboratory",
-    country_code: "",
-    used_languages: [{ value: "" }],
-    mandatory_languages: [{ value: "" }],
-    sertifikat: "",
-    order: "",
-    tgl_mulai: "",
-    tgl_akhir: "",
-    tempat_xml: "",
-    tempat_pdf: "",
-    tgl_pengesahan: "",
+    Measurement_TimeLine: {
+      tgl_mulai: "",
+      tgl_akhir: "",
+      tgl_pengesahan: "",
+    },
+    administrative_data: {
+      core_issuer: "calibrationLaboratory",
+      country_code: "",
+      used_languages: [{ value: "" }],
+      mandatory_languages: [{ value: "" }],
+      sertifikat: "",
+      order: "",
+      tempat: "",
+      tempat_pdf: "",
+    },
     objects: [
       {
         jenis: "",
@@ -128,7 +127,6 @@ export default function CreateDCC() {
         tengah_unit: "",
       },
     ],
-    sheet_name: "",
     results: [
       {
         parameters: "",
@@ -182,68 +180,92 @@ export default function CreateDCC() {
 
   const formatDate = (date: Date | string | null): string | null => {
     if (!date) return null;
-
     const localDate = new Date(date);
     localDate.setMinutes(
       localDate.getMinutes() - localDate.getTimezoneOffset()
-    ); // Adjust for timezone
-
+    ); // Menyesuaikan dengan zona waktu
     return localDate.toISOString().split("T")[0];
   };
 
   const updateFormData = (data: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      ...data,
-      used_languages: data.used_languages
-        ? data.used_languages
-        : prev.used_languages,
-      mandatory_languages: data.mandatory_languages
-        ? data.mandatory_languages
-        : prev.mandatory_languages,
-      sertifikat: data.sertifikat?.toString() || "",
-      order: data.order?.toString() || "",
-      tgl_mulai: data.tgl_mulai
-        ? formatDate(new Date(data.tgl_mulai))
-        : prev.tgl_mulai,
-      tgl_akhir: data.tgl_akhir
-        ? formatDate(new Date(data.tgl_akhir))
-        : prev.tgl_akhir,
-      tgl_pengesahan: data.tgl_pengesahan
-        ? formatDate(new Date(data.tgl_pengesahan))
-        : prev.tgl_pengesahan,
-      statements: Array.isArray(data.statements)
-        ? data.statements
-        : prev.statements,
-      responsible_persons: data.responsible_persons
-        ? {
-            pelaksana:
-              data.responsible_persons.pelaksana ??
-              prev.responsible_persons.pelaksana,
-            penyelia:
-              data.responsible_persons.penyelia ??
-              prev.responsible_persons.penyelia,
-            kepala:
-              data.responsible_persons.kepala ??
-              prev.responsible_persons.kepala,
-            direktur:
-              data.responsible_persons.direktur ??
-              prev.responsible_persons.direktur,
-          }
-        : prev.responsible_persons,
-      objects: Array.isArray(data.objects)
-        ? data.objects.map((obj: any) => ({
-            jenis: obj.jenis || "",
-            merek: obj.merek || "",
-            tipe: obj.tipe || "",
-            item_issuer: obj.item_issuer || "",
-            seri_item: obj.seri_item || "",
-            id_lain: obj.id_lain || "",
-          }))
-        : prev.objects,
-    }));
-  };
+    setFormData((prev) => {
+      // Create a filtered copy of data without administrative and timeline fields
+      const {
+        used_languages,
+        mandatory_languages,
+        sertifikat,
+        order,
+        tempat_pdf,
+        tempat,
+        country_code,
+        core_issuer,
+        tgl_mulai,
+        tgl_akhir,
+        tgl_pengesahan,
+        ...otherData
+      } = data;
 
+      return {
+        ...prev,
+        ...otherData, // Spread other data fields that should be at root level
+        administrative_data: {
+          ...prev.administrative_data,
+          used_languages:
+            used_languages || prev.administrative_data.used_languages,
+          mandatory_languages:
+            mandatory_languages || prev.administrative_data.mandatory_languages,
+          sertifikat: sertifikat ?? prev.administrative_data.sertifikat,
+          order: order?.toString() || prev.administrative_data.order || "",
+          tempat_pdf:
+            tempat_pdf?.toString() || prev.administrative_data.tempat_pdf || "",
+          tempat: tempat?.toString() || prev.administrative_data.tempat || "",
+          country_code:
+            country_code?.toString() ||
+            prev.administrative_data.country_code ||
+            "",
+          core_issuer:
+            core_issuer ||
+            prev.administrative_data.core_issuer ||
+            "calibrationLaboratory",
+        },
+        Measurement_TimeLine: {
+          tgl_mulai: tgl_mulai || prev.Measurement_TimeLine.tgl_mulai,
+          tgl_akhir: tgl_akhir || prev.Measurement_TimeLine.tgl_akhir,
+          tgl_pengesahan:
+            tgl_pengesahan || prev.Measurement_TimeLine.tgl_pengesahan,
+        },
+        statements: Array.isArray(data.statements)
+          ? data.statements
+          : prev.statements,
+        responsible_persons: data.responsible_persons
+          ? {
+              pelaksana:
+                data.responsible_persons.pelaksana ??
+                prev.responsible_persons.pelaksana,
+              penyelia:
+                data.responsible_persons.penyelia ??
+                prev.responsible_persons.penyelia,
+              kepala:
+                data.responsible_persons.kepala ??
+                prev.responsible_persons.kepala,
+              direktur:
+                data.responsible_persons.direktur ??
+                prev.responsible_persons.direktur,
+            }
+          : prev.responsible_persons,
+        objects: Array.isArray(data.objects)
+          ? data.objects.map((obj: any) => ({
+              jenis: obj.jenis || "",
+              merek: obj.merek || "",
+              tipe: obj.tipe || "",
+              item_issuer: obj.item_issuer || "",
+              seri_item: obj.seri_item || "",
+              id_lain: obj.id_lain || "",
+            }))
+          : prev.objects,
+      };
+    });
+  };
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -336,16 +358,14 @@ export default function CreateDCC() {
       </div>
 
       <div className="flex justify-between max-w-4xl mx-auto px-4 mt-8">
-        <Button
-          variant="blue"
-          onClick={prevStep}
-          disabled={currentStep === 0}
-        >
+        <Button variant="blue" onClick={prevStep} disabled={currentStep === 0}>
           <ArrowLeft />
         </Button>
 
         {currentStep === steps.length - 1 ? (
-          <Button onClick={handleSubmit} variant="green">Submit</Button>
+          <Button onClick={handleSubmit} variant="green">
+            Submit
+          </Button>
         ) : (
           <Button onClick={nextStep} variant="blue">
             <ArrowRight />

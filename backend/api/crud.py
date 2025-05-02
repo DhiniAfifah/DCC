@@ -193,9 +193,7 @@ def prepare_input_tables(dcc):
 
 # Memproses data Excel dan mengembalikan hasil terstruktur untuk XML
 def process_excel_data(excel_path, sheet_name, input_tables):
-    
     logging.info(f"Memproses data Excel dari {excel_path}, sheet: {sheet_name}")
-    
     table_data = {}
     pythoncom.CoInitialize() 
     
@@ -576,6 +574,9 @@ def embed_xml_in_pdf(pdf_path, xml_path, output_path):
 def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
     logging.info("Starting DCC creation process")
     
+    excel_file = dcc.attachment.excel_file 
+    sheet_name = dcc.attachment.sheet_name 
+    
     # Inisialisasi variabel Office
     excel = None
     word = None
@@ -584,33 +585,38 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
     try:
         logging.debug("Creating DCC model instance")
         
-        # Prepare the conditions data
-        conditions_data = {
-            "desc": dcc.conditions.suhu.desc,
-            "tengah": dcc.conditions.suhu.tengah,
-            "rentang": dcc.conditions.suhu.rentang,
-            "rentang_unit_suhu": dcc.conditions.suhu.rentang_unit, 
-            "tengah_unit_suhu": dcc.conditions.suhu.tengah_unit, 
-            
-            "desc": dcc.conditions.lembap.desc,
-            "tengah": dcc.conditions.lembap.tengah,
-            "rentang": dcc.conditions.lembap.rentang,
-            "rentang_unit_lembap": dcc.conditions.lembap.rentang_unit,  
-            "tengah_unit_lembap": dcc.conditions.lembap.tengah_unit,  
+        measurement_timeline_data = {
+            "tgl_mulai": dcc.Measurement_TimeLine.tgl_mulai,  # Langsung ambil dari form data
+            "tgl_akhir": dcc.Measurement_TimeLine.tgl_akhir,
+            "tgl_pengesahan": dcc.Measurement_TimeLine.tgl_pengesahan,
         }
-        if dcc.conditions.other:
-            other_conditions_data = [
-                {
-                    "jenis_kondisi": condition.jenis_kondisi,
-                    "desc": condition.desc,
-                    "tengah": condition.tengah,
-                    "titik_tengah_unit": condition.tengah_unit,  # Titik tengah unit untuk kondisi lainnya
-                    "rentang": condition.rentang,
-                    "rentang_unit": condition.rentang_unit,  # Rentang unit untuk kondisi lainnya
-                }
-                for condition in dcc.conditions.other
-            ]
-            conditions_data["other"] = other_conditions_data
+        
+        administrative_data_dict = {
+            "country_code": administrative_data.country_code,  # Country of Calibration
+            "used_languages": json.dumps(administrative_data.used_languages),
+            "mandatory_languages": json.dumps(administrative_data.mandatory_languages),
+            "order": administrative_data.order,  # Order Number
+            "core_issuer": administrative_data.core_issuer,  # Core Issuer
+            "sertifikat": administrative_data.sertifikat,  # Certificate Number
+            "tempat": administrative_data.tempat,  # Calibration Place in XML format
+            "tempat_pdf": administrative_data.tempat_pdf,  # Calibration Place in PDF format
+        }
+        
+        # Menyiapkan data kondisi (Suhu, Kelembapan, dan lainnya)
+        environmental_conditions = []
+        for condition in dcc.conditions.environmental_conditions:
+            environmental_conditions.append({
+                "jenis_kondisi": condition.jenis_kondisi,
+                "desc": condition.desc,
+                "tengah": condition.tengah,
+                "tengah_unit": condition.tengah_unit,
+                "rentang": condition.rentang,
+                "rentang_unit": condition.rentang_unit,
+            })
+        
+        conditions_data = {
+            "environmental_conditions": environmental_conditions
+        }
             
         responsible_persons_data = {
             "pelaksana": [p.dict() for p in dcc.responsible_persons.pelaksana],
@@ -618,6 +624,41 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             "kepala": dcc.responsible_persons.kepala.dict(),
             "direktur": dcc.responsible_persons.direktur.dict()
         }
+        
+        # Process methods
+        methods_data = []
+        for method in dcc.methods:
+            method_data = {
+                "method_name": method.method_name,
+                "method_desc": method.method_desc,
+                "norm": method.norm,
+                "has_formula": method.has_formula,
+                "formula": method.formula.dict() if method.has_formula and method.formula else None,
+                "has_image": method.has_image,
+                "image": method.image.dict() if method.has_image and method.image else None
+            }
+            methods_data.append(method_data)
+        
+        # Process the results
+        results_data = []
+        for result in dcc.results:
+            result_data = {
+                "parameters": result.parameters,
+                "columns": [
+                    {
+                        "kolom": col.kolom,
+                        "real_list": col.real_list
+                    }
+                    for col in result.columns
+                ],
+                "uncertainty": {
+                    "factor": result.uncertainty.factor,
+                    "probability": result.uncertainty.probability,
+                    "distribution": result.uncertainty.distribution or "",
+                    "real_list": result.uncertainty.real_list
+                }
+            }
+            results_data.append(result_data)
 
         # Membuat instansi model DCC dan menyimpan data ke database
         logging.debug(f"Responsible Persons Data: {responsible_persons_data}")
@@ -625,25 +666,14 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         db_dcc = models.DCC(
             software_name=dcc.software,
             software_version=dcc.version,
-            core_issuer=dcc.core_issuer,
-            country_code=dcc.country_code,
-            used_languages=json.dumps([lang.value for lang in dcc.used_languages]),
-            mandatory_languages=json.dumps([lang.value for lang in dcc.mandatory_languages]),
-            sertifikat_number=dcc.sertifikat,
-            order_number=dcc.order,
-            tgl_mulai=datetime.strptime(dcc.tgl_mulai, "%Y-%m-%d").date(),
-            tgl_akhir=datetime.strptime(dcc.tgl_akhir, "%Y-%m-%d").date(),
-            tgl_pengesahan=datetime.strptime(dcc.tgl_pengesahan, "%Y-%m-%d").date(),
-            tempat_kalibrasi_xml=dcc.tempat_xml,
-            tempat_kalibrasi_pdf=dcc.tempat_pdf,
+            administrative_data=administrative_data_dict,
+            measurement_timeline=measurement_timeline_data,
             objects_description=json.dumps([obj.dict() for obj in dcc.objects]),
             responsible_persons=json.dumps(responsible_persons_data),
             owner=json.dumps(dcc.owner.dict()),
-            methods=json.dumps([method.dict() for method in dcc.methods]),
+            methods=json.dumps(methods_data),
             equipments=json.dumps([equip.dict() for equip in dcc.equipments]),
-            conditions=conditions_data, 
-            excel=dcc.excel,
-            sheet_name=dcc.sheet_name,
+            conditions=json.dumps(conditions_data), 
             statements=json.dumps([stmt.dict() for stmt in dcc.statements]),
         )
 

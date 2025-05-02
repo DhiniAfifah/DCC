@@ -127,7 +127,6 @@ const FormSchema = z.object({
   tempat_xml: z.string({ required_error: empty_field_error_message }),
   tempat_pdf: z.string().optional(),
   tgl_pengesahan: z.date({ required_error: empty_field_error_message }),
-
   objects: z.array(
     z.object({
       jenis: z.string().min(1, { message: empty_field_error_message }),
@@ -306,8 +305,8 @@ export default function AdministrativeForm({
     const allResponsiblePersons = [
       ...data.responsible_persons.pelaksana,
       ...data.responsible_persons.penyelia,
-      data.responsible_persons.kepala,
-      data.responsible_persons.direktur,
+      data.responsible_persons.kepala, // Kepala sudah sebagai objek tunggal
+      data.responsible_persons.direktur, // Direktur juga objek tunggal
     ];
 
     allResponsiblePersons.forEach((person: any) => {
@@ -399,7 +398,6 @@ export default function AdministrativeForm({
           </CardContent>
         </Card>
 
-        {/* ADMINISTRATIVE DATA */}
         <Card id="core-data">
           <CardHeader>
             <CardTitle>{t("data")}</CardTitle>
@@ -469,7 +467,7 @@ export default function AdministrativeForm({
                 <FormLabel>{t("tempat")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name="tempat"
+                  name="tempat_xml"
                   render={({ field }) => (
                     <FormItem>
                       <Select
@@ -504,11 +502,8 @@ export default function AdministrativeForm({
                           <SelectItem value="other">{t("other")}</SelectItem>
                         </SelectContent>
                       </Select>
-
-                      {/* Jika bukan 'laboratory', tampilkan input untuk tempat_pdf */}
                       {selectedPlace && selectedPlace !== "laboratory" && (
                         <Input
-                          value={form.getValues("tempat_pdf")}
                           onChange={(e) => {
                             field.onChange(e.target.value);
                             form.setValue("tempat_pdf", e.target.value);
@@ -521,8 +516,6 @@ export default function AdministrativeForm({
                 />
               </div>
             </div>
-
-            {/* Languages Group */}
             <div className="grid grid-cols-2 gap-4">
               <div id="used_language">
                 <FormLabel>{t("used")}</FormLabel>
@@ -706,7 +699,7 @@ export default function AdministrativeForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} value={formData.order || ""} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

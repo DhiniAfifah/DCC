@@ -1,5 +1,7 @@
 from sqlalchemy import Column, String, Integer, Date, Text, JSON
 from .database import Base
+from sqlalchemy.orm import Mapped
+
 
 class DCC(Base):
     __tablename__ = "dcc"
@@ -7,22 +9,12 @@ class DCC(Base):
     id = Column(Integer, primary_key=True, index=True)
     software_name = Column(String)
     software_version = Column(String)
-    core_issuer = Column(String)
-    used_languages = Column(Text)  # Simpan JSON dalam bentuk teks
-    sertifikat_number = Column(String)
-    tgl_mulai = Column(Date)
-    tgl_akhir = Column(Date)
-    tempat_kalibrasi = Column(String)
-    country_code = Column(String)
-    mandatory_languages = Column(Text)  # Simpan JSON dalam bentuk teks
-    order_number = Column(String)
-    tgl_pengesahan = Column(Date)
-    objects_description = Column(Text)  # Simpan JSON dalam bentuk teks
-    responsible_persons = Column(Text)  # Simpan JSON dalam bentuk teks
-    owner = Column(Text)  # Simpan JSON dalam bentuk teks
-    methods = Column(Text)  # Simpan JSON dalam bentuk teks
-    equipments = Column(Text)  # Simpan JSON dalam bentuk teks
-    conditions = Column(JSON)  # Simpan JSON untuk kondisi (suhu, kelembapan)
-    excel = Column(String)
-    sheet_name = Column(String)
-    statements = Column(Text)  # Simpan JSON dalam bentuk teks
+    measurement_TimeLine= Column(JSON)
+    administrative_data = Column(JSON)
+    objects_description = Column(Text)  
+    responsible_persons = Column(Text)  
+    owner = Column(Text)  
+    methods = Column(Text)  
+    equipments = Column(Text)  
+    conditions = Column(JSON)  
+    statements = Column(Text) 

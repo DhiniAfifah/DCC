@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, X } from "lucide-react";
@@ -19,13 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -35,7 +29,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useLanguage } from "@/context/LanguageContext";
+import { useLanguage } from '@/context/LanguageContext';
 
 declare global {
   interface Window {
@@ -59,12 +53,11 @@ const FormSchema = z.object({
         .optional(),
       has_image: z.boolean().default(false),
       image: z
-        .object({
-          gambar:
-            typeof window === "undefined" ? z.any() : z.instanceof(FileList),
+        .object({ 
+          gambar: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
           caption: z.string().optional(),
         })
-        .optional(),
+      .optional(),
     })
   ),
   equipments: z.array(
@@ -76,7 +69,9 @@ const FormSchema = z.object({
   ),
   conditions: z.array(
     z.object({
-      jenis_kondisi: z.string().min(1, { message: empty_field_error_message }),
+      jenis_kondisi: z
+        .string()
+        .min(1, { message: empty_field_error_message }),
       desc: z.string().min(1, { message: empty_field_error_message }),
       tengah: z.string().min(1, { message: empty_field_error_message }),
       tengah_unit: z.string().min(1, { message: empty_field_error_message }),
@@ -148,12 +143,10 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
         <Card key={columnField.id} id="kolom">
           <CardHeader></CardHeader>
           <CardContent className="grid gap-6">
-            <div className="grid gap-4 pb-4 relative">
+            <div className="grid gap-4 pb-4 relative">  
               <div>
-                <p className="text-sm text-muted-foreground">
-                  {t("kolom")} {columnIndex + 1}
-                </p>
-                <p className="text-sm text-red-600">{t("kolom_desc")}</p>
+                <p className="text-sm text-muted-foreground">{t('kolom')} {columnIndex + 1}</p>
+                <p className="text-sm text-red-600">{t('kolom_desc')}</p>
               </div>
 
               {columnFields.length > 1 && (
@@ -169,7 +162,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
               )}
 
               <div id="nama">
-                <FormLabel>{t("label")}</FormLabel>
+                <FormLabel>{t('label')}</FormLabel>
                 <div className="grid gap-1">
                   {usedLanguages.map(
                     (lang: { value: string }, langIndex: number) => (
@@ -182,7 +175,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
                             <FormItem>
                               <FormControl>
                                 <Input
-                                  placeholder={`${t("bahasa")} ${lang.value}`}
+                                  placeholder={`${t('bahasa')} ${lang.value}`}
                                   {...field}
                                 />
                               </FormControl>
@@ -197,7 +190,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
               </div>
 
               <div id="realList">
-                <FormLabel>{t("subkolom")}</FormLabel>
+                <FormLabel>{t('subkolom')}</FormLabel>
                 <FormField
                   control={control}
                   name={`results.${resultIndex}.columns.${columnIndex}.real_list`}
@@ -234,14 +227,14 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
 
       <Card id="uncertainty">
         <CardHeader>
-          <h3 className="text-sm font-semibold">{t("ketidakpastian")}</h3>
+          <h3 className="text-sm font-semibold">{t('ketidakpastian')}</h3>
           <p className="text-xs text-muted-foreground mt-1">
-            {t("ketidakpastian_desc")}
+            {t('ketidakpastian_desc')}
           </p>
         </CardHeader>
         <CardContent className="grid gap-4">
           <div id="factor" className="grid gap-1">
-            <FormLabel>{t("factor")}</FormLabel>
+            <FormLabel>{t('factor')}</FormLabel>
             <FormField
               control={control}
               name={`results.${resultIndex}.uncertainty.factor`}
@@ -266,7 +259,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
             />
           </div>
           <div id="probability" className="grid gap-1">
-            <FormLabel>{t("probability")}</FormLabel>
+            <FormLabel>{t('probability')}</FormLabel>
             <FormField
               control={control}
               name={`results.${resultIndex}.uncertainty.probability`}
@@ -293,7 +286,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
             />
           </div>
           <div id="distribution" className="grid gap-1">
-            <FormLabel>{t("distribution")}</FormLabel>
+            <FormLabel>{t('distribution')}</FormLabel>
             <FormField
               control={control}
               name={`results.${resultIndex}.uncertainty.distribution`}
@@ -315,18 +308,14 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="normal">Normal</SelectItem>
-                          <SelectItem value="segiempat">
-                            {t("segiempat")}
-                          </SelectItem>
-                          <SelectItem value="segitiga">
-                            {t("segitiga")}
-                          </SelectItem>
-                          <SelectItem value="other">{t("other")}</SelectItem>
+                          <SelectItem value="segiempat">{t('segiempat')}</SelectItem>
+                          <SelectItem value="segitiga">{t('segitiga')}</SelectItem>
+                          <SelectItem value="other">{t('other')}</SelectItem>
                         </SelectContent>
                       </Select>
                       {selectedDistribution === "other" && (
                         <Input
-                          placeholder={`${t("other_distribution")}`}
+                          placeholder={`${t('other_distribution')}`}
                           onChange={(e) => field.onChange(e.target.value)}
                         />
                       )}
@@ -371,7 +360,7 @@ export default function MeasurementForm({
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (!name?.startsWith("methods.")) return;
-
+  
       const match = name.match(/^methods\.(\d+)\.has_formula$/);
       if (match) {
         const index = Number(match[1]);
@@ -381,14 +370,14 @@ export default function MeasurementForm({
         }
       }
     });
-
+  
     return () => subscription.unsubscribe();
   }, [form]);
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (!name?.startsWith("methods.")) return;
-
+  
       const match = name.match(/^methods\.(\d+)\.has_image$/);
       if (match) {
         const index = Number(match[1]);
@@ -398,7 +387,7 @@ export default function MeasurementForm({
         }
       }
     });
-
+  
     return () => subscription.unsubscribe();
   }, [form]);
 
@@ -532,7 +521,7 @@ export default function MeasurementForm({
       >
         <Card id="used_method">
           <CardHeader>
-            <CardTitle>{t("metode")}</CardTitle>
+            <CardTitle>{t('metode')}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
@@ -541,9 +530,7 @@ export default function MeasurementForm({
                   key={field.id}
                   className="grid gap-4 border-b pb-4 relative"
                 >
-                  <CardDescription>
-                    {t("metode")} {index + 1}
-                  </CardDescription>
+                  <CardDescription>{t('metode')} {index + 1}</CardDescription>
                   {methodFields.length > 1 && (
                     <Button
                       type="button"
@@ -557,7 +544,7 @@ export default function MeasurementForm({
                   )}
                   <div className="grid grid-cols-2 gap-4">
                     <div id="method_name">
-                      <FormLabel>{t("nama")}</FormLabel>
+                      <FormLabel>{t('nama')}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`methods.${index}.method_name`}
@@ -573,7 +560,7 @@ export default function MeasurementForm({
                     </div>
 
                     <div id="norm">
-                      <FormLabel>{t("norm")}</FormLabel>
+                      <FormLabel>{t('norm')}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`methods.${index}.norm`}
@@ -590,7 +577,7 @@ export default function MeasurementForm({
                   </div>
 
                   <div id="method_desc">
-                    <FormLabel>{t("deskripsi")}</FormLabel>
+                    <FormLabel>{t('deskripsi')}</FormLabel>
                     <FormField
                       control={form.control}
                       name={`methods.${index}.method_desc`}
@@ -619,7 +606,7 @@ export default function MeasurementForm({
                               }
                             />
                           </FormControl>
-                          <FormLabel>{t("cb_rumus_metode")}</FormLabel>
+                          <FormLabel>{t('cb_rumus_metode')}</FormLabel>
                         </FormItem>
                       )}
                     />
@@ -627,7 +614,7 @@ export default function MeasurementForm({
 
                   {form.watch(`methods.${index}.has_formula`) && (
                     <div id="rumus" className="mb-2">
-                      <FormLabel>{t("rumus")}</FormLabel>
+                      <FormLabel>{t('rumus')}</FormLabel>
                       <div className="grid grid-cols-2 gap-1">
                         <FormField
                           control={form.control}
@@ -662,7 +649,9 @@ export default function MeasurementForm({
                           const latex = form.getValues(
                             `methods.${index}.formula.latex`
                           );
-                          const encodedLatex = encodeURIComponent(latex || "");
+                          const encodedLatex = encodeURIComponent(
+                            latex || ""
+                          );
 
                           const popup = window.open(
                             `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
@@ -683,7 +672,7 @@ export default function MeasurementForm({
                           };
                         }}
                       >
-                        {t("editor")}
+                        {t('editor')}
                       </Button>
                     </div>
                   )}
@@ -702,7 +691,7 @@ export default function MeasurementForm({
                               }
                             />
                           </FormControl>
-                          <FormLabel>{t("cb_gambar_metode")}</FormLabel>
+                          <FormLabel>{t('cb_gambar_metode')}</FormLabel>
                         </FormItem>
                       )}
                     />
@@ -712,7 +701,7 @@ export default function MeasurementForm({
                     <div id="gambar">
                       <div className="grid grid-cols-2 gap-4">
                         <div id="upload">
-                          <FormLabel>{t("upload_gambar")}</FormLabel>
+                          <FormLabel>{t('upload_gambar')}</FormLabel>
                           <FormField
                             control={form.control}
                             name={`images.${index}.gambar`}
@@ -733,9 +722,9 @@ export default function MeasurementForm({
                           />
                         </div>
                         <div id="caption">
-                          <FormLabel>{t("caption")}</FormLabel>
-                          <FormField
-                            control={form.control}
+                          <FormLabel>{t('caption')}</FormLabel>
+                          <FormField 
+                            control={form.control} 
                             name={`images.${index}.caption`}
                             render={({ field }) => (
                               <FormItem>
@@ -784,7 +773,7 @@ export default function MeasurementForm({
 
         <Card id="measuring_equipment">
           <CardHeader>
-            <CardTitle>{t("pengukuran")}</CardTitle>
+            <CardTitle>{t('pengukuran')}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
@@ -793,9 +782,7 @@ export default function MeasurementForm({
                   key={field.id}
                   className="grid gap-4 border-b pb-4 relative"
                 >
-                  <CardDescription>
-                    {t("alat")} {index + 1}
-                  </CardDescription>
+                  <CardDescription>{t('alat')} {index + 1}</CardDescription>
                   {equipmentFields.length > 1 && (
                     <Button
                       type="button"
@@ -808,7 +795,7 @@ export default function MeasurementForm({
                     </Button>
                   )}
                   <div id="nama_alat">
-                    <FormLabel>{t("nama")}</FormLabel>
+                    <FormLabel>{t('nama')}</FormLabel>
                     <FormField
                       control={form.control}
                       name={`equipments.${index}.nama_alat`}
@@ -824,7 +811,7 @@ export default function MeasurementForm({
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div id="manuf_model">
-                      <FormLabel>{t("model")}</FormLabel>
+                      <FormLabel>{t('model')}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`equipments.${index}.manuf_model`}
@@ -839,7 +826,7 @@ export default function MeasurementForm({
                       />
                     </div>
                     <div id="seri_measuring">
-                      <FormLabel>{t("seri")}</FormLabel>
+                      <FormLabel>{t('seri')}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`equipments.${index}.seri_measuring`}
@@ -879,7 +866,7 @@ export default function MeasurementForm({
 
         <Card id="influence_condition">
           <CardHeader>
-            <CardTitle>{t("kondisi")}</CardTitle>
+            <CardTitle>{t('kondisi')}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
@@ -902,7 +889,7 @@ export default function MeasurementForm({
                   )}
                   <div className="grid grid-cols-2 gap-4">
                     <div id="jenis_kondisi">
-                      <FormLabel>{t("lingkungan")}</FormLabel>
+                      <FormLabel>{t('lingkungan')}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`conditions.${index}.jenis_kondisi`}
@@ -921,20 +908,14 @@ export default function MeasurementForm({
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="Suhu">
-                                  {t("suhu")}
-                                </SelectItem>
-                                <SelectItem value="Kelembapan Relatif">
-                                  {t("lembap")}
-                                </SelectItem>
-                                <SelectItem value="other">
-                                  {t("other")}
-                                </SelectItem>
+                                <SelectItem value="Suhu">{t('suhu')}</SelectItem>
+                                <SelectItem value="Kelembapan Relatif">{t('lembap')}</SelectItem>
+                                <SelectItem value="other">{t('other')}</SelectItem>
                               </SelectContent>
                             </Select>
                             {selectedCondition === "other" && (
                               <Input
-                                placeholder={`${t("other_condition")}`}
+                                placeholder={`${t('other_condition')}`}
                                 onChange={(e) => field.onChange(e.target.value)}
                               />
                             )}
@@ -944,7 +925,7 @@ export default function MeasurementForm({
                       />
                     </div>
                     <div id="kondisi_desc">
-                      <FormLabel>{t("deskripsi")}</FormLabel>
+                      <FormLabel>{t('deskripsi')}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`conditions.${index}.desc`}
@@ -960,16 +941,16 @@ export default function MeasurementForm({
                     </div>
                   </div>
                   <div id="tengah">
-                    <FormLabel>{t("tengah")}</FormLabel>
+                    <FormLabel>{t('tengah')}</FormLabel>
                     <div className="grid grid-cols-2 gap-4">
-                      <div id="tengah">
+                      <div id="tengah_value">
                         <FormField
                           control={form.control}
                           name={`conditions.${index}.tengah`}
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder={t("nilai")} {...field} />
+                                <Input placeholder={t('nilai')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -983,7 +964,7 @@ export default function MeasurementForm({
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder={t("satuan")} {...field} />
+                                <Input placeholder={t('satuan')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -993,7 +974,7 @@ export default function MeasurementForm({
                     </div>
                   </div>
                   <div id="rentang">
-                    <FormLabel>{t("rentang")}</FormLabel>
+                    <FormLabel>{t('rentang')}</FormLabel>
                     <div className="grid grid-cols-2 gap-4">
                       <div id="rentang_value">
                         <FormField
@@ -1002,7 +983,7 @@ export default function MeasurementForm({
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder={t("nilai")} {...field} />
+                                <Input placeholder={t('nilai')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -1016,7 +997,7 @@ export default function MeasurementForm({
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <Input placeholder={t("satuan")} {...field} />
+                                <Input placeholder={t('satuan')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -1037,7 +1018,7 @@ export default function MeasurementForm({
                 appendCondition({
                   jenis_kondisi: "", // Initialize with empty string to avoid undefined issues
                   desc: "", // Default empty value for desc
-                  tengah: "", // Default empty value for tengah
+                  titik_tengah: "", // Default empty value for titik_tengah
                   rentang: "", // Default empty value for rentang
                   rentang_unit: "", // Default empty value for rentang_unit
                   tengah_unit: "", // Default empty value for tengah_unit
@@ -1051,11 +1032,11 @@ export default function MeasurementForm({
 
         <Card id="excel">
           <CardHeader>
-            <CardTitle>{t("lampiran")}</CardTitle>
+            <CardTitle>{t('lampiran')}</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
             <div id="excel_file">
-              <FormLabel>{t("excel")}</FormLabel>
+              <FormLabel>{t('excel')}</FormLabel>
               <FormField
                 control={form.control}
                 name="excel"
@@ -1070,7 +1051,7 @@ export default function MeasurementForm({
                           onChange={handleFileUpload}
                         />
                       </FormControl>
-                      <FormDescription>{t("excel_desc")}</FormDescription>
+                      <FormDescription>{t('excel_desc')}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   );
@@ -1078,7 +1059,7 @@ export default function MeasurementForm({
               />
             </div>
             <div id="sheet">
-              <FormLabel>{t("sheet")}</FormLabel>
+              <FormLabel>{t('sheet')}</FormLabel>
               <FormField
                 control={form.control}
                 name="sheet_name"
@@ -1093,7 +1074,7 @@ export default function MeasurementForm({
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
-                      <FormDescription>{t("sheet_desc")}</FormDescription>
+                      <FormDescription>{t('sheet_desc')}</FormDescription>
                       <SelectContent>
                         {sheets.map((sheet, index) => (
                           <SelectItem key={index} value={sheet}>
@@ -1112,7 +1093,7 @@ export default function MeasurementForm({
 
         <Card id="hasil">
           <CardHeader>
-            <CardTitle>{t("hasil")}</CardTitle>
+            <CardTitle>{t('hasil')}</CardTitle>
           </CardHeader>
 
           <CardContent className="grid gap-6">
@@ -1123,7 +1104,7 @@ export default function MeasurementForm({
                   className="grid gap-4 border-b pb-4 relative"
                 >
                   <p className="text-sm text-muted-foreground">
-                    Parameter {resultIndex + 1}
+                  Parameter {resultIndex + 1}
                   </p>
 
                   {resultFields.length > 1 && (
@@ -1139,7 +1120,7 @@ export default function MeasurementForm({
                   )}
 
                   <div id="parameter">
-                    <FormLabel>{t("judul")}</FormLabel>
+                    <FormLabel>{t('judul')}</FormLabel>
                     <div className="space-y-1">
                       {usedLanguages.map(
                         (lang: { value: string }, langIndex: number) => (
@@ -1152,9 +1133,7 @@ export default function MeasurementForm({
                                 <FormItem>
                                   <FormControl>
                                     <Input
-                                      placeholder={`${t("bahasa")} ${
-                                        lang.value
-                                      }`}
+                                      placeholder={`${t('bahasa')} ${lang.value}`}
                                       {...field}
                                     />
                                   </FormControl>

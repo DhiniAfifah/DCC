@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional, Any, Union
 from fastapi import UploadFile
+from datetime import date
 
 class Language(BaseModel):
     value: str
@@ -64,7 +65,6 @@ class ResponsiblePersons(BaseModel):
     penyelia: List[Penyelia]
     kepala: KepalaLaboratorium
     direktur: Direktur
-
 # END ResponsiblePersons
 
 class OwnerIdentity(BaseModel):
@@ -76,68 +76,79 @@ class OwnerIdentity(BaseModel):
     pos_cust: str
     negara_cust: str
     
+class Formula(BaseModel):
+    latex: str
+    mathml: str
+
+class Image(BaseModel):
+    gambar: Optional[UploadFile]  # We assume an image file upload
+    caption: str
+
 class Method(BaseModel):
     method_name: str
-    norm: str
     method_desc: str
+    norm: str
+    has_formula: bool = False
+    formula: Optional[Formula] = None
+    has_image: bool = False
+    image: Optional[Image] = None
 
 class Equipment(BaseModel):
     nama_alat: str
     manuf_model: str
-    seri_measuring: str
+    seri_measuring: str  
 
-# START Kondisi
-class Suhu(BaseModel):
-    desc: str
-    tengah: str
-    rentang: str
-    rentang_unit: str  
-    tengah_unit: str  
-
-class Lembap(BaseModel):
-    desc: str
-    tengah: str
-    rentang: str
-    rentang_unit: str  # Menambahkan rentang_unit
-    tengah_unit: str  # Menambahkan tengah_unit
-
-class OtherCondition(BaseModel):
+class Condition(BaseModel):
     jenis_kondisi: str 
     desc: str
     tengah: str  
     rentang: str  
     rentang_unit: str 
-    tengah_unit: str    
-
-class Condition(BaseModel):
-    suhu: Suhu
-    lembap: Lembap
-    other: Optional[List[OtherCondition]] = []
-
-#END Kondisi
+    tengah_unit: str
 
 class Statements(BaseModel):
     values: List[str]
 
+class AdministrativeData(BaseModel):
+    country_code: str  # Country of Calibration
+    used_languages: List[str]  # Used Languages (list of language codes)
+    mandatory_languages: List[str]  # Mandatory Languages (list of language codes)
+    order: str  # Order Number
+    core_issuer: str
+    sertifikat: str 
+    tempat: str
+    tempat_pdf: Optional[str]
+    
+class MeasurementTimeline(BaseModel):
+    tgl_mulai: str  # tanggal mulai pengukuran
+    tgl_akhir: str  # tanggal akhir pengukuran
+    tgl_pengesahan: str  # tanggal pengesahan
+
+class Uncertainty(BaseModel):
+    factor: str
+    probability: str
+    distribution: Optional[str] = ""
+    real_list: str
+
+class Column(BaseModel):
+    kolom: str
+    real_list: str  # Assuming this is a string that holds the number of real items
+
+class Result(BaseModel):
+    parameters: str  # Represents the parameter name (e.g., "Parameter 1")
+    columns: List[Column]
+    uncertainty: Uncertainty
+
 class DCCFormCreate(BaseModel):
     software: str  # software
     version: str  # versi
-    core_issuer: str  # penerbit
-    country_code: str  # kode negara
-    used_languages: List[Language]  # bahasa yang digunakan
-    mandatory_languages: List[Language]  # bahasa wajib
-    sertifikat: str  # nomor sertifikat
-    order: str  # nomor order
-    tgl_mulai: str  # tanggal mulai pengukuran
-    tgl_akhir: str  # tanggal akhir pengukuran
-    tempat: str  # tempat kalibrasi
-    tgl_pengesahan: str  # tanggal pengesahan
+    measurement_TimeLine: MeasurementTimeline
+    administrative_data: AdministrativeData
     objects: List[ObjectDescription]  # Deskripsi objek yang diukur
     responsible_persons: ResponsiblePersons  # Penanggung jawab
     owner: OwnerIdentity  # Identitas pemilik
     methods: List[Method]  # Metode
     equipments: List[Equipment]  # Peralatan
-    conditions: Condition  # Kondisi (Suhu dan Kelembapan)
-    excel: str
-    sheet_name: str
+    conditions: List[Condition]  # Kondisi (Suhu dan Kelembapan)
+    results: List[Result]
     statements: List[Statements]  # Catatan

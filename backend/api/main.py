@@ -43,6 +43,11 @@ def get_db():
 # Route untuk create-dcc
 @app.post("/create-dcc/")
 async def create_dcc(dcc: schemas.DCCFormCreate, db: Session = Depends(get_db)):
+    
+    tgl_mulai = parse_date(dcc.Measurement_TimeLine.tgl_mulai)
+    tgl_akhir = parse_date(dcc.Measurement_TimeLine.tgl_akhir)
+    tgl_pengesahan = parse_date(dcc.Measurement_TimeLine.tgl_pengesahan) 
+    
     try:
         logging.info(f"Received request to create DCC with Excel file: {dcc.excel}")
         result = crud.create_dcc(db=db, dcc=dcc)  # Ensure the excel filename is saved in DB
