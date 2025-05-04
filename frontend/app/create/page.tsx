@@ -127,6 +127,8 @@ export default function CreateDCC() {
         tengah_unit: "",
       },
     ],
+    sheet_name: "",
+    excel: "",
     results: [
       {
         parameters: "",
@@ -207,7 +209,7 @@ export default function CreateDCC() {
 
       return {
         ...prev,
-        ...otherData, // Spread other data fields that should be at root level
+        ...otherData,
         administrative_data: {
           ...prev.administrative_data,
           used_languages:
@@ -281,21 +283,41 @@ export default function CreateDCC() {
 
   const handleSubmit = async () => {
     // Ensure formula is empty when has_formula is false
-    const modifiedStatements = formData.statements.map((statement) => ({
-      ...statement,
-      formula: statement.has_formula ? statement.formula : "", // Clear formula if checkbox is false
-    }));
-
-    const modifiedMethods = formData.methods.map((method) => ({
-      ...method,
-      formula: method.has_formula ? method.formula : "", // Clear formula if checkbox is false
-    }));
 
     const modifiedFormData = {
       ...formData,
-      statements: modifiedStatements,
-      methods: modifiedMethods,
-      excel: fileName, // Ensure excel contains only the filename
+      measurement_TimeLine: {
+        tgl_mulai: new Date(
+          formData.Measurement_TimeLine.tgl_mulai
+        ).toISOString(),
+        tgl_akhir: new Date(
+          formData.Measurement_TimeLine.tgl_akhir
+        ).toISOString(),
+        tgl_pengesahan: new Date(
+          formData.Measurement_TimeLine.tgl_pengesahan
+        ).toISOString(),
+      },
+      administrative_data: {
+        ...formData.administrative_data,
+        used_languages: formData.administrative_data.used_languages.map(
+          (lang) => lang.value
+        ),
+        mandatory_languages:
+          formData.administrative_data.mandatory_languages.map(
+            (lang) => lang.value
+          ),
+      },
+      methods: formData.methods.map((method) => ({
+        ...method,
+        formula: method.has_formula
+          ? method.formula
+          : { latex: "", mathml: "" },
+      })),
+      statements: formData.statements.map((stmt) => ({
+        ...stmt,
+        values: Array.isArray(stmt.values) ? stmt.values : [],
+      })),
+      excel: fileName,
     };
 
     console.log("Data yang dikirim ke backend:", modifiedFormData);

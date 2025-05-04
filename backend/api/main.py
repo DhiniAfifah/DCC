@@ -64,10 +64,12 @@ async def upload_excel(excel: UploadFile = File(...)):
         file_location = os.path.join(UPLOAD_DIR, excel.filename)
         with open(file_location, "wb") as buffer:
             shutil.copyfileobj(excel.file, buffer)
+        logging.info(f"Excel file saved to {file_location}")
         
         excel_file = pd.ExcelFile(file_location)
         sheet_names = excel_file.sheet_names
         #print(f"Received file: {excel.filename}, Content-Type: {excel.content_type}")
+        logging.info(f"Sheet names in uploaded file: {sheet_names}")
 
         return {"filename": excel.filename, "sheets": sheet_names}
         #return {"filename": excel.filename, "location": file_location}

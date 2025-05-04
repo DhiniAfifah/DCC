@@ -151,4 +151,6 @@ class DCCFormCreate(BaseModel):
     equipments: List[Equipment]  # Peralatan
     conditions: List[Condition]  # Kondisi (Suhu dan Kelembapan)
     results: List[Result]
+    excel: Optional[str]
+    sheet_name: str
     statements: List[Statements]  # Catatan
