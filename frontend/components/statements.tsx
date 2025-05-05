@@ -11,10 +11,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useLanguage } from '@/context/LanguageContext';
+import { useLanguage } from "@/context/LanguageContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import { latexSymbols } from "@/utils/latexSymbols";
@@ -30,18 +36,22 @@ import {
 const empty_field_error_message = "Input required.";
 const FormSchema = z.object({
   statements: z.array(
-    z.object({ 
+    z.object({
       values: z.string().min(1, empty_field_error_message),
       has_formula: z.boolean().default(false),
-      formula: z.object({
-        latex: z.string().optional(),
-        mathml: z.string().optional(),
-      }).optional(),
+      formula: z
+        .object({
+          latex: z.string().optional(),
+          mathml: z.string().optional(),
+        })
+        .optional(),
       has_image: z.boolean().default(false),
-      image: z.object({ 
-        gambar: z.any().optional(),
-        caption: z.string().optional(),
-      }).optional(),
+      image: z
+        .object({
+          gambar: z.any().optional(),
+          caption: z.string().optional(),
+        })
+        .optional(),
     })
   ),
 });
@@ -70,7 +80,7 @@ export default function Statements({
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (!name?.startsWith("statements.")) return;
-  
+
       const match = name.match(/^statements\.(\d+)\.has_formula$/);
       if (match) {
         const index = Number(match[1]);
@@ -80,26 +90,34 @@ export default function Statements({
         }
       }
     });
-  
+
     return () => subscription.unsubscribe();
   }, [form]);
 
   const [latexInput, setLatexInput] = useState("");
   const latexInputRef = useRef<HTMLInputElement>(null);
-  const insertSymbol = (latex: string, statementIndex: number, event?: React.MouseEvent<HTMLButtonElement>) => {
+  const insertSymbol = (
+    latex: string,
+    statementIndex: number,
+    event?: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event?.preventDefault();
     event?.stopPropagation();
-  
-    const currentFormula = form.getValues(`statements.${statementIndex}.formula.mathjax`) || "";
+
+    const currentFormula =
+      form.getValues(`statements.${statementIndex}.formula.mathjax`) || "";
     const updatedFormula = currentFormula + latex;
-  
-    form.setValue(`statements.${statementIndex}.formula.mathjax`, updatedFormula);
+
+    form.setValue(
+      `statements.${statementIndex}.formula.mathjax`,
+      updatedFormula
+    );
   };
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (!name?.startsWith("statements.")) return;
-  
+
       const match = name.match(/^statements\.(\d+)\.has_image$/);
       if (match) {
         const index = Number(match[1]);
@@ -109,7 +127,7 @@ export default function Statements({
         }
       }
     });
-  
+
     return () => subscription.unsubscribe();
   }, [form]);
 
@@ -133,14 +151,14 @@ export default function Statements({
         },
         body: JSON.stringify(data),
       });
-  
+
       if (!response.ok) {
         const errorResult = await response.json();
         console.error("Error response from server:", errorResult);
         alert(`Failed to create DCC: ${errorResult.detail}`);
         return;
       }
-  
+
       const result = await response.json();
       console.log("DCC Created:", result);
       alert(`DCC Created! Download: ${result.download_link}`);
@@ -163,14 +181,19 @@ export default function Statements({
       >
         <Card id="statement">
           <CardHeader>
-            <CardTitle>{t('statements')}</CardTitle>
+            <CardTitle>{t("statements")}</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
               {statementFields.map((field, statementIndex) => (
-                <div key={field.id} className="grid gap-1 border-b pb-4 relative">
+                <div
+                  key={field.id}
+                  className="grid gap-1 border-b pb-4 relative"
+                >
                   <div className="flex items-center justify-between">
-                    <CardDescription>{t('statement')} {statementIndex + 1}</CardDescription>
+                    <CardDescription>
+                      {t("statement")} {statementIndex + 1}
+                    </CardDescription>
                     {statementFields.length > 1 && (
                       <Button
                         type="button"
@@ -183,24 +206,29 @@ export default function Statements({
                       </Button>
                     )}
                   </div>
-                  {usedLanguages.map((lang: { value: string }, langIndex: number) => (
-                    <FormField
-                      control={form.control}
-                      key={`${field.id}-${langIndex}`}
-                      name={`statements.${statementIndex}.values.${langIndex}`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-center gap-2">
-                            <FormControl>
-                              <Input placeholder={`${t('bahasa')} ${lang.value}`} {...field} />
-                            </FormControl>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ))}
-                  
+                  {usedLanguages.map(
+                    (lang: { value: string }, langIndex: number) => (
+                      <FormField
+                        control={form.control}
+                        key={`${field.id}-${langIndex}`}
+                        name={`statements.${statementIndex}.values.${langIndex}`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center gap-2">
+                              <FormControl>
+                                <Input
+                                  placeholder={`${t("bahasa")} ${lang.value}`}
+                                  {...field}
+                                />
+                              </FormControl>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )
+                  )}
+
                   <div id="checkbox_rumus" className="mt-3">
                     <FormField
                       control={form.control}
@@ -208,12 +236,14 @@ export default function Statements({
                       render={({ field }) => (
                         <FormItem className="flex flex-row items-center space-x-2 space-y-0">
                           <FormControl>
-                            <Checkbox 
+                            <Checkbox
                               checked={field.value}
-                              onCheckedChange={(checked) => field.onChange(checked)}
+                              onCheckedChange={(checked) =>
+                                field.onChange(checked)
+                              }
                             />
                           </FormControl>
-                          <FormLabel>{t('cb_rumus_statement')}</FormLabel>
+                          <FormLabel>{t("cb_rumus_statement")}</FormLabel>
                         </FormItem>
                       )}
                     />
@@ -221,7 +251,7 @@ export default function Statements({
 
                   {form.watch(`statements.${statementIndex}.has_formula`) && (
                     <div id="rumus" className="mt-2">
-                      <FormLabel>{t('rumus')}</FormLabel>
+                      <FormLabel>{t("rumus")}</FormLabel>
                       <div className="grid grid-cols-2 gap-1">
                         <FormField
                           control={form.control}
@@ -253,23 +283,31 @@ export default function Statements({
                         variant="blue"
                         className="mt-1"
                         onClick={() => {
-                          const latex = form.getValues(`statements.${statementIndex}.formula.latex`);
+                          const latex = form.getValues(
+                            `statements.${statementIndex}.formula.latex`
+                          );
                           const encodedLatex = encodeURIComponent(latex || "");
-                          
+
                           const popup = window.open(
                             `/imatheq.html?latex=${encodedLatex}`, // pre-fill using URL parameter
-                            'mathEditorPopup',
-                            'width=800,height=600'
+                            "mathEditorPopup",
+                            "width=800,height=600"
                           );
-                      
+
                           // Define the callback function to receive LaTeX from the popup
                           window.ShowLatexResult = (latex, mathml) => {
-                            form.setValue(`statements.${statementIndex}.formula.latex`, latex);
-                            form.setValue(`statements.${statementIndex}.formula.mathml`, mathml);
-                          };                          
+                            form.setValue(
+                              `statements.${statementIndex}.formula.latex`,
+                              latex
+                            );
+                            form.setValue(
+                              `statements.${statementIndex}.formula.mathml`,
+                              mathml
+                            );
+                          };
                         }}
                       >
-                        {t('editor')}
+                        {t("editor")}
                       </Button>
                     </div>
                   )}
@@ -286,8 +324,15 @@ export default function Statements({
                                 <FormControl>
                                   <Input
                                     ref={latexInputRef}
-                                    value={form.watch(`statements.${statementIndex}.formula.mathjax`)}
-                                    onChange={(e) => form.setValue(`statements.${statementIndex}.formula.mathjax`, e.target.value)}
+                                    value={form.watch(
+                                      `statements.${statementIndex}.formula.mathjax`
+                                    )}
+                                    onChange={(e) =>
+                                      form.setValue(
+                                        `statements.${statementIndex}.formula.mathjax`,
+                                        e.target.value
+                                      )
+                                    }
                                     placeholder="LaTeX"
                                   />
                                 </FormControl>
@@ -297,7 +342,11 @@ export default function Statements({
                           />
                           <Card className="border shadow">
                             <CardContent>
-                              <MathJax>{`$$${form.watch(`statements.${statementIndex}.formula.mathjax`) || ""}$$`}</MathJax>
+                              <MathJax>{`$$${
+                                form.watch(
+                                  `statements.${statementIndex}.formula.mathjax`
+                                ) || ""
+                              }$$`}</MathJax>
                             </CardContent>
                           </Card>
                         </div>
@@ -306,19 +355,27 @@ export default function Statements({
                             <div className="grid grid-cols-2 gap-2">
                               {latexSymbols.map((group) => (
                                 <div key={group.category}>
-                                  <Select onValueChange={(value) => insertSymbol(value, statementIndex)}>
+                                  <Select
+                                    onValueChange={(value) =>
+                                      insertSymbol(value, statementIndex)
+                                    }
+                                  >
                                     <SelectTrigger>
                                       <span>{group.category}</span>
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {group.symbols.map(({ latex, description }) => (
-                                        <SelectItem key={latex} value={latex}>
-                                          <span className="inline-flex items-center">
-                                            <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                            <span className="ml-1">{description}</span>
-                                          </span>
-                                        </SelectItem>
-                                      ))}
+                                      {group.symbols.map(
+                                        ({ latex, description }) => (
+                                          <SelectItem key={latex} value={latex}>
+                                            <span className="inline-flex items-center">
+                                              <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                              <span className="ml-1">
+                                                {description}
+                                              </span>
+                                            </span>
+                                          </SelectItem>
+                                        )
+                                      )}
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -330,16 +387,18 @@ export default function Statements({
                               {latexOperations
                                 .find((group) => group.category === "small")
                                 ?.symbols.map(({ latex }) => (
-                                <Button
-                                  variant="secondary"
-                                  key={latex}
-                                  onClick={(e) => insertSymbol(latex, statementIndex, e)}
-                                >
-                                  <span className="text-lg">
-                                    <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                  </span>
-                                </Button>
-                              ))}
+                                  <Button
+                                    variant="secondary"
+                                    key={latex}
+                                    onClick={(e) =>
+                                      insertSymbol(latex, statementIndex, e)
+                                    }
+                                  >
+                                    <span className="text-lg">
+                                      <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                    </span>
+                                  </Button>
+                                ))}
                             </div>
                             <div className="grid grid-cols-5 gap-1 mt-1">
                               {latexOperations
@@ -349,7 +408,9 @@ export default function Statements({
                                     variant="secondary"
                                     key={latex}
                                     value={latex}
-                                    onClick={(e) => insertSymbol(latex, statementIndex, e)}
+                                    onClick={(e) =>
+                                      insertSymbol(latex, statementIndex, e)
+                                    }
                                   >
                                     <span>
                                       <MathJax>{`\\(${latex}\\)`}</MathJax>
@@ -365,7 +426,9 @@ export default function Statements({
                                     variant="secondary"
                                     key={latex}
                                     value={latex}
-                                    onClick={(e) => insertSymbol(latex, statementIndex, e)}
+                                    onClick={(e) =>
+                                      insertSymbol(latex, statementIndex, e)
+                                    }
                                     className="h-15"
                                   >
                                     <span>
@@ -394,7 +457,7 @@ export default function Statements({
                               }
                             />
                           </FormControl>
-                          <FormLabel>{t('cb_gambar_metode')}</FormLabel>
+                          <FormLabel>{t("cb_gambar_metode")}</FormLabel>
                         </FormItem>
                       )}
                     />
@@ -404,7 +467,7 @@ export default function Statements({
                     <div id="gambar">
                       <div className="grid grid-cols-2 gap-4">
                         <div id="upload">
-                          <FormLabel>{t('upload_gambar')}</FormLabel>
+                          <FormLabel>{t("upload_gambar")}</FormLabel>
                           <FormField
                             control={form.control}
                             name={`statements.${statementIndex}.image.gambar`}
@@ -426,9 +489,9 @@ export default function Statements({
                           />
                         </div>
                         <div id="caption">
-                          <FormLabel>{t('caption')}</FormLabel>
-                          <FormField 
-                            control={form.control} 
+                          <FormLabel>{t("caption")}</FormLabel>
+                          <FormField
+                            control={form.control}
                             name={`statements.${statementIndex}.image.caption`}
                             render={({ field }) => (
                               <FormItem>
@@ -450,21 +513,25 @@ export default function Statements({
                 type="button"
                 size="sm"
                 className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
-                onClick={() => appendStatement({ 
-                  values: "",
-                  has_formula: false,
-                  formula: {
-                    latex: "",
-                    mathml: "",
-                  },
-                  has_image: false,
-                  image: {
-                    gambar: "",
-                    caption: "",
-                  }, 
-                })}
+                onClick={() =>
+                  appendStatement({
+                    values: "",
+                    has_formula: false,
+                    formula: {
+                      latex: "",
+                      mathml: "",
+                    },
+                    has_image: false,
+                    image: {
+                      gambar: "",
+                      caption: "",
+                    },
+                  })
+                }
               >
-                <p className="text-xl"><Plus /></p>
+                <p className="text-xl">
+                  <Plus />
+                </p>
               </Button>
             </div>
           </CardContent>

@@ -232,7 +232,7 @@ export default function CreateDCC() {
         : prev.statements,
     }));
   };
-  
+
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -252,15 +252,9 @@ export default function CreateDCC() {
     const modifiedFormData = {
       ...formData,
       Measurement_TimeLine: {
-        tgl_mulai: new Date(
-          formData.Measurement_TimeLine.tgl_mulai
-        ),
-        tgl_akhir: new Date(
-          formData.Measurement_TimeLine.tgl_akhir
-        ),
-        tgl_pengesahan: new Date(
-          formData.Measurement_TimeLine.tgl_pengesahan
-        ),
+        tgl_mulai: new Date(formData.Measurement_TimeLine.tgl_mulai),
+        tgl_akhir: new Date(formData.Measurement_TimeLine.tgl_akhir),
+        tgl_pengesahan: new Date(formData.Measurement_TimeLine.tgl_pengesahan),
       },
       administrative_data: {
         ...formData.administrative_data,
@@ -323,7 +317,11 @@ export default function CreateDCC() {
 
   return (
     <div className="container mx-auto py-8 pt-20">
-      <Stepper currentStep={currentStep} steps={steps} onStepClick={setCurrentStep} />
+      <Stepper
+        currentStep={currentStep}
+        steps={steps}
+        onStepClick={setCurrentStep}
+      />
 
       <div className="mt-12 space-y-10">
         {currentStep === 0 && (

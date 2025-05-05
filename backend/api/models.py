@@ -17,6 +17,6 @@ class DCC(Base):
     methods = Column(Text)  
     equipments = Column(Text)  
     conditions = Column(JSON)  
-    statements = Column(Text) 
+    statement = Column(Text) 
     excel = Column(String)
     sheet_name = Column(String)

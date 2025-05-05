@@ -108,6 +108,10 @@ class Condition(BaseModel):
 
 class Statements(BaseModel):
     values: List[str]
+    has_formula: bool = False
+    formula: Optional[Formula] = None
+    has_image: bool = False
+    image: Optional[Image] = None
 
 class AdministrativeData(BaseModel):
     country_code: str  # Country of Calibration
@@ -153,4 +157,4 @@ class DCCFormCreate(BaseModel):
     results: List[Result]
     excel: Optional[str]
     sheet_name: str
-    statements: List[Statements]  # Catatan
+    statement: List[Statements]  # Catatan
