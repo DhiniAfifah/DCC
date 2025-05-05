@@ -142,7 +142,7 @@ class Result(BaseModel):
 class DCCFormCreate(BaseModel):
     software: str  # software
     version: str  # versi
-    measurement_TimeLine: MeasurementTimeline
+    Measurement_TimeLine: MeasurementTimeline
     administrative_data: AdministrativeData
     objects: List[ObjectDescription]  # Deskripsi objek yang diukur
     responsible_persons: ResponsiblePersons  # Penanggung jawab

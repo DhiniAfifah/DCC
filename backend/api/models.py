@@ -9,7 +9,7 @@ class DCC(Base):
     id = Column(Integer, primary_key=True, index=True)
     software_name = Column(String)
     software_version = Column(String)
-    measurement_TimeLine= Column(JSON)
+    Measurement_TimeLine= Column(JSON)
     administrative_data = Column(JSON)
     objects_description = Column(Text)  
     responsible_persons = Column(Text)  

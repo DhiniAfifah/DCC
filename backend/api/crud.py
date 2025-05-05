@@ -592,9 +592,9 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         logging.debug("Creating DCC model instance")
         
         measurement_timeline_data = {
-            "tgl_mulai": dcc.measurement_TimeLine.tgl_mulai,
-            "tgl_akhir": dcc.measurement_TimeLine.tgl_akhir,
-            "tgl_pengesahan": dcc.measurement_TimeLine.tgl_pengesahan
+            "tgl_mulai": dcc.Measurement_TimeLine.tgl_mulai,
+            "tgl_akhir": dcc.Measurement_TimeLine.tgl_akhir,
+            "tgl_pengesahan": dcc.Measurement_TimeLine.tgl_pengesahan
         }
 
         

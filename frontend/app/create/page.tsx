@@ -251,7 +251,7 @@ export default function CreateDCC() {
 
     const modifiedFormData = {
       ...formData,
-      measurement_TimeLine: {
+      Measurement_TimeLine: {
         tgl_mulai: new Date(
           formData.Measurement_TimeLine.tgl_mulai
         ),
