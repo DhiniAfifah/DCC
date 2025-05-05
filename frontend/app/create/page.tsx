@@ -190,89 +190,49 @@ export default function CreateDCC() {
   };
 
   const updateFormData = (data: any) => {
-    setFormData((prev) => {
-      // Create a filtered copy of data without administrative and timeline fields
-      const {
-        used_languages,
-        mandatory_languages,
-        sertifikat,
-        order,
-        tempat_pdf,
-        tempat,
-        country_code,
-        core_issuer,
-        tgl_mulai,
-        tgl_akhir,
-        tgl_pengesahan,
-        ...otherData
-      } = data;
-
-      return {
-        ...prev,
-        ...otherData,
-        administrative_data: {
-          ...prev.administrative_data,
-          used_languages:
-            used_languages || prev.administrative_data.used_languages,
-          mandatory_languages:
-            mandatory_languages || prev.administrative_data.mandatory_languages,
-          sertifikat: sertifikat ?? prev.administrative_data.sertifikat,
-          order: order?.toString() || prev.administrative_data.order || "",
-          tempat_pdf:
-            tempat_pdf?.toString() || prev.administrative_data.tempat_pdf || "",
-          tempat: tempat?.toString() || prev.administrative_data.tempat || "",
-          country_code:
-            country_code?.toString() ||
-            prev.administrative_data.country_code ||
-            "",
-          core_issuer:
-            core_issuer ||
-            prev.administrative_data.core_issuer ||
-            "calibrationLaboratory",
-        },
-        Measurement_TimeLine: {
-          tgl_mulai: data.tgl_mulai
-            ? formatDate(new Date(data.tgl_mulai))
-            : prev.Measurement_TimeLine.tgl_mulai,
-          tgl_akhir: data.tgl_akhir
-            ? formatDate(new Date(data.tgl_akhir))
-            : prev.Measurement_TimeLine.tgl_akhir,
-          tgl_pengesahan: data.tgl_pengesahan
-            ? formatDate(new Date(data.tgl_pengesahan))
-            : prev.Measurement_TimeLine.tgl_pengesahan,
-        },
-        statements: Array.isArray(data.statements)
-          ? data.statements
-          : prev.statements,
-        responsible_persons: data.responsible_persons
+    setFormData((prev) => ({
+      ...prev,
+      ...data,
+      administrative_data: {
+        ...prev.administrative_data,
+        ...(data.administrative_data ?? {}),
+      },
+      Measurement_TimeLine: {
+        ...prev.Measurement_TimeLine,
+        ...(data.Measurement_TimeLine
           ? {
-              pelaksana:
-                data.responsible_persons.pelaksana ??
-                prev.responsible_persons.pelaksana,
-              penyelia:
-                data.responsible_persons.penyelia ??
-                prev.responsible_persons.penyelia,
-              kepala:
-                data.responsible_persons.kepala ??
-                prev.responsible_persons.kepala,
-              direktur:
-                data.responsible_persons.direktur ??
-                prev.responsible_persons.direktur,
+              tgl_mulai: data.Measurement_TimeLine.tgl_mulai
+                ? formatDate(new Date(data.Measurement_TimeLine.tgl_mulai))
+                : prev.Measurement_TimeLine.tgl_mulai,
+              tgl_akhir: data.Measurement_TimeLine.tgl_akhir
+                ? formatDate(new Date(data.Measurement_TimeLine.tgl_akhir))
+                : prev.Measurement_TimeLine.tgl_akhir,
+              tgl_pengesahan: data.Measurement_TimeLine.tgl_pengesahan
+                ? formatDate(new Date(data.Measurement_TimeLine.tgl_pengesahan))
+                : prev.Measurement_TimeLine.tgl_pengesahan,
             }
-          : prev.responsible_persons,
-        objects: Array.isArray(data.objects)
-          ? data.objects.map((obj: any) => ({
-              jenis: obj.jenis || "",
-              merek: obj.merek || "",
-              tipe: obj.tipe || "",
-              item_issuer: obj.item_issuer || "",
-              seri_item: obj.seri_item || "",
-              id_lain: obj.id_lain || "",
-            }))
-          : prev.objects,
-      };
-    });
+          : prev.Measurement_TimeLine),
+      },
+      responsible_persons: {
+        ...prev.responsible_persons,
+        ...(data.responsible_persons ?? {}),
+      },
+      objects: Array.isArray(data.objects)
+        ? data.objects.map((obj: any) => ({
+            jenis: obj.jenis || "",
+            merek: obj.merek || "",
+            tipe: obj.tipe || "",
+            item_issuer: obj.item_issuer || "",
+            seri_item: obj.seri_item || "",
+            id_lain: obj.id_lain || "",
+          }))
+        : prev.objects,
+      statements: Array.isArray(data.statements)
+        ? data.statements
+        : prev.statements,
+    }));
   };
+  
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);

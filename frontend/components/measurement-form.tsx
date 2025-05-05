@@ -478,7 +478,7 @@ export default function MeasurementForm({
     }
   };
 
-  const usedLanguages = form.watch("used_languages") || [];
+  const usedLanguages = form.watch("administrative_data.used_languages") || [];
 
   const onSubmit = async (data: any) => {
     try {

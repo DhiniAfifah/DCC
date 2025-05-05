@@ -115,7 +115,7 @@ export default function Statements({
     name: "images",
   });
 
-  const usedLanguages = form.watch("used_languages") || [];
+  const usedLanguages = form.watch("administrative_data.used_languages") || [];
 
   const fileRefGambar = form.register("gambar");
 

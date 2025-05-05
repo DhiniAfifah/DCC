@@ -108,26 +108,29 @@ const empty_field_error_message = "Input required.";
 const FormSchema = z.object({
   software: z.string().min(1, { message: empty_field_error_message }),
   version: z.string().min(1, { message: empty_field_error_message }),
-  core_issuer: z.string({ required_error: empty_field_error_message }),
-  country_code: z.string({ required_error: empty_field_error_message }),
-  used_languages: z.array(
-    z.object({
-      value: z.string().min(1, empty_field_error_message),
-    })
-  ),
-  mandatory_languages: z.array(
-    z.object({
-      value: z.string().min(1, empty_field_error_message),
-    })
-  ),
-  sertifikat: z.string().min(1, { message: empty_field_error_message }),
-  order: z.string().min(1, { message: empty_field_error_message }),
-  tgl_mulai: z.date({ required_error: empty_field_error_message }),
-  tgl_akhir: z.date({ required_error: empty_field_error_message }),
-  tempat_xml: z.string({ required_error: empty_field_error_message }),
-  tempat_pdf: z.string().optional(),
-  tgl_pengesahan: z.date({ required_error: empty_field_error_message }),
-
+  administrative_data: z.object({
+    core_issuer: z.string().min(1, { message: empty_field_error_message }),
+    country_code: z.string().min(1, { message: empty_field_error_message }),
+    used_languages: z.array(
+      z.object({
+        value: z.string().min(1, empty_field_error_message),
+      })
+    ),
+    mandatory_languages: z.array(
+      z.object({
+        value: z.string().min(1, empty_field_error_message),
+      })
+    ),
+    sertifikat: z.string().min(1, { message: empty_field_error_message }),
+    order: z.string().min(1, { message: empty_field_error_message }),
+    tempat: z.string().min(1, { message: empty_field_error_message }),
+    tempat_pdf: z.string().optional(),
+  }),
+  Measurement_TimeLine: z.object({
+    tgl_mulai: z.date({ required_error: empty_field_error_message }),
+    tgl_akhir: z.date({ required_error: empty_field_error_message }),
+    tgl_pengesahan: z.date({ required_error: empty_field_error_message }),
+  }),
   objects: z.array(
     z.object({
       jenis: z.string().min(1, { message: empty_field_error_message }),
@@ -196,13 +199,13 @@ export default function AdministrativeForm({
 }) {
   const { t } = useLanguage();
 
-  const [selectedPlace, setPlace] = useState<string>("");
-
   const form = useForm({
     resolver: zodResolver(FormSchema),
     mode: "onChange",
     defaultValues: formData,
   });
+
+  const [selectedPlace, setPlace] = useState<string>(form.getValues("administrative_data.tempat") || "");
 
   useEffect(() => {
     const subscription = form.watch((values) => {
@@ -228,7 +231,7 @@ export default function AdministrativeForm({
     remove: removeUsed,
   } = useFieldArray({
     control: form.control,
-    name: "used_languages",
+    name: "administrative_data.used_languages",
   });
 
   const {
@@ -237,7 +240,7 @@ export default function AdministrativeForm({
     remove: removeMandatory,
   } = useFieldArray({
     control: form.control,
-    name: "mandatory_languages",
+    name: "administrative_data.mandatory_languages",
   });
 
   const {
@@ -410,7 +413,7 @@ export default function AdministrativeForm({
                 <FormLabel>{t("negara_calib")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name="country_code"
+                  name="administrative_data.country_code"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
@@ -447,7 +450,7 @@ export default function AdministrativeForm({
                                     key={country.value}
                                     onSelect={() => {
                                       form.setValue(
-                                        "country_code",
+                                        "administrative_data.country_code",
                                         country.value
                                       );
                                     }}
@@ -465,27 +468,29 @@ export default function AdministrativeForm({
                   )}
                 />
               </div>
+            
               <div id="tempat">
                 <FormLabel>{t("tempat")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name="tempat"
+                  name="administrative_data.tempat"
                   render={({ field }) => (
                     <FormItem>
                       <Select
+                        value={field.value}
                         onValueChange={(value) => {
-                          setPlace(value);
-                          field.onChange(value);
+                          setPlace(value);  // Set local selectedPlace state
+                          field.onChange(value);  // Update the form field value
+
                           if (value === "laboratory") {
                             form.setValue(
-                              "tempat_pdf",
+                              "administrative_data.tempat_pdf",
                               "Laboratorium SNSU-BSN"
                             );
                           } else {
-                            form.setValue("tempat_pdf", "");
+                            form.setValue("administrative_data.tempat_pdf", "");
                           }
                         }}
-                        defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -495,23 +500,18 @@ export default function AdministrativeForm({
                         <SelectContent>
                           <SelectItem value="laboratory">laboratory</SelectItem>
                           <SelectItem value="customer">customer</SelectItem>
-                          <SelectItem value="laboratoryBranch">
-                            laboratoryBranch
-                          </SelectItem>
-                          <SelectItem value="customerBranch">
-                            customerBranch
-                          </SelectItem>
+                          <SelectItem value="laboratoryBranch">laboratoryBranch</SelectItem>
+                          <SelectItem value="customerBranch">customerBranch</SelectItem>
                           <SelectItem value="other">{t("other")}</SelectItem>
                         </SelectContent>
                       </Select>
 
-                      {/* Jika bukan 'laboratory', tampilkan input untuk tempat_pdf */}
+                      {/* Display input only when 'other' is selected */}
                       {selectedPlace && selectedPlace !== "laboratory" && (
                         <Input
-                          value={form.getValues("tempat_pdf")}
+                          value={form.getValues("administrative_data.tempat_pdf")}  // Bind input value to form state
                           onChange={(e) => {
-                            field.onChange(e.target.value);
-                            form.setValue("tempat_pdf", e.target.value);
+                            form.setValue("administrative_data.tempat_pdf", e.target.value);  // Update form value on input change
                           }}
                         />
                       )}
@@ -531,7 +531,7 @@ export default function AdministrativeForm({
                     <FormField
                       key={field.id}
                       control={form.control}
-                      name={`used_languages.${index}.value`}
+                      name={`administrative_data.used_languages.${index}.value`}
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <div className="flex items-center gap-2">
@@ -568,7 +568,7 @@ export default function AdministrativeForm({
                                           key={lang.value}
                                           onSelect={() =>
                                             form.setValue(
-                                              `used_languages.${index}.value`,
+                                              `administrative_data.used_languages.${index}.value`,
                                               lang.value
                                             )
                                           }
@@ -617,7 +617,7 @@ export default function AdministrativeForm({
                     <FormField
                       key={field.id}
                       control={form.control}
-                      name={`mandatory_languages.${index}.value`}
+                      name={`administrative_data.mandatory_languages.${index}.value`}
                       render={({ field }) => (
                         <FormItem className="flex flex-col">
                           <div className="flex items-center gap-2">
@@ -654,7 +654,7 @@ export default function AdministrativeForm({
                                           key={lang.value}
                                           onSelect={() =>
                                             form.setValue(
-                                              `mandatory_languages.${index}.value`,
+                                              `administrative_data.mandatory_languages.${index}.value`,
                                               lang.value
                                             )
                                           }
@@ -697,16 +697,17 @@ export default function AdministrativeForm({
                 </Button>
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div id="order">
                 <FormLabel>{t("order")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name="order"
+                  name="administrative_data.order"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} value={formData.order || ""} />
+                        <Input {...field} value={field.value ?? ''} onChange={(e) => field.onChange(e.target.value)} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -717,7 +718,7 @@ export default function AdministrativeForm({
                 <FormLabel>{t("penerbit_order")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name="core_issuer"
+                  name="administrative_data.core_issuer"
                   render={({ field }) => (
                     <FormItem>
                       <Select
@@ -753,7 +754,7 @@ export default function AdministrativeForm({
                 <FormLabel>{t("sertifikat")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name="sertifikat"
+                  name="administrative_data.sertifikat"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -778,7 +779,7 @@ export default function AdministrativeForm({
                 <FormLabel>{t("mulai")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name="tgl_mulai"
+                  name="Measurement_TimeLine.tgl_mulai"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
@@ -829,7 +830,7 @@ export default function AdministrativeForm({
                 <FormLabel>{t("akhir")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name="tgl_akhir"
+                  name="Measurement_TimeLine.tgl_akhir"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
@@ -882,7 +883,7 @@ export default function AdministrativeForm({
                 <FormLabel>{t("pengesahan")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name="tgl_pengesahan"
+                  name="Measurement_TimeLine.tgl_pengesahan"
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
