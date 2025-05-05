@@ -19,7 +19,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Izinkan hanya permintaan dari http://localhost:3000
+    allow_origins=["http://127.0.0.1:5500"],  # Izinkan hanya permintaan dari http://localhost:3000
     allow_credentials=True,
     allow_methods=["*"],  # Mengizinkan semua HTTP methods
     allow_headers=["*"],  # Mengizinkan semua headers
@@ -43,10 +43,6 @@ def get_db():
 # Route untuk create-dcc
 @app.post("/create-dcc/")
 async def create_dcc(dcc: schemas.DCCFormCreate, db: Session = Depends(get_db)):
-    
-    tgl_mulai = parse_date(dcc.Measurement_TimeLine.tgl_mulai)
-    tgl_akhir = parse_date(dcc.Measurement_TimeLine.tgl_akhir)
-    tgl_pengesahan = parse_date(dcc.Measurement_TimeLine.tgl_pengesahan) 
     
     try:
         logging.info(f"Received request to create DCC with Excel file: {dcc.excel}")

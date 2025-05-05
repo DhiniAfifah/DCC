@@ -20,6 +20,7 @@ from docxtpl import DocxTemplate
 from spire.pdf.common import *
 from spire.pdf import *
 from pikepdf import Pdf, AttachedFileSpec
+from datetime import datetime
 
 
 # Set log level
@@ -569,13 +570,18 @@ def embed_xml_in_pdf(pdf_path, xml_path, output_path):
     pdf.attachments[xml_path.name] = filespec
     pdf.save(output_path)
 
+# def parse_date(date_str):
+    # try:
+        # Adjusting to handle ISO 8601 format (with time and timezone)
+        # Replace 'Z' with '+00:00' to make it a valid format for fromisoformat
+        #date_str = date_str.replace("Z", "+00:00")
+        #return datetime.fromisoformat(date_str)  # Converts ISO 8601 to datetime
+    #except ValueError:
+        #raise HTTPException(status_code=400, detail=f"Invalid date format: {date_str}")
 
 #db n excel 
 def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
     logging.info("Starting DCC creation process")
-    
-    excel_file = dcc.attachment.excel_file 
-    sheet_name = dcc.attachment.sheet_name 
     
     # Inisialisasi variabel Office
     excel = None
@@ -586,25 +592,26 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         logging.debug("Creating DCC model instance")
         
         measurement_timeline_data = {
-            "tgl_mulai": dcc.Measurement_TimeLine.tgl_mulai,  # Langsung ambil dari form data
-            "tgl_akhir": dcc.Measurement_TimeLine.tgl_akhir,
-            "tgl_pengesahan": dcc.Measurement_TimeLine.tgl_pengesahan,
+            "tgl_mulai": dcc.measurement_TimeLine.tgl_mulai,
+            "tgl_akhir": dcc.measurement_TimeLine.tgl_akhir,
+            "tgl_pengesahan": dcc.measurement_TimeLine.tgl_pengesahan
         }
+
         
         administrative_data_dict = {
-            "country_code": administrative_data.country_code,  # Country of Calibration
-            "used_languages": json.dumps(administrative_data.used_languages),
-            "mandatory_languages": json.dumps(administrative_data.mandatory_languages),
-            "order": administrative_data.order,  # Order Number
-            "core_issuer": administrative_data.core_issuer,  # Core Issuer
-            "sertifikat": administrative_data.sertifikat,  # Certificate Number
-            "tempat": administrative_data.tempat,  # Calibration Place in XML format
-            "tempat_pdf": administrative_data.tempat_pdf,  # Calibration Place in PDF format
+            "country_code": dcc.administrative_data.country_code,  # Country of Calibration
+            "used_languages": json.dumps(dcc.administrative_data.used_languages),
+            "mandatory_languages": json.dumps(dcc.administrative_data.mandatory_languages),
+            "order": dcc.administrative_data.order,  # Order Number
+            "core_issuer": dcc.administrative_data.core_issuer,  # Core Issuer
+            "sertifikat": dcc.administrative_data.sertifikat,  # Certificate Number
+            "tempat": dcc.administrative_data.tempat,  # Calibration Place in XML format
+            "tempat_pdf": dcc.administrative_data.tempat_pdf,  # Calibration Place in PDF format
         }
         
         # Menyiapkan data kondisi (Suhu, Kelembapan, dan lainnya)
         environmental_conditions = []
-        for condition in dcc.conditions.environmental_conditions:
+        for condition in dcc.conditions:
             environmental_conditions.append({
                 "jenis_kondisi": condition.jenis_kondisi,
                 "desc": condition.desc,
