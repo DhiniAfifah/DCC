@@ -313,7 +313,7 @@ export default function Statements({
                               </FormItem>
                             )}
                           />
-                          <Card>
+                          <Card className="border shadow">
                             <CardContent>
                               <MathJax>{`$$${form.watch(`statements.${statementIndex}.formula.mathjax`) || ""}$$`}</MathJax>
                             </CardContent>

@@ -144,7 +144,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
   return (
     <div id="columns" className="grid grid-cols-2 gap-4">
       {columnFields.map((columnField, columnIndex) => (
-        <Card key={columnField.id} id="kolom">
+        <Card key={columnField.id} id="kolom" className="border shadow">
           <CardHeader></CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4 pb-4 relative">  
@@ -229,7 +229,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
         </p>
       </Button>
 
-      <Card id="uncertainty">
+      <Card id="uncertainty" className="border shadow">
         <CardHeader>
           <h3 className="text-sm font-semibold">{t('ketidakpastian')}</h3>
           <p className="text-xs text-muted-foreground mt-1">
@@ -434,7 +434,8 @@ export default function MeasurementForm({
     name: "conditions",
   });
 
-  const [selectedCondition, setCondition] = useState<string>("");
+  const [selectedConditions, setSelectedConditions] = useState<{ [key: number]: string }>({});
+
 
   const fileRefExcel = form.register("excel");
   const fileRefGambar = form.register("gambar");
@@ -715,7 +716,7 @@ export default function MeasurementForm({
                               </FormItem>
                             )}
                           />
-                          <Card>
+                          <Card className="border shadow">
                             <CardContent>
                               <MathJax>{`$$${form.watch(`methods.${index}.formula.mathjax`) || ""}$$`}</MathJax>
                             </CardContent>
@@ -1020,7 +1021,10 @@ export default function MeasurementForm({
                           <FormItem>
                             <Select
                               onValueChange={(value) => {
-                                setCondition(value);
+                                setSelectedConditions((prev) => ({
+                                  ...prev,
+                                  [index]: value,
+                                }));                                
                                 field.onChange(value);
                               }}
                               defaultValue={field.value}
@@ -1036,7 +1040,7 @@ export default function MeasurementForm({
                                 <SelectItem value="other">{t('other')}</SelectItem>
                               </SelectContent>
                             </Select>
-                            {selectedCondition === "other" && (
+                            {selectedConditions[index] === "other" && ( 
                               <Input
                                 placeholder={`${t('other_condition')}`}
                                 onChange={(e) => field.onChange(e.target.value)}

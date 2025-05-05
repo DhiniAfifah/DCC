@@ -118,7 +118,7 @@ const FormSchema = z.object({
   order: z.string().min(1, { message: empty_field_error_message }),
   tgl_mulai: z.date({ required_error: empty_field_error_message }),
   tgl_akhir: z.date({ required_error: empty_field_error_message }),
-  tempat_xml: z.string({ required_error: empty_field_error_message }),
+  tempat: z.string({ required_error: empty_field_error_message }),
   tempat_pdf: z.string().optional(),
   tgl_pengesahan: z.date({ required_error: empty_field_error_message }),
   objects: z.array(
@@ -461,7 +461,7 @@ export default function AdministrativeForm({
                 <FormLabel>{t('tempat')}</FormLabel>
                 <FormField
                   control={form.control}
-                  name="tempat_xml"
+                  name="tempat"
                   render={({ field }) => (
                     <FormItem>
                       <Select
@@ -474,7 +474,7 @@ export default function AdministrativeForm({
                             form.setValue("tempat_pdf", "");
                           }
                         }}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -491,9 +491,9 @@ export default function AdministrativeForm({
                       </Select>
                       {selectedPlace && selectedPlace !== "laboratory" && (
                         <Input
+                          value={form.watch("tempat_pdf")}
                           onChange={(e) => {
-                            field.onChange(e.target.value);
-                            form.setValue("tempat_pdf", e.target.value);
+                            form.setValue("tempat_pdf", e.target.value); // only update tempat_pdf
                           }}
                         />
                       )}
@@ -986,7 +986,7 @@ export default function AdministrativeForm({
                     </div>
                   </div>
 
-                  <Card id="identifikasi-alat">
+                  <Card id="identifikasi-alat" className="border shadow mt-5">
                     <CardHeader>
                       <CardTitle className="text-black">{t('identifikasi')}</CardTitle>
                     </CardHeader>
@@ -1097,7 +1097,7 @@ export default function AdministrativeForm({
               <div id="pelaksana" className="grid gap-4 border-b pb-4">
                 {pelaksanaFields.map((field, index) => (
                   <div key={field.id} className="relative">
-                    <CardDescription>{t('pelaksana')} {index + 1}</CardDescription>
+                    <p className="text-sm font-bold">{t('pelaksana')} {index + 1}</p>
                     {pelaksanaFields.length > 1 && (
                       <Button
                         type="button"
@@ -1167,7 +1167,7 @@ export default function AdministrativeForm({
               <div id="penyelia" className="grid gap-4 border-b pb-4">
                 {penyeliaFields.map((field, index) => (
                   <div key={field.id} className="relative">
-                    <CardDescription>{t('penyelia')} {index + 1}</CardDescription>
+                    <p className="text-sm font-bold">{t('penyelia')} {index + 1}</p>
                     {penyeliaFields.length > 1 && (
                       <Button
                         type="button"
@@ -1414,7 +1414,7 @@ export default function AdministrativeForm({
                 />
               </div>
 
-              <Card id="alamat">
+              <Card id="alamat" className="border shadow mt-5">
                 <CardHeader>
                   <CardTitle className="text-black">{t('alamat')}</CardTitle>
                 </CardHeader>
