@@ -64,8 +64,7 @@ const FormSchema = z.object({
       has_image: z.boolean().default(false),
       image: z
         .object({
-          gambar:
-            typeof window === "undefined" ? z.any() : z.instanceof(FileList),
+          gambar: z.any().optional(),
           caption: z.string().optional(),
         })
         .optional(),
@@ -448,7 +447,6 @@ export default function MeasurementForm({
   const [selectedConditions, setSelectedConditions] = useState<{ [key: number]: string }>({});
 
   const fileRefExcel = form.register("excel");
-  const fileRefGambar = form.register("gambar");
 
   const { control, handleSubmit, register } = form;
   const {
@@ -837,28 +835,29 @@ export default function MeasurementForm({
                           <FormLabel>{t("upload_gambar")}</FormLabel>
                           <FormField
                             control={form.control}
-                            name={`images.${index}.gambar`}
-                            render={({ field }) => {
-                              return (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      type="file"
-                                      accept=".jpg, .jpeg, .png"
-                                      {...fileRefGambar}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              );
-                            }}
+                            name={`methods.${index}.image.gambar`}
+                            render={({ field: { onChange, ref } }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    type="file"
+                                    accept=".jpg, .jpeg, .png"
+                                    ref={ref}
+                                    onChange={(e) => {
+                                      onChange(e.target.files?.[0]); // Save first file
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
                         </div>
                         <div id="caption">
                           <FormLabel>{t("caption")}</FormLabel>
                           <FormField
                             control={form.control}
-                            name={`images.${index}.caption`}
+                            name={`methods.${index}.image.caption`}
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
@@ -891,7 +890,7 @@ export default function MeasurementForm({
                     mathml: "",
                   },
                   image: {
-                    gambar: null,
+                    gambar: "",
                     caption: "",
                   },
                 })

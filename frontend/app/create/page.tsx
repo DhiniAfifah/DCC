@@ -105,7 +105,7 @@ export default function CreateDCC() {
         },
         has_image: false,
         image: {
-          gambar: null,
+          gambar: "",
           caption: "",
         },
       },
@@ -156,7 +156,7 @@ export default function CreateDCC() {
         },
         has_image: false,
         image: {
-          gambar: null,
+          gambar: "",
           caption: "",
         },
       },

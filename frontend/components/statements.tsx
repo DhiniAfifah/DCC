@@ -39,15 +39,9 @@ const FormSchema = z.object({
       }).optional(),
       has_image: z.boolean().default(false),
       image: z.object({ 
-        gambar: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
+        gambar: z.any().optional(),
         caption: z.string().optional(),
       }).optional(),
-    })
-  ),
-  images: z.array(
-    z.object({ 
-      gambar: typeof window === 'undefined' ? z.any() : z.instanceof(FileList),
-      caption: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
 });
@@ -128,18 +122,7 @@ export default function Statements({
     name: "statements",
   });
 
-  const {
-    fields: imageFields,
-    append: appendImage,
-    remove: removeImage,
-  } = useFieldArray({
-    control: form.control,
-    name: "images",
-  });
-
   const usedLanguages = form.watch("administrative_data.used_languages") || [];
-
-  const fileRefGambar = form.register("gambar");
 
   const onSubmit = async (data: any) => {
     try {
@@ -424,28 +407,29 @@ export default function Statements({
                           <FormLabel>{t('upload_gambar')}</FormLabel>
                           <FormField
                             control={form.control}
-                            name={`statements.${statementIndex}.gambar`}
-                            render={({ field }) => {
-                              return (
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      type="file"
-                                      accept=".jpg, .jpeg, .png"
-                                      {...fileRefGambar}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              );
-                            }}
+                            name={`statements.${statementIndex}.image.gambar`}
+                            render={({ field: { onChange, ref } }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    type="file"
+                                    accept=".jpg, .jpeg, .png"
+                                    ref={ref}
+                                    onChange={(e) => {
+                                      onChange(e.target.files?.[0]); // Save first file
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
                         </div>
                         <div id="caption">
                           <FormLabel>{t('caption')}</FormLabel>
                           <FormField 
                             control={form.control} 
-                            name={`statements.${statementIndex}.caption`}
+                            name={`statements.${statementIndex}.image.caption`}
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
@@ -475,7 +459,7 @@ export default function Statements({
                   },
                   has_image: false,
                   image: {
-                    gambar: null,
+                    gambar: "",
                     caption: "",
                   }, 
                 })}
