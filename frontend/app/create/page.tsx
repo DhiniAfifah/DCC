@@ -323,7 +323,7 @@ export default function CreateDCC() {
 
   return (
     <div className="container mx-auto py-8 pt-20">
-      <Stepper currentStep={currentStep} steps={steps} />
+      <Stepper currentStep={currentStep} steps={steps} onStepClick={setCurrentStep} />
 
       <div className="mt-12 space-y-10">
         {currentStep === 0 && (

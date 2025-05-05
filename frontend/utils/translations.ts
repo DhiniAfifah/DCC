@@ -47,10 +47,10 @@ const translations: Record<string, { id: string; en: string }> = {
 
   // Penanggung Jawab
   responsible: { id: 'Penanggung Jawab', en: 'Responsible Person' },
-  pelaksana: { id: 'Pelaksana kalibrasi', en: 'Calibration Officer' },
+  pelaksana: { id: 'Pelaksana Kalibrasi', en: 'Calibration Officer' },
   nip: { id: 'NIP', en: 'Employee ID number' },
-  penyelia: { id: 'Penyelia kalibrasi', en: 'Calibration Supervisor' },
-  kepala: { id: 'Kepala laboratorium', en: 'Laboratory Head' },
+  penyelia: { id: 'Penyelia Kalibrasi', en: 'Calibration Supervisor' },
+  kepala: { id: 'Kepala Laboratorium', en: 'Laboratory Head' },
   lab: { id: 'Laboratorium', en: 'Laboratory' },
   direktur: { id: 'Direktur', en: 'Director' },
   jabatan: { id: 'Jabatan', en: 'Position' },

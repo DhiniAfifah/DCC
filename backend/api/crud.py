@@ -333,7 +333,7 @@ def generate_xml(dcc, table_data):
                             with tag('dcc:content'): text('Nomor Order')
                 with tag('dcc:beginPerformanceDate'): text(dcc.tgl_mulai)
                 with tag('dcc:endPerformanceDate'): text(dcc.tgl_akhir)
-                with tag('dcc:performanceLocation'): text(dcc.tempat_xml)
+                with tag('dcc:performanceLocation'): text(dcc.tempat)
                 with tag('dcc:issueDate'): text(dcc.tgl_pengesahan)
             with tag("dcc:items"):
                 for obj in dcc.objects:

@@ -1009,7 +1009,7 @@ export default function AdministrativeForm({
                     </div>
                   </div>
 
-                  <Card id="identifikasi-alat">
+                  <Card id="identifikasi-alat" className="border shadow mt-5">
                     <CardHeader>
                       <CardTitle className="text-black">
                         {t("identifikasi")}
@@ -1122,9 +1122,9 @@ export default function AdministrativeForm({
               <div id="pelaksana" className="grid gap-4 border-b pb-4">
                 {pelaksanaFields.map((field, index) => (
                   <div key={field.id} className="relative">
-                    <CardDescription>
+                    <p className="text-sm font-bold">
                       {t("pelaksana")} {index + 1}
-                    </CardDescription>
+                    </p>
                     {pelaksanaFields.length > 1 && (
                       <Button
                         type="button"
@@ -1194,9 +1194,9 @@ export default function AdministrativeForm({
               <div id="penyelia" className="grid gap-4 border-b pb-4">
                 {penyeliaFields.map((field, index) => (
                   <div key={field.id} className="relative">
-                    <CardDescription>
+                    <p className="text-sm font-bold">
                       {t("penyelia")} {index + 1}
-                    </CardDescription>
+                    </p>
                     {penyeliaFields.length > 1 && (
                       <Button
                         type="button"
@@ -1443,7 +1443,7 @@ export default function AdministrativeForm({
                 />
               </div>
 
-              <Card id="alamat">
+              <Card id="alamat" className="border shadow mt-5">
                 <CardHeader>
                   <CardTitle className="text-black">{t("alamat")}</CardTitle>
                 </CardHeader>
