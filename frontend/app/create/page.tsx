@@ -231,10 +231,15 @@ export default function CreateDCC() {
             "calibrationLaboratory",
         },
         Measurement_TimeLine: {
-          tgl_mulai: tgl_mulai || prev.Measurement_TimeLine.tgl_mulai,
-          tgl_akhir: tgl_akhir || prev.Measurement_TimeLine.tgl_akhir,
-          tgl_pengesahan:
-            tgl_pengesahan || prev.Measurement_TimeLine.tgl_pengesahan,
+          tgl_mulai: data.tgl_mulai
+            ? formatDate(new Date(data.tgl_mulai))
+            : prev.Measurement_TimeLine.tgl_mulai,
+          tgl_akhir: data.tgl_akhir
+            ? formatDate(new Date(data.tgl_akhir))
+            : prev.Measurement_TimeLine.tgl_akhir,
+          tgl_pengesahan: data.tgl_pengesahan
+            ? formatDate(new Date(data.tgl_pengesahan))
+            : prev.Measurement_TimeLine.tgl_pengesahan,
         },
         statements: Array.isArray(data.statements)
           ? data.statements
@@ -289,13 +294,13 @@ export default function CreateDCC() {
       measurement_TimeLine: {
         tgl_mulai: new Date(
           formData.Measurement_TimeLine.tgl_mulai
-        ).toISOString(),
+        ),
         tgl_akhir: new Date(
           formData.Measurement_TimeLine.tgl_akhir
-        ).toISOString(),
+        ),
         tgl_pengesahan: new Date(
           formData.Measurement_TimeLine.tgl_pengesahan
-        ).toISOString(),
+        ),
       },
       administrative_data: {
         ...formData.administrative_data,
