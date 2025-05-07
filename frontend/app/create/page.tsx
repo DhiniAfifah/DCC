@@ -349,7 +349,7 @@ export default function CreateDCC() {
 
         {currentStep === steps.length - 1 ? (
           <Button onClick={handleSubmit} variant="green">
-            Submit
+            {t('submit')}
           </Button>
         ) : (
           <Button onClick={nextStep} variant="blue">

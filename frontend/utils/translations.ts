@@ -13,6 +13,8 @@ const translations: Record<string, { id: string; en: string }> = {
   statements: { id: 'Pernyataan', en: 'Statements' },
   preview: { id: 'Pratinjau', en: 'Preview' },
 
+  submit: { id: 'Kirim', en: 'Submit' },
+
   // === Administrative ===
   // Software
   software: { id: 'Perangkat Lunak', en: 'Software' },
@@ -108,7 +110,7 @@ const translations: Record<string, { id: string; en: string }> = {
     en: 'Please select and upload an Excel file containing the data to be displayed in the Calibration Results section of the Calibration Certificate.'
   },
   sheet: { id: 'Nama sheet', en: 'Sheet name' },
-  sheet_desc: { id: 'Silakan pilih nama sheet dari file Excel yang diunggah', en: 'Please select the sheet name from the uploaded Excel file' },
+  sheet_desc: { id: 'Silakan pilih nama sheet dari file Excel yang diunggah.', en: 'Please select the sheet name from the uploaded Excel file.' },
 
   // Hasil
   judul: { id: 'Judul tabel', en: 'Table title' },
@@ -119,7 +121,7 @@ const translations: Record<string, { id: string; en: string }> = {
   subkolom: { id: 'Jumlah sub-kolom', en: 'Number of sub-columns' },
   ketidakpastian: { id: 'Parameter Evaluasi Ketidakpastian', en: 'Uncertainty Evaluation Parameters' },  
   ketidakpastian_desc: { id: 'Data ketidakpastian hanya akan tampil di XML, tidak di template Word atau PDF.', 
-                          en: 'These data will only appear in XML, not in Word or PDF templates' },
+                          en: 'These data will only appear in XML, not in Word or PDF templates.' },
   factor: { id: 'Faktor cakupan', en: 'Coverage Factor' },
   probability: { id: 'Tingkat kepercayaan', en: 'Coverage probability' },
   distribution: { id: 'Distribusi', en: 'Distribution' },
@@ -132,6 +134,9 @@ const translations: Record<string, { id: string; en: string }> = {
   cb_rumus_statement: { id: 'Pernyataan ini melibatkan ekspresi matematika atau rumus', 
                         en: 'This statement includes mathematical notation or formula' },
   cb_gambar_statement: { id: 'Pernyataan ini disertai gambar', en: 'This statement is accompanied by an image' },
+
+  // Importer
+  pdf: { id: 'Unggah file PDF', en: 'Upload PDF file' },
 };
 
 export const getTranslation = (key: string, language: Language = 'en') => {
