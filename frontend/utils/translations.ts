@@ -1,8 +1,12 @@
-import { Caption } from "react-day-picker";
-
 type Language = 'id' | 'en';
 
 const translations: Record<string, { id: string; en: string }> = {
+  // Menu
+  generator: { id: 'Mulai membuat <i>Digital Calibration Certificate</i> (DCC) baru. Klik di sini.', 
+                en: 'Start creating a new Digital Calibration Certificate (DCC). Click here.' },
+  importer: { id: 'Akses <i>Digital Calibration Certificate</i> (DCC) Anda dan ekspor datanya ke Ms. Excel. Klik di sini.',
+                en: 'Access your Digital Calibration Certificate (DCC) and export the data to Excel. Click here.' },
+  
   // Stepper
   administrasi: {id: 'Administrasi', en: 'Administration'},
   hasil: { id: 'Hasil Kalibrasi', en: ' Calibration Results' },
