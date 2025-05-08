@@ -125,13 +125,19 @@ export default function CreateDCC() {
         rentang: "",
         rentang_unit: {
           prefix: "",
+          prefix_pdf: "",
           unit: "",
+          unit_pdf: "",
           eksponen: "",
+          eksponen_pdf: "",
         },
         tengah_unit: {
           prefix: "",
+          prefix_pdf: "",
           unit: "",
+          unit_pdf: "",
           eksponen: "",
+          eksponen_pdf: "",
         },
       },
     ],
@@ -171,20 +177,20 @@ export default function CreateDCC() {
     ],
   });
 
-  // useEffect(() => {
-  //   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-  //     event.preventDefault();
-  //     event.returnValue = ""; // Show warning when user attempts to leave
-  //   };
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = ""; // Show warning when user attempts to leave
+    };
 
-  //   if (formData) {
-  //     window.addEventListener("beforeunload", handleBeforeUnload);
-  //   }
+    if (formData) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
 
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, [formData]); // Depend on formData to track changes
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [formData]); // Depend on formData to track changes
 
   const [downloadLink, setDownloadLink] = useState<string | null>(null);
 
@@ -279,17 +285,6 @@ export default function CreateDCC() {
         formula: method.has_formula
           ? method.formula
           : { latex: "", mathml: "" },
-      })),
-      conditions: formData.conditions.map((condition) => ({
-        ...condition,
-        rentang_unit: {
-          ...condition.rentang_unit,
-          eksponen: `\\tothe{${condition.rentang_unit.eksponen}}`,
-        },
-        tengah_unit: {
-          ...condition.tengah_unit,
-          eksponen: `\\tothe{${condition.tengah_unit.eksponen}}`,
-        },
       })),
       statements: formData.statements.map((stmt) => ({
         ...stmt,

@@ -95,14 +95,20 @@ const FormSchema = z.object({
       tengah: z.string().min(1, { message: empty_field_error_message }),
       tengah_unit: z.object({
         prefix: z.string().optional(),
+        prefix_pdf: z.string().optional(),
         unit: z.string().min(1, { message: empty_field_error_message }),
+        unit_pdf: z.string().min(1, { message: empty_field_error_message }),
         eksponen: z.string().optional(),
+        eksponen_pdf: z.string().optional(),
       }),
       rentang: z.string().min(1, { message: empty_field_error_message }),
       rentang_unit: z.object({
         prefix: z.string().optional(),
+        prefix_pdf: z.string().optional(),
         unit: z.string().min(1, { message: empty_field_error_message }),
+        unit_pdf: z.string().min(1, { message: empty_field_error_message }),
         eksponen: z.string().optional(),
+        eksponen_pdf: z.string().optional(),
       }),
     })
   ),
@@ -1257,6 +1263,10 @@ export default function MeasurementForm({
                                                   `conditions.${index}.tengah_unit.prefix`,
                                                   prefix.value
                                                 );
+                                                form.setValue(
+                                                  `conditions.${index}.tengah_unit.prefix_pdf`,
+                                                  prefix.symbol
+                                                );
                                               }}
                                             >
                                               {`${prefix.key} (${prefix.symbol})`}
@@ -1307,6 +1317,10 @@ export default function MeasurementForm({
                                                   `conditions.${index}.tengah_unit.unit`,
                                                   unit.value
                                                 );
+                                                form.setValue(
+                                                  `conditions.${index}.tengah_unit.unit_pdf`,
+                                                  unit.symbol
+                                                );
                                               }}
                                             >
                                               {`${unit.key} (${unit.symbol})`}
@@ -1329,7 +1343,18 @@ export default function MeasurementForm({
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
-                                  <Input placeholder={t("eksponen")} {...field} />
+                                <Input
+                                  placeholder={t("eksponen")}
+                                  value={field.value}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    field.onChange(value); // update eksponen
+                                    form.setValue(
+                                      `conditions.${index}.tengah_unit.eksponen_pdf`,
+                                      `\\tothe{${value}}`
+                                    ); // update eksponen_pdf
+                                  }}
+                                />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -1392,6 +1417,10 @@ export default function MeasurementForm({
                                                   `conditions.${index}.rentang_unit.prefix`,
                                                   prefix.value
                                                 );
+                                                form.setValue(
+                                                  `conditions.${index}.rentang_unit.prefix_pdf`,
+                                                  prefix.symbol
+                                                );
                                               }}
                                             >
                                               {`${prefix.key} (${prefix.symbol})`}
@@ -1442,6 +1471,10 @@ export default function MeasurementForm({
                                                   `conditions.${index}.rentang_unit.unit`,
                                                   unit.value
                                                 );
+                                                form.setValue(
+                                                  `conditions.${index}.rentang_unit.unit_pdf`,
+                                                  unit.symbol
+                                                );
                                               }}
                                             >
                                               {`${unit.key} (${unit.symbol})`}
@@ -1464,7 +1497,18 @@ export default function MeasurementForm({
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
-                                  <Input placeholder={t("eksponen")} {...field} />
+                                <Input
+                                  placeholder={t("eksponen")}
+                                  value={field.value}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    field.onChange(value); // update eksponen
+                                    form.setValue(
+                                      `conditions.${index}.rentang_unit.eksponen_pdf`,
+                                      `\\tothe{${value}}`
+                                    ); // update eksponen_pdf
+                                  }}
+                                />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
