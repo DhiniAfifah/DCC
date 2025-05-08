@@ -692,6 +692,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         db.refresh(db_dcc)
         logging.info(f"DCC {dcc.sertifikat} saved successfully with ID {db_dcc.id}")
         
+        
         # semua path
         paths = get_project_paths(dcc)
         new_word_path = str(paths['word_output'])
@@ -703,6 +704,10 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         os.makedirs(paths['word_output'].parent, exist_ok=True)
         
         # Ambil table_data dari process_excel_data
+        # Menggunakan fungsi prepare_input_tables untuk mendapatkan input_tables
+        input_tables = prepare_input_tables(dcc) 
+        
+        # Ambil data tabel dengan menggunakan process_excel_data
         table_data = process_excel_data(dcc.excel, dcc.sheet_name, input_tables)
         
         # Generate XML

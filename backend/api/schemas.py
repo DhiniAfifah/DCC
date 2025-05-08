@@ -81,8 +81,9 @@ class Formula(BaseModel):
     mathml: str
 
 class Image(BaseModel):
-    gambar: Optional[UploadFile]  # We assume an image file upload
-    caption: str
+    gambar: Optional[UploadFile] = None # We assume an image file upload
+    caption: Optional[str]
+    gambar_url: Optional[str] = None  
 
 class Method(BaseModel):
     method_name: str
@@ -136,10 +137,10 @@ class Uncertainty(BaseModel):
 
 class Column(BaseModel):
     kolom: str
-    real_list: str  # Assuming this is a string that holds the number of real items
+    real_list: int  
 
 class Result(BaseModel):
-    parameters: str  # Represents the parameter name (e.g., "Parameter 1")
+    parameters: List[str]  
     columns: List[Column]
     uncertainty: Uncertainty
 
@@ -157,4 +158,4 @@ class DCCFormCreate(BaseModel):
     results: List[Result]
     excel: Optional[str]
     sheet_name: str
-    statement: List[Statements]  # Catatan
+    statements: List[Statements]  # Catatan

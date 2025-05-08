@@ -247,15 +247,8 @@ export default function CreateDCC() {
   };
 
   const handleSubmit = async () => {
-    // Ensure formula is empty when has_formula is false
-
     const modifiedFormData = {
       ...formData,
-      Measurement_TimeLine: {
-        tgl_mulai: new Date(formData.Measurement_TimeLine.tgl_mulai),
-        tgl_akhir: new Date(formData.Measurement_TimeLine.tgl_akhir),
-        tgl_pengesahan: new Date(formData.Measurement_TimeLine.tgl_pengesahan),
-      },
       administrative_data: {
         ...formData.administrative_data,
         used_languages: formData.administrative_data.used_languages.map(
@@ -271,10 +264,43 @@ export default function CreateDCC() {
         formula: method.has_formula
           ? method.formula
           : { latex: "", mathml: "" },
+        image: method.has_image
+          ? {
+              gambar: null,
+              caption: method.image?.caption || "",
+            }
+          : null,
       })),
-      statements: formData.statements.map((stmt) => ({
-        ...stmt,
-        values: Array.isArray(stmt.values) ? stmt.values : [],
+      statements: formData.statements.map((stmt) => {
+        let values;
+        if (Array.isArray(stmt.values)) {
+          values = stmt.values;
+        } else {
+          values = [stmt.values].filter(Boolean);
+        }
+        return {
+          ...stmt,
+          values: values,
+          image: stmt.has_image
+            ? {
+                gambar: null,
+                caption: stmt.image?.caption || "",
+              }
+            : null,
+        };
+      }),
+      results: formData.results.map((result) => ({
+        parameter: result.parameters,
+        columns: result.columns.map((col) => ({
+          kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
+          real_list: Number(col.real_list) || 1,
+        })),
+        uncertainty: {
+          factor: result.uncertainty.factor,
+          probability: result.uncertainty.probability,
+          distribution: result.uncertainty.distribution || "",
+          real_list: result.uncertainty.real_list,
+        },
       })),
       excel: fileName,
     };

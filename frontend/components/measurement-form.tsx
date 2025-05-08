@@ -91,7 +91,9 @@ const FormSchema = z.object({
   sheet_name: z.string().min(1, { message: empty_field_error_message }),
   results: z.array(
     z.object({
-      parameter: z.string().min(1, { message: empty_field_error_message }),
+      parameters: z.array(
+        z.string().min(1, { message: empty_field_error_message })
+      ),
       columns: z.array(
         z.object({
           kolom: z.string().min(1, { message: empty_field_error_message }),
@@ -119,18 +121,47 @@ interface Column {
   real_list: string;
 }
 
+interface Uncertainty {
+  factor: string;
+  probability: string;
+  distribution: string;
+  real_list: string;
+}
+
 interface Result {
-  parameter: string;
+  parameters: string[];
   columns: Column[];
+  uncertainty: Uncertainty[];
 }
 
 interface FormValues {
+  methods: Method[];
   results: Result[];
+  excel: string | null;
+  sheet_name: string;
+  equipments: any[];
+  conditions: any[];
 }
 
 interface ColumnsProps {
   resultIndex: number;
   usedLanguages: { value: string }[];
+}
+
+interface Method {
+  method_name: string;
+  method_desc: string;
+  norm: string;
+  has_formula: boolean;
+  formula?: {
+    latex?: string;
+    mathml?: string;
+  };
+  has_image: boolean;
+  image?: {
+    gambar?: File;
+    caption?: string;
+  };
 }
 
 const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
@@ -373,13 +404,18 @@ export default function MeasurementForm({
 
   const [latexInput, setLatexInput] = useState("");
   const latexInputRef = useRef<HTMLInputElement>(null);
-  const insertSymbol = (latex: string, methodIndex: number, event?: React.MouseEvent<HTMLButtonElement>) => {
+  const insertSymbol = (
+    latex: string,
+    methodIndex: number,
+    event?: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event?.preventDefault();
     event?.stopPropagation();
-  
-    const currentFormula = form.getValues(`methods.${methodIndex}.formula.mathjax`) || "";
+
+    const currentFormula =
+      form.getValues(`methods.${methodIndex}.formula.mathjax`) || "";
     const updatedFormula = currentFormula + latex;
-  
+
     form.setValue(`methods.${methodIndex}.formula.mathjax`, updatedFormula);
   };
 
@@ -444,7 +480,9 @@ export default function MeasurementForm({
     name: "conditions",
   });
 
-  const [selectedConditions, setSelectedConditions] = useState<{ [key: number]: string }>({});
+  const [selectedConditions, setSelectedConditions] = useState<{
+    [key: number]: string;
+  }>({});
 
   const fileRefExcel = form.register("excel");
 
@@ -462,53 +500,99 @@ export default function MeasurementForm({
   const [sheets, setSheets] = useState<string[]>([]);
 
   const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
+    isImageUpload: boolean, // true jika upload gambar, false jika upload Excel
+    methodIndex?: number // untuk gambar, digunakan untuk mengetahui indeks metode
   ) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
 
-      const formData = new FormData();
-      formData.append("excel", file); // Ensure the key matches the backend
+      // Jika file adalah gambar
+      if (isImageUpload) {
+        // Pastikan file adalah gambar dengan tipe yang sesuai
+        if (!["image/jpeg", "image/png"].includes(file.type)) {
+          alert("Please upload a valid image (JPEG/PNG).");
+          return;
+        }
+        if (file.size > 5000000) {
+          // Validasi ukuran gambar (max 5MB)
+          alert("File size should be less than 5MB.");
+          return;
+        }
 
-      try {
-        const response = await fetch("http://127.0.0.1:8000/upload-excel/", {
-          method: "POST",
-          body: formData,
-        });
+        // Pastikan gambar disimpan ke form menggunakan form.setValue
+        if (methodIndex !== undefined) {
+          form.setValue(`methods.${methodIndex}.image.gambar`, file); // Simpan file gambar pada metode tertentu
+          alert("Image uploaded successfully.");
+        }
 
-        if (!response.ok) throw new Error("Failed to upload file");
+        // Jika file adalah Excel
+      } else if (file.name.endsWith(".xls") || file.name.endsWith(".xlsx")) {
+        const formData = new FormData();
+        formData.append("excel", file); // Menggunakan FormData untuk mengirim file Excel
 
-        const result = await response.json();
-        console.log("File uploaded:", result);
+        try {
+          const response = await fetch("http://127.0.0.1:8000/upload-excel/", {
+            method: "POST",
+            body: formData,
+          });
 
-        setFileName(result.filename); // Store the filename after upload
-        setSheets(result.sheets || []); // Store the extracted sheet names
+          if (!response.ok) throw new Error("Failed to upload file");
 
-        alert(`File uploaded successfully: ${result.filename}`);
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("File upload failed.");
+          const result = await response.json();
+          console.log("Excel file uploaded:", result);
+
+          setFileName(result.filename); // Simpan nama file Excel
+          setSheets(result.sheets || []); // Simpan nama sheet dari file Excel
+
+          alert(`Excel file uploaded successfully: ${result.filename}`);
+        } catch (error) {
+          console.error("Error uploading file:", error);
+          alert("File upload failed.");
+        }
+      } else {
+        alert("Please upload a valid file (Excel or Image).");
       }
     }
   };
 
   const usedLanguages = form.watch("administrative_data.used_languages") || [];
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormValues) => {
+    const combinedParameters = data.results.map((result) =>
+      result.parameters.join(", ")
+    );
+
+    // Perbarui data form dengan parameter yang telah digabung
+    const modifiedFormData = {
+      ...data,
+      results: data.results.map((result, index) => ({
+        ...result,
+        parameters: combinedParameters[index], // Pastikan parameters adalah string
+      })),
+    };
+
     try {
-      const cleanedMethods = data.methods.map((method: any, index: number) => {
+      const cleanedMethods = modifiedFormData.methods.map((method, index) => {
         if (!method.has_formula) {
-          form.setValue(`methods.${index}.formula`, ""); // Clear formula in form state
+          form.setValue(`methods.${index}.formula`, "");
           const { formula, ...rest } = method;
           return rest;
         }
         return method;
       });
 
-      // Combine the cleaned conditions with the form data
+      const cleanedMethodsWithImage = cleanedMethods.map((method: Method) => {
+        if (!method.has_image || !method.image || !method.image.gambar) {
+          return { ...method, image: undefined };
+        }
+        return method;
+      });
+
       const formData = {
-        ...data,
-        excel: fileName, // Include the uploaded file name
+        ...modifiedFormData,
+        methods: cleanedMethodsWithImage,
+        excel: fileName,
       };
 
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
@@ -714,8 +798,15 @@ export default function MeasurementForm({
                                 <FormControl>
                                   <Input
                                     ref={latexInputRef}
-                                    value={form.watch(`methods.${index}.formula.mathjax`)}
-                                    onChange={(e) => form.setValue(`methods.${index}.formula.mathjax`, e.target.value)}
+                                    value={form.watch(
+                                      `methods.${index}.formula.mathjax`
+                                    )}
+                                    onChange={(e) =>
+                                      form.setValue(
+                                        `methods.${index}.formula.mathjax`,
+                                        e.target.value
+                                      )
+                                    }
                                     placeholder="LaTeX"
                                   />
                                 </FormControl>
@@ -725,7 +816,11 @@ export default function MeasurementForm({
                           />
                           <Card className="border shadow">
                             <CardContent>
-                              <MathJax>{`$$${form.watch(`methods.${index}.formula.mathjax`) || ""}$$`}</MathJax>
+                              <MathJax>{`$$${
+                                form.watch(
+                                  `methods.${index}.formula.mathjax`
+                                ) || ""
+                              }$$`}</MathJax>
                             </CardContent>
                           </Card>
                         </div>
@@ -734,19 +829,27 @@ export default function MeasurementForm({
                             <div className="grid grid-cols-2 gap-2">
                               {latexSymbols.map((group) => (
                                 <div key={group.category}>
-                                  <Select onValueChange={(value) => insertSymbol(value, index)}>
+                                  <Select
+                                    onValueChange={(value) =>
+                                      insertSymbol(value, index)
+                                    }
+                                  >
                                     <SelectTrigger>
                                       <span>{group.category}</span>
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {group.symbols.map(({ latex, description }) => (
-                                        <SelectItem key={latex} value={latex}>
-                                          <span className="inline-flex items-center">
-                                            <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                            <span className="ml-1">{description}</span>
-                                          </span>
-                                        </SelectItem>
-                                      ))}
+                                      {group.symbols.map(
+                                        ({ latex, description }) => (
+                                          <SelectItem key={latex} value={latex}>
+                                            <span className="inline-flex items-center">
+                                              <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                              <span className="ml-1">
+                                                {description}
+                                              </span>
+                                            </span>
+                                          </SelectItem>
+                                        )
+                                      )}
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -758,16 +861,18 @@ export default function MeasurementForm({
                               {latexOperations
                                 .find((group) => group.category === "small")
                                 ?.symbols.map(({ latex }) => (
-                                <Button
-                                  variant="secondary"
-                                  key={latex}
-                                  onClick={(e) => insertSymbol(latex, index, e)}
-                                >
-                                  <span className="text-lg">
-                                    <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                  </span>
-                                </Button>
-                              ))}
+                                  <Button
+                                    variant="secondary"
+                                    key={latex}
+                                    onClick={(e) =>
+                                      insertSymbol(latex, index, e)
+                                    }
+                                  >
+                                    <span className="text-lg">
+                                      <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                    </span>
+                                  </Button>
+                                ))}
                             </div>
                             <div className="grid grid-cols-5 gap-1 mt-1">
                               {latexOperations
@@ -777,7 +882,9 @@ export default function MeasurementForm({
                                     variant="secondary"
                                     key={latex}
                                     value={latex}
-                                    onClick={(e) => insertSymbol(latex, index, e)}
+                                    onClick={(e) =>
+                                      insertSymbol(latex, index, e)
+                                    }
                                   >
                                     <span>
                                       <MathJax>{`\\(${latex}\\)`}</MathJax>
@@ -793,7 +900,9 @@ export default function MeasurementForm({
                                     variant="secondary"
                                     key={latex}
                                     value={latex}
-                                    onClick={(e) => insertSymbol(latex, index, e)}
+                                    onClick={(e) =>
+                                      insertSymbol(latex, index, e)
+                                    }
                                     className="h-15"
                                   >
                                     <span>
@@ -843,9 +952,9 @@ export default function MeasurementForm({
                                     type="file"
                                     accept=".jpg, .jpeg, .png"
                                     ref={ref}
-                                    onChange={(e) => {
-                                      onChange(e.target.files?.[0]); // Save first file
-                                    }}
+                                    onChange={(e) =>
+                                      handleFileUpload(e, true, index)
+                                    }
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -1056,7 +1165,7 @@ export default function MeasurementForm({
                                 </SelectItem>
                               </SelectContent>
                             </Select>
-                            {selectedConditions[index] === "other" && ( 
+                            {selectedConditions[index] === "other" && (
                               <Input
                                 placeholder={`${t("other_condition")}`}
                                 onChange={(e) => field.onChange(e.target.value)}
@@ -1191,7 +1300,7 @@ export default function MeasurementForm({
                           type="file"
                           {...fileRefExcel}
                           accept=".xls,.xlsx"
-                          onChange={handleFileUpload}
+                          onChange={(e) => handleFileUpload(e, false)}
                         />
                       </FormControl>
                       <FormDescription>{t("excel_desc")}</FormDescription>
@@ -1306,7 +1415,7 @@ export default function MeasurementForm({
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() =>
                 appendResult({
-                  parameter: "",
+                  parameters: "",
                   columns: [
                     {
                       kolom: "",

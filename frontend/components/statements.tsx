@@ -142,14 +142,58 @@ export default function Statements({
 
   const usedLanguages = form.watch("administrative_data.used_languages") || [];
 
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+    isImageUpload: boolean,
+    statementIndex?: number
+  ) => {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+
+      // Validate file type
+      if (
+        isImageUpload &&
+        !["image/jpeg", "image/png", "image/jpg"].includes(file.type)
+      ) {
+        alert("Please upload a valid image (JPEG/PNG/JPG).");
+        return;
+      }
+
+      // Validate file size
+      if (file.size > 5000000) {
+        alert("File size should be less than 5MB.");
+        return;
+      }
+
+      // Set the file in the form state (for the specific statement and image field)
+      if (statementIndex !== undefined) {
+        form.setValue(`statements[${statementIndex}].image.gambar`, file);
+        alert("Image uploaded successfully.");
+      }
+    }
+  };
+
   const onSubmit = async (data: any) => {
     try {
+      const formData = new FormData();
+
+      // Append each file in statements to FormData
+      data.statements.forEach((statement: any, index: number) => {
+        if (statement.image?.gambar) {
+          formData.append(
+            `statements[${index}].image.gambar`,
+            statement.image.gambar
+          );
+        }
+      });
+
+      // Tambahkan seluruh data statements yang lainnya sebagai JSON
+      formData.append("statements", JSON.stringify(data.statements));
+
+      // Kirim data ke API backend
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -478,9 +522,9 @@ export default function Statements({
                                     type="file"
                                     accept=".jpg, .jpeg, .png"
                                     ref={ref}
-                                    onChange={(e) => {
-                                      onChange(e.target.files?.[0]); // Save first file
-                                    }}
+                                    onChange={(e) =>
+                                      handleFileUpload(e, true, statementIndex)
+                                    } // Fungsi untuk menangani upload
                                   />
                                 </FormControl>
                                 <FormMessage />
