@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, X } from "lucide-react";
+import { ChevronsUpDown, Plus, X } from "lucide-react";
 import {
   useFieldArray,
   useForm,
@@ -38,8 +38,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/context/LanguageContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
-import { latexSymbols } from "@/utils/latexSymbols";
-import { latexOperations } from "@/utils/latexOperations";
+import { latexSymbols, latexOperations } from "@/utils/latexNotations";
+import {
+  Command,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 declare global {
   interface Window {
@@ -82,9 +93,17 @@ const FormSchema = z.object({
       jenis_kondisi: z.string().min(1, { message: empty_field_error_message }),
       desc: z.string().min(1, { message: empty_field_error_message }),
       tengah: z.string().min(1, { message: empty_field_error_message }),
-      tengah_unit: z.string().min(1, { message: empty_field_error_message }),
+      tengah_unit: z.object({
+        prefix: z.string().optional(),
+        unit: z.string().min(1, { message: empty_field_error_message }),
+        eksponen: z.string().optional(),
+      }),
       rentang: z.string().min(1, { message: empty_field_error_message }),
-      rentang_unit: z.string().min(1, { message: empty_field_error_message }),
+      rentang_unit: z.object({
+        prefix: z.string().optional(),
+        unit: z.string().min(1, { message: empty_field_error_message }),
+        eksponen: z.string().optional(),
+      }),
     })
   ),
   excel: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
@@ -493,6 +512,108 @@ export default function MeasurementForm({
   };
 
   const usedLanguages = form.watch("administrative_data.used_languages") || [];
+
+  const prefixes = [
+    { key: t("yocto"), symbol: "y", value: "\\yocto" },
+    { key: "zepto", symbol: "z", value: "\\zepto" },
+    { key: "atto", symbol: "a", value: "\\atto" },
+    { key: "femto", symbol: "f", value: "\\femto" },
+    { key: t("pico"), symbol: "p", value: "\\pico" },
+    { key: "nano", symbol: "n", value: "\\nano" },
+    { key: t("micro"), symbol: "μ", value: "\\micro" },
+    { key: t("milli"), symbol: "m", value: "\\milli" },
+    { key: t("centi"), symbol: "c", value: "\\centi" },
+    { key: t("deci"), symbol: "d", value: "\\deci" },
+    { key: t("deca"), symbol: "da", value: "\\deca" },
+    { key: t("hecto"), symbol: "h", value: "\\hecto" },
+    { key: "kilo", symbol: "k", value: "\\kilo" },
+    { key: "mega", symbol: "M", value: "\\mega" },
+    { key: "giga", symbol: "G", value: "\\giga" },
+    { key: "tera", symbol: "T", value: "\\tera" },
+    { key: "peta", symbol: "P", value: "\\peta" },
+    { key: t("exa"), symbol: "E", value: "\\exa" },
+    { key: "zetta", symbol: "Z", value: "\\zetta" },
+    { key: "yotta", symbol: "Y", value: "\\yotta" },
+    { key: "ronna", symbol: "R", value: "\\ronna" },
+    { key: "quetta", symbol: "Q", value: "\\quetta" },
+    { key: "kibi", symbol: "Ki", value: "\\kibi" },
+    { key: "mebi", symbol: "Mi", value: "\\mebi" },
+    { key: "gibi", symbol: "Gi", value: "\\gibi" },
+    { key: "tebi", symbol: "Ti", value: "\\tebi" },
+    { key: "pebi", symbol: "Pi", value: "\\pebi" },
+    { key: t("exbi"), symbol: "Ei", value: "\\exbi" },
+    { key: "zebi", symbol: "Zi", value: "\\zebi" },
+    { key: "yobi", symbol: "Yi", value: "\\yobi" }
+  ];
+  
+  const units = [
+    { key: t("degreeCelsius"), symbol: "°C", value: "\\degreecelsius" },
+    { key: t("percent"), symbol: "%", value: "\\percent" },
+    { key: t("metre"), symbol: "m", value: "\\metre" },
+    { key: "kilogram", symbol: "kg", value: "\\kilogram" },
+    { key: t("second"), symbol: "s", value: "\\second" },
+    { key: t("ampere"), symbol: "A", value: "\\ampere" },
+    { key: "kelvin", symbol: "K", value: "\\kelvin" },
+    { key: t("mole"), symbol: "mol", value: "\\mole" },
+    { key: t("candela"), symbol: "cd", value: "\\candela" },
+    { key: t("one"), symbol: "1", value: "\\one" },
+    { key: t("day"), symbol: "d", value: "\\day" },
+    { key: t("hour"), symbol: "h", value: "\\hour" },
+    { key: t("minute"), symbol: "min", value: "\\minute" },
+    { key: t("degree"), symbol: "°", value: "\\degree" },
+    { key: t("arcminute"), symbol: "'", value: "\\arcminute" },
+    { key: t("arcsecond"), symbol: "”", value: "\\arcsecond" },
+    { key: "gram", symbol: "g", value: "\\gram" },
+    { key: "radian", symbol: "rad", value: "\\radian" },
+    { key: "steradian", symbol: "sr", value: "\\steradian" },
+    { key: "hertz", symbol: "Hz", value: "\\hertz" },
+    { key: "newton", symbol: "N", value: "\\newton" },
+    { key: "pascal", symbol: "Pa", value: "\\pascal" },
+    { key: "joule", symbol: "J", value: "\\joule" },
+    { key: "watt", symbol: "W", value: "\\watt" },
+    { key: "coulomb", symbol: "C", value: "\\coulomb" },
+    { key: "volt", symbol: "V", value: "\\volt" },
+    { key: "farad", symbol: "F", value: "\\farad" },
+    { key: "ohm", symbol: "Ω", value: "\\ohm" },
+    { key: "siemens", symbol: "S", value: "\\siemens" },
+    { key: "weber", symbol: "Wb", value: "\\weber" },
+    { key: "tesla", symbol: "T", value: "\\tesla" },
+    { key: "henry", symbol: "H", value: "\\henry" },
+    { key: "lumen", symbol: "lm", value: "\\lumen" },
+    { key: "lux", symbol: "lx", value: "\\lux" },
+    { key: "becquerel", symbol: "Bq", value: "\\becquerel" },
+    { key: "sievert", symbol: "Sv", value: "\\sievert" },
+    { key: "gray", symbol: "Gy", value: "\\gray" },
+    { key: "katal", symbol: "kat", value: "\\katal" },
+    { key: "bit", symbol: "bit", value: "\\bit" },
+    { key: t("byte"), symbol: "B", value: "\\byte" },
+    { key: "ppm", symbol: "ppm", value: "\\ppm" },
+    { key: t("hectare"), symbol: "ha", value: "\\hectare" },
+    { key: t("litre"), symbol: "l", value: "\\litre" },
+    { key: t("tonne"), symbol: "t", value: "\\tonne" },
+    { key: t("electronvolt"), symbol: "eV", value: "\\electronvolt" },
+    { key: "dalton", symbol: "Da", value: "\\dalton" },
+    { key: t("astronomicalUnit"), symbol: "au", value: "\\astronomicalunit" },
+    { key: "neper", symbol: "Np", value: "\\neper" },
+    { key: "bel", symbol: "B", value: "\\bel" },
+    { key: t("decibel"), symbol: "dB", value: "\\decibel" },
+    { key: "bar", symbol: "bar", value: "\\bar" },
+    { key: t("mmHg"), symbol: "mmHg", value: "\\mmHg" },
+    { key: "angstrom", symbol: "Å", value: "\\angstrom" },
+    { key: t("nauticalmile"), symbol: "M", value: "\\nauticalmile" },
+    { key: "barn", symbol: "b", value: "\\barn" },
+    { key: "knot", symbol: "kn", value: "\\knot" },
+    { key: "erg", symbol: "erg", value: "\\erg" },
+    { key: "dyne", symbol: "dyn", value: "\\dyne" },
+    { key: "poise", symbol: "P", value: "\\poise" },
+    { key: "stokes", symbol: "ST", value: "\\stokes" },
+    { key: "stilb", symbol: "sb", value: "\\stilb" },
+    { key: "phot", symbol: "ph", value: "\\phot" },
+    { key: "gal", symbol: "Gal", value: "\\gal" },
+    { key: "maxwell", symbol: "Mx", value: "\\maxwell" },
+    { key: "gauss", symbol: "G", value: "\\gauss" },
+    { key: "œrsted", symbol: "Oe", value: "\\oersted" }
+  ];
 
   const onSubmit = async (data: any) => {
     try {
@@ -1100,19 +1221,121 @@ export default function MeasurementForm({
                           )}
                         />
                       </div>
-                      <div id="tengah_unit">
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.tengah_unit`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input placeholder={t("satuan")} {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      <div id="tengah_unit" className="grid grid-cols-3 gap-1">
+                        <div id="prefix">
+                          <FormField
+                            control={form.control}
+                            name={`conditions.${index}.tengah_unit.prefix`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className="w-full justify-between"
+                                      >
+                                        {field.value
+                                          ? prefixes.find((p) => p.value === field.value)?.symbol
+                                          : `${t("prefix")}`}
+                                        <ChevronsUpDown className="opacity-50" />
+                                      </Button>
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                    <Command>
+                                      <CommandInput className="h-9" />
+                                      <CommandList>
+                                        <CommandGroup>
+                                          {prefixes.map((prefix) => (
+                                            <CommandItem
+                                              key={prefix.value}
+                                              value={`${prefix.key} ${prefix.symbol}`}
+                                              onSelect={() => {
+                                                form.setValue(
+                                                  `conditions.${index}.tengah_unit.prefix`,
+                                                  prefix.value
+                                                );
+                                              }}
+                                            >
+                                              {`${prefix.key} (${prefix.symbol})`}
+                                            </CommandItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div id="unit">
+                          <FormField
+                            control={form.control}
+                            name={`conditions.${index}.tengah_unit.unit`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className="w-full justify-between"
+                                      >
+                                        {field.value
+                                          ? units.find((p) => p.value === field.value)?.symbol
+                                          : `${t("satuan")}`}
+                                        <ChevronsUpDown className="opacity-50" />
+                                      </Button>
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                    <Command>
+                                      <CommandInput className="h-9" />
+                                      <CommandList>
+                                        <CommandGroup>
+                                          {units.map((unit) => (
+                                            <CommandItem
+                                              key={unit.value}
+                                              value={`${unit.key} ${unit.symbol}`}
+                                              onSelect={() => {
+                                                form.setValue(
+                                                  `conditions.${index}.tengah_unit.unit`,
+                                                  unit.value
+                                                );
+                                              }}
+                                            >
+                                              {`${unit.key} (${unit.symbol})`}
+                                            </CommandItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div id="eksponen">
+                          <FormField
+                            control={form.control}
+                            name={`conditions.${index}.tengah_unit.eksponen`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input placeholder={t("eksponen")} {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1133,19 +1356,121 @@ export default function MeasurementForm({
                           )}
                         />
                       </div>
-                      <div id="rentang_unit">
-                        <FormField
-                          control={form.control}
-                          name={`conditions.${index}.rentang_unit`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input placeholder={t("satuan")} {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      <div id="rentang_unit" className="grid grid-cols-3 gap-1">
+                        <div id="prefix">
+                          <FormField
+                            control={form.control}
+                            name={`conditions.${index}.rentang_unit.prefix`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className="w-full justify-between"
+                                      >
+                                        {field.value
+                                          ? prefixes.find((p) => p.value === field.value)?.symbol
+                                          : `${t("prefix")}`}
+                                        <ChevronsUpDown className="opacity-50" />
+                                      </Button>
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                    <Command>
+                                      <CommandInput className="h-9" />
+                                      <CommandList>
+                                        <CommandGroup>
+                                          {prefixes.map((prefix) => (
+                                            <CommandItem
+                                              key={prefix.value}
+                                              value={`${prefix.key} ${prefix.symbol}`}
+                                              onSelect={() => {
+                                                form.setValue(
+                                                  `conditions.${index}.rentang_unit.prefix`,
+                                                  prefix.value
+                                                );
+                                              }}
+                                            >
+                                              {`${prefix.key} (${prefix.symbol})`}
+                                            </CommandItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div id="unit">
+                          <FormField
+                            control={form.control}
+                            name={`conditions.${index}.rentang_unit.unit`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        className="w-full justify-between"
+                                      >
+                                        {field.value
+                                          ? units.find((p) => p.value === field.value)?.symbol
+                                          : `${t("satuan")}`}
+                                        <ChevronsUpDown className="opacity-50" />
+                                      </Button>
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                    <Command>
+                                      <CommandInput className="h-9" />
+                                      <CommandList>
+                                        <CommandGroup>
+                                          {units.map((unit) => (
+                                            <CommandItem
+                                              key={unit.value}
+                                              value={`${unit.key} ${unit.symbol}`}
+                                              onSelect={() => {
+                                                form.setValue(
+                                                  `conditions.${index}.rentang_unit.unit`,
+                                                  unit.value
+                                                );
+                                              }}
+                                            >
+                                              {`${unit.key} (${unit.symbol})`}
+                                            </CommandItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div id="eksponen">
+                          <FormField
+                            control={form.control}
+                            name={`conditions.${index}.rentang_unit.eksponen`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input placeholder={t("eksponen")} {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>

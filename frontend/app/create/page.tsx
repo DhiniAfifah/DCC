@@ -123,8 +123,16 @@ export default function CreateDCC() {
         desc: "",
         tengah: "",
         rentang: "",
-        rentang_unit: "",
-        tengah_unit: "",
+        rentang_unit: {
+          prefix: "",
+          unit: "",
+          eksponen: "",
+        },
+        tengah_unit: {
+          prefix: "",
+          unit: "",
+          eksponen: "",
+        },
       },
     ],
     sheet_name: "",
@@ -271,6 +279,17 @@ export default function CreateDCC() {
         formula: method.has_formula
           ? method.formula
           : { latex: "", mathml: "" },
+      })),
+      conditions: formData.conditions.map((condition) => ({
+        ...condition,
+        rentang_unit: {
+          ...condition.rentang_unit,
+          eksponen: `\\tothe{${condition.rentang_unit.eksponen}}`,
+        },
+        tengah_unit: {
+          ...condition.tengah_unit,
+          eksponen: `\\tothe{${condition.tengah_unit.eksponen}}`,
+        },
       })),
       statements: formData.statements.map((stmt) => ({
         ...stmt,

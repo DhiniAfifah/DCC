@@ -23,8 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/context/LanguageContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
-import { latexSymbols } from "@/utils/latexSymbols";
-import { latexOperations } from "@/utils/latexOperations";
+import { latexSymbols, latexOperations } from "@/utils/latexNotations";
 import {
   Select,
   SelectTrigger,

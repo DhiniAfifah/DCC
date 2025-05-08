@@ -99,7 +99,9 @@ const translations: Record<string, { id: string; en: string }> = {
   other_condition: { id: 'Masukkan kondisi lain', en: 'Enter another condition' },
   tengah: { id: 'Titik tengah', en: 'Median' },
   nilai: { id: 'Nilai', en: 'Value' },
+  prefix: { id: 'Awalan', en: 'Prefix' },
   satuan: { id: 'Satuan', en: 'Unit' },
+  eksponen: { id: 'Pangkat', en: 'Exponent' },
   rentang: { id: 'Rentang', en: 'Range' },
 
   // Excel
@@ -137,6 +139,45 @@ const translations: Record<string, { id: string; en: string }> = {
 
   // Importer
   pdf: { id: 'Unggah file PDF', en: 'Upload PDF file' },
+
+  // === D-SI ===
+
+  // Prefix
+  yocto: { id: 'yokto', en: 'yocto' },
+  pico: { id: 'piko', en: 'pico' },
+  micro: { id: 'mikro', en: 'micro' },
+  milli: { id: 'mili', en: 'milli' },
+  centi: { id: 'senti', en: 'centi' },
+  deci: { id: 'desi', en: 'deci' },
+  deca: { id: 'deka', en: 'deca' },
+  hecto: { id: 'hekto', en: 'hecto' },
+  exa: { id: 'eksa', en: 'exa' },
+  exbi: { id: 'eksbi', en: 'exbi' },
+
+  // Unit
+  degreeCelsius: { id: 'derajat Celsius', en: 'degree Celsius' },
+  percent: { id: 'persen', en: 'percent' },
+  metre: { id: 'meter', en: 'metre' },
+  second: { id: 'detik', en: 'second' },
+  ampere: { id: 'amper', en: 'ampere' },
+  mole: { id: 'mol', en: 'mole' },
+  candela: { id: 'kandela', en: 'candela' },
+  one: { id: 'satu', en: 'one' },
+  day: { id: 'hari', en: 'day' },
+  hour: { id: 'jam', en: 'hour' },
+  minute: { id: 'menit', en: 'minute' },
+  degree: { id: 'derajat', en: 'degree' },
+  arcminute: { id: 'menit busur', en: 'arcminute' },
+  arcsecond: { id: 'detik busur', en: 'arcsecond' },
+  byte: { id: 'bite', en: 'byte' },
+  hectare: { id: 'hektar', en: 'hectare' },
+  litre: { id: 'liter', en: 'litre' },
+  tonne: { id: 'ton', en: 'tonne' },
+  electronvolt: { id: 'elektronvolt', en: 'electronvolt' },
+  astronomicalUnit: { id: 'satuan astronomi', en: 'astronomical unit' },
+  decibel: { id: 'desibel', en: 'decibel' },
+  mmHg: { id: 'milimeter air raksa', en: 'millimetre of mercury' },
+  nauticalmile: { id: 'mil laut', en: 'nauticalmile' },
 };
 
 export const getTranslation = (key: string, language: Language = 'en') => {
