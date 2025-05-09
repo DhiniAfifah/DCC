@@ -105,7 +105,7 @@ const fetchLanguages = async (): Promise<Language[]> => {
 };
 
 const empty_field_error_message = "Input required.";
-const FormSchema = z.object({
+export const FormSchema = z.object({
   software: z.string().min(1, { message: empty_field_error_message }),
   version: z.string().min(1, { message: empty_field_error_message }),
   administrative_data: z.object({

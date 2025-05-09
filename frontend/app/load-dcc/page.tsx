@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/context/LanguageContext";
 
-export default function CreateDCC() {
+export default function LoadDCC() {
   const { t } = useLanguage();
   
   const [formData, setFormData] = useState({
