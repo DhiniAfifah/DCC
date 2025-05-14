@@ -131,7 +131,7 @@ export default function CreateDCC() {
     excel: "",
     results: [
       {
-        parameters: "",
+        parameters: [""],
         columns: [
           {
             kolom: "",
@@ -247,6 +247,19 @@ export default function CreateDCC() {
   };
 
   const handleSubmit = async () => {
+    // Validasi results
+    const isValid = formData.results.every((result) => {
+      return (
+        Array.isArray(result.parameters) &&
+        result.parameters.every((param) => typeof param === "string")
+      );
+    });
+
+    if (!isValid) {
+      alert("Parameters harus berupa array yang berisi string.");
+      return;
+    }
+
     const modifiedFormData = {
       ...formData,
       administrative_data: {
@@ -290,7 +303,7 @@ export default function CreateDCC() {
         };
       }),
       results: formData.results.map((result) => ({
-        parameter: result.parameters,
+        parameters: result.parameters,
         columns: result.columns.map((col) => ({
           kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
           real_list: Number(col.real_list) || 1,
@@ -306,6 +319,7 @@ export default function CreateDCC() {
     };
 
     console.log("Data yang dikirim ke backend:", modifiedFormData);
+    console.log("fileName:", fileName);
 
     try {
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {

@@ -42,11 +42,20 @@ def get_project_paths(dcc: schemas.DCCFormCreate):
         if not template_path.exists():
             raise FileNotFoundError(f"Template tidak ditemukan di: {template_path}")
             
+            
+        excel_path = backend_root / "uploads" / dcc.excel
+        if not excel_path.exists():
+            # Try the api/uploads path
+            excel_path = backend_root / "api" / "uploads" / dcc.excel
+            if not excel_path.exists():
+                logging.warning(f"Excel file not found at either expected location: {dcc.excel}")
+                # Don't raise error here, just log the warning
+        
         return {
             'template': template_path,
             'word_output': backend_root / "dcc_files" / f"{dcc.sertifikat}.docx",
             'pdf_output': backend_root / "dcc_files" / f"{dcc.sertifikat}.pdf",
-            'excel': backend_root / "uploads" / dcc.excel
+            'excel': excel_path
         }
         
     except Exception as e:
@@ -171,18 +180,33 @@ def some_function_to_get_table_data(dcc):
 def prepare_input_tables(dcc):
     input_tables = {}
     
-    # Process each result (table) from the form
+    # Proses setiap hasil dari formulir
     for result in dcc.results:
-        parameter_name = result.parameter
+        parameter_name = result.parameters[0] if isinstance(result.parameters, list) else result.parameters
         column_mapping = {}
         
-        # Process regular columns
+        # Proses kolom biasa
         for column in result.columns:
             column_name = column.kolom
-            num_subcols = int(column.real_list) if isinstance(column.real_list, str) else len(column.real_list)
+            try:
+                # Periksa jika real_list adalah integer atau string/list
+                if isinstance(column.real_list, int):
+                    num_subcols = column.real_list
+                elif isinstance(column.real_list, str):
+                    num_subcols = int(column.real_list)
+                elif hasattr(column.real_list, "__len__"):
+                    num_subcols = len(column.real_list)
+                else:
+                    num_subcols = 1  # Default jika tidak ada value yang valid
+                    
+                logging.debug(f"Determined num_subcols: {num_subcols}")
+            except Exception as e:
+                logging.error(f"Error processing column {column.kolom}: {e}")
+                num_subcols = 1  # Default jika terjadi error
+                
             column_mapping[column_name] = num_subcols
         
-        # Add uncertainty column if present
+        # Tambahkan kolom ketidakpastian jika ada
         if hasattr(result, 'uncertainty') and result.uncertainty:
             uncertainty_column = "Uncertainty"
             column_mapping[uncertainty_column] = 1
@@ -193,31 +217,58 @@ def prepare_input_tables(dcc):
 
 
 # Memproses data Excel dan mengembalikan hasil terstruktur untuk XML
-def process_excel_data(excel_path, sheet_name, input_tables):
-    logging.info(f"Memproses data Excel dari {excel_path}, sheet: {sheet_name}")
+def process_excel_data(excel_filename, sheet_name, input_tables):
+    logging.info(f"Processing Excel data from {excel_filename}, sheet: {sheet_name}")
     table_data = {}
-    pythoncom.CoInitialize() 
-    
+    pythoncom.CoInitialize()
+
     try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        uploads_dir = os.path.join(current_dir, 'uploads')
+        excel_path = os.path.join(uploads_dir, excel_filename)
+        excel_path = os.path.abspath(excel_path)  # Pastikan path absolut
+        
+        logging.info(f"Membuka file Excel: {excel_path}")
+        if not os.path.exists(excel_path):
+            logging.error(f"File Excel tidak ditemukan: {excel_path}")
+            raise FileNotFoundError(f"File Excel tidak ditemukan: {excel_path}")
+        
+        # pembukaan file Excel menggunakan win32
         excel = win32.Dispatch("Excel.Application")
         excel.Visible = False
-        wb = excel.Workbooks.Open(excel_path)
+        
+        try:
+            wb = excel.Workbooks.Open(excel_path)
+        except Exception as e:
+            logging.error(f"Error opening Excel file: {e}")
+            raise Exception(f"Failed to open Excel file: {e}")
+
+        # Normalisasi nama sheet
+        sheet_names = [sheet.Name.strip().replace(" ", "").lower() for sheet in wb.Sheets]
+        normalized_sheet_name = sheet_name.strip().replace(" ", "").lower()
+        
+        logging.info(f"Normalized requested sheet name: {normalized_sheet_name}")
+        
+        if normalized_sheet_name not in sheet_names:
+            logging.error(f"Sheet '{sheet_name}' not found in the Excel file")
+            raise ValueError(f"Sheet '{sheet_name}' not found in the Excel file")
+
+        # Mengakses sheet yang valid
         ws = wb.Sheets(sheet_name)
 
         max_columns = ws.UsedRange.Columns.Count
         max_rows = ws.UsedRange.Rows.Count
 
-        # Deteksi tabel dalam worksheet
         tables = []
         in_table = False
         first_row, last_row = None, None
 
-        # Deteksi batas baris tiap tabel
+        # Detecting rows and columns in the table
         for row in range(1, max_rows + 1):
             filled_cells = [ws.Cells(row, col).Value for col in range(1, max_columns + 1)]
             filled_cells = [cell for cell in filled_cells if cell not in [None, ""]]
 
-            if len(filled_cells) > 2: # Assuming a table row has at least 3 cells with data
+            if len(filled_cells) > 2:
                 if not in_table:
                     first_row = row
                     in_table = True
@@ -226,82 +277,63 @@ def process_excel_data(excel_path, sheet_name, input_tables):
                 if in_table:
                     tables.append((first_row, last_row))
                     in_table = False
-                    
-        # Handle the case where the last table extends to the end of the sheet
+        
         if in_table:
             tables.append((first_row, last_row))
 
-        # Get table names from input_tables
+        # Extracting table data
         table_names = list(input_tables.keys())
 
-         # ambil data dari setiap tabel
         for idx, (first_row, last_row) in enumerate(tables):
-            if idx >= len(table_names):
-                continue  
-            
-            # Find the column boundaries for this table
-            first_col, last_col = None, None
-            for col in range(1, max_columns + 1):
-                col_has_data = any(ws.Cells(row, col).Value not in [None, ""] for row in range(first_row, last_row + 1))
-                if col_has_data:
-                    if first_col is None:
-                        first_col = col
-                    last_col = col
+            table_name = table_names[idx] if idx < len(table_names) else f"Table {idx + 1}"
+            column_map = input_tables.get(table_name, {})
+            column_names = list(column_map.keys())
+            subcol_counts = list(column_map.values())
 
             extracted_data = []
-            
-            # Get the expected columns from input_tables
-            table_name = table_names[idx]
-            expected_cols = input_tables[table_name]
-            expected_col_names = list(expected_cols.keys())
 
-            # For each data column in the table
-            current_col = first_col
-            for col_name in expected_col_names:
-                if col_name == "Uncertainty":
-                    continue  # Skip uncertainty column as it's added manually later
-                    
-                num_subcols = expected_cols[col_name]
-                
-                for _ in range(num_subcols):
-                    numbers = []
-                    units = []
-            
-                # Extract all values from this column
+            for col in range(1, max_columns + 1):
+                numbers = []
+                units = []
                 for row in range(first_row, last_row + 1):
                     value = ws.Cells(row, col).Value
                     if isinstance(value, (int, float)):
                         numbers.append(str(value))
+                        unit = ws.Cells(row, col + 1).Value
+                        units.append(unit if isinstance(unit, str) else None)
 
-                        # Try to get unit from adjacent cell
-                        unit = ws.Cells(row, current_col + 1).Value
-                        if isinstance(unit, str):
-                            units.append(unit)
-                        else:
-                            units.append("")
-                                
-                                
-                # Only add if we found data
                 if numbers:
                     extracted_data.append((numbers, units))
-                    
-                    # Move to next column
-                current_col += 2  # Assuming each value+unit takes 2 columns
-            
-            # Store the extracted data for this table
+
             table_data[table_name] = extracted_data
 
+        wb.Close(False)
+        excel.Quit()
+
         return table_data
-    
+
+    except FileNotFoundError as e:
+        logging.error(f"File not found error: {str(e)}")
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        logging.error(f"Value error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logging.error(f"Error processing Excel: {str(e)}")
-        raise
+        logging.error(f"Error processing Excel file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
     finally:
-        if 'wb' in locals() and wb:
-            wb.Close(False)
-        if 'excel' in locals() and excel:
-            excel.Quit()
+        # Pastikan untuk membersihkan COM objects dan menutup Excel
+        try:
+            if 'wb' in locals() and wb:
+                wb.Close(False)
+            if 'excel' in locals() and excel:
+                excel.Quit()
+        except Exception as e:
+            logging.error(f"Error during cleanup: {str(e)}")
+
         pythoncom.CoUninitialize()
+
+
 
 #XML
 def generate_xml(dcc, table_data):
@@ -498,7 +530,11 @@ def generate_xml(dcc, table_data):
                 input_tables = prepare_input_tables(dcc)
                 
                 for result_idx, result in enumerate(dcc.results):
-                    parameter_name = result.parameter
+                    if isinstance(result.parameters, list) and len(result.parameters) > 0:
+                        parameter_name = result.parameters[0]  # Gunakan elemen pertama jika array
+                    else:
+                        parameter_name = result.parameters  # Gunakan nilai langsung jika string
+                    
                     if parameter_name not in table_data:
                         logging.warning(f"Table '{parameter_name}' not found in Excel data") 
                         continue
@@ -649,6 +685,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         # Process the results
         results_data = []
         for result in dcc.results:
+            if not isinstance(result.parameters, list) or not all(isinstance(param, str) for param in result.parameters):
+                raise HTTPException(status_code=422, detail="All 'parameters' must be an array of strings.")
             result_data = {
                 "parameters": result.parameters,
                 "columns": [
@@ -674,7 +712,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             software_name=dcc.software,
             software_version=dcc.version,
             administrative_data=administrative_data_dict,
-            measurement_timeline=measurement_timeline_data,
+            Measurement_TimeLine=measurement_timeline_data,
             objects_description=json.dumps([obj.dict() for obj in dcc.objects]),
             responsible_persons=json.dumps(responsible_persons_data),
             owner=json.dumps(dcc.owner.dict()),
@@ -683,10 +721,12 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             conditions=json.dumps(conditions_data), 
             excel=dcc.excel,
             sheet_name=dcc.sheet_name,
-            statements=json.dumps([stmt.dict() for stmt in dcc.statements]),
+            statement=json.dumps([stmt.dict() for stmt in dcc.statements]),
         )
 
-        logging.info(f"Saving DCC: {dcc.sertifikat} to the database")
+        #logging.info(f"Saving DCC: {dcc.sertifikat} to the database")
+        logging.info(f"Saving DCC: {dcc.administrative_data.sertifikat} to the database")
+        
         db.add(db_dcc)
         db.commit()
         db.refresh(db_dcc)
@@ -698,6 +738,9 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         new_word_path = str(paths['word_output'])
         new_pdf_path = str(paths['pdf_output'])
         xml_path = str(paths['word_output'].with_suffix('.xml'))
+        
+        logging.info(f"Excel path full: {paths['excel']}")
+        logging.info(f"Excel file exists: {os.path.exists(paths['excel'])}")
 
         
         # Buat folder output (jika belum ada)
@@ -708,7 +751,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         input_tables = prepare_input_tables(dcc) 
         
         # Ambil data tabel dengan menggunakan process_excel_data
-        table_data = process_excel_data(dcc.excel, dcc.sheet_name, input_tables)
+        table_data = process_excel_data(str(paths['excel']), dcc.sheet_name, input_tables)
         
         # Generate XML
         xml_content = generate_xml(dcc, table_data)

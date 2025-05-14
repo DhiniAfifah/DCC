@@ -100,18 +100,12 @@ const FormSchema = z.object({
           real_list: z.string().min(1, { message: empty_field_error_message }),
         })
       ),
-      uncertainty: z.array(
-        z.object({
-          factor: z.string().min(1, { message: empty_field_error_message }),
-          probability: z
-            .string()
-            .min(1, { message: empty_field_error_message }),
-          distribution: z
-            .string()
-            .min(1, { message: empty_field_error_message }),
-          real_list: z.string().min(1, { message: empty_field_error_message }),
-        })
-      ),
+      uncertainty: z.object({
+        factor: z.string().min(1, { message: empty_field_error_message }),
+        probability: z.string().min(1, { message: empty_field_error_message }),
+        distribution: z.string().min(1, { message: empty_field_error_message }),
+        real_list: z.string().min(1, { message: empty_field_error_message }),
+      }),
     })
   ),
 });
@@ -529,7 +523,7 @@ export default function MeasurementForm({
         // Jika file adalah Excel
       } else if (file.name.endsWith(".xls") || file.name.endsWith(".xlsx")) {
         const formData = new FormData();
-        formData.append("excel", file); // Menggunakan FormData untuk mengirim file Excel
+        formData.append("excel", file);
 
         try {
           const response = await fetch("http://127.0.0.1:8000/upload-excel/", {
@@ -542,8 +536,8 @@ export default function MeasurementForm({
           const result = await response.json();
           console.log("Excel file uploaded:", result);
 
-          setFileName(result.filename); // Simpan nama file Excel
-          setSheets(result.sheets || []); // Simpan nama sheet dari file Excel
+          setFileName(result.filename);
+          setSheets(result.sheets || []);
 
           alert(`Excel file uploaded successfully: ${result.filename}`);
         } catch (error) {
@@ -1415,7 +1409,7 @@ export default function MeasurementForm({
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() =>
                 appendResult({
-                  parameters: "",
+                  parameters: [""],
                   columns: [
                     {
                       kolom: "",
