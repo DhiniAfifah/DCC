@@ -1212,9 +1212,9 @@ export default function MeasurementForm({
                     </div>
                   </div>
                   <div id="tengah">
-                    <FormLabel>{t("tengah")}</FormLabel>
                     <div className="grid grid-cols-2 gap-4">
                       <div id="tengah">
+                        <FormLabel>{t("tengah")}</FormLabel>
                         <FormField
                           control={form.control}
                           name={`conditions.${index}.tengah`}
@@ -1228,147 +1228,150 @@ export default function MeasurementForm({
                           )}
                         />
                       </div>
-                      <div id="tengah_unit" className="grid grid-cols-3 gap-1">
-                        <div id="prefix">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.tengah_unit.prefix`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <FormControl>
-                                      <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className="w-full justify-between"
-                                      >
-                                        {field.value
-                                          ? prefixes.find((p) => p.value === field.value)?.symbol
-                                          : `${t("prefix")}`}
-                                        <ChevronsUpDown className="opacity-50" />
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                                    <Command>
-                                      <CommandInput className="h-9" />
-                                      <CommandList>
-                                        <CommandGroup>
-                                          {prefixes.map((prefix) => (
-                                            <CommandItem
-                                              key={prefix.value}
-                                              value={`${prefix.key} ${prefix.symbol}`}
-                                              onSelect={() => {
-                                                form.setValue(
-                                                  `conditions.${index}.tengah_unit.prefix`,
-                                                  prefix.value
-                                                );
-                                                form.setValue(
-                                                  `conditions.${index}.tengah_unit.prefix_pdf`,
-                                                  prefix.symbol
-                                                );
-                                              }}
-                                            >
-                                              {`${prefix.key} (${prefix.symbol})`}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="unit">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.tengah_unit.unit`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <FormControl>
-                                      <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className="w-full justify-between"
-                                      >
-                                        {field.value
-                                          ? units.find((p) => p.value === field.value)?.symbol
-                                          : `${t("satuan")}`}
-                                        <ChevronsUpDown className="opacity-50" />
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                                    <Command>
-                                      <CommandInput className="h-9" />
-                                      <CommandList>
-                                        <CommandGroup>
-                                          {units.map((unit) => (
-                                            <CommandItem
-                                              key={unit.value}
-                                              value={`${unit.key} ${unit.symbol}`}
-                                              onSelect={() => {
-                                                form.setValue(
-                                                  `conditions.${index}.tengah_unit.unit`,
-                                                  unit.value
-                                                );
-                                                form.setValue(
-                                                  `conditions.${index}.tengah_unit.unit_pdf`,
-                                                  unit.symbol
-                                                );
-                                              }}
-                                            >
-                                              {`${unit.key} (${unit.symbol})`}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="eksponen">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.tengah_unit.eksponen`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                <Input
-                                  placeholder={t("eksponen")}
-                                  value={field.value}
-                                  onChange={(e) => {
-                                    const value = e.target.value;
-                                    field.onChange(value); // update eksponen
-                                    form.setValue(
-                                      `conditions.${index}.tengah_unit.eksponen_pdf`,
-                                      `\\tothe{${value}}`
-                                    ); // update eksponen_pdf
-                                  }}
-                                />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                      <div id="tengah_unit">
+                        <FormLabel>{t("satuan")}</FormLabel>
+                        <div className="grid grid-cols-3 gap-1">
+                          <div id="prefix">
+                            <FormField
+                              control={form.control}
+                              name={`conditions.${index}.tengah_unit.prefix`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant="outline"
+                                          role="combobox"
+                                          className="w-full justify-between"
+                                        >
+                                          {field.value
+                                            ? prefixes.find((p) => p.value === field.value)?.symbol
+                                            : `${t("prefix")}`}
+                                          <ChevronsUpDown className="opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                      <Command>
+                                        <CommandInput className="h-9" />
+                                        <CommandList>
+                                          <CommandGroup>
+                                            {prefixes.map((prefix) => (
+                                              <CommandItem
+                                                key={prefix.value}
+                                                value={`${prefix.key} ${prefix.symbol}`}
+                                                onSelect={() => {
+                                                  form.setValue(
+                                                    `conditions.${index}.tengah_unit.prefix`,
+                                                    prefix.value
+                                                  );
+                                                  form.setValue(
+                                                    `conditions.${index}.tengah_unit.prefix_pdf`,
+                                                    prefix.symbol
+                                                  );
+                                                }}
+                                              >
+                                                {`${prefix.key} (${prefix.symbol})`}
+                                              </CommandItem>
+                                            ))}
+                                          </CommandGroup>
+                                        </CommandList>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div id="unit">
+                            <FormField
+                              control={form.control}
+                              name={`conditions.${index}.tengah_unit.unit`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant="outline"
+                                          role="combobox"
+                                          className="w-full justify-between"
+                                        >
+                                          {field.value
+                                            ? units.find((p) => p.value === field.value)?.symbol
+                                            : `${t("satuan")}`}
+                                          <ChevronsUpDown className="opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                      <Command>
+                                        <CommandInput className="h-9" />
+                                        <CommandList>
+                                          <CommandGroup>
+                                            {units.map((unit) => (
+                                              <CommandItem
+                                                key={unit.value}
+                                                value={`${unit.key} ${unit.symbol}`}
+                                                onSelect={() => {
+                                                  form.setValue(
+                                                    `conditions.${index}.tengah_unit.unit`,
+                                                    unit.value
+                                                  );
+                                                  form.setValue(
+                                                    `conditions.${index}.tengah_unit.unit_pdf`,
+                                                    unit.symbol
+                                                  );
+                                                }}
+                                              >
+                                                {`${unit.key} (${unit.symbol})`}
+                                              </CommandItem>
+                                            ))}
+                                          </CommandGroup>
+                                        </CommandList>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div id="eksponen">
+                            <FormField
+                              control={form.control}
+                              name={`conditions.${index}.tengah_unit.eksponen`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                  <Input
+                                    placeholder={t("eksponen")}
+                                    value={field.value}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      field.onChange(value); // update eksponen
+                                      form.setValue(
+                                        `conditions.${index}.tengah_unit.eksponen_pdf`,
+                                        `\\tothe{${value}}`
+                                      ); // update eksponen_pdf
+                                    }}
+                                  />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                   <div id="rentang">
-                    <FormLabel>{t("rentang")}</FormLabel>
                     <div className="grid grid-cols-2 gap-4">
                       <div id="rentang_value">
+                        <FormLabel>{t("rentang")}</FormLabel>
                         <FormField
                           control={form.control}
                           name={`conditions.${index}.rentang`}
@@ -1382,140 +1385,143 @@ export default function MeasurementForm({
                           )}
                         />
                       </div>
-                      <div id="rentang_unit" className="grid grid-cols-3 gap-1">
-                        <div id="prefix">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.rentang_unit.prefix`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <FormControl>
-                                      <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className="w-full justify-between"
-                                      >
-                                        {field.value
-                                          ? prefixes.find((p) => p.value === field.value)?.symbol
-                                          : `${t("prefix")}`}
-                                        <ChevronsUpDown className="opacity-50" />
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                                    <Command>
-                                      <CommandInput className="h-9" />
-                                      <CommandList>
-                                        <CommandGroup>
-                                          {prefixes.map((prefix) => (
-                                            <CommandItem
-                                              key={prefix.value}
-                                              value={`${prefix.key} ${prefix.symbol}`}
-                                              onSelect={() => {
-                                                form.setValue(
-                                                  `conditions.${index}.rentang_unit.prefix`,
-                                                  prefix.value
-                                                );
-                                                form.setValue(
-                                                  `conditions.${index}.rentang_unit.prefix_pdf`,
-                                                  prefix.symbol
-                                                );
-                                              }}
-                                            >
-                                              {`${prefix.key} (${prefix.symbol})`}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="unit">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.rentang_unit.unit`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <FormControl>
-                                      <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className="w-full justify-between"
-                                      >
-                                        {field.value
-                                          ? units.find((p) => p.value === field.value)?.symbol
-                                          : `${t("satuan")}`}
-                                        <ChevronsUpDown className="opacity-50" />
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                                    <Command>
-                                      <CommandInput className="h-9" />
-                                      <CommandList>
-                                        <CommandGroup>
-                                          {units.map((unit) => (
-                                            <CommandItem
-                                              key={unit.value}
-                                              value={`${unit.key} ${unit.symbol}`}
-                                              onSelect={() => {
-                                                form.setValue(
-                                                  `conditions.${index}.rentang_unit.unit`,
-                                                  unit.value
-                                                );
-                                                form.setValue(
-                                                  `conditions.${index}.rentang_unit.unit_pdf`,
-                                                  unit.symbol
-                                                );
-                                              }}
-                                            >
-                                              {`${unit.key} (${unit.symbol})`}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="eksponen">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.rentang_unit.eksponen`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                <Input
-                                  placeholder={t("eksponen")}
-                                  value={field.value}
-                                  onChange={(e) => {
-                                    const value = e.target.value;
-                                    field.onChange(value); // update eksponen
-                                    form.setValue(
-                                      `conditions.${index}.rentang_unit.eksponen_pdf`,
-                                      `\\tothe{${value}}`
-                                    ); // update eksponen_pdf
-                                  }}
-                                />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                      <div id="rentang_unit">
+                        <FormLabel>{t("satuan")}</FormLabel>
+                        <div className="grid grid-cols-3 gap-1">
+                          <div id="prefix">
+                            <FormField
+                              control={form.control}
+                              name={`conditions.${index}.rentang_unit.prefix`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant="outline"
+                                          role="combobox"
+                                          className="w-full justify-between"
+                                        >
+                                          {field.value
+                                            ? prefixes.find((p) => p.value === field.value)?.symbol
+                                            : `${t("prefix")}`}
+                                          <ChevronsUpDown className="opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                      <Command>
+                                        <CommandInput className="h-9" />
+                                        <CommandList>
+                                          <CommandGroup>
+                                            {prefixes.map((prefix) => (
+                                              <CommandItem
+                                                key={prefix.value}
+                                                value={`${prefix.key} ${prefix.symbol}`}
+                                                onSelect={() => {
+                                                  form.setValue(
+                                                    `conditions.${index}.rentang_unit.prefix`,
+                                                    prefix.value
+                                                  );
+                                                  form.setValue(
+                                                    `conditions.${index}.rentang_unit.prefix_pdf`,
+                                                    prefix.symbol
+                                                  );
+                                                }}
+                                              >
+                                                {`${prefix.key} (${prefix.symbol})`}
+                                              </CommandItem>
+                                            ))}
+                                          </CommandGroup>
+                                        </CommandList>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div id="unit">
+                            <FormField
+                              control={form.control}
+                              name={`conditions.${index}.rentang_unit.unit`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <FormControl>
+                                        <Button
+                                          variant="outline"
+                                          role="combobox"
+                                          className="w-full justify-between"
+                                        >
+                                          {field.value
+                                            ? units.find((p) => p.value === field.value)?.symbol
+                                            : `${t("satuan")}`}
+                                          <ChevronsUpDown className="opacity-50" />
+                                        </Button>
+                                      </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                      <Command>
+                                        <CommandInput className="h-9" />
+                                        <CommandList>
+                                          <CommandGroup>
+                                            {units.map((unit) => (
+                                              <CommandItem
+                                                key={unit.value}
+                                                value={`${unit.key} ${unit.symbol}`}
+                                                onSelect={() => {
+                                                  form.setValue(
+                                                    `conditions.${index}.rentang_unit.unit`,
+                                                    unit.value
+                                                  );
+                                                  form.setValue(
+                                                    `conditions.${index}.rentang_unit.unit_pdf`,
+                                                    unit.symbol
+                                                  );
+                                                }}
+                                              >
+                                                {`${unit.key} (${unit.symbol})`}
+                                              </CommandItem>
+                                            ))}
+                                          </CommandGroup>
+                                        </CommandList>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div id="eksponen">
+                            <FormField
+                              control={form.control}
+                              name={`conditions.${index}.rentang_unit.eksponen`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                  <Input
+                                    placeholder={t("eksponen")}
+                                    value={field.value}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      field.onChange(value); // update eksponen
+                                      form.setValue(
+                                        `conditions.${index}.rentang_unit.eksponen_pdf`,
+                                        `\\tothe{${value}}`
+                                      ); // update eksponen_pdf
+                                    }}
+                                  />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div> 
                       </div>
                     </div>
                   </div>
