@@ -81,7 +81,5 @@ export default function Login({formData}: {formData: any}) {
                 </div>
             </form>
         </FormProvider>
-
-        
     );
 }

@@ -218,6 +218,7 @@ export default function Statements({
                                 <Input
                                   placeholder={`${t("bahasa")} ${lang.value}`}
                                   {...field}
+                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                             </div>
@@ -514,7 +515,7 @@ export default function Statements({
                 className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
                 onClick={() =>
                   appendStatement({
-                    values: "",
+                    values: usedLanguages.map(() => ""),
                     has_formula: false,
                     formula: {
                       latex: "",

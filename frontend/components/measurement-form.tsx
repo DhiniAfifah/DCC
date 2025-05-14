@@ -212,6 +212,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
                                 <Input
                                   placeholder={`${t("bahasa")} ${lang.value}`}
                                   {...field}
+                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -1645,10 +1646,9 @@ export default function MeasurementForm({
                                 <FormItem>
                                   <FormControl>
                                     <Input
-                                      placeholder={`${t("bahasa")} ${
-                                        lang.value
-                                      }`}
+                                      placeholder={`${t("bahasa")} ${lang.value}`}
                                       {...field}
+                                      value={field.value ?? ""}
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -1675,10 +1675,10 @@ export default function MeasurementForm({
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() =>
                 appendResult({
-                  parameter: "",
+                  parameter: usedLanguages.map(() => ""),
                   columns: [
                     {
-                      kolom: "",
+                      kolom: usedLanguages.map(() => ""),
                       real_list: [
                         {
                           value: "",
