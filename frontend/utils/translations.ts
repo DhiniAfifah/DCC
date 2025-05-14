@@ -13,6 +13,7 @@ const translations: Record<string, { id: string; en: string }> = {
   statements: { id: 'Pernyataan', en: 'Statements' },
   preview: { id: 'Pratinjau', en: 'Preview' },
 
+  asterisk: { id: 'Menandakan pertanyaan wajib', en: 'Indicates required question' },
   submit: { id: 'Kirim', en: 'Submit' },
 
   // === Administrative ===

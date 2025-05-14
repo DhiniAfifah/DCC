@@ -58,13 +58,13 @@ declare global {
   }
 }
 
-const empty_field_error_message = "Input required.";
+const empty_field_error_message = "Input required/dibutuhkan.";
 const FormSchema = z.object({
   methods: z.array(
     z.object({
       method_name: z.string().min(1, { message: empty_field_error_message }),
-      method_desc: z.string().min(1, { message: empty_field_error_message }),
-      norm: z.string().min(1, { message: empty_field_error_message }),
+      method_desc: z.string().optional(),
+      norm: z.string().optional(),
       has_formula: z.boolean().default(false),
       formula: z
         .object({
@@ -84,14 +84,14 @@ const FormSchema = z.object({
   equipments: z.array(
     z.object({
       nama_alat: z.string().min(1, { message: empty_field_error_message }),
-      manuf_model: z.string().min(1, { message: empty_field_error_message }),
+      manuf_model: z.string().optional(),
       seri_measuring: z.string().min(1, { message: empty_field_error_message }),
     })
   ),
   conditions: z.array(
     z.object({
       jenis_kondisi: z.string().min(1, { message: empty_field_error_message }),
-      desc: z.string().min(1, { message: empty_field_error_message }),
+      desc: z.string().optional(),
       tengah: z.string().min(1, { message: empty_field_error_message }),
       tengah_unit: z.object({
         prefix: z.string().optional(),
@@ -125,13 +125,9 @@ const FormSchema = z.object({
       ),
       uncertainty: z.array(
         z.object({
-          factor: z.string().min(1, { message: empty_field_error_message }),
-          probability: z
-            .string()
-            .min(1, { message: empty_field_error_message }),
-          distribution: z
-            .string()
-            .min(1, { message: empty_field_error_message }),
+          factor: z.string().optional(),
+          probability: z.string().optional(),
+          distribution: z.string().optional(),
           real_list: z.string().min(1, { message: empty_field_error_message }),
         })
       ),
@@ -197,7 +193,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
               )}
 
               <div id="nama">
-                <FormLabel>{t("label")}</FormLabel>
+                <FormLabel variant="mandatory">{t("label")}</FormLabel>
                 <div className="grid gap-1">
                   {usedLanguages.map(
                     (lang: { value: string }, langIndex: number) => (
@@ -226,7 +222,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
               </div>
 
               <div id="realList">
-                <FormLabel>{t("subkolom")}</FormLabel>
+                <FormLabel variant="mandatory">{t("subkolom")}</FormLabel>
                 <FormField
                   control={control}
                   name={`results.${resultIndex}.columns.${columnIndex}.real_list`}
@@ -699,7 +695,7 @@ export default function MeasurementForm({
                   )}
                   <div className="grid grid-cols-2 gap-4">
                     <div id="method_name">
-                      <FormLabel>{t("nama")}</FormLabel>
+                      <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`methods.${index}.method_name`}
@@ -1057,7 +1053,7 @@ export default function MeasurementForm({
                     </Button>
                   )}
                   <div id="nama_alat">
-                    <FormLabel>{t("nama")}</FormLabel>
+                    <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                     <FormField
                       control={form.control}
                       name={`equipments.${index}.nama_alat`}
@@ -1088,7 +1084,7 @@ export default function MeasurementForm({
                       />
                     </div>
                     <div id="seri_measuring">
-                      <FormLabel>{t("seri")}</FormLabel>
+                      <FormLabel variant="mandatory">{t("seri")}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`equipments.${index}.seri_measuring`}
@@ -1151,7 +1147,7 @@ export default function MeasurementForm({
                   )}
                   <div className="grid grid-cols-2 gap-4">
                     <div id="jenis_kondisi">
-                      <FormLabel>{t("lingkungan")}</FormLabel>
+                      <FormLabel variant="mandatory">{t("lingkungan")}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`conditions.${index}.jenis_kondisi`}
@@ -1214,7 +1210,7 @@ export default function MeasurementForm({
                   <div id="tengah">
                     <div className="grid grid-cols-2 gap-4">
                       <div id="tengah">
-                        <FormLabel>{t("tengah")}</FormLabel>
+                        <FormLabel variant="mandatory">{t("tengah")}</FormLabel>
                         <FormField
                           control={form.control}
                           name={`conditions.${index}.tengah`}
@@ -1301,7 +1297,10 @@ export default function MeasurementForm({
                                         >
                                           {field.value
                                             ? units.find((p) => p.value === field.value)?.symbol
-                                            : `${t("satuan")}`}
+                                            : (<span>
+                                                {t("satuan")}<span className="text-red-500"> *</span>
+                                              </span>)
+                                          }
                                           <ChevronsUpDown className="opacity-50" />
                                         </Button>
                                       </FormControl>
@@ -1371,7 +1370,7 @@ export default function MeasurementForm({
                   <div id="rentang">
                     <div className="grid grid-cols-2 gap-4">
                       <div id="rentang_value">
-                        <FormLabel>{t("rentang")}</FormLabel>
+                        <FormLabel variant="mandatory">{t("rentang")}</FormLabel>
                         <FormField
                           control={form.control}
                           name={`conditions.${index}.rentang`}
@@ -1458,7 +1457,10 @@ export default function MeasurementForm({
                                         >
                                           {field.value
                                             ? units.find((p) => p.value === field.value)?.symbol
-                                            : `${t("satuan")}`}
+                                            : (<span>
+                                                {t("satuan")}<span className="text-red-500"> *</span>
+                                              </span>)
+                                          }
                                           <ChevronsUpDown className="opacity-50" />
                                         </Button>
                                       </FormControl>
@@ -1555,7 +1557,7 @@ export default function MeasurementForm({
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
             <div id="excel_file">
-              <FormLabel>{t("excel")}</FormLabel>
+              <FormLabel variant="mandatory">{t("excel")}</FormLabel>
               <FormField
                 control={form.control}
                 name="excel"
@@ -1578,7 +1580,7 @@ export default function MeasurementForm({
               />
             </div>
             <div id="sheet">
-              <FormLabel>{t("sheet")}</FormLabel>
+              <FormLabel variant="mandatory">{t("sheet")}</FormLabel>
               <FormField
                 control={form.control}
                 name="sheet_name"
@@ -1639,7 +1641,7 @@ export default function MeasurementForm({
                   )}
 
                   <div id="parameter">
-                    <FormLabel>{t("judul")}</FormLabel>
+                    <FormLabel variant="mandatory">{t("judul")}</FormLabel>
                     <div className="space-y-1">
                       {usedLanguages.map(
                         (lang: { value: string }, langIndex: number) => (

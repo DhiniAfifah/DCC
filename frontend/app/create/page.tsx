@@ -336,8 +336,10 @@ export default function CreateDCC() {
         steps={steps}
         onStepClick={setCurrentStep}
       />
-
-      <div className="mt-12 space-y-10">
+      {currentStep !== 3 && (
+        <p className="mt-12 text-center text-red-600 text-sm">* {t("asterisk")}</p>
+      )}
+      <div className="space-y-10">
         {currentStep === 0 && (
           <AdministrativeForm
             formData={formData}
@@ -352,7 +354,10 @@ export default function CreateDCC() {
           />
         )}
         {currentStep === 2 && (
-          <Statements formData={formData} updateFormData={updateFormData} />
+          <Statements 
+            formData={formData} 
+            updateFormData={updateFormData} 
+          />
         )}
       </div>
 

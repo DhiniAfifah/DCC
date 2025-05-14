@@ -36,7 +36,7 @@ const empty_field_error_message = "Input required.";
 const FormSchema = z.object({
   statements: z.array(
     z.object({
-      values: z.string().min(1, empty_field_error_message),
+      values: z.string().optional(),
       has_formula: z.boolean().default(false),
       formula: z
         .object({
