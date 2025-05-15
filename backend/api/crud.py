@@ -88,20 +88,32 @@ def populate_template(dcc_data, word_path, new_word_path):
     #statement
     statements_list = dcc_data.get('statements', [])
     
-    statements_text = "\n".join(
-        val for stmt in statements_list for val in stmt.get('values', []) if val
-    )
-    
-    formula_latex = ""
-    formula_mathml = ""
-    image_caption = ""
+    statements_list_processed = []
     for stmt in statements_list:
-        if stmt.get('has_formula') and stmt.get('formula'):
-            formula_latex = stmt['formula'].get('latex', '')
-            formula_mathml = stmt['formula'].get('mathml', '')
-        if stmt.get('has_image') and stmt.get('image'):
-            image_caption = stmt['image'].get('caption', '')
+        statements_list_processed.append({
+            'values': stmt.get('values', []),
+            'has_formula': stmt.get('has_formula', False),
+            'formula_latex': stmt.get('formula', {}).get('latex', '') if stmt.get('has_formula') else '',
+            'formula_mathml': stmt.get('formula', {}).get('mathml', '') if stmt.get('has_formula') else '',
+            'has_image': stmt.get('has_image', False),
+            'image_caption': stmt.get('image', {}).get('caption', '') if stmt.get('has_image') else '',
+        })
+
         
+    #methods
+    methods_list = []
+    for method in dcc_data.get('methods', []):
+        methods_list.append({
+            'method_name': method.get('method_name', ''),
+            'method_desc': method.get('method_desc', ''),
+            'norm': method.get('norm', ''),
+            'has_formula': method.get('has_formula', False),
+            'formula_latex': method.get('formula', {}).get('latex', '') if method.get('has_formula') else '',
+            'formula_mathml': method.get('formula', {}).get('mathml', '') if method.get('has_formula') else '',
+            'has_image': method.get('has_image', False),
+            'image_caption': method.get('image', {}).get('caption', '') if method.get('has_image') else '',
+            'image_url': method.get('image', {}).get('gambar_url', '') if method.get('has_image') else '',
+        })
 
     context = {
         #ADMINISTRATIVE
@@ -116,6 +128,8 @@ def populate_template(dcc_data, word_path, new_word_path):
         'item_issuer': dcc_data['objects'][0]['item_issuer'],
         'seri_item': dcc_data['objects'][0]['seri_item'],
         'id_lain': dcc_data['objects'][0]['id_lain'],
+        
+        #OWNER
         'nama_cust': dcc_data['owner']['nama_cust'],
         'jalan_cust': dcc_data['owner']['jalan_cust'],
         'no_jalan_cust': dcc_data['owner']['no_jalan_cust'],
@@ -154,10 +168,10 @@ def populate_template(dcc_data, word_path, new_word_path):
         'rentang_unit': rentang_unit,
         
         #STATEMENTS
-        'statements_text': statements_text,
-        'formula_latex': formula_latex,
-        'formula_mathml': formula_mathml,
-        'image_caption': image_caption,
+        'statements': statements_list_processed,
+        
+        # METHODS (baru ditambahkan)
+        'methods': methods_list,
         
         #EXCEL TABEL
         'tabel': "{{ tabel }}",
@@ -513,17 +527,55 @@ def generate_xml(dcc, table_data):
                     with tag('dcc:mainSigner'): text(str(dcc.responsible_persons.direktur.main_signer))
                     with tag('dcc:cryptElectronicSignature'): text(str(dcc.responsible_persons.direktur.signature))
                     with tag('dcc:cryptElectronicTimeStamp'): text(str(dcc.responsible_persons.direktur.timestamp))
-                    
-        # Statements Section
-        with tag('dcc:statement'):
+        
+        #owner
+        with tag('dcc:customer'):
+            with tag('dcc:name'):
+                with tag('dcc:content'):
+                    text(dcc.owner.nama_cust)
+            with tag('dcc:location'):
+                with tag('dcc:city'):
+                    text(dcc.owner.kota_cust)
+                with tag('dcc:countryCode'):
+                    text(dcc.owner.negara_cust)
+                with tag('dcc:postCode'):
+                    text(dcc.owner.pos_cust)
+                with tag('dcc:state'):
+                    text(dcc.owner.state_cust)
+                with tag('dcc:street'):
+                    text(dcc.owner.jalan_cust)
+                with tag('dcc:streetNo'):
+                    text(dcc.owner.no_jalan_cust)                 
+                        
+        # Statements
+        with tag('dcc:statements'):
             for stmt in dcc.statements:
-                for value in stmt.values:
-                    with tag('dcc:name'):
-                        with tag('dcc:content'): text(value)
+                with tag('dcc:statement'):
+                    with tag('dcc:declaration'):
+                        content_text = " ".join(stmt.values) if stmt.values else ""
+                        with tag('dcc:content'):
+                            text(content_text)
+                        if stmt.has_formula and stmt.formula:
+                            with tag('dcc:formular'):
+                                if stmt.formula.latex:
+                                    with tag('dcc:latex'):
+                                        text(stmt.formula.latex)
+                                if stmt.formula.mathml:
+                                    with tag('dcc:mathml'):
+                                        text(stmt.formula.mathml)
+                        # bagian gambar jika ada
+                        if stmt.has_image and stmt.image:
+                            with tag('dcc:image'):
+                                if stmt.image.caption:
+                                    with tag('dcc:caption'):
+                                        text(stmt.image.caption)
+                                if stmt.image.gambar_url:
+                                    with tag('dcc:url'):
+                                        text(stmt.image.gambar_url)
 
         # Measurement Results Section
         with tag('dcc:measurementResults'):
-            # Adding Metode (Methods)
+            # Metode
             with tag('dcc:usedMethods'):
                 for method in dcc.methods:
                     with tag('dcc:usedMethod'):
@@ -531,9 +583,19 @@ def generate_xml(dcc, table_data):
                             with tag('dcc:content'): text(method.method_name)
                         with tag('dcc:description'):
                             with tag('dcc:content'): text(method.method_desc)
+                            if method.has_formula and method.formula:
+                                with tag('dcc:formular'):
+                                    with tag('dcc:latex'): text(method.formula.latex or "")
+                                    with tag('dcc:mathml'): text(method.formula.mathml or "")
+                            if method.has_image and method.image:
+                                with tag('dcc:image'):
+                                    with tag('dcc:url'): 
+                                        text(method.image.gambar_url or "")
+                                    with tag('dcc:caption'):
+                                        text(method.image.caption or "")
                         with tag('dcc:norm'): text(method.norm)
 
-            # Adding Measuring Equipment (Alat Pengukuran)
+            # Measuring Equipment 
             with tag('dcc:measuringEquipments'):
                 for equip in dcc.equipments:
                     with tag('dcc:measuringEquipment'):
@@ -546,7 +608,7 @@ def generate_xml(dcc, table_data):
                                 with tag('dcc:name'):
                                     with tag('dcc:content'): text(equip.manuf_model)
 
-            # Adding Room Conditions (Kondisi Ruangan)
+            # Adding Room Conditions 
             with tag('dcc:influenceConditions'):
                 for condition in dcc.conditions:
                     with tag('dcc:influenceCondition'):
@@ -578,9 +640,9 @@ def generate_xml(dcc, table_data):
                 
                 for result_idx, result in enumerate(dcc.results):
                     if isinstance(result.parameters, list) and len(result.parameters) > 0:
-                        parameter_name = result.parameters[0]  # Gunakan elemen pertama jika array
+                        parameter_name = result.parameters[0] 
                     else:
-                        parameter_name = result.parameters  # Gunakan nilai langsung jika string
+                        parameter_name = result.parameters  
                     
                     if parameter_name not in table_data:
                         logging.warning(f"Table '{parameter_name}' not found in Excel data") 
