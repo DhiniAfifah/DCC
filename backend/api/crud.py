@@ -53,8 +53,8 @@ def get_project_paths(dcc: schemas.DCCFormCreate):
         
         return {
             'template': template_path,
-            'word_output': backend_root / "dcc_files" / f"{dcc.sertifikat}.docx",
-            'pdf_output': backend_root / "dcc_files" / f"{dcc.sertifikat}.pdf",
+            'word_output': backend_root / "dcc_files" / f"{dcc.administrative_data.sertifikat}.docx",
+            'pdf_output': backend_root / "dcc_files" / f"{dcc.administrative_data.sertifikat}.pdf",
             'excel': excel_path
         }
         
@@ -66,10 +66,50 @@ def get_project_paths(dcc: schemas.DCCFormCreate):
 def populate_template(dcc_data, word_path, new_word_path):
     doc = DocxTemplate(word_path)
     logging.debug(f"DCC data: {dcc_data}")
+    
+    #conditions 
+    conditions = dcc_data.get('conditions', [])
+
+    suhu_cond = None
+    lembap_cond = None
+    other_cond = None
+
+    if conditions:
+        first_condition = conditions[0]
+        jenis_kondisi = first_condition.get('jenis_kondisi', '')
+        desc = first_condition.get('desc', '')
+        tengah = first_condition.get('tengah', '')
+        rentang = first_condition.get('rentang', '')
+        tengah_unit = first_condition.get('tengah_unit', '')
+        rentang_unit = first_condition.get('rentang_unit', '')
+    else:
+        jenis_kondisi = desc = tengah = rentang = tengah_unit = rentang_unit = ''
+            
+    #statement
+    statements_list = dcc_data.get('statements', [])
+    
+    statements_text = "\n".join(
+        val for stmt in statements_list for val in stmt.get('values', []) if val
+    )
+    
+    formula_latex = ""
+    formula_mathml = ""
+    image_caption = ""
+    for stmt in statements_list:
+        if stmt.get('has_formula') and stmt.get('formula'):
+            formula_latex = stmt['formula'].get('latex', '')
+            formula_mathml = stmt['formula'].get('mathml', '')
+        if stmt.get('has_image') and stmt.get('image'):
+            image_caption = stmt['image'].get('caption', '')
+        
 
     context = {
-        'certificate': dcc_data['sertifikat'],
-        'order': dcc_data['order'],
+        #ADMINISTRATIVE
+        'certificate': dcc_data['administrative_data']['sertifikat'],
+        'order': dcc_data['administrative_data']['order'],
+        'tempat': dcc_data['administrative_data']['tempat_pdf'],
+        
+        #OBJECTS
         'jenis': dcc_data['objects'][0]['jenis'],
         'merek': dcc_data['objects'][0]['merek'],
         'tipe': dcc_data['objects'][0]['tipe'],
@@ -83,18 +123,43 @@ def populate_template(dcc_data, word_path, new_word_path):
         'state_cust': dcc_data['owner']['state_cust'],
         'pos_cust': dcc_data['owner']['pos_cust'],
         'negara_cust': dcc_data['owner']['negara_cust'],
-        'peran': dcc_data['responsible_persons'][0]['peran'],
-        'nama_resp': dcc_data['responsible_persons'][0]['nama_resp'],
-        'nip_resp': dcc_data['responsible_persons'][0]['nip'],
-        'tgl_pengesahan': dcc_data['tgl_pengesahan'],
-        'tgl_mulai': dcc_data['tgl_mulai'],
-        'tgl_akhir': dcc_data['tgl_akhir'],
-        'tempat': dcc_data['tempat_pdf'],
-        'suhu': dcc_data['conditions'][0]['suhu'],
-        'rentang_suhu': dcc_data['conditions'][0]['rentang_suhu'],
-        'lembap': dcc_data['conditions'][0]['lembap'],
-        'rentang_lembap': dcc_data['conditions'][0]['rentang_lembap'],
-        'statements': dcc_data['statements'][0]['values'][0],
+        
+        #RESPONSIBLE PERSON
+        'peran_direktur': dcc_data['responsible_persons']['direktur']['peran'],
+        'peran_kepala': dcc_data['responsible_persons']['kepala']['peran'],
+        'peran_pelaksana': dcc_data['responsible_persons']['pelaksana'][0]['peran'],
+        'peran_penyelia': dcc_data['responsible_persons']['penyelia'][0]['peran'],
+
+        'nama_resp_direktur': dcc_data['responsible_persons']['direktur']['nama_resp'],
+        'nama_resp_kepala': dcc_data['responsible_persons']['kepala']['nama_resp'],
+        'nama_resp_pelaksana': dcc_data['responsible_persons']['pelaksana'][0]['nama_resp'],
+        'nama_resp_penyelia': dcc_data['responsible_persons']['penyelia'][0]['nama_resp'],
+        
+        'nip_resp_direktur': dcc_data['responsible_persons']['direktur']['nip'],
+        'nip_resp_kepala': dcc_data['responsible_persons']['kepala']['nip'],
+        'nip_resp_pelaksana': dcc_data['responsible_persons']['pelaksana'][0]['nip'],
+        'nip_resp_penyelia': dcc_data['responsible_persons']['penyelia'][0]['nip'],
+             
+        #MEASUREMENT TIMELINE
+        'tgl_mulai': dcc_data['Measurement_TimeLine']['tgl_mulai'],
+        'tgl_akhir': dcc_data['Measurement_TimeLine']['tgl_akhir'],
+        'tgl_pengesahan': dcc_data['Measurement_TimeLine']['tgl_pengesahan'],
+
+        #CONDITIONS
+        'jenis_kondisi': jenis_kondisi,
+        'desc': desc,
+        'tengah': tengah,
+        'rentang': rentang,
+        'tengah_unit': tengah_unit,
+        'rentang_unit': rentang_unit,
+        
+        #STATEMENTS
+        'statements_text': statements_text,
+        'formula_latex': formula_latex,
+        'formula_mathml': formula_mathml,
+        'image_caption': image_caption,
+        
+        #EXCEL TABEL
         'tabel': "{{ tabel }}",
     }
 
@@ -351,22 +416,22 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:content'): text(dcc.software)
                     with tag('dcc:release'): text(dcc.version)
             with tag('dcc:coreData'): 
-                with tag('dcc:countryCodeISO3166_1'): text(dcc.country_code)
-                for lang in dcc.used_languages:
-                    with tag('dcc:usedLangCodeISO639_1'): text(lang.value)
-                for lang in dcc.mandatory_languages:
-                    with tag('dcc:mandatoryLangCodeISO639_1'): text(lang.value)
-                with tag('dcc:uniqueIdentifier'): text(dcc.sertifikat)
+                with tag('dcc:countryCodeISO3166_1'): text(dcc.administrative_data.country_code)
+                for lang in dcc.administrative_data.used_languages:
+                    with tag('dcc:usedLangCodeISO639_1'): text(lang)
+                for lang in dcc.administrative_data.mandatory_languages:
+                    with tag('dcc:mandatoryLangCodeISO639_1'): text(lang)
+                with tag('dcc:uniqueIdentifier'): text(dcc.administrative_data.sertifikat)
                 with tag('dcc:identifications'):
                     with tag('dcc:identification'):
-                        with tag('dcc:issuer'): text(dcc.core_issuer)
-                        with tag('dcc:value'): text(dcc.order)
+                        with tag('dcc:issuer'): text(dcc.administrative_data.core_issuer)
+                        with tag('dcc:value'): text(dcc.administrative_data.order)
                         with tag('dcc:name'):
                             with tag('dcc:content'): text('Nomor Order')
-                with tag('dcc:beginPerformanceDate'): text(dcc.tgl_mulai)
-                with tag('dcc:endPerformanceDate'): text(dcc.tgl_akhir)
-                with tag('dcc:performanceLocation'): text(dcc.tempat)
-                with tag('dcc:issueDate'): text(dcc.tgl_pengesahan)
+                with tag('dcc:beginPerformanceDate'): text(dcc.Measurement_TimeLine.tgl_mulai)
+                with tag('dcc:endPerformanceDate'): text(dcc.Measurement_TimeLine.tgl_akhir)
+                with tag('dcc:performanceLocation'): text(dcc.administrative_data.tempat)
+                with tag('dcc:approvalDate'): text(dcc.Measurement_TimeLine.tgl_pengesahan)
             with tag("dcc:items"):
                 for obj in dcc.objects:
                     with tag("dcc:item"):
@@ -484,45 +549,27 @@ def generate_xml(dcc, table_data):
             # Adding Room Conditions (Kondisi Ruangan)
             with tag('dcc:influenceConditions'):
                 for condition in dcc.conditions:
-                    # Kondisi Suhu
                     with tag('dcc:influenceCondition'):
                         with tag('dcc:name'):
-                            with tag('dcc:content'): text('Suhu')
+                            with tag('dcc:content'): text(condition.jenis_kondisi)
+                            
                         with tag('dcc:description'):
-                            with tag('dcc:content'): text(condition.suhu_desc)
+                            with tag('dcc:content'): text(condition.desc)
+                            
                         with tag('dcc:data'):
                             with tag('dcc:quantity'):
                                 with tag('dcc:name'):
                                     with tag('dcc:content'): text('Titik Tengah')
                                 with tag('si:real'):
-                                    with tag('si:value'): text('')
-                                    with tag('si:unit'): text(condition.suhu)
+                                    with tag('si:value'): text(condition.tengah)
+                                    with tag('si:unit'): text(condition.tengah_unit)
+                                    
                             with tag('dcc:quantity'):
                                 with tag('dcc:name'):
                                     with tag('dcc:content'): text('Rentang')
                                 with tag('si:real'):
-                                    with tag('si:value'): text(condition.rentang_suhu)
-                                    with tag('si:unit'): text(condition.suhu)
-
-                    # Kondisi Lembap
-                    with tag('dcc:influenceCondition'):
-                        with tag('dcc:name'):
-                            with tag('dcc:content'): text('Kelembapan')
-                        with tag('dcc:description'):
-                            with tag('dcc:content'): text(condition.lembap_desc)
-                        with tag('dcc:data'):
-                            with tag('dcc:quantity'):
-                                with tag('dcc:name'):
-                                    with tag('dcc:content'): text('Titik Tengah')
-                                with tag('si:real'):
-                                    with tag('si:value'): text('') 
-                                    with tag('si:unit'): text(condition.lembap)
-                            with tag('dcc:quantity'):
-                                with tag('dcc:name'):
-                                    with tag('dcc:content'): text('Rentang')
-                                with tag('si:real'):
-                                    with tag('si:value'): text(condition.rentang_lembap)
-                                    with tag('si:unit'): text(condition.lembap)
+                                    with tag('si:value'): text(condition.rentang)
+                                    with tag('si:unit'): text(condition.tengah_unit)
                                     
             # Results from Excel and user input
             with tag('dcc:results'):
@@ -730,7 +777,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         db.add(db_dcc)
         db.commit()
         db.refresh(db_dcc)
-        logging.info(f"DCC {dcc.sertifikat} saved successfully with ID {db_dcc.id}")
+        logging.info(f"DCC {dcc.administrative_data.sertifikat} saved successfully with ID {db_dcc.id}")
         
         
         # semua path
@@ -769,6 +816,10 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
 
         # Proses Excel (masuk ke word)
         try:
+            logging.debug("Initializing Excel COM object")
+            excel = win32.Dispatch("Excel.Application")
+            excel.Visible = False
+            
             logging.debug("Opening Excel file")
             wb = excel.Workbooks.Open(str(paths['excel']))
             ws = wb.Sheets(dcc.sheet_name)
