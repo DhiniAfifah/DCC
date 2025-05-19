@@ -26,6 +26,7 @@ import tempfile
 from fastapi import UploadFile 
 from docxtpl import InlineImage
 from docx.shared import Mm
+from api.ds_i_utils import d_si
 
 
 # Set log level
@@ -524,7 +525,11 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
                     if isinstance(value, (int, float)):
                         numbers.append(str(value))
                         unit = ws.Cells(row, col + 1).Value
-                        units.append(unit if isinstance(unit, str) else None)
+                        if isinstance(unit, str):
+                            converted_unit = d_si(unit) #DS-I
+                            units.append(converted_unit)
+                        else:
+                            units.append(None)
 
                 if numbers:
                     extracted_data.append((numbers, units))
@@ -833,7 +838,7 @@ def generate_xml(dcc, table_data):
                                                         with tag('si:uncertaintyXMLList'):
                                                             text(" ".join(numbers))
                                                         with tag('si:unitXMLList'):
-                                                            text(" ".join(unit if unit else "" for unit in units))
+                                                            text(" ".join(d_si(unit) if unit else "" for unit in units))
                                                         with tag('si:coverageFactorXMLList'):
                                                             text(result.uncertainty.factor or "2")
                                                         with tag('si:coverageProbabilityXMLList'):
@@ -846,7 +851,7 @@ def generate_xml(dcc, table_data):
                                                     with tag('si:valueXMLList'):
                                                         text(" ".join(numbers))
                                                     with tag('si:unitXMLList'):
-                                                        text(" ".join(unit if unit else "" for unit in units))
+                                                        text(" ".join(d_si(unit) if unit else "" for unit in units))
 
                                     
             

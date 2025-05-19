@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" schemaVersion="3.3.0">
+   <dcc:administrativeData>
+      <dcc:dccSoftware>
+         <dcc:software>
+            <dcc:name>
+               <dcc:content>tes19</dcc:content>
+            </dcc:name>
+            <dcc:release>7</dcc:release>
+         </dcc:software>
+      </dcc:dccSoftware>
+      <dcc:coreData>
+         <dcc:countryCodeISO3166_1>AF</dcc:countryCodeISO3166_1>
+         <dcc:usedLangCodeISO639_1>id</dcc:usedLangCodeISO639_1>
+         <dcc:usedLangCodeISO639_1>en</dcc:usedLangCodeISO639_1>
+         <dcc:mandatoryLangCodeISO639_1>de</dcc:mandatoryLangCodeISO639_1>
+         <dcc:uniqueIdentifier>3334567</dcc:uniqueIdentifier>
+         <dcc:identifications>
+            <dcc:identification>
+               <dcc:issuer>calibrationLaboratory</dcc:issuer>
+               <dcc:value>123456</dcc:value>
+               <dcc:name>
+                  <dcc:content>Nomor Order</dcc:content>
+               </dcc:name>
+            </dcc:identification>
+         </dcc:identifications>
+         <dcc:beginPerformanceDate>2025-05-03</dcc:beginPerformanceDate>
+         <dcc:endPerformanceDate>2025-05-12</dcc:endPerformanceDate>
+         <dcc:performanceLocation>laboratoryBranch</dcc:performanceLocation>
+         <dcc:approvalDate>2025-05-17</dcc:approvalDate>
+      </dcc:coreData>
+      <dcc:items>
+         <dcc:item>
+            <dcc:name>penggaris</dcc:name>
+            <dcc:manufacturer>bsn</dcc:manufacturer>
+            <dcc:model>w44</dcc:model>
+            <dcc:identification>
+               <dcc:issuer>calibrationLaboratory</dcc:issuer>
+               <dcc:value>8976543097</dcc:value>
+               <dcc:name>
+                  <dcc:content>N/A</dcc:content>
+               </dcc:name>
+            </dcc:identification>
+         </dcc:item>
+      </dcc:items>
+      <dcc:calibrationLaboratory>
+         <dcc:calibrationLaboratoryCode>LK-070-IDN</dcc:calibrationLaboratoryCode>
+         <dcc:contact>
+            <dcc:name>
+               <dcc:content>Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)</dcc:content>
+            </dcc:name>
+            <dcc:eMail>nmi@bsn.go.id</dcc:eMail>
+            <dcc:phone>Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833</dcc:phone>
+            <dcc:link>www.bsn.go.id</dcc:link>
+            <dcc:location>
+               <dcc:city>Tangerang Selatan</dcc:city>
+               <dcc:countryCode>ID</dcc:countryCode>
+               <dcc:postCode>15314</dcc:postCode>
+               <dcc:state>Banten</dcc:state>
+               <dcc:street>KST BJ Habibie Setu</dcc:street>
+               <dcc:streetNo>Gedung 420</dcc:streetNo>
+            </dcc:location>
+         </dcc:contact>
+         <dcc:cryptElectronicSignature></dcc:cryptElectronicSignature>
+         <dcc:cryptElectronicTimeStamp></dcc:cryptElectronicTimeStamp>
+      </dcc:calibrationLaboratory>
+      <dcc:respPersons>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Jooo</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:name>
+                  <dcc:content>8000000</dcc:content>
+               </dcc:name>
+            </dcc:description>
+            <dcc:role>Pelaksana Kalibrasi</dcc:role>
+            <dcc:mainSigner>False</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>False</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>False</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Kiii</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:name>
+                  <dcc:content>900000</dcc:content>
+               </dcc:name>
+            </dcc:description>
+            <dcc:role>Penyelia Kalibrasi</dcc:role>
+            <dcc:mainSigner>False</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>False</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>False</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Luuuu</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:name>
+                  <dcc:content>100000</dcc:content>
+               </dcc:name>
+            </dcc:description>
+            <dcc:role>Kepala Laboratorium SNSU Radiasi Ringan</dcc:role>
+            <dcc:mainSigner>False</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>False</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>False</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Miiii</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:name>
+                  <dcc:content>1111111</dcc:content>
+               </dcc:name>
+            </dcc:description>
+            <dcc:role>Direktur SNSU Mekanika, Radiasi, dan Biologi</dcc:role>
+            <dcc:mainSigner>True</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>True</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>True</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+      </dcc:respPersons>
+   </dcc:administrativeData>
+   <dcc:customer>
+      <dcc:name>
+         <dcc:content>BSN SNSU</dcc:content>
+      </dcc:name>
+      <dcc:location>
+         <dcc:city>tangerang</dcc:city>
+         <dcc:countryCode>Indonesia</dcc:countryCode>
+         <dcc:postCode>18239</dcc:postCode>
+         <dcc:state>Banten</dcc:state>
+         <dcc:street>Puspitek</dcc:street>
+         <dcc:streetNo>18</dcc:streetNo>
+      </dcc:location>
+   </dcc:customer>
+   <dcc:statements>
+      <dcc:statement>
+         <dcc:declaration>
+            <dcc:content>tessss ini catatan  ini bahasa apa</dcc:content>
+            <dcc:formular>
+               <dcc:latex>1\frac{2}{4}</dcc:latex>
+               <dcc:mathml>&lt;math xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;mfrac&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;mn&gt;4&lt;/mn&gt;&lt;/mfrac&gt;&lt;/math&gt;</dcc:mathml>
+            </dcc:formular>
+            <dcc:image>
+               <dcc:caption>Gambar 2</dcc:caption>
+            </dcc:image>
+         </dcc:declaration>
+      </dcc:statement>
+   </dcc:statements>
+   <dcc:measurementResults>
+      <dcc:usedMethods>
+         <dcc:usedMethod>
+            <dcc:name>
+               <dcc:content>haloo</dcc:content>
+            </dcc:name>
+            <dcc:description>
+               <dcc:content>gatau isi aja</dcc:content>
+               <dcc:formular>
+                  <dcc:latex>\frac{1}{2} + \frac{3}{4} = \left|23\right|</dcc:latex>
+                  <dcc:mathml>&lt;math xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;mfrac&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;/mfrac&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mfrac&gt;&lt;mn&gt;3&lt;/mn&gt;&lt;mn&gt;4&lt;/mn&gt;&lt;/mfrac&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfenced open="|" close="|"&gt;&lt;mn&gt;23&lt;/mn&gt;&lt;/mfenced&gt;&lt;/math&gt;</dcc:mathml>
+               </dcc:formular>
+               <dcc:image>
+                  <dcc:caption>gambar 1</dcc:caption>
+               </dcc:image>
+            </dcc:description>
+            <dcc:norm>22</dcc:norm>
+         </dcc:usedMethod>
+      </dcc:usedMethods>
+      <dcc:measuringEquipments>
+         <dcc:measuringEquipment>
+            <dcc:name>
+               <dcc:content>hai</dcc:content>
+            </dcc:name>
+            <dcc:identifications>
+               <dcc:identification>
+                  <dcc:issuer>manufacturer</dcc:issuer>
+                  <dcc:value>11111</dcc:value>
+                  <dcc:name>
+                     <dcc:content>13242</dcc:content>
+                  </dcc:name>
+               </dcc:identification>
+            </dcc:identifications>
+         </dcc:measuringEquipment>
+         <dcc:measuringEquipment>
+            <dcc:name>
+               <dcc:content>Equipment 2</dcc:content>
+            </dcc:name>
+            <dcc:identifications>
+               <dcc:identification>
+                  <dcc:issuer>manufacturer</dcc:issuer>
+                  <dcc:value>2222</dcc:value>
+                  <dcc:name>
+                     <dcc:content>28906</dcc:content>
+                  </dcc:name>
+               </dcc:identification>
+            </dcc:identifications>
+         </dcc:measuringEquipment>
+      </dcc:measuringEquipments>
+      <dcc:influenceConditions>
+         <dcc:influenceCondition>
+            <dcc:name>
+               <dcc:content>Suhu</dcc:content>
+            </dcc:name>
+            <dcc:description>
+               <dcc:content>good</dcc:content>
+            </dcc:description>
+            <dcc:data>
+               <dcc:quantity>
+                  <dcc:name>
+                     <dcc:content>Titik Tengah</dcc:content>
+                  </dcc:name>
+                  <si:real>
+                     <si:value>66</si:value>
+                     <si:unit>volt</si:unit>
+                  </si:real>
+               </dcc:quantity>
+               <dcc:quantity>
+                  <dcc:name>
+                     <dcc:content>Rentang</dcc:content>
+                  </dcc:name>
+                  <si:real>
+                     <si:value>6</si:value>
+                     <si:unit>volt</si:unit>
+                  </si:real>
+               </dcc:quantity>
+            </dcc:data>
+         </dcc:influenceCondition>
+         <dcc:influenceCondition>
+            <dcc:name>
+               <dcc:content>Kelembapan Relatif</dcc:content>
+            </dcc:name>
+            <dcc:description>
+               <dcc:content>good banget</dcc:content>
+            </dcc:description>
+            <dcc:data>
+               <dcc:quantity>
+                  <dcc:name>
+                     <dcc:content>Titik Tengah</dcc:content>
+                  </dcc:name>
+                  <si:real>
+                     <si:value>77</si:value>
+                     <si:unit>%Rh</si:unit>
+                  </si:real>
+               </dcc:quantity>
+               <dcc:quantity>
+                  <dcc:name>
+                     <dcc:content>Rentang</dcc:content>
+                  </dcc:name>
+                  <si:real>
+                     <si:value>7</si:value>
+                     <si:unit>%Rh</si:unit>
+                  </si:real>
+               </dcc:quantity>
+            </dcc:data>
+         </dcc:influenceCondition>
+      </dcc:influenceConditions>
+      <dcc:results>
+         <dcc:result>
+            <dcc:name>
+               <dcc:content>Resistansi DC</dcc:content>
+            </dcc:name>
+            <dcc:data>
+               <dcc:list>
+                  <dcc:quantity>
+                     <dcc:name>
+                        <dcc:content>Arus Uji Nominal</dcc:content>
+                     </dcc:name>
+                     <si:hybrid>
+                        <si:realListXMLList>
+                           <si:valueXMLList>3.0 -3.0 15.0 -15.0 27.0 -27.0 30.0 -30.0</si:valueXMLList>
+                           <si:unitXMLList>\ampere \ampere \ampere \ampere \ampere \ampere \ampere \ampere</si:unitXMLList>
+                        </si:realListXMLList>
+                     </si:hybrid>
+                  </dcc:quantity>
+                  <dcc:quantity>
+                     <dcc:name>
+                        <dcc:content>Resistansi Terukur</dcc:content>
+                     </dcc:name>
+                     <si:hybrid>
+                        <si:realListXMLList>
+                           <si:valueXMLList>1.002676620538847 0.9968525752102435 0.999807448124785 0.9996530122869506 0.9997478324883741 0.9996283258853661 0.9996732300793922 0.9995532047202301</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1}</si:unitXMLList>
+                        </si:realListXMLList>
+                     </si:hybrid>
+                  </dcc:quantity>
+                  <dcc:quantity>
+                     <dcc:name>
+                        <dcc:content>Uncertainty</dcc:content>
+                     </dcc:name>
+                     <si:hybrid>
+                        <si:realListXMLList>
+                           <si:expandedUncXMLList>
+                              <si:uncertaintyXMLList>0.000857647782733368 0.00085522818089939 0.000644897794937216 0.000644765742058876 0.000617470981022878 0.000617387957003282 0.000615199907372648 0.000615011982392246</si:uncertaintyXMLList>
+                              <si:unitXMLList>\milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1}</si:unitXMLList>
+                              <si:coverageFactorXMLList>3</si:coverageFactorXMLList>
+                              <si:coverageProbabilityXMLList>0.93</si:coverageProbabilityXMLList>
+                              <si:distributionXMLList>segiempat</si:distributionXMLList>
+                           </si:expandedUncXMLList>
+                        </si:realListXMLList>
+                     </si:hybrid>
+                  </dcc:quantity>
+               </dcc:list>
+            </dcc:data>
+         </dcc:result>
+      </dcc:results>
+   </dcc:measurementResults>
+</dcc:digitalCalibrationCertificate>
