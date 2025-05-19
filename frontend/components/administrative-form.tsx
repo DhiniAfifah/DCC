@@ -104,8 +104,8 @@ const fetchLanguages = async (): Promise<Language[]> => {
   return allLanguages.sort((a, b) => a.label.localeCompare(b.label));
 };
 
-const empty_field_error_message = "Input required.";
-const FormSchema = z.object({
+const empty_field_error_message = "Input required/dibutuhkan.";
+export const FormSchema = z.object({
   software: z.string().min(1, { message: empty_field_error_message }),
   version: z.string().min(1, { message: empty_field_error_message }),
   administrative_data: z.object({
@@ -134,11 +134,11 @@ const FormSchema = z.object({
   objects: z.array(
     z.object({
       jenis: z.string().min(1, { message: empty_field_error_message }),
-      merek: z.string().min(1, { message: empty_field_error_message }),
-      tipe: z.string().min(1, { message: empty_field_error_message }),
+      merek: z.string().optional(),
+      tipe: z.string().optional(),
       item_issuer: z.string().min(1, { message: empty_field_error_message }),
       seri_item: z.string().min(1, { message: empty_field_error_message }),
-      id_lain: z.string().min(1, { message: empty_field_error_message }),
+      id_lain: z.string().optional(),
     })
   ),
   responsible_persons: z.object({
@@ -165,7 +165,7 @@ const FormSchema = z.object({
     kepala: z.object({
       nama_resp: z.string().min(1, { message: empty_field_error_message }),
       nip: z.string().min(1, { message: empty_field_error_message }),
-      peran: z.string().min(1, { message: empty_field_error_message }),
+      lab: z.string().optional(),
       main_signer: z.boolean(),
       signature: z.boolean(),
       timestamp: z.boolean(),
@@ -173,7 +173,7 @@ const FormSchema = z.object({
     direktur: z.object({
       nama_resp: z.string().min(1, { message: empty_field_error_message }),
       nip: z.string().min(1, { message: empty_field_error_message }),
-      peran: z.string().min(1, { message: empty_field_error_message }),
+      jabatan: z.string().optional(),
       main_signer: z.boolean(),
       signature: z.boolean(),
       timestamp: z.boolean(),
@@ -181,12 +181,12 @@ const FormSchema = z.object({
   }),
   owner: z.object({
     nama_cust: z.string().min(1, { message: empty_field_error_message }),
-    jalan_cust: z.string().min(1, { message: empty_field_error_message }),
-    no_jalan_cust: z.string().min(1, { message: empty_field_error_message }),
-    kota_cust: z.string().min(1, { message: empty_field_error_message }),
-    state_cust: z.string().min(1, { message: empty_field_error_message }),
-    pos_cust: z.string().min(1, { message: empty_field_error_message }),
-    negara_cust: z.string().min(1, { message: empty_field_error_message }),
+    jalan_cust: z.string().optional(),
+    no_jalan_cust: z.string().optional(),
+    kota_cust: z.string().optional(),
+    state_cust: z.string().optional(),
+    pos_cust: z.string().optional(),
+    negara_cust: z.string().optional(),
   }),
 });
 
@@ -369,7 +369,7 @@ export default function AdministrativeForm({
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
               <div id="software">
-                <FormLabel>{t("nama")}</FormLabel>
+                <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                 <FormField
                   control={form.control}
                   name="software"
@@ -384,7 +384,7 @@ export default function AdministrativeForm({
                 />
               </div>
               <div id="version">
-                <FormLabel>{t("versi")}</FormLabel>
+                <FormLabel variant="mandatory">{t("versi")}</FormLabel>
                 <FormField
                   control={form.control}
                   name="version"
@@ -410,7 +410,7 @@ export default function AdministrativeForm({
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
               <div id="country_code">
-                <FormLabel>{t("negara_calib")}</FormLabel>
+                <FormLabel variant="mandatory">{t("negara_calib")}</FormLabel>
                 <FormField
                   control={form.control}
                   name="administrative_data.country_code"
@@ -470,7 +470,7 @@ export default function AdministrativeForm({
               </div>
             
               <div id="tempat">
-                <FormLabel>{t("tempat")}</FormLabel>
+                <FormLabel variant="mandatory">{t("tempat")}</FormLabel>
                 <FormField
                   control={form.control}
                   name="administrative_data.tempat"
@@ -525,7 +525,7 @@ export default function AdministrativeForm({
             {/* Languages Group */}
             <div className="grid grid-cols-2 gap-4">
               <div id="used_language">
-                <FormLabel>{t("used")}</FormLabel>
+                <FormLabel variant="mandatory">{t("used")}</FormLabel>
                 <div className="space-y-2">
                   {usedFields.map((field, index) => (
                     <FormField
@@ -611,7 +611,7 @@ export default function AdministrativeForm({
                 </Button>
               </div>
               <div id="mandatory_language">
-                <FormLabel>{t("mandatory")}</FormLabel>
+                <FormLabel variant="mandatory">{t("mandatory")}</FormLabel>
                 <div className="space-y-2">
                   {mandatoryFields.map((field, index) => (
                     <FormField
@@ -700,7 +700,7 @@ export default function AdministrativeForm({
 
             <div className="grid grid-cols-2 gap-4">
               <div id="order">
-                <FormLabel>{t("order")}</FormLabel>
+                <FormLabel variant="mandatory">{t("order")}</FormLabel>
                 <FormField
                   control={form.control}
                   name="administrative_data.order"
@@ -715,7 +715,7 @@ export default function AdministrativeForm({
                 />
               </div>
               <div id="core_issuer">
-                <FormLabel>{t("penerbit_order")}</FormLabel>
+                <FormLabel variant="mandatory">{t("penerbit_order")}</FormLabel>
                 <FormField
                   control={form.control}
                   name="administrative_data.core_issuer"
@@ -751,7 +751,7 @@ export default function AdministrativeForm({
             </div>
             <div className="grid grid-cols gap-4">
               <div id="sertifikat">
-                <FormLabel>{t("sertifikat")}</FormLabel>
+                <FormLabel variant="mandatory">{t("sertifikat")}</FormLabel>
                 <FormField
                   control={form.control}
                   name="administrative_data.sertifikat"
@@ -776,7 +776,7 @@ export default function AdministrativeForm({
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
               <div id="tgl_mulai">
-                <FormLabel>{t("mulai")}</FormLabel>
+                <FormLabel variant="mandatory">{t("mulai")}</FormLabel>
                 <FormField
                   control={form.control}
                   name="Measurement_TimeLine.tgl_mulai"
@@ -827,7 +827,7 @@ export default function AdministrativeForm({
                 />
               </div>
               <div id="tgl_akhir">
-                <FormLabel>{t("akhir")}</FormLabel>
+                <FormLabel variant="mandatory">{t("akhir")}</FormLabel>
                 <FormField
                   control={form.control}
                   name="Measurement_TimeLine.tgl_akhir"
@@ -961,7 +961,7 @@ export default function AdministrativeForm({
                   )}
                   <div className="grid grid-cols gap-4">
                     <div id="jenis">
-                      <FormLabel>{t("jenis")}</FormLabel>
+                      <FormLabel variant="mandatory">{t("jenis")}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`objects.${index}.jenis`}
@@ -1018,7 +1018,7 @@ export default function AdministrativeForm({
                     <CardContent className="grid gap-6">
                       <div className="grid grid-cols-2 gap-4">
                         <div id="item_issuer">
-                          <FormLabel>{t("penerbit_seri")}</FormLabel>
+                          <FormLabel variant="mandatory">{t("penerbit_seri")}</FormLabel>
                           <FormField
                             control={form.control}
                             name={`objects.${index}.item_issuer`}
@@ -1053,7 +1053,7 @@ export default function AdministrativeForm({
                           />
                         </div>
                         <div id="seri_item">
-                          <FormLabel>{t("seri")}</FormLabel>
+                          <FormLabel variant="mandatory">{t("seri")}</FormLabel>
                           <FormField
                             control={form.control}
                             name={`objects.${index}.seri_item`}
@@ -1138,7 +1138,7 @@ export default function AdministrativeForm({
                     )}
                     <div className="grid grid-cols-2 gap-4">
                       <div id="nama_resp">
-                        <FormLabel>{t("nama")}</FormLabel>
+                        <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                         <FormField
                           control={form.control}
                           name={`responsible_persons.pelaksana.${index}.nama_resp`}
@@ -1153,7 +1153,7 @@ export default function AdministrativeForm({
                         />
                       </div>
                       <div id="nip">
-                        <FormLabel>{t("nip")}</FormLabel>
+                        <FormLabel variant="mandatory">{t("nip")}</FormLabel>
                         <FormField
                           control={form.control}
                           name={`responsible_persons.pelaksana.${index}.nip`}
@@ -1210,7 +1210,7 @@ export default function AdministrativeForm({
                     )}
                     <div className="grid grid-cols-2 gap-4">
                       <div id="nama_resp">
-                        <FormLabel>{t("nama")}</FormLabel>
+                        <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                         <FormField
                           control={form.control}
                           name={`responsible_persons.penyelia.${index}.nama_resp`}
@@ -1225,7 +1225,7 @@ export default function AdministrativeForm({
                         />
                       </div>
                       <div id="nip">
-                        <FormLabel>{t("nip")}</FormLabel>
+                        <FormLabel variant="mandatory">{t("nip")}</FormLabel>
                         <FormField
                           control={form.control}
                           name={`responsible_persons.penyelia.${index}.nip`}
@@ -1267,7 +1267,7 @@ export default function AdministrativeForm({
                 <p className="text-sm font-bold">{t("kepala")}</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div id="nama_resp">
-                    <FormLabel>{t("nama")}</FormLabel>
+                    <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                     <FormField
                       control={form.control}
                       name="responsible_persons.kepala.nama_resp"
@@ -1282,7 +1282,7 @@ export default function AdministrativeForm({
                     />
                   </div>
                   <div id="nip">
-                    <FormLabel>{t("nip")}</FormLabel>
+                    <FormLabel variant="mandatory">{t("nip")}</FormLabel>
                     <FormField
                       control={form.control}
                       name="responsible_persons.kepala.nip"
@@ -1356,7 +1356,7 @@ export default function AdministrativeForm({
                 <p className="text-sm font-bold">{t("direktur")}</p>
                 <div className="grid grid-cols-2 gap-4">
                   <div id="nama_resp">
-                    <FormLabel>{t("nama")}</FormLabel>
+                    <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                     <FormField
                       control={form.control}
                       name="responsible_persons.direktur.nama_resp"
@@ -1371,7 +1371,7 @@ export default function AdministrativeForm({
                     />
                   </div>
                   <div id="nip">
-                    <FormLabel>{t("nip")}</FormLabel>
+                    <FormLabel variant="mandatory">{t("nip")}</FormLabel>
                     <FormField
                       control={form.control}
                       name="responsible_persons.direktur.nip"
@@ -1428,7 +1428,7 @@ export default function AdministrativeForm({
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
               <div id="nama_cust">
-                <FormLabel>{t("nama")}</FormLabel>
+                <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                 <FormField
                   control={form.control}
                   name={`owner.nama_cust`}

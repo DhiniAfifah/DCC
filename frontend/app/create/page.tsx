@@ -123,8 +123,22 @@ export default function CreateDCC() {
         desc: "",
         tengah: "",
         rentang: "",
-        rentang_unit: "",
-        tengah_unit: "",
+        rentang_unit: {
+          prefix: "",
+          prefix_pdf: "",
+          unit: "",
+          unit_pdf: "",
+          eksponen: "",
+          eksponen_pdf: "",
+        },
+        tengah_unit: {
+          prefix: "",
+          prefix_pdf: "",
+          unit: "",
+          unit_pdf: "",
+          eksponen: "",
+          eksponen_pdf: "",
+        },
       },
     ],
     sheet_name: "",
@@ -163,20 +177,20 @@ export default function CreateDCC() {
     ],
   });
 
-  // useEffect(() => {
-  //   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-  //     event.preventDefault();
-  //     event.returnValue = ""; // Show warning when user attempts to leave
-  //   };
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = ""; // Show warning when user attempts to leave
+    };
 
-  //   if (formData) {
-  //     window.addEventListener("beforeunload", handleBeforeUnload);
-  //   }
+    if (formData) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
 
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, [formData]); // Depend on formData to track changes
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [formData]); // Depend on formData to track changes
 
   const [downloadLink, setDownloadLink] = useState<string | null>(null);
 
@@ -363,7 +377,10 @@ export default function CreateDCC() {
         onStepClick={setCurrentStep}
       />
 
-      <div className="mt-12 space-y-10">
+      {currentStep !== 3 && (
+        <p className="mt-12 text-center text-red-600 text-sm">* {t("asterisk")}</p>
+      )}
+      <div className="space-y-10">
         {currentStep === 0 && (
           <AdministrativeForm
             formData={formData}
@@ -378,7 +395,9 @@ export default function CreateDCC() {
           />
         )}
         {currentStep === 2 && (
-          <Statements formData={formData} updateFormData={updateFormData} />
+          <Statements 
+            formData={formData} 
+            updateFormData={updateFormData} />
         )}
       </div>
 
@@ -389,7 +408,7 @@ export default function CreateDCC() {
 
         {currentStep === steps.length - 1 ? (
           <Button onClick={handleSubmit} variant="green">
-            Submit
+            {t("submit")}
           </Button>
         ) : (
           <Button onClick={nextStep} variant="blue">

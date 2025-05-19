@@ -23,8 +23,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/context/LanguageContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
-import { latexSymbols } from "@/utils/latexSymbols";
-import { latexOperations } from "@/utils/latexOperations";
+import { latexSymbols, latexOperations } from "@/utils/latexNotations";
 import {
   Select,
   SelectTrigger,
@@ -37,7 +36,7 @@ const empty_field_error_message = "Input required.";
 const FormSchema = z.object({
   statements: z.array(
     z.object({
-      values: z.string().min(1, empty_field_error_message),
+      values: z.string().optional(),
       has_formula: z.boolean().default(false),
       formula: z
         .object({
@@ -263,6 +262,7 @@ export default function Statements({
                                 <Input
                                   placeholder={`${t("bahasa")} ${lang.value}`}
                                   {...field}
+                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                             </div>
@@ -370,7 +370,7 @@ export default function Statements({
                                     ref={latexInputRef}
                                     value={form.watch(
                                       `statements.${statementIndex}.formula.mathjax`
-                                    )}
+                                    ) ?? ""}
                                     onChange={(e) =>
                                       form.setValue(
                                         `statements.${statementIndex}.formula.mathjax`,
@@ -559,7 +559,7 @@ export default function Statements({
                 className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
                 onClick={() =>
                   appendStatement({
-                    values: "",
+                    values: usedLanguages.map(() => ""),
                     has_formula: false,
                     formula: {
                       latex: "",

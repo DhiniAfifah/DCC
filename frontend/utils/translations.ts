@@ -1,13 +1,20 @@
-import { Caption } from "react-day-picker";
-
 type Language = 'id' | 'en';
 
 const translations: Record<string, { id: string; en: string }> = {
+  // Menu
+  generator: { id: 'Mulai membuat <i>Digital Calibration Certificate</i> (DCC) baru. Klik di sini.', 
+                en: 'Start creating a new Digital Calibration Certificate (DCC). Click here.' },
+  importer: { id: 'Akses <i>Digital Calibration Certificate</i> (DCC) Anda dan ekspor datanya ke Ms. Excel. Klik di sini.',
+                en: 'Access your Digital Calibration Certificate (DCC) and export the data to Excel. Click here.' },
+
   // Stepper
   administrasi: {id: 'Administrasi', en: 'Administration'},
   hasil: { id: 'Hasil Kalibrasi', en: ' Calibration Results' },
   statements: { id: 'Pernyataan', en: 'Statements' },
   preview: { id: 'Pratinjau', en: 'Preview' },
+
+  asterisk: { id: 'Menandakan pertanyaan wajib', en: 'Indicates required question' },
+  submit: { id: 'Kirim', en: 'Submit' },
 
   // === Administrative ===
   // Software
@@ -93,7 +100,9 @@ const translations: Record<string, { id: string; en: string }> = {
   other_condition: { id: 'Masukkan kondisi lain', en: 'Enter another condition' },
   tengah: { id: 'Titik tengah', en: 'Median' },
   nilai: { id: 'Nilai', en: 'Value' },
+  prefix: { id: 'Awalan', en: 'Prefix' },
   satuan: { id: 'Satuan', en: 'Unit' },
+  eksponen: { id: 'Pangkat', en: 'Exponent' },
   rentang: { id: 'Rentang', en: 'Range' },
 
   // Excel
@@ -104,7 +113,7 @@ const translations: Record<string, { id: string; en: string }> = {
     en: 'Please select and upload an Excel file containing the data to be displayed in the Calibration Results section of the Calibration Certificate.'
   },
   sheet: { id: 'Nama sheet', en: 'Sheet name' },
-  sheet_desc: { id: 'Silakan pilih nama sheet dari file Excel yang diunggah', en: 'Please select the sheet name from the uploaded Excel file' },
+  sheet_desc: { id: 'Silakan pilih nama sheet dari file Excel yang diunggah', en: 'Please select the sheet name of the uploaded Excel file.' },
 
   // Hasil
   judul: { id: 'Judul tabel', en: 'Table title' },
@@ -115,7 +124,7 @@ const translations: Record<string, { id: string; en: string }> = {
   subkolom: { id: 'Jumlah sub-kolom', en: 'Number of sub-columns' },
   ketidakpastian: { id: 'Parameter Evaluasi Ketidakpastian', en: 'Uncertainty Evaluation Parameters' },  
   ketidakpastian_desc: { id: 'Data ketidakpastian hanya akan tampil di XML, tidak di template Word atau PDF.', 
-                          en: 'These data will only appear in XML, not in Word or PDF templates' },
+                          en: 'These data will only appear in XML, not in Word or PDF templates.' },
   factor: { id: 'Faktor cakupan', en: 'Coverage Factor' },
   probability: { id: 'Tingkat kepercayaan', en: 'Coverage probability' },
   distribution: { id: 'Distribusi', en: 'Distribution' },
@@ -128,6 +137,48 @@ const translations: Record<string, { id: string; en: string }> = {
   cb_rumus_statement: { id: 'Pernyataan ini melibatkan ekspresi matematika atau rumus', 
                         en: 'This statement includes mathematical notation or formula' },
   cb_gambar_statement: { id: 'Pernyataan ini disertai gambar', en: 'This statement is accompanied by an image' },
+  
+  // Importer
+  pdf: { id: 'Unggah file PDF', en: 'Upload PDF file' },
+
+  // === D-SI ===
+
+  // Prefix
+  yocto: { id: 'yokto', en: 'yocto' },
+  pico: { id: 'piko', en: 'pico' },
+  micro: { id: 'mikro', en: 'micro' },
+  milli: { id: 'mili', en: 'milli' },
+  centi: { id: 'senti', en: 'centi' },
+  deci: { id: 'desi', en: 'deci' },
+  deca: { id: 'deka', en: 'deca' },
+  hecto: { id: 'hekto', en: 'hecto' },
+  exa: { id: 'eksa', en: 'exa' },
+  exbi: { id: 'eksbi', en: 'exbi' },
+
+  // Unit
+  degreeCelsius: { id: 'derajat Celsius', en: 'degree Celsius' },
+  percent: { id: 'persen', en: 'percent' },
+  metre: { id: 'meter', en: 'metre' },
+  second: { id: 'detik', en: 'second' },
+  ampere: { id: 'amper', en: 'ampere' },
+  mole: { id: 'mol', en: 'mole' },
+  candela: { id: 'kandela', en: 'candela' },
+  one: { id: 'satu', en: 'one' },
+  day: { id: 'hari', en: 'day' },
+  hour: { id: 'jam', en: 'hour' },
+  minute: { id: 'menit', en: 'minute' },
+  degree: { id: 'derajat', en: 'degree' },
+  arcminute: { id: 'menit busur', en: 'arcminute' },
+  arcsecond: { id: 'detik busur', en: 'arcsecond' },
+  byte: { id: 'bite', en: 'byte' },
+  hectare: { id: 'hektar', en: 'hectare' },
+  litre: { id: 'liter', en: 'litre' },
+  tonne: { id: 'ton', en: 'tonne' },
+  electronvolt: { id: 'elektronvolt', en: 'electronvolt' },
+  astronomicalUnit: { id: 'satuan astronomi', en: 'astronomical unit' },
+  decibel: { id: 'desibel', en: 'decibel' },
+  mmHg: { id: 'milimeter air raksa', en: 'millimetre of mercury' },
+  nauticalmile: { id: 'mil laut', en: 'nauticalmile' },
 };
 
 export const getTranslation = (key: string, language: Language = 'en') => {
