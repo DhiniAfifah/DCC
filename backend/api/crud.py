@@ -21,6 +21,11 @@ from spire.pdf.common import *
 from spire.pdf import *
 from pikepdf import Pdf, AttachedFileSpec
 from datetime import datetime
+import base64
+import tempfile
+from fastapi import UploadFile 
+from docxtpl import InlineImage
+from docx.shared import Mm
 
 
 # Set log level
@@ -61,11 +66,74 @@ def get_project_paths(dcc: schemas.DCCFormCreate):
     except Exception as e:
         logging.error(f"Error mendapatkan path: {str(e)}")
         raise
+    
+#BASE 64
+def save_image_and_get_base64(upload_file):
+    if not upload_file:
+        logging.warning("No upload file provided to save_image_and_get_base64")
+        return '', ''
+        
+    if not hasattr(upload_file, 'file'):
+        logging.warning(f"Invalid file object type: {type(upload_file)} passed to save_image_and_get_base64")
+        
+        # If it's a string representing a path, try to read the file
+        if isinstance(upload_file, str) and os.path.exists(upload_file):
+            try:
+                with open(upload_file, 'rb') as f:
+                    content = f.read()
+                    base64_str = base64.b64encode(content).decode("utf-8")
+                    
+                    # Create a temporary file copy
+                    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+                    tmp_file.write(content)
+                    tmp_file.close()
+                    
+                    return base64_str, tmp_file.name
+            except Exception as e:
+                logging.error(f"Error reading image file from path: {e}")
+                return '', ''
+        return '', ''
+
+    try:
+        content = upload_file.file.read()
+        upload_file.file.seek(0)  
+
+        # Encode base64
+        base64_str = base64.b64encode(content).decode("utf-8")
+        
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+        tmp_file.write(content)
+        tmp_file.close()
+        
+        return base64_str, tmp_file.name
+    except Exception as e:
+        logging.error(f"Error in save_image_and_get_base64: {e}")
+        return '', ''
 
 #template word
 def populate_template(dcc_data, word_path, new_word_path):
     doc = DocxTemplate(word_path)
     logging.debug(f"DCC data: {dcc_data}")
+    
+    def sanitize_for_template(obj):
+        if callable(obj):
+            # If it's a method or function, return an empty string
+            return ""
+        elif isinstance(obj, dict):
+            # If it's a dictionary, sanitize each value
+            return {k: sanitize_for_template(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            # If it's a list, sanitize each item
+            return [sanitize_for_template(item) for item in obj]
+        elif isinstance(obj, (str, int, float, bool)) or obj is None:
+            # Basic types are safe to pass as-is
+            return obj
+        else:
+            # For any other type, convert to string representation
+            try:
+                return str(obj)
+            except:
+                return ""
     
     #conditions 
     conditions = dcc_data.get('conditions', [])
@@ -86,34 +154,63 @@ def populate_template(dcc_data, word_path, new_word_path):
         jenis_kondisi = desc = tengah = rentang = tengah_unit = rentang_unit = ''
             
     #statement
-    statements_list = dcc_data.get('statements', [])
+    statements_count = len(dcc_data.get('statements', []))
+    statements_text = []
+    statements_has_formula = []
+    statements_formula_latex = []
+    statements_formula_mathml = []
+    statements_has_image = []
+    statements_image_caption = []
+    statements_image_path = []
     
-    statements_list_processed = []
-    for stmt in statements_list:
-        statements_list_processed.append({
-            'values': stmt.get('values', []),
-            'has_formula': stmt.get('has_formula', False),
-            'formula_latex': stmt.get('formula', {}).get('latex', '') if stmt.get('has_formula') else '',
-            'formula_mathml': stmt.get('formula', {}).get('mathml', '') if stmt.get('has_formula') else '',
-            'has_image': stmt.get('has_image', False),
-            'image_caption': stmt.get('image', {}).get('caption', '') if stmt.get('has_image') else '',
-        })
-
+    for stmt in dcc_data.get('statements', []):
+        # Process values (statement text)
+        values = stmt.get('values', [])
+        if callable(values):
+            values = []
+        elif isinstance(values, str):
+            values = [values]
+        elif not isinstance(values, list):
+            try:
+                values = list(values) if hasattr(values, '__iter__') else [str(values)]
+            except:
+                values = []
         
-    #methods
-    methods_list = []
+        # Join values into a single string with newlines
+        statements_text.append("\n".join(values))
+        
+        # Process formula
+        statements_has_formula.append(stmt.get('has_formula', False))
+        statements_formula_latex.append(stmt.get('formula', {}).get('latex', ''))
+        statements_formula_mathml.append(stmt.get('formula', {}).get('mathml', ''))
+        
+        # Process image
+        statements_has_image.append(stmt.get('has_image', False))
+        statements_image_caption.append(stmt.get('image', {}).get('caption', ''))
+        statements_image_path.append(stmt.get('image', {}).get('gambar_url', ''))
+    
+    # For methods
+    methods_count = len(dcc_data.get('methods', []))
+    methods_name = []
+    methods_desc = []
+    methods_has_formula = []
+    methods_formula_latex = []
+    methods_formula_mathml = []
+    methods_norm = []
+    methods_has_image = []
+    methods_image_caption = []
+    methods_image_path = []
+    
     for method in dcc_data.get('methods', []):
-        methods_list.append({
-            'method_name': method.get('method_name', ''),
-            'method_desc': method.get('method_desc', ''),
-            'norm': method.get('norm', ''),
-            'has_formula': method.get('has_formula', False),
-            'formula_latex': method.get('formula', {}).get('latex', '') if method.get('has_formula') else '',
-            'formula_mathml': method.get('formula', {}).get('mathml', '') if method.get('has_formula') else '',
-            'has_image': method.get('has_image', False),
-            'image_caption': method.get('image', {}).get('caption', '') if method.get('has_image') else '',
-            'image_url': method.get('image', {}).get('gambar_url', '') if method.get('has_image') else '',
-        })
+        methods_name.append(method.get('method_name', ''))
+        methods_desc.append(method.get('method_desc', ''))
+        methods_has_formula.append(method.get('has_formula', False))
+        methods_formula_latex.append(method.get('formula', {}).get('latex', ''))
+        methods_formula_mathml.append(method.get('formula', {}).get('mathml', ''))
+        methods_norm.append(method.get('norm', ''))
+        methods_has_image.append(method.get('has_image', False))
+        methods_image_caption.append(method.get('image', {}).get('caption', ''))
+        methods_image_path.append(method.get('image', {}).get('gambar_url', ''))
 
     context = {
         #ADMINISTRATIVE
@@ -167,19 +264,66 @@ def populate_template(dcc_data, word_path, new_word_path):
         'tengah_unit': tengah_unit,
         'rentang_unit': rentang_unit,
         
-        #STATEMENTS
-        'statements': statements_list_processed,
+        #STATEMENT
+        'statements_count': statements_count,
+        'statements_text': statements_text,
+        'statements_has_formula': statements_has_formula,
+        'statements_formula_latex': statements_formula_latex,
+        'statements_formula_mathml': statements_formula_mathml,
+        'statements_has_image': statements_has_image,
+        'statements_image_caption': statements_image_caption,
+        'statements_image_path': statements_image_path,
         
-        # METHODS (baru ditambahkan)
-        'methods': methods_list,
+        #METHODS
+        'methods_count': methods_count,
+        'methods_name': methods_name,
+        'methods_desc': methods_desc,
+        'methods_has_formula': methods_has_formula,
+        'methods_formula_latex': methods_formula_latex,
+        'methods_formula_mathml': methods_formula_mathml,
+        'methods_norm': methods_norm,
+        'methods_has_image': methods_has_image,
+        'methods_image_caption': methods_image_caption,
+        'methods_image_path': methods_image_path,
         
         #EXCEL TABEL
         'tabel': "{{ tabel }}",
     }
 
-    doc.render(context)
-    doc.save(new_word_path)
-    logging.info(f"Saving modified template to {new_word_path}")
+    safe_context = sanitize_for_template(context)
+
+    try:
+        doc.render(safe_context)
+        doc.save(new_word_path)
+        logging.info(f"Saving modified template to {new_word_path}")
+    except Exception as e:
+        logging.error(f"Error rendering template: {e}")
+        
+        # Log detailed information about the context
+        try:
+            for key, value in context.items():
+                if key in ['statements', 'methods']:
+                    if isinstance(value, list):
+                        for i, item in enumerate(value[:2]):  # Log just first two items to avoid huge logs
+                            logging.debug(f"Context details - {key}[{i}]: {item}")
+                            # If this is a dict, also log the values inside
+                            if isinstance(item, dict):
+                                for sub_key, sub_value in item.items():
+                                    logging.debug(f"  {key}[{i}][{sub_key}]: {type(sub_value)}")
+                                    if isinstance(sub_value, dict) or callable(sub_value):
+                                        logging.debug(f"    {key}[{i}][{sub_key}] is {type(sub_value)}")
+                else:
+                    logging.debug(f"Context key: {key}, type: {type(value)}")
+        except Exception as logging_error:
+            logging.error(f"Error during debug logging: {logging_error}")
+        
+        raise
+
+    #hapus file gambar sementara setelah generate word
+    for method in dcc_data.get('methods', []):
+        tmp_path = method.get('image', {}).get('tmp_path', None)
+        if tmp_path and isinstance(tmp_path, str) and os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
     return new_word_path
 
@@ -315,6 +459,7 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
         # pembukaan file Excel menggunakan win32
         excel = win32.Dispatch("Excel.Application")
         excel.Visible = False
+        logging.debug("Excel instance created")
         
         try:
             wb = excel.Workbooks.Open(excel_path)
@@ -563,15 +708,15 @@ def generate_xml(dcc, table_data):
                                 if stmt.formula.mathml:
                                     with tag('dcc:mathml'):
                                         text(stmt.formula.mathml)
-                        # bagian gambar jika ada
+                        # bagian gambar (jika ada)
                         if stmt.has_image and stmt.image:
                             with tag('dcc:image'):
-                                if stmt.image.caption:
+                                if getattr(stmt.image, 'caption', None):
                                     with tag('dcc:caption'):
                                         text(stmt.image.caption)
-                                if stmt.image.gambar_url:
-                                    with tag('dcc:url'):
-                                        text(stmt.image.gambar_url)
+                                if getattr(stmt.image, 'base64', None):
+                                    with tag('dcc:base64'):
+                                        text(stmt.image.base64)
 
         # Measurement Results Section
         with tag('dcc:measurementResults'):
@@ -589,10 +734,12 @@ def generate_xml(dcc, table_data):
                                     with tag('dcc:mathml'): text(method.formula.mathml or "")
                             if method.has_image and method.image:
                                 with tag('dcc:image'):
-                                    with tag('dcc:url'): 
-                                        text(method.image.gambar_url or "")
-                                    with tag('dcc:caption'):
-                                        text(method.image.caption or "")
+                                    if getattr(method.image, 'caption', None):
+                                        with tag('dcc:caption'):
+                                            text(method.image.caption)
+                                    if getattr(method.image, 'base64', None):
+                                        with tag('dcc:base64'):
+                                            text(method.image.base64)
                         with tag('dcc:norm'): text(method.norm)
 
             # Measuring Equipment 

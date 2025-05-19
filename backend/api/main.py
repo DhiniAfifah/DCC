@@ -12,6 +12,7 @@ import os
 import shutil
 import pandas as pd
 import win32com.client as win32
+from api.crud import save_image_and_get_base64
 
 
 # Set log level
@@ -88,7 +89,6 @@ async def create_dcc(dcc: schemas.DCCFormCreate, db: Session = Depends(get_db)):
         logging.info(f"Prepared input tables: {input_tables}")
 
         # Proses Excel
-        # Proses Excel
         if dcc.excel:
             try:
                 logging.info(f"Processing Excel file: {dcc.excel}")
@@ -163,40 +163,37 @@ async def create_dcc(dcc: schemas.DCCFormCreate, db: Session = Depends(get_db)):
                 raise HTTPException(status_code=500, detail=f"Error processing Excel file: {str(e)}")
 
             
-        # Proses gambar untuk metode pengukuran
+        # Proses gambar metode
         if dcc.methods:
             for method in dcc.methods:
-                if method.has_image and method.image and method.image.gambar:
-                    image = method.image.gambar
-                    image_path = os.path.join(UPLOAD_DIR, image.filename)
-                    logging.info(f"Processing image for method: {method.method_name}")
-                    try:
-                        with open(image_path, "wb") as buffer:
-                            shutil.copyfileobj(image.file, buffer)
-                        method.image.gambar_url = f"/uploads/{image.filename}"
-                        logging.info(f"Image for method '{method.method_name}' saved at {image_path}")
-                    except Exception as e:
-                        logging.error(f"Error processing image for method '{method.method_name}': {str(e)}")
-                        raise HTTPException(status_code=500, detail=f"Error processing image for method: {method.method_name}")
+                if method.has_image and method.image:
+                    if method.image.gambar:
+                        try:
+                            base64_str, tmp_path = save_image_and_get_base64(method.image.gambar)
+                            method.image.gambar_url = tmp_path  # Word (file path)
+                            method.image.base64 = base64_str     # XML (base64 string)
+                            logging.info(f"Processed image for method: {method.method_name}, path: {tmp_path}")
+                        except Exception as e:
+                            logging.error(f"Error processing method image: {e}")
+                    else:
+                        logging.warning(f"Method {method.method_name} has_image=True but gambar is None")
 
-        # Proses gambar untuk pernyataan
+        # Proses gambar statement
         if dcc.statements:
-            for index, statement in enumerate(dcc.statements):
-                if statement.has_image and statement.image and statement.image.gambar:
-                    image = statement.image.gambar
-                    logging.debug(f"Received image for statement {index}: {image.filename}")
-                    try:
-                        image_path = os.path.join(UPLOAD_DIR, image.filename)
-                        with open(image_path, "wb") as buffer:
-                            shutil.copyfileobj(image.file, buffer)
-                        statement.image.gambar_url = f"/uploads/{image.filename}"
-                        logging.info(f"Image for statement {index} saved at {image_path}")
-                    except Exception as e:
-                        logging.error(f"Error processing image for statement {index}: {str(e)}")
-                        raise HTTPException(status_code=500, detail=f"Error processing image for statement: {index}")
-                    
+            for statement in dcc.statements:
+                if statement.has_image and statement.image:
+                    if statement.image.gambar:
+                        try:
+                            base64_str, tmp_path = save_image_and_get_base64(statement.image.gambar)
+                            statement.image.gambar_url = tmp_path
+                            statement.image.base64 = base64_str
+                            logging.info(f"Processed image for statement, path: {tmp_path}")
+                        except Exception as e:
+                            logging.error(f"Error processing statement image: {e}")
+                    else:
+                        logging.warning("Statement has_image=True but gambar is None")
         
-        result = crud.create_dcc(db=db, dcc=dcc)  # Ensure the excel filename is saved in DB
+        result = crud.create_dcc(db=db, dcc=dcc) 
         logging.info(f"DCC Created Successfully: {result}")
         return result
     except Exception as e:
@@ -233,26 +230,35 @@ async def upload_excel(excel: UploadFile = File(...)):
 @app.post("/upload-image/")
 async def upload_image(image: UploadFile = File(...)):
     try:
-        image_path = os.path.join(UPLOAD_DIR, image.filename)
-        
         if image.content_type not in ["image/jpeg", "image/png"]:
             raise HTTPException(status_code=400, detail="Invalid image type. Only JPEG and PNG are allowed.")
 
         # Validasi ukuran file
-        image_file = await image.read()
-        if len(image_file) > 5000000:  # 5MB
+        image_content = await image.read()
+        if len(image_content) > 5000000:  # 5MB
             raise HTTPException(status_code=400, detail="Image size is too large. Maximum size is 5MB.")
         
+        # Reset the file pointer
+        await image.seek(0)
         
         # Simpan file
         image_location = os.path.join(UPLOAD_DIR, image.filename)
         with open(image_location, "wb") as buffer:
-            buffer.write(image_file)
+            shutil.copyfileobj(image.file, buffer)
 
         logging.info(f"Image file saved to {image_location}")
         
-        return {"filename": image.filename, "location": image_location}
+        # Create a temporary path to the image file
+        temp_file = os.path.join(UPLOAD_DIR, f"temp_{image.filename}")
+        shutil.copy(image_location, temp_file)
+        
+        return {
+            "filename": image.filename, 
+            "location": image_location,
+            "temp_path": temp_file
+        }
     except Exception as e:
+        logging.error(f"Image upload failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
 # Route untuk download-dcc
