@@ -11,7 +11,13 @@ const DccOptions = () => {
   return (
     <div className="relative flex flex-col justify-center items-center min-h-screen overflow-hidden p-4">
       {/* Background lebih terang: abu-abu ke biru muda */}
-      <div className="fixed inset-0 -z-20 bg-gradient-to-br from-gray-50 to-blue-200"></div>
+      <>
+        <div
+          className="fixed inset-0 bg-cover bg-center blur-sm"
+          style={{ backgroundImage: "url('image/kalibrasi.jpg')" }}
+        ></div>
+        <div className="fixed inset-0 bg-white bg-opacity-60 pointer-events-none"></div>
+      </>
 
       {/* Efek noise halus */}
       <div className="fixed inset-0 -z-10 bg-[url('/noise.png')] opacity-5"></div>

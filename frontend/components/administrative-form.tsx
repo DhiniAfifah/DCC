@@ -1,7 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronsUpDown, CalendarIcon, Plus, X } from "lucide-react";
+import { 
+  ChevronsUpDown, 
+  CalendarIcon, 
+  Plus, 
+  X,
+  FolderCode,
+  FileText,
+  Package,
+  UserCheck,
+  FileUser
+} from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState } from "react";
@@ -364,7 +374,10 @@ export default function AdministrativeForm({
       >
         <Card id="software">
           <CardHeader>
-            <CardTitle>{t("software")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <FolderCode className="w-5 h-5" />
+              {t("software")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
@@ -405,7 +418,10 @@ export default function AdministrativeForm({
         {/* ADMINISTRATIVE DATA */}
         <Card id="core-data">
           <CardHeader>
-            <CardTitle>{t("data")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              {t("data")}
+              </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
@@ -771,7 +787,10 @@ export default function AdministrativeForm({
 
         <Card id="tanggal">
           <CardHeader>
-            <CardTitle>{t("linimasa")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5" />
+              {t("linimasa")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid grid-cols-2 gap-4">
@@ -936,7 +955,10 @@ export default function AdministrativeForm({
 
         <Card id="items">
           <CardHeader>
-            <CardTitle>{t("object_desc")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="w-5 h-5" />
+              {t("object_desc")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
@@ -1115,7 +1137,10 @@ export default function AdministrativeForm({
 
         <Card id="resp_person">
           <CardHeader>
-            <CardTitle>{t("responsible")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <UserCheck className="w-5 h-5" />
+              {t("responsible")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
@@ -1423,7 +1448,10 @@ export default function AdministrativeForm({
 
         <Card id="customer">
           <CardHeader>
-            <CardTitle>{t("identitas")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <FileUser className="w-5 h-5" />
+              {t("identitas")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">

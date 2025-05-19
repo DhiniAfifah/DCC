@@ -1,5 +1,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, X } from "lucide-react";
+import { 
+  Plus, 
+  X,
+  NotepadText
+} from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState, useRef } from "react";
@@ -224,7 +228,10 @@ export default function Statements({
       >
         <Card id="statement">
           <CardHeader>
-            <CardTitle>{t("statements")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <NotepadText className="w-5 h-5" />
+              {t("statements")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">

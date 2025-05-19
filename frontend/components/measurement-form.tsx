@@ -1,7 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, X, ChevronsUpDown } from "lucide-react";
+import { 
+  Plus, 
+  X, 
+  ChevronsUpDown, 
+  Settings,
+  PencilRuler,
+  Thermometer,
+  Paperclip,
+  Sheet,
+  NotepadText
+} from "lucide-react";
 import {
   useFieldArray,
   useForm,
@@ -752,7 +762,10 @@ export default function MeasurementForm({
       >
         <Card id="used_method">
           <CardHeader>
-            <CardTitle>{t("metode")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              {t("metode")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
@@ -1136,7 +1149,10 @@ export default function MeasurementForm({
 
         <Card id="measuring_equipment">
           <CardHeader>
-            <CardTitle>{t("pengukuran")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <PencilRuler className="w-5 h-5" />
+              {t("pengukuran")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
@@ -1231,7 +1247,10 @@ export default function MeasurementForm({
 
         <Card id="influence_condition">
           <CardHeader>
-            <CardTitle>{t("kondisi")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Thermometer className="w-5 h-5" />
+              {t("kondisi")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid gap-4">
@@ -1660,7 +1679,10 @@ export default function MeasurementForm({
 
         <Card id="excel">
           <CardHeader>
-            <CardTitle>{t("lampiran")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Paperclip className="w-5 h-5" />
+              {t("lampiran")}
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
             <div id="excel_file">
@@ -1721,7 +1743,10 @@ export default function MeasurementForm({
 
         <Card id="hasil">
           <CardHeader>
-            <CardTitle>{t("hasil")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Sheet className="w-5 h-5" />
+              {t("hasil")}
+            </CardTitle>
           </CardHeader>
 
           <CardContent className="grid gap-6">
