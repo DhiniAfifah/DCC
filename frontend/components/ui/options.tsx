@@ -13,10 +13,10 @@ const DccOptions = () => {
       {/* Background lebih terang: abu-abu ke biru muda */}
       <>
         <div
-          className="fixed inset-0 bg-cover bg-center blur-sm"
+          className="fixed inset-0 bg-cover bg-center filter grayscale"
           style={{ backgroundImage: "url('image/kalibrasi.jpg')" }}
         ></div>
-        <div className="fixed inset-0 bg-white bg-opacity-60 pointer-events-none"></div>
+        <div className="fixed inset-0 bg-indigo-200 bg-opacity-80 pointer-events-none"></div>
       </>
 
       {/* Efek noise halus */}

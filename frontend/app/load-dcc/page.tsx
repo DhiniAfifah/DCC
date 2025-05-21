@@ -33,7 +33,7 @@ export default function LoadDCC() {
   
   return (
     <div className="container mx-auto py-8 pt-20">
-      <div className="fixed inset-0 -z-20 bg-gradient-to-b from-gray-50 to-violet-200"></div>
+      <div className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-sky-200"></div>
 
       <div className="mt-12 space-y-10">
         <Importer formData={formData} />

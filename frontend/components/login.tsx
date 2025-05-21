@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/context/LanguageContext";
+import Link from "next/link";
 
 export const FormSchema = z.object({
     email: z.string().email("Invalid email address"),
@@ -26,6 +28,8 @@ export const FormSchema = z.object({
 })
 
 export default function Login({formData}: {formData: any}) {
+    const { t } = useLanguage();
+
     const form = useForm({
         resolver: zodResolver(FormSchema),
         mode: "onChange",
@@ -34,17 +38,18 @@ export default function Login({formData}: {formData: any}) {
     
     return (
         <FormProvider {...form}>
-            <form>
-                <div className="fixed inset-0 -z-20 bg-gradient-to-br from-gray-50 to-blue-200"></div>
+            {/* <form> */} 
+            <div>
+                <div className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-red-200"></div>
                 
                 <div className="flex items-center justify-center min-h-screen">
                     <Card className="w-[350px]">
                         <CardHeader>
-                            <CardTitle className="text-center">Login</CardTitle>
+                            <CardTitle className="text-center">{t("login")}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div id="email">
-                                <FormLabel>E-mail</FormLabel>
+                                <FormLabel>{t("email")}</FormLabel>
                                 <FormField
                                     control={form.control}
                                     name="email"
@@ -59,7 +64,7 @@ export default function Login({formData}: {formData: any}) {
                                 />
                             </div>
                             <div id="password">
-                                <FormLabel>Password</FormLabel>
+                                <FormLabel>{t("password")}</FormLabel>
                                 <FormField
                                     control={form.control}
                                     name="password"
@@ -75,11 +80,14 @@ export default function Login({formData}: {formData: any}) {
                             </div>
                         </CardContent>
                         <CardFooter className="flex justify-center">
-                            <Button type="submit" variant="green">Login</Button>
+                            <Link href="/">
+                                <Button variant="green">{t("log_in")}</Button>
+                            </Link>
                         </CardFooter>
                     </Card>
                 </div>
-            </form>
+            {/* </form> */}
+            </div>
         </FormProvider>
     );
 }

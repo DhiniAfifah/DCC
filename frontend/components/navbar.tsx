@@ -7,6 +7,8 @@ import { useLanguage } from '@/context/LanguageContext';
 import { Switch } from "@/components/ui/switch"
 
 const Navbar = () => {
+  const { t } = useLanguage();
+
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md shadow-black/20 z-50">
       <div className="container mx-auto px-4">
@@ -23,10 +25,8 @@ const Navbar = () => {
             </Link>
           </div>
           <div className="flex space-x-4">
-            {/* <NavLink href="/">Home</NavLink> */}
-            <NavLink href="/about">About Us</NavLink>
-            {/* <NavLink href="/contact" isContact>Contact Us</NavLink> */}
-            
+            {/* <NavLink href="">{t("logout")}</NavLink> */}
+            <NavLink href="/about">{t("about")}</NavLink>            
             <LanguageSwitch />
           </div>
         </div>
@@ -51,7 +51,7 @@ const NavLink = ({
         ${
           isContact
             ? "text-[#00AEED] border border-[#00AEED] hover:bg-[#00AEED] hover:text-white rounded-lg"
-            : "text-violet-950 hover:text-violet-800"
+            : "text-indigo-950 hover:text-indigo-800"
         }`}
     >
       {children}
@@ -68,12 +68,12 @@ const LanguageSwitch = () => {
 
   return (
     <div className="flex items-center space-x-2">
-      <span className="font-semibold text-violet-950">EN</span>
+      <span className="font-semibold text-indigo-950">EN</span>
       <Switch
         checked={language === 'id'}
         onCheckedChange={handleToggle}
       />
-      <span className="font-semibold text-violet-950">ID</span>
+      <span className="font-semibold text-indigo-950">ID</span>
     </div>
   );
 };
