@@ -5,12 +5,11 @@ import {
   Plus, 
   X, 
   ChevronsUpDown, 
-  Settings,
+  SlidersHorizontal,
   PencilRuler,
   Thermometer,
   Paperclip,
   Sheet,
-  NotepadText
 } from "lucide-react";
 import {
   useFieldArray,
@@ -95,7 +94,8 @@ const FormSchema = z.object({
   equipments: z.array(
     z.object({
       nama_alat: z.string().min(1, { message: empty_field_error_message }),
-      manuf_model: z.string().optional(),
+      manuf: z.string().optional(),
+      model: z.string().optional(),
       seri_measuring: z.string().min(1, { message: empty_field_error_message }),
       refType: z.string().min(1, { message: empty_field_error_message }),
     })
@@ -813,7 +813,7 @@ export default function MeasurementForm({
         <Card id="used_method">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings className="w-5 h-5" />
+              <SlidersHorizontal className="w-5 h-5" />
               {t("metode")}
             </CardTitle>
           </CardHeader>
@@ -1256,27 +1256,12 @@ export default function MeasurementForm({
                       <X />
                     </Button>
                   )}
-                  <div id="nama_alat">
-                    <FormLabel variant="mandatory">{t("nama")}</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name={`equipments.${index}.nama_alat`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div id="manuf_model">
-                      <FormLabel>{t("model")}</FormLabel>
+                    <div id="nama_alat">
+                      <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                       <FormField
                         control={form.control}
-                        name={`equipments.${index}.manuf_model`}
+                        name={`equipments.${index}.nama_alat`}
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -1292,6 +1277,38 @@ export default function MeasurementForm({
                       <FormField
                         control={form.control}
                         name={`equipments.${index}.seri_measuring`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div id="manuf">
+                      <FormLabel>{t("manuf")}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`equipments.${index}.manuf`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div id="model">
+                      <FormLabel>{t("model")}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`equipments.${index}.model`}
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>

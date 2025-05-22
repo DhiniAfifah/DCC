@@ -5,6 +5,7 @@ import Stepper from "@/components/ui/stepper";
 import AdministrativeForm from "@/components/administrative-form";
 import MeasurementForm from "@/components/measurement-form";
 import Statements from "@/components/statements";
+import Comment from "@/components/comment";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -13,7 +14,13 @@ export default function CreateDCC() {
   const { t } = useLanguage();
 
   const [currentStep, setCurrentStep] = useState(0);
-  const steps = [t("administrasi"), t("hasil"), t("statements"), t("preview")];
+  const steps = [
+    t("administrasi"), 
+    t("hasil"), 
+    t("statements"), 
+    t("comment"),
+    t("preview")
+  ];
 
   const [fileName, setFileName] = useState<string>("");
 
@@ -114,7 +121,8 @@ export default function CreateDCC() {
     equipments: [
       {
         nama_alat: "",
-        manuf_model: "",
+        manuf: "",
+        model: "",
         seri_measuring: "",
         refType: "",
       },
@@ -176,6 +184,16 @@ export default function CreateDCC() {
         image: {
           gambar: "",
           caption: "",
+        },
+      },
+    ],
+    comment: [
+      {
+        title: "",
+        desc: "",
+        has_file: false,
+        files: {
+          file: "",
         },
       },
     ],
@@ -383,7 +401,7 @@ export default function CreateDCC() {
         onStepClick={setCurrentStep}
       />
 
-      {currentStep !== 3 && (
+      {currentStep !== 4 && (
         <p className="mt-12 text-center text-red-600 text-sm">* {t("asterisk")}</p>
       )}
       <div className="space-y-10">
@@ -402,6 +420,11 @@ export default function CreateDCC() {
         )}
         {currentStep === 2 && (
           <Statements 
+            formData={formData} 
+            updateFormData={updateFormData} />
+        )}
+        {currentStep === 3 && (
+          <Comment 
             formData={formData} 
             updateFormData={updateFormData} />
         )}

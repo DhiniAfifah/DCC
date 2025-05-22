@@ -1,3 +1,5 @@
+import { comment } from "postcss";
+
 type Language = 'id' | 'en';
 
 const translations: Record<string, { id: string; en: string }> = {
@@ -102,7 +104,8 @@ const translations: Record<string, { id: string; en: string }> = {
   pengukuran: { id: 'Standar atau Alat Pengukuran', 
                 en: 'Standards or Measuring Equipments' },
   alat: { id: 'Alat', en: 'Equipment' },
-  model: { id: 'Merek dan model', en: 'Manufacturer and type' },
+  manuf: { id: 'Merek', en: 'Manufacturer' },
+  model: { id: 'Model', en: 'Type' },
   basic_measurementStandard: {
     id: 'Peralatan standar acuan', 
     en: 'Standard reference equipment' 
@@ -114,12 +117,12 @@ const translations: Record<string, { id: string; en: string }> = {
   suhu: { id: 'Suhu', en: 'Temperature' },
   lembap: { id: 'Kelembapan', en: 'Humidity' },
   other_condition: { id: 'Masukkan kondisi lain', en: 'Enter another condition' },
-  tengah: { id: 'Titik tengah', en: 'Median' },
+  tengah: { id: 'Nilai tengah', en: 'Central value' },
   nilai: { id: 'Nilai', en: 'Value' },
   prefix: { id: 'Awalan', en: 'Prefix' },
   satuan: { id: 'Satuan', en: 'Unit' },
   eksponen: { id: 'Pangkat', en: 'Exponent' },
-  rentang: { id: 'Rentang', en: 'Range' },
+  rentang: { id: 'Simpangan', en: 'Deviation' },
 
   // Excel
   lampiran: { id: 'Lampiran', en: 'Attachment' },
@@ -190,6 +193,12 @@ const translations: Record<string, { id: string; en: string }> = {
   cb_rumus_statement: { id: 'Pernyataan ini melibatkan ekspresi matematika atau rumus', 
                         en: 'This statement includes mathematical notation or formula' },
   cb_gambar_statement: { id: 'Pernyataan ini disertai gambar', en: 'This statement is accompanied by an image' },
+
+  // Comment
+  comment: { id: 'Catatan', en: 'Comment' },
+  title: { id: 'Judul', en: 'Title' },
+  cb_file: { id: 'Catatan ini menyertakan file dan/atau gambar', en: 'This comment includes files and/or images' },
+  upload_file: { id: 'Unggah file', en: 'Upload file' },
   
   // Importer
   pdf: { id: 'Unggah file PDF', en: 'Upload PDF file' },
