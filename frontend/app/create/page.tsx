@@ -98,6 +98,7 @@ export default function CreateDCC() {
         method_name: "",
         method_desc: "",
         norm: "",
+        refType: "",
         has_formula: false,
         formula: {
           latex: "",
@@ -115,6 +116,7 @@ export default function CreateDCC() {
         nama_alat: "",
         manuf_model: "",
         seri_measuring: "",
+        refType: "",
       },
     ],
     conditions: [
@@ -149,6 +151,7 @@ export default function CreateDCC() {
         columns: [
           {
             kolom: "",
+            refType: "",
             real_list: "1",
           },
         ],
@@ -163,6 +166,7 @@ export default function CreateDCC() {
     statements: [
       {
         values: "",
+        refType: "",
         has_formula: false,
         formula: {
           latex: "",
@@ -177,20 +181,20 @@ export default function CreateDCC() {
     ],
   });
 
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = ""; // Show warning when user attempts to leave
-    };
+  // useEffect(() => {
+  //   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  //     event.preventDefault();
+  //     event.returnValue = ""; // Show warning when user attempts to leave
+  //   };
 
-    if (formData) {
-      window.addEventListener("beforeunload", handleBeforeUnload);
-    }
+  //   if (formData) {
+  //     window.addEventListener("beforeunload", handleBeforeUnload);
+  //   }
 
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [formData]); // Depend on formData to track changes
+  //   return () => {
+  //     window.removeEventListener("beforeunload", handleBeforeUnload);
+  //   };
+  // }, [formData]); // Depend on formData to track changes
 
   const [downloadLink, setDownloadLink] = useState<string | null>(null);
 

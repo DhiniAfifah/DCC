@@ -85,6 +85,10 @@ const translations: Record<string, { id: string; en: string }> = {
   metode: { id: 'Metode', en: 'Method' },
   norm: { id: 'Norma', en: 'Norm' },
   deskripsi: { id: 'Deskripsi', en: 'Description' },
+  basic_methodMeasurementUncertainty: {
+    id: 'Metode untuk menentukan ketidakpastian pengukuran yang tercantum dalam dokumen. Contoh: Ketidakpastian diperluas yang dilaporkan dinyatakan sebagai ketidakpastian standar yang dikalikan dengan faktor cakupan k. Faktor cakupan k=2 untuk distribusi normal berkorelasi dengan tingkat kepercayaan sekitar 95%', 
+    en: 'Method to determine the measurement uncertainties stated in the document. Example: The reported expanded uncertainty is stated as the standard uncertainty multiplied by a coverage factor k. The coverage factor k=2 for a normal distribution corresponds to a coverage probability of approx. 95%' 
+  },
   cb_rumus_metode: { id: 'Metode ini melibatkan ekspresi matematika atau rumus', 
                       en: 'This method includes mathematical notation or formula' },
   rumus: { id: 'Rumus', en: 'Formula' },
@@ -99,6 +103,10 @@ const translations: Record<string, { id: string; en: string }> = {
                 en: 'Standards or Measuring Equipments' },
   alat: { id: 'Alat', en: 'Equipment' },
   model: { id: 'Merek dan model', en: 'Manufacturer and type' },
+  basic_measurementStandard: {
+    id: 'Peralatan standar acuan', 
+    en: 'Standard reference equipment' 
+  },
 
   // Kondisi
   kondisi: { id: 'Kondisi Lingkungan', en: 'Environmental Condition' },
@@ -127,8 +135,28 @@ const translations: Record<string, { id: string; en: string }> = {
   judul: { id: 'Judul tabel', en: 'Table title' },
   bahasa: { id: 'Bahasa:', en: 'Language:' },
   kolom: { id: 'Kolom', en: 'Column' },
-  label: { id: 'Label kolom', en: 'Column label' },
   kolom_desc: { id: '*tidak termasuk ketidakpastian', en: '*excluding uncertainty' },
+  label: { id: 'Label kolom', en: 'Column label' },
+  basic_measuredValue: {
+    id: 'Nilai yang merepresentasikan hasil pengukuran', 
+    en: 'Quantity value representing a measurement result' 
+  },
+  basic_nominalValue: {
+    id: 'Titik ukur atau nilai nominal', 
+    en: 'Mesurement point or nominal value' 
+  },
+  basic_referenceValue: {
+    id: 'Nilai acuan yang digunakan untuk membandingkan dengan nilai-nilai lain dari jenis yang sama', 
+    en: 'Value used as a basis for comparison with values of the same kind' 
+  },
+  basic_measurementError_error: {
+    id: 'Nilai error pengukuran', 
+    en: 'Measurement error value' 
+  },
+  basic_measurementError_correction: {
+    id: 'Nilai error pengukuran', 
+    en: 'Measurement correction value' 
+  },
   subkolom: { id: 'Jumlah sub-kolom', en: 'Number of sub-columns' },
   ketidakpastian: { id: 'Parameter Evaluasi Ketidakpastian', en: 'Uncertainty Evaluation Parameters' },  
   ketidakpastian_desc: { id: 'Data ketidakpastian hanya akan tampil di XML, tidak di template Word atau PDF.', 
@@ -142,6 +170,23 @@ const translations: Record<string, { id: string; en: string }> = {
 
   // === Statement ===
   statement: { id: 'Pernyataan', en: 'Statement' },
+  refType: { id: 'Kategori', en: 'Category' },
+  basic_conformity: { 
+    id: 'Pernyataan kesesuaian untuk suatu hasil (memenuhi/tidak memenuhi atau sesuai/tidak sesuai)', 
+    en: 'Statement of conformity for a result (meets/does not meet or conforms/does not conform)' 
+  },
+  basic_metrologicallyTraceableToSI: {
+    id: "Pernyataan mengenai apakah dan bagaimana hasil pengukuran ditelusurkan secara metrologis ke SI (Système International d'Unités/Sistem Internasional Satuan)", 
+    en: 'Statement indicating whether, and how, the measurement results are metrologically traceable to the International System of Units (SI)' 
+  },
+  basic_revision: { 
+    id: 'Pernyataan/identifikasi perubahan dan, jika relevan, alasan dilakukannya revisi terhadap DCC', 
+    en: 'Statement/identification of the changes and, where appropriate, reasons for the revision of a DCC' 
+  },
+  basic_isInCMC: {
+    id: 'Catatan bahwa CMC yang ada mencakup seluruh atau sebagian dari hasil kalibrasi',
+    en: 'Note that existing CMCs cover all or some of the calibration results'
+  },
   cb_rumus_statement: { id: 'Pernyataan ini melibatkan ekspresi matematika atau rumus', 
                         en: 'This statement includes mathematical notation or formula' },
   cb_gambar_statement: { id: 'Pernyataan ini disertai gambar', en: 'This statement is accompanied by an image' },
