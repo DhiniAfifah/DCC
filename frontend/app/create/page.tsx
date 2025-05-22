@@ -9,6 +9,16 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 
+// Helper type guard untuk cek apakah value adalah File
+const isFile = (value: any): value is File => {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    typeof value.name === "string" &&
+    typeof value.size === "number"
+  );
+};
+
 export default function CreateDCC() {
   const { t } = useLanguage();
 
@@ -163,29 +173,12 @@ export default function CreateDCC() {
     ],
   });
 
-  // useEffect(() => {
-  //   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-  //     event.preventDefault();
-  //     event.returnValue = ""; // Show warning when user attempts to leave
-  //   };
-
-  //   if (formData) {
-  //     window.addEventListener("beforeunload", handleBeforeUnload);
-  //   }
-
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, [formData]); // Depend on formData to track changes
-
-  const [downloadLink, setDownloadLink] = useState<string | null>(null);
-
   const formatDate = (date: Date | string | null): string | null => {
     if (!date) return null;
     const localDate = new Date(date);
     localDate.setMinutes(
       localDate.getMinutes() - localDate.getTimezoneOffset()
-    ); // Menyesuaikan dengan zona waktu
+    );
     return localDate.toISOString().split("T")[0];
   };
 
@@ -234,16 +227,10 @@ export default function CreateDCC() {
   };
 
   const nextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
+    if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
   };
-
-  // Fungsi untuk kembali ke langkah sebelumnya
   const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
+    if (currentStep > 0) setCurrentStep(currentStep - 1);
   };
 
   const handleSubmit = async () => {
@@ -260,6 +247,9 @@ export default function CreateDCC() {
       return;
     }
 
+    // Create FormData object for multipart/form-data submission
+    const submitFormData = new FormData();
+
     const modifiedFormData = {
       ...formData,
       administrative_data: {
@@ -272,35 +262,33 @@ export default function CreateDCC() {
             (lang) => lang.value
           ),
       },
-      methods: formData.methods.map((method) => ({
-        ...method,
-        formula: method.has_formula
-          ? method.formula
-          : { latex: "", mathml: "" },
-        image: method.has_image
-          ? {
-              gambar: null,
-              caption: method.image?.caption || "",
-            }
-          : null,
-      })),
-      statements: formData.statements.map((stmt) => {
-        let values;
-        if (Array.isArray(stmt.values)) {
-          values = stmt.values;
-        } else {
-          values = [stmt.values].filter(Boolean);
+      methods: formData.methods.map((method, index) => {
+        if (
+          method.has_image &&
+          method.image?.gambar &&
+          isFile(method.image.gambar)
+        ) {
+          return {
+            ...method,
+            image: {
+              ...method.image,
+              gambar: method.image.gambar.name,
+            },
+          };
         }
-        return {
-          ...stmt,
-          values: values,
-          image: stmt.has_image
-            ? {
-                gambar: null,
-                caption: stmt.image?.caption || "",
-              }
-            : null,
-        };
+        return method;
+      }),
+      statements: formData.statements.map((stmt, index) => {
+        if (stmt.has_image && stmt.image?.gambar && isFile(stmt.image.gambar)) {
+          return {
+            ...stmt,
+            image: {
+              ...stmt.image,
+              gambar: stmt.image.gambar.name,
+            },
+          };
+        }
+        return stmt;
       }),
       results: formData.results.map((result) => ({
         parameters: result.parameters,
@@ -318,13 +306,37 @@ export default function CreateDCC() {
       excel: fileName,
     };
 
+    // Prepare FormData for file uploads
+    formData.methods.forEach((method, index) => {
+      if (
+        method.has_image &&
+        method.image?.gambar &&
+        isFile(method.image.gambar)
+      ) {
+        const file = method.image.gambar;
+        submitFormData.append(`methods[${index}].image.gambar`, file);
+        modifiedFormData.methods[index].image.gambar = file.name;
+      }
+    });
+
+    formData.statements.forEach((stmt, index) => {
+      if (stmt.has_image && stmt.image?.gambar && isFile(stmt.image.gambar)) {
+        const file = stmt.image.gambar;
+        submitFormData.append(`statements[${index}].image.gambar`, file);
+        modifiedFormData.statements[index].image.gambar = file.name;
+      }
+    });
+
+    submitFormData.append("data", JSON.stringify(modifiedFormData));
+
     console.log("Data yang dikirim ke backend:", modifiedFormData);
-    console.log("fileName:", fileName);
 
     try {
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(modifiedFormData),
       });
 
@@ -346,7 +358,6 @@ export default function CreateDCC() {
       }
     } catch (error: unknown) {
       console.error("Error submitting form:", error);
-
       if (error instanceof Error) {
         alert(`Failed to create DCC. Error: ${error.message}`);
       } else {
@@ -354,6 +365,8 @@ export default function CreateDCC() {
       }
     }
   };
+
+  const [downloadLink, setDownloadLink] = useState<string | null>(null);
 
   return (
     <div className="container mx-auto py-8 pt-20">
@@ -374,7 +387,7 @@ export default function CreateDCC() {
           <MeasurementForm
             formData={formData}
             updateFormData={updateFormData}
-            setFileName={setFileName}
+            setFileName={setFileName} // Jangan lupa props ini ya
           />
         )}
         {currentStep === 2 && (

@@ -27,7 +27,10 @@ from fastapi import UploadFile
 from docxtpl import InlineImage
 from docx.shared import Mm
 from api.ds_i_utils import d_si
-
+import logging
+import base64
+import tempfile
+from fastapi import UploadFile
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
@@ -70,46 +73,31 @@ def get_project_paths(dcc: schemas.DCCFormCreate):
     
 #BASE 64
 def save_image_and_get_base64(upload_file):
-    if not upload_file:
-        logging.warning("No upload file provided to save_image_and_get_base64")
-        return '', ''
-        
-    if not hasattr(upload_file, 'file'):
-        logging.warning(f"Invalid file object type: {type(upload_file)} passed to save_image_and_get_base64")
-        
-        # If it's a string representing a path, try to read the file
-        if isinstance(upload_file, str) and os.path.exists(upload_file):
-            try:
-                with open(upload_file, 'rb') as f:
-                    content = f.read()
-                    base64_str = base64.b64encode(content).decode("utf-8")
-                    
-                    # Create a temporary file copy
-                    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
-                    tmp_file.write(content)
-                    tmp_file.close()
-                    
-                    return base64_str, tmp_file.name
-            except Exception as e:
-                logging.error(f"Error reading image file from path: {e}")
-                return '', ''
-        return '', ''
-
     try:
-        content = upload_file.file.read()
-        upload_file.file.seek(0)  
+        if not upload_file:
+            logging.warning("No upload file provided.")
+            return '', ''
+        
+        if not hasattr(upload_file, 'file'):
+            logging.warning(f"Invalid file object type: {type(upload_file)} passed to save_image_and_get_base64")
+            return '', ''
+        
+        # Read the image content as binary
+        image_content = upload_file.file.read()  # Read the image file content as binary
 
-        # Encode base64
-        base64_str = base64.b64encode(content).decode("utf-8")
-        
-        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
-        tmp_file.write(content)
-        tmp_file.close()
-        
-        return base64_str, tmp_file.name
+        # Encode the image content in base64
+        base64_str = base64.b64encode(image_content).decode("utf-8")  # Convert binary to base64
+
+        # Create a temporary file path for the image (just in case you want to save it as well)
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+        temp_file.write(image_content)
+        temp_file.close()
+
+        return base64_str, temp_file.name  # Return base64 string and temporary file path
     except Exception as e:
-        logging.error(f"Error in save_image_and_get_base64: {e}")
+        logging.error(f"Error in save_image_and_get_base64: {str(e)}")
         return '', ''
+
 
 #template word
 def populate_template(dcc_data, word_path, new_word_path):
@@ -773,16 +761,16 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:data'):
                             with tag('dcc:quantity'):
                                 with tag('dcc:name'):
-                                    with tag('dcc:content'): text('Titik Tengah')
+                                    with tag('dcc:content'): text('Titik Tengah') #nilai min
                                 with tag('si:real'):
-                                    with tag('si:value'): text(condition.tengah)
+                                    with tag('si:value'): text(condition.tengah) #66-6
                                     with tag('si:unit'): text(condition.tengah_unit)
                                     
                             with tag('dcc:quantity'):
                                 with tag('dcc:name'):
-                                    with tag('dcc:content'): text('Rentang')
+                                    with tag('dcc:content'): text('Rentang') # nilai max
                                 with tag('si:real'):
-                                    with tag('si:value'): text(condition.rentang)
+                                    with tag('si:value'): text(condition.rentang) #66+6
                                     with tag('si:unit'): text(condition.tengah_unit)
                                     
             # Results from Excel and user input

@@ -501,23 +501,53 @@ export default function MeasurementForm({
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
 
-      // Jika file adalah gambar
+      // Handle image file upload
       if (isImageUpload) {
-        // Pastikan file adalah gambar dengan tipe yang sesuai
-        if (!["image/jpeg", "image/png"].includes(file.type)) {
-          alert("Please upload a valid image (JPEG/PNG).");
+        if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+          alert("Please upload a valid image (JPEG/PNG/JPG).");
           return;
         }
         if (file.size > 5000000) {
-          // Validasi ukuran gambar (max 5MB)
           alert("File size should be less than 5MB.");
           return;
         }
 
-        // Pastikan gambar disimpan ke form menggunakan form.setValue
-        if (methodIndex !== undefined) {
-          form.setValue(`methods.${methodIndex}.image.gambar`, file); // Simpan file gambar pada metode tertentu
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+          const response = await fetch("http://127.0.0.1:8000/upload-image/", {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          // Step 2: Store file information (name) in the form
+          if (methodIndex !== undefined) {
+            form.setValue(
+              `methods.${methodIndex}.image.gambar`,
+              result.filename // Store the file name after uploading
+            );
+
+            // Step 3: Convert the image file to base64 for preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64String = reader.result as string;
+
+              // Store base64 image string in the form for preview
+              form.setValue(
+                `methods.${methodIndex}.image.base64`,
+                base64String
+              );
+            };
+            reader.readAsDataURL(file); // Convert file to base64
+          }
+
           alert("Image uploaded successfully.");
+        } catch (error) {
+          console.error("Error uploading image:", error);
+          alert("Image upload failed.");
         }
 
         // Jika file adalah Excel

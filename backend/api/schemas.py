@@ -81,9 +81,10 @@ class Formula(BaseModel):
     mathml: str
 
 class Image(BaseModel):
-    gambar: Optional[UploadFile] = None # We assume an image file upload
-    caption: Optional[str]
-    gambar_url: Optional[str] = None  
+    gambar: Optional[str] = None 
+    caption: Optional[str] = None
+    gambar_url: Optional[str] = None
+    base64: Optional[str] = None  
 
 class Method(BaseModel):
     method_name: str

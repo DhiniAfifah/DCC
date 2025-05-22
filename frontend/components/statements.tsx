@@ -150,7 +150,7 @@ export default function Statements({
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
 
-      // Validate file type
+      // Validasi tipe file
       if (
         isImageUpload &&
         !["image/jpeg", "image/png", "image/jpg"].includes(file.type)
@@ -159,16 +159,48 @@ export default function Statements({
         return;
       }
 
-      // Validate file size
-      if (file.size > 5000000) {
+      // Validasi ukuran file (5MB)
+      if (file.size > 5_000_000) {
         alert("File size should be less than 5MB.");
         return;
       }
 
-      // Set the file in the form state (for the specific statement and image field)
-      if (statementIndex !== undefined) {
-        form.setValue(`statements[${statementIndex}].image.gambar`, file);
-        alert("Image uploaded successfully.");
+      try {
+        // Upload file ke backend menggunakan FormData
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const response = await fetch("http://127.0.0.1:8000/upload-image/", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error("Failed to upload image");
+
+        const result = await response.json();
+
+        // Setelah upload sukses, convert file ke base64 untuk preview di UI
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result as string;
+
+          if (statementIndex !== undefined) {
+            form.setValue(
+              `statements.${statementIndex}.image.gambar`,
+              file.name
+            ); // nama file yang dikirim ke backend
+            form.setValue(
+              `statements.${statementIndex}.image.base64`,
+              base64String
+            ); // base64 untuk preview di UI
+          }
+
+          alert("Image uploaded successfully.");
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Image upload failed.");
       }
     }
   };
@@ -522,9 +554,14 @@ export default function Statements({
                                     type="file"
                                     accept=".jpg, .jpeg, .png"
                                     ref={ref}
-                                    onChange={(e) =>
-                                      handleFileUpload(e, true, statementIndex)
-                                    } // Fungsi untuk menangani upload
+                                    onChange={(e) => {
+                                      handleFileUpload(e, true, statementIndex);
+                                      onChange(
+                                        e.target.files
+                                          ? e.target.files[0]
+                                          : null
+                                      );
+                                    }}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -559,7 +596,7 @@ export default function Statements({
                 className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
                 onClick={() =>
                   appendStatement({
-                    values: "",
+                    values: ["", "", ""],
                     has_formula: false,
                     formula: {
                       latex: "",
