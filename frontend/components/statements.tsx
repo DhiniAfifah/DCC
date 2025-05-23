@@ -296,26 +296,26 @@ export default function Statements({
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="max-w-3xl">
+                          <SelectContent>
                             <SelectItem 
                               value="basic_conformity"
-                              className="whitespace-normal break-words max-w-3xl"
+                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
                             >{t("basic_conformity")}</SelectItem>
                             <SelectItem 
                               value="basic_metrologicallyTraceableToSI" 
-                              className="whitespace-normal break-words max-w-3xl"
+                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
                             >{t("basic_metrologicallyTraceableToSI")}</SelectItem>
                             <SelectItem 
                               value="basic_revision" 
-                              className="whitespace-normal break-words max-w-3xl"
+                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
                             >{t("basic_revision")}</SelectItem>
                             <SelectItem 
                               value="basic_isInCMC" 
-                              className="whitespace-normal break-words max-w-3xl"
+                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
                             >{t("basic_isInCMC")}</SelectItem>
                             <SelectItem 
                               value="other" // ga ada refType
-                              className="whitespace-normal break-words max-w-3xl"
+                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
                             >{t("other")}</SelectItem>
                           </SelectContent>
                         </Select>
@@ -348,7 +348,7 @@ export default function Statements({
                 {form.watch(`statements.${statementIndex}.has_formula`) && (
                   <div id="rumus" className="mt-2">
                     <FormLabel>{t("rumus")}</FormLabel>
-                    <div className="grid grid-cols-2 gap-1">
+                    <div className="grid grid-row md:grid-cols-2 gap-1">
                       <FormField
                         control={form.control}
                         name={`statements.${statementIndex}.formula.latex`}
@@ -410,7 +410,7 @@ export default function Statements({
                 <MathJaxContext>
                   <div id="rumus" className="mt-2">
                     <FormLabel>Rumus</FormLabel>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-row md:grid-cols-2 gap-4">
                       <div className="grid gap-4">
                         <FormField
                           control={form.control}
@@ -448,7 +448,7 @@ export default function Statements({
                       </div>
                       <ScrollArea className="h-40 w-full border rounded-md p-2">
                         <div className="p-2">
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-row md:grid-cols-2 gap-2">
                             {latexSymbols.map((group) => (
                               <div key={group.category}>
                                 <Select
@@ -561,7 +561,7 @@ export default function Statements({
 
                 {form.watch(`statements.${statementIndex}.has_image`) && (
                   <div id="gambar">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-row md:grid-cols-2 gap-4">
                       <div id="upload">
                         <FormLabel>{t("upload_gambar")}</FormLabel>
                         <FormField

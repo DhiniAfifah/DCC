@@ -380,7 +380,7 @@ export default function AdministrativeForm({
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-row md:grid-cols-2 gap-4">
               <div id="software">
                 <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                 <FormField
@@ -424,7 +424,7 @@ export default function AdministrativeForm({
               </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-row md:grid-cols-2 gap-4">
               <div id="country_code">
                 <FormLabel variant="mandatory">{t("negara_calib")}</FormLabel>
                 <FormField
@@ -539,7 +539,7 @@ export default function AdministrativeForm({
             </div>
 
             {/* Languages Group */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-row md:grid-cols-2 gap-4">
               <div id="used_language">
                 <FormLabel variant="mandatory">{t("used")}</FormLabel>
                 <div className="space-y-2">
@@ -714,7 +714,7 @@ export default function AdministrativeForm({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-row md:grid-cols-2 gap-4">
               <div id="order">
                 <FormLabel variant="mandatory">{t("order")}</FormLabel>
                 <FormField
@@ -765,22 +765,20 @@ export default function AdministrativeForm({
                 />
               </div>
             </div>
-            <div className="grid grid-cols gap-4">
-              <div id="sertifikat">
-                <FormLabel variant="mandatory">{t("sertifikat")}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="administrative_data.sertifikat"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+            <div id="sertifikat">
+              <FormLabel variant="mandatory">{t("sertifikat")}</FormLabel>
+              <FormField
+                control={form.control}
+                name="administrative_data.sertifikat"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </CardContent>
         </Card>
@@ -793,7 +791,7 @@ export default function AdministrativeForm({
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-row md:grid-cols-2 gap-4">
               <div id="tgl_mulai">
                 <FormLabel variant="mandatory">{t("mulai")}</FormLabel>
                 <FormField
@@ -897,58 +895,56 @@ export default function AdministrativeForm({
                 />
               </div>
             </div>
-            <div className="grid grid-cols gap-4">
-              <div id="tgl_pengesahan">
-                <FormLabel>{t("pengesahan")}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="Measurement_TimeLine.tgl_pengesahan"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span></span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={(date: Date | undefined) => {
-                              if (date) {
-                                const adjustedDate = new Date(date);
-                                adjustedDate.setMinutes(
-                                  adjustedDate.getMinutes() -
-                                    adjustedDate.getTimezoneOffset()
-                                );
-                                field.onChange(adjustedDate);
-                              }
-                            }}
-                            disabled={(date) =>
-                              date > new Date() || date < new Date("1900-01-01")
+            <div id="tgl_pengesahan">
+              <FormLabel>{t("pengesahan")}</FormLabel>
+              <FormField
+                control={form.control}
+                name="Measurement_TimeLine.tgl_pengesahan"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span></span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={(date: Date | undefined) => {
+                            if (date) {
+                              const adjustedDate = new Date(date);
+                              adjustedDate.setMinutes(
+                                adjustedDate.getMinutes() -
+                                  adjustedDate.getTimezoneOffset()
+                              );
+                              field.onChange(adjustedDate);
                             }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                          }}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01")
+                          }
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </CardContent>
         </Card>
@@ -981,24 +977,22 @@ export default function AdministrativeForm({
                       <X />
                     </Button>
                   )}
-                  <div className="grid grid-cols gap-4">
-                    <div id="jenis">
-                      <FormLabel variant="mandatory">{t("jenis")}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.jenis`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                  <div id="jenis">
+                    <FormLabel variant="mandatory">{t("jenis")}</FormLabel>
+                    <FormField
+                      control={form.control}
+                      name={`objects.${index}.jenis`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="merek">
                       <FormLabel>{t("merek")}</FormLabel>
                       <FormField
@@ -1038,7 +1032,7 @@ export default function AdministrativeForm({
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-6">
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-row md:grid-cols-2 gap-4">
                         <div id="item_issuer">
                           <FormLabel variant="mandatory">{t("penerbit_seri")}</FormLabel>
                           <FormField
@@ -1090,22 +1084,20 @@ export default function AdministrativeForm({
                           />
                         </div>
                       </div>
-                      <div className="grid grid-cols gap-4">
-                        <div id="id_lain">
-                          <FormLabel>{t("id_lain")}</FormLabel>
-                          <FormField
-                            control={form.control}
-                            name={`objects.${index}.id_lain`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                      <div id="id_lain">
+                        <FormLabel>{t("id_lain")}</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`objects.${index}.id_lain`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                     </CardContent>
                   </Card>
@@ -1161,7 +1153,7 @@ export default function AdministrativeForm({
                         <X />
                       </Button>
                     )}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-row md:grid-cols-2 gap-4">
                       <div id="nama_resp">
                         <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                         <FormField
@@ -1233,7 +1225,7 @@ export default function AdministrativeForm({
                         <X />
                       </Button>
                     )}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-row md:grid-cols-2 gap-4">
                       <div id="nama_resp">
                         <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                         <FormField
@@ -1290,7 +1282,7 @@ export default function AdministrativeForm({
               </div>
               <div id="kepala" className="grid gap-4 border-b pb-4 relative">
                 <p className="text-sm font-bold">{t("kepala")}</p>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-row md:grid-cols-2 gap-4">
                   <div id="nama_resp">
                     <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                     <FormField
@@ -1379,7 +1371,7 @@ export default function AdministrativeForm({
               </div>
               <div id="direktur" className="grid gap-4 pb-4 relative">
                 <p className="text-sm font-bold">{t("direktur")}</p>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-row md:grid-cols-2 gap-4">
                   <div id="nama_resp">
                     <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                     <FormField
@@ -1476,7 +1468,7 @@ export default function AdministrativeForm({
                   <CardTitle className="text-black">{t("alamat")}</CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-6">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="jalan_cust">
                       <FormLabel>{t("jalan")}</FormLabel>
                       <FormField
@@ -1508,7 +1500,7 @@ export default function AdministrativeForm({
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="kota_cust">
                       <FormLabel>{t("kota")}</FormLabel>
                       <FormField
@@ -1540,7 +1532,7 @@ export default function AdministrativeForm({
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="pos_cust">
                       <FormLabel>{t("pos")}</FormLabel>
                       <FormField

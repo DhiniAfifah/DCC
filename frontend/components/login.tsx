@@ -42,7 +42,7 @@ export default function Login({formData}: {formData: any}) {
             <div>
                 <div className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-red-200"></div>
                 
-                <div className="flex items-center justify-center min-h-screen">
+                <div className="flex items-center justify-center min-h-screen mt-0 md:mt-20">
                     <Card className="w-[350px]">
                         <CardHeader>
                             <CardTitle className="text-center">{t("login")}</CardTitle>

@@ -9,7 +9,7 @@ const DccOptions = () => {
   const { t } = useLanguage();
   
   return (
-    <div className="relative flex flex-col justify-center items-center min-h-screen overflow-hidden p-4">
+    <div className="relative flex flex-col justify-center items-center min-h-screen overflow-hidden pt-20">
       {/* Background lebih terang: abu-abu ke biru muda */}
       <>
         <div
@@ -22,7 +22,7 @@ const DccOptions = () => {
       {/* Efek noise halus */}
       <div className="fixed inset-0 -z-10 bg-[url('/noise.png')] opacity-5"></div>
 
-      <div className="flex flex-row space-x-6 w-full justify-center z-20">
+      <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6 w-full z-20">
         <DccOption 
           href="/create" 
           icon={PlusCircle} 

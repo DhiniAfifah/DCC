@@ -158,7 +158,7 @@ export default function Comment({
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-row md:grid-cols-2 gap-4">
               <div id="title">
                 <FormLabel>{t("title")}</FormLabel>
                 <FormField

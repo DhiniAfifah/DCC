@@ -209,7 +209,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
   const { t } = useLanguage();
 
   return (
-    <div id="columns" className="grid grid-cols-2 gap-4">
+    <div id="columns" className="grid grid-row md:grid-cols-2 gap-4">
       {columnFields.map((columnField, columnIndex) => (
         <Card key={columnField.id} id="kolom" className="border shadow">
           <CardHeader></CardHeader>
@@ -278,7 +278,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="max-w-xs">
+                      <SelectContent>
                         <SelectItem 
                           value="basic_measuredValue"
                           className="whitespace-normal break-words max-w-xs"
@@ -837,7 +837,7 @@ export default function MeasurementForm({
                     <X />
                   </Button>
                 )}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-row md:grid-cols-2 gap-4">
                   <div id="method_name">
                     <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                     <FormField
@@ -903,14 +903,14 @@ export default function MeasurementForm({
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="max-w-3xl">
+                          <SelectContent>
                             <SelectItem 
                               value="basic_methodMeasurementUncertainty"
-                              className="whitespace-normal break-words max-w-3xl"
+                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
                             >{t("basic_methodMeasurementUncertainty")}</SelectItem>
                             <SelectItem 
                               value="basic_calibrationMethod" 
-                              className="whitespace-normal break-words max-w-3xl"
+                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
                             >{t("other")}</SelectItem>
                           </SelectContent>
                         </Select>
@@ -943,7 +943,7 @@ export default function MeasurementForm({
                 {form.watch(`methods.${index}.has_formula`) && (
                   <div id="rumus" className="mb-2">
                     <FormLabel>{t("rumus")}</FormLabel>
-                    <div className="grid grid-cols-2 gap-1">
+                    <div className="grid grid-row md:grid-cols-2 gap-1">
                       <FormField
                         control={form.control}
                         name={`methods.${index}.formula.latex`}
@@ -1005,7 +1005,7 @@ export default function MeasurementForm({
                 <MathJaxContext>
                   <div id="rumus" className="mt-2">
                     <FormLabel>Rumus</FormLabel>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-row md:grid-cols-2 gap-4">
                       <div className="grid gap-4">
                         <FormField
                           control={form.control}
@@ -1043,7 +1043,7 @@ export default function MeasurementForm({
                       </div>
                       <ScrollArea className="h-40 w-full border rounded-md p-2">
                         <div className="p-2">
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-row md:grid-cols-2 gap-2">
                             {latexSymbols.map((group) => (
                               <div key={group.category}>
                                 <Select
@@ -1156,7 +1156,7 @@ export default function MeasurementForm({
 
                 {form.watch(`methods.${index}.has_image`) && (
                   <div id="gambar">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-row md:grid-cols-2 gap-4">
                       <div id="upload">
                         <FormLabel>{t("upload_gambar")}</FormLabel>
                         <FormField
@@ -1256,7 +1256,7 @@ export default function MeasurementForm({
                       <X />
                     </Button>
                   )}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="nama_alat">
                       <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                       <FormField
@@ -1288,7 +1288,7 @@ export default function MeasurementForm({
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="manuf">
                       <FormLabel>{t("manuf")}</FormLabel>
                       <FormField
@@ -1336,14 +1336,14 @@ export default function MeasurementForm({
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="max-w-3xl">
+                            <SelectContent>
                               <SelectItem 
                                 value="basic_measurementStandard"
-                                className="whitespace-normal break-words max-w-3xl"
+                                className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
                               >{t("basic_measurementStandard")}</SelectItem>
                               <SelectItem 
                                 value="other" // ga ada refType
-                                className="whitespace-normal break-words max-w-3xl"
+                                className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
                               >{t("other")}</SelectItem>
                             </SelectContent>
                           </Select>
@@ -1401,7 +1401,7 @@ export default function MeasurementForm({
                       <X />
                     </Button>
                   )}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="jenis_kondisi">
                       <FormLabel variant="mandatory">{t("lingkungan")}</FormLabel>
                       <FormField
@@ -1464,7 +1464,7 @@ export default function MeasurementForm({
                     </div>
                   </div>
                   <div id="tengah">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-row md:grid-cols-2 gap-4">
                       <div id="tengah_value">
                         <FormLabel variant="mandatory">{t("tengah")}</FormLabel>
                         <FormField
@@ -1624,7 +1624,7 @@ export default function MeasurementForm({
                     </div>
                   </div>
                   <div id="rentang">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-row md:grid-cols-2 gap-4">
                       <div id="rentang_value">
                         <FormLabel variant="mandatory">{t("rentang")}</FormLabel>
                         <FormField
@@ -1814,7 +1814,7 @@ export default function MeasurementForm({
               {t("lampiran")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
+          <CardContent className="grid grid-row md:grid-cols-2 gap-4">
             <div id="excel_file">
               <FormLabel variant="mandatory">{t("excel")}</FormLabel>
               <FormField
