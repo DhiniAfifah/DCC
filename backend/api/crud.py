@@ -561,12 +561,49 @@ def generate_xml(dcc, table_data):
         doc.asis('<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" schemaVersion="3.3.0">')
         
         # Administrative Data section
-        with tag('dcc:administrativeData'): 
+        with tag('dcc:administrativeData'):
+            
+            #SOFTWARE 
             with tag('dcc:dccSoftware'): 
                 with tag('dcc:software'): 
                     with tag('dcc:name'): 
                         with tag('dcc:content'): text(dcc.software)
                     with tag('dcc:release'): text(dcc.version)
+            
+            #DEFINISI REFTYPE        
+            with tag('dcc:refTypeDefinitions'):
+                with tag('dcc:refTypeDefinition'):
+                    with tag('dcc:name'):
+                        with tag('dcc:content', lang="de"): text("Namensraum für Querschnitts-RefTypes")
+                        with tag('dcc:content', lang="en"): text("Namespace for Cross-Community RefTypes")
+                    with tag('dcc:description'):
+                        with tag('dcc:content', lang="de"): text("Der Namensraum 'basic' beinhaltet allgemeine RefTypes die messgrößenübergreifend genutzt werden.")
+                        with tag('dcc:content', lang="en"): text("The \"basic\" namespace contains RefTypes common for multiple communities.")
+                    with tag('dcc:namespace'): text('basic')
+                    with tag('dcc:link'): text('https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=2')
+
+                with tag('dcc:refTypeDefinition'):
+                    with tag('dcc:name'):
+                        with tag('dcc:content', lang="de"): text("Namensraum für mathematische RefTypes")
+                        with tag('dcc:content', lang="en"): text("Namespace for mathematical RefTypes")
+                    with tag('dcc:description'):
+                        with tag('dcc:content', lang="de"): text("Der Namensraum 'math' beinhaltet RefTypes mathematischer Operationen.")
+                        with tag('dcc:content', lang="en"): text("The \"math\" namespace contains RefTypes for mathematical operations.")
+                    with tag('dcc:namespace'): text('math')
+                    with tag('dcc:link'): text('https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=292')
+
+                with tag('dcc:refTypeDefinition'):
+                    with tag('dcc:name'):
+                        with tag('dcc:content', lang="de"): text("Namensraum für RefTypes der Messgröße Kraft")
+                        with tag('dcc:content', lang="en"): text("Namespace for RefTypes of the Force community")
+                    with tag('dcc:description'):
+                        with tag('dcc:content', lang="de"): text("Der Namensraum 'force' beinhaltet spezifische RefTypes die für Temperaturmessgrößen genutzt werden.")
+                        with tag('dcc:content', lang="en"): text("The \"force\" namespace contains RefTypes for temperature quantities.")
+                    with tag('dcc:namespace'): text('temperature')
+                    with tag('dcc:link'): text('https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=133')
+
+                        
+            #CORE DATA        
             with tag('dcc:coreData'): 
                 with tag('dcc:countryCodeISO3166_1'): text(dcc.administrative_data.country_code)
                 for lang in dcc.administrative_data.used_languages:
@@ -575,7 +612,7 @@ def generate_xml(dcc, table_data):
                     with tag('dcc:mandatoryLangCodeISO639_1'): text(lang)
                 with tag('dcc:uniqueIdentifier'): text(dcc.administrative_data.sertifikat)
                 with tag('dcc:identifications'):
-                    with tag('dcc:identification'):
+                    with tag('dcc:identification', {'reftype': 'basic_orderNumber'}):
                         with tag('dcc:issuer'): text(dcc.administrative_data.core_issuer)
                         with tag('dcc:value'): text(dcc.administrative_data.order)
                         with tag('dcc:name'):
@@ -583,18 +620,26 @@ def generate_xml(dcc, table_data):
                 with tag('dcc:beginPerformanceDate'): text(dcc.Measurement_TimeLine.tgl_mulai)
                 with tag('dcc:endPerformanceDate'): text(dcc.Measurement_TimeLine.tgl_akhir)
                 with tag('dcc:performanceLocation'): text(dcc.administrative_data.tempat)
-                with tag('dcc:approvalDate'): text(dcc.Measurement_TimeLine.tgl_pengesahan)
+                with tag('dcc:issueDate'): text(dcc.Measurement_TimeLine.tgl_pengesahan)
+            
+            #ITEMS    
             with tag("dcc:items"):
                 for obj in dcc.objects:
                     with tag("dcc:item"):
-                        with tag("dcc:name"): text(obj.jenis)
-                        with tag("dcc:manufacturer"): text(obj.merek)
-                        with tag("dcc:model"): text(obj.tipe)
-                        with tag("dcc:identification"):
-                            with tag("dcc:issuer"): text(obj.item_issuer)
-                            with tag("dcc:value"): text(obj.seri_item)
+                        with tag("dcc:name"):
+                            with tag('dcc:content'): text(obj.jenis)
+                        with tag("dcc:manufacturer"):
                             with tag("dcc:name"):
-                                with tag("dcc:content"): text(obj.id_lain)
+                                with tag('dcc:content'): text(obj.merek)
+                        with tag("dcc:model"): text(obj.tipe)
+                        with tag("dcc:identifications"):
+                            with tag("dcc:identification", {'reftype': 'basic_serialNumber'}):
+                                with tag("dcc:issuer"): text(obj.item_issuer)
+                                with tag("dcc:value"): text(obj.seri_item)
+                                with tag("dcc:name"):
+                                    with tag("dcc:content"): text(obj.id_lain)
+            
+            #MUTLAK                    
             with tag('dcc:calibrationLaboratory'): 
                 with tag('dcc:calibrationLaboratoryCode'): text('LK-070-IDN')
                 with tag('dcc:contact'): 
@@ -612,6 +657,8 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:streetNo'): text('Gedung 420')
                 with tag('dcc:cryptElectronicSignature'): pass
                 with tag('dcc:cryptElectronicTimeStamp'): pass
+                
+            #RESP_PERSON    
             with tag('dcc:respPersons'): 
                 for resp in dcc.responsible_persons.pelaksana:
                     with tag('dcc:respPerson'): 
@@ -666,180 +713,210 @@ def generate_xml(dcc, table_data):
                     with tag('dcc:cryptElectronicSignature'): text(str(dcc.responsible_persons.direktur.signature))
                     with tag('dcc:cryptElectronicTimeStamp'): text(str(dcc.responsible_persons.direktur.timestamp))
         
-        #owner
-        with tag('dcc:customer'):
-            with tag('dcc:name'):
-                with tag('dcc:content'):
-                    text(dcc.owner.nama_cust)
-            with tag('dcc:location'):
-                with tag('dcc:city'):
-                    text(dcc.owner.kota_cust)
-                with tag('dcc:countryCode'):
-                    text(dcc.owner.negara_cust)
-                with tag('dcc:postCode'):
-                    text(dcc.owner.pos_cust)
-                with tag('dcc:state'):
-                    text(dcc.owner.state_cust)
-                with tag('dcc:street'):
-                    text(dcc.owner.jalan_cust)
-                with tag('dcc:streetNo'):
-                    text(dcc.owner.no_jalan_cust)                 
-                        
-        # Statements
-        with tag('dcc:statements'):
-            for stmt in dcc.statements:
-                with tag('dcc:statement'):
-                    with tag('dcc:declaration'):
-                        content_text = " ".join(stmt.values) if stmt.values else ""
-                        with tag('dcc:content'):
-                            text(content_text)
-                        if stmt.has_formula and stmt.formula:
-                            with tag('dcc:formular'):
-                                if stmt.formula.latex:
-                                    with tag('dcc:latex'):
-                                        text(stmt.formula.latex)
-                                if stmt.formula.mathml:
-                                    with tag('dcc:mathml'):
-                                        text(stmt.formula.mathml)
-                        # bagian gambar (jika ada)
-                        if stmt.has_image and stmt.image:
-                            with tag('dcc:image'):
-                                if getattr(stmt.image, 'caption', None):
-                                    with tag('dcc:caption'):
-                                        text(stmt.image.caption)
-                                if getattr(stmt.image, 'base64', None):
-                                    with tag('dcc:base64'):
-                                        text(stmt.image.base64)
+            #owner
+            with tag('dcc:customer'):
+                with tag('dcc:name'):
+                    with tag('dcc:content'): text(dcc.owner.nama_cust)
+                with tag('dcc:location'):
+                    with tag('dcc:city'):
+                        text(dcc.owner.kota_cust)
+                    with tag('dcc:countryCode'):
+                        text(dcc.owner.negara_cust)
+                    with tag('dcc:postCode'):
+                        text(dcc.owner.pos_cust)
+                    with tag('dcc:state'):
+                        text(dcc.owner.state_cust)
+                    with tag('dcc:street'):
+                        text(dcc.owner.jalan_cust)
+                    with tag('dcc:streetNo'):
+                        text(dcc.owner.no_jalan_cust)                 
+                            
+            # Statements
+            with tag('dcc:statements'):
+                for stmt in dcc.statements:
+                    with tag('dcc:statement'):
+                        with tag('dcc:declaration'):
+                            content_text = " ".join(stmt.values) if stmt.values else ""
+                            with tag('dcc:content'):
+                                text(content_text)
+                            if stmt.has_formula and stmt.formula:
+                                with tag('dcc:formula'):
+                                    if stmt.formula.latex:
+                                        with tag('dcc:latex'):
+                                            text(stmt.formula.latex)
+                                    if stmt.formula.mathml:
+                                        with tag('dcc:mathml'):
+                                            text(stmt.formula.mathml)
+                            # bagian gambar (jika ada)
+                            if stmt.has_image and stmt.image:
+                                with tag('dcc:file'):
+                                    if getattr(stmt.image, 'fileName', None):
+                                        with tag('dcc:fileName'):
+                                            text(stmt.image.fileName)
+                                    if getattr(stmt.image, 'mimeType', None):
+                                        with tag('dcc:mimeType'):
+                                            text(stmt.image.mimeTpye)
+                                    if getattr(stmt.image, 'base64', None):
+                                        with tag('dcc:dataBase64'):
+                                            text(stmt.image.base64)
 
-        # Measurement Results Section
+        # MEASUREMENT RESULT 
         with tag('dcc:measurementResults'):
-            # Metode
-            with tag('dcc:usedMethods'):
-                for method in dcc.methods:
-                    with tag('dcc:usedMethod'):
-                        with tag('dcc:name'):
-                            with tag('dcc:content'): text(method.method_name)
-                        with tag('dcc:description'):
-                            with tag('dcc:content'): text(method.method_desc)
-                            if method.has_formula and method.formula:
-                                with tag('dcc:formular'):
-                                    with tag('dcc:latex'): text(method.formula.latex or "")
-                                    with tag('dcc:mathml'): text(method.formula.mathml or "")
-                            if method.has_image and method.image:
-                                with tag('dcc:image'):
-                                    if getattr(method.image, 'caption', None):
-                                        with tag('dcc:caption'):
-                                            text(method.image.caption)
-                                    if getattr(method.image, 'base64', None):
-                                        with tag('dcc:base64'):
-                                            text(method.image.base64)
-                        with tag('dcc:norm'): text(method.norm)
-
-            # Measuring Equipment 
-            with tag('dcc:measuringEquipments'):
-                for equip in dcc.equipments:
-                    with tag('dcc:measuringEquipment'):
-                        with tag('dcc:name'):
-                            with tag('dcc:content'): text(equip.nama_alat)
-                        with tag('dcc:identifications'):
-                            with tag('dcc:identification'):
-                                with tag('dcc:issuer'): text('manufacturer')
-                                with tag('dcc:value'): text(equip.seri_measuring)
-                                with tag('dcc:name'):
-                                    with tag('dcc:content'): text(equip.manuf_model)
-
-            # Adding Room Conditions 
-            with tag('dcc:influenceConditions'):
-                for condition in dcc.conditions:
-                    with tag('dcc:influenceCondition'):
-                        with tag('dcc:name'):
-                            with tag('dcc:content'): text(condition.jenis_kondisi)
-                            
-                        with tag('dcc:description'):
-                            with tag('dcc:content'): text(condition.desc)
-                            
-                        with tag('dcc:data'):
-                            with tag('dcc:quantity'):
-                                with tag('dcc:name'):
-                                    with tag('dcc:content'): text('Titik Tengah') #nilai min
-                                with tag('si:real'):
-                                    with tag('si:value'): text(condition.tengah) #66-6
-                                    with tag('si:unit'): text(condition.tengah_unit)
-                                    
-                            with tag('dcc:quantity'):
-                                with tag('dcc:name'):
-                                    with tag('dcc:content'): text('Rentang') # nilai max
-                                with tag('si:real'):
-                                    with tag('si:value'): text(condition.rentang) #66+6
-                                    with tag('si:unit'): text(condition.tengah_unit)
-                                    
-            # Results from Excel and user input
-            with tag('dcc:results'):
-                # Prepare the input_tables dictionary from dcc.results
-                input_tables = prepare_input_tables(dcc)
-                
-                for result_idx, result in enumerate(dcc.results):
-                    if isinstance(result.parameters, list) and len(result.parameters) > 0:
-                        parameter_name = result.parameters[0] 
-                    else:
-                        parameter_name = result.parameters  
+            with tag('dcc:measurementResult'):
+                with tag('dcc:name'):
+                    with tag('dcc:content'):text('Hasil Kalibrasi / Calibration Results')
                     
-                    if parameter_name not in table_data:
-                        logging.warning(f"Table '{parameter_name}' not found in Excel data") 
-                        continue
-                    
-                flat_columns = table_data[parameter_name]
-                column_map = input_tables.get(parameter_name, {})
-                column_names = list(column_map.keys())
-                subcol_counts = list(column_map.values())
+                # Metode
+                with tag('dcc:usedMethods'):
+                    for method in dcc.methods:
+                        with tag('dcc:usedMethod'):
+                            with tag('dcc:name'):
+                                with tag('dcc:content'): text(method.method_name)
+                            with tag('dcc:description'):
+                                with tag('dcc:content'): text(method.method_desc)
+                                if method.has_formula and method.formula:
+                                    with tag('dcc:formula'):
+                                        with tag('dcc:latex'): text(method.formula.latex or "")
+                                        with tag('dcc:mathml'): text(method.formula.mathml or "")
+                                if method.has_image and method.image:
+                                    with tag('dcc:image'):
+                                        if getattr(method.image, 'fileName', None):
+                                            with tag('dcc:fileName'):
+                                                text(method.image.fileName)
+                                        if getattr(method.image, 'mimeType', None):
+                                            with tag('dcc:mimeType'):
+                                                text(method.image.mimeType)
+                                        if getattr(method.image, 'base64', None):
+                                            with tag('dcc:base64'):
+                                                text(method.image.base64)
+                            with tag('dcc:norm'): text(method.norm)
 
-                with tag('dcc:result'):
-                    with tag('dcc:name'):
-                        with tag('dcc:content'):
-                            text(parameter_name)
-                    with tag('dcc:data'):
-                        with tag('dcc:list'):
-                            flat_index = 0
-                            
-                            for col_idx, col_name in enumerate(column_names):
-                                subcol_count = subcol_counts[col_idx]
-                                
-                                # Check if this is the uncertainty column
-                                is_uncertainty = (col_name == "Uncertainty")
-                                
-                                with tag('dcc:quantity'):
+                # Measuring Equipment 
+                with tag('dcc:measuringEquipments'):
+                    for equip in dcc.equipments:
+                        with tag('dcc:measuringEquipment'):
+                            with tag('dcc:name', {'reftype': 'basic_measurementStandard'} ):
+                                with tag('dcc:content'): text(equip.nama_alat)
+                            with tag('dcc:manufacturer'):
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text('merk')
+                            with tag('dcc:identifications'):
+                                with tag('dcc:identification', {'reftype': 'basic_serialNumber'}):
+                                    with tag('dcc:issuer'): text('manufacturer')
+                                    with tag('dcc:value'): text(equip.seri_measuring)
                                     with tag('dcc:name'):
-                                        with tag('dcc:content'):
-                                            text(col_name)
-                                    with tag('si:hybrid'):
-                                        for _ in range(subcol_count):
-                                            if flat_index >= len(flat_columns):
-                                                break
+                                        with tag('dcc:content'): text(equip.manuf_model)
+
+                # Adding Room Conditions 
+                with tag('dcc:influenceConditions'):
+                    for condition in dcc.conditions:
+                        if condition.jenis_kondisi.lower() == 'temperatur' or condition.jenis_kondisi.lower() == 'temperature':
+                            reftype_value = 'basic_temperature'
+                        elif condition.jenis_kondisi.lower() == 'kelembapan' or condition.jenis_kondisi.lower() == 'humidity':
+                            reftype_value = 'basic_humidityRelative'
+                        else:
+                            reftype_value = 'basic_unknown'
+
+                        with tag('dcc:influenceCondition', {'reftype': reftype_value}):
+                            with tag('dcc:name'):
+                                with tag('dcc:content'): text(condition.jenis_kondisi)
+                            with tag('dcc:description'):
+                                with tag('dcc:content'): text(condition.desc)
+                            with tag('dcc:data'):
+                                
+                                with tag('dcc:quantity', {'reftype': 'math_minimum'} ):
+                                    with tag('dcc:name'):
+                                        with tag('dcc:content'): text('Titik Tengah') #nilai min
+                                    with tag('si:real'):
+                                        with tag('si:value'): text(condition.tengah) #66-6
+                                        with tag('si:unit'): text(condition.tengah_unit)
+                                        
+                                with tag('dcc:quantity', {'reftype': 'math_maximum'} ):
+                                    with tag('dcc:name'):
+                                        with tag('dcc:content'): text('Rentang') # nilai max
+                                    with tag('si:real'):
+                                        with tag('si:value'): text(condition.rentang) #66+6
+                                        with tag('si:unit'): text(condition.tengah_unit)
+                                        
+                # Results from Excel and user input
+                with tag('dcc:results'):
+                    # Prepare the input_tables dictionary from dcc.results
+                    input_tables = prepare_input_tables(dcc)
+                    
+                    for result_idx, result in enumerate(dcc.results):
+                        if isinstance(result.parameters, list) and len(result.parameters) > 0:
+                            parameter_name = result.parameters[0] 
+                        else:
+                            parameter_name = result.parameters  
+                        
+                        if parameter_name not in table_data:
+                            logging.warning(f"Table '{parameter_name}' not found in Excel data") 
+                            continue
+                        
+                    flat_columns = table_data[parameter_name]
+                    column_map = input_tables.get(parameter_name, {})
+                    column_names = list(column_map.keys())
+                    subcol_counts = list(column_map.values())
+
+                    with tag('dcc:result'):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'):
+                                text(parameter_name)
+                        with tag('dcc:data'):
+                            with tag('dcc:list'):
+                                flat_index = 0
+                                
+                                for col_idx, col_name in enumerate(column_names):
+                                    subcol_count = subcol_counts[col_idx]
+                                    
+                                    # Check if this is the uncertainty column
+                                    is_uncertainty = (col_name == "Uncertainty")
+                                    
+                                    with tag('dcc:quantity'):
+                                        with tag('dcc:name'):
+                                            with tag('dcc:content'):
+                                                text(col_name)
+                                        with tag('si:hybrid'):
+                                            for _ in range(subcol_count):
+                                                if flat_index >= len(flat_columns):
+                                                    break
+                                                    
+                                                numbers, units = flat_columns[flat_index]
+                                                flat_index += 1
                                                 
-                                            numbers, units = flat_columns[flat_index]
-                                            flat_index += 1
-                                            
-                                            if is_uncertainty and hasattr(result, 'uncertainty'):
-                                                # Use uncertainty data from user input
-                                                with tag('si:realListXMLList'):
-                                                    with tag('si:expandedUncXMLList'):
-                                                        with tag('si:uncertaintyXMLList'):
+                                                if is_uncertainty and hasattr(result, 'uncertainty'):
+                                                    # Use uncertainty data from user input
+                                                    with tag('si:realListXMLList'):
+                                                        with tag('si:expandedUncXMLList'):
+                                                            with tag('si:uncertaintyXMLList'):
+                                                                text(" ".join(numbers))
+                                                            with tag('si:unitXMLList'):
+                                                                text(" ".join(d_si(unit) if unit else "" for unit in units))
+                                                            with tag('si:coverageFactorXMLList'):
+                                                                text(result.uncertainty.factor or "2")
+                                                            with tag('si:coverageProbabilityXMLList'):
+                                                                text(result.uncertainty.probability or "0.95")
+                                                            with tag('si:distributionXMLList'):
+                                                                text(result.uncertainty.distribution or "normal")
+                                                else:
+                                                    # Regular column data from Excel
+                                                    with tag('si:realListXMLList'):
+                                                        with tag('si:valueXMLList'):
                                                             text(" ".join(numbers))
                                                         with tag('si:unitXMLList'):
                                                             text(" ".join(d_si(unit) if unit else "" for unit in units))
-                                                        with tag('si:coverageFactorXMLList'):
-                                                            text(result.uncertainty.factor or "2")
-                                                        with tag('si:coverageProbabilityXMLList'):
-                                                            text(result.uncertainty.probability or "0.95")
-                                                        with tag('si:distributionXMLList'):
-                                                            text(result.uncertainty.distribution or "normal")
-                                            else:
-                                                # Regular column data from Excel
-                                                with tag('si:realListXMLList'):
-                                                    with tag('si:valueXMLList'):
-                                                        text(" ".join(numbers))
-                                                    with tag('si:unitXMLList'):
-                                                        text(" ".join(d_si(unit) if unit else "" for unit in units))
+                                                            
+        # COMMENT
+        with tag('dcc:comment'):
+            with tag('dcc:name'):
+                with tag('dcc:content'): text()
+            with tag('dcc:description'):
+                with tag('dcc:content'): text()
+            with tag('dcc:file'): 
+                with tag('dcc:fileName'):  text()
+                with tag('dcc:mimeType'):  text()
+                with tag('dataBase64'):  text()
+                                                                    
 
                                     
             
