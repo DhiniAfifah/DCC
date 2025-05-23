@@ -163,7 +163,7 @@ export default function Comment({
                 <FormLabel>{t("title")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name={`comment.title`}
+                  name="comment.title"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -178,7 +178,7 @@ export default function Comment({
                 <FormLabel>{t("deskripsi")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name={`comment.desc`}
+                  name="comment.desc"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -193,7 +193,7 @@ export default function Comment({
             <div id="checkbox_file">
               <FormField
                 control={form.control}
-                name={`comment.has_file`}
+                name="comment.has_file"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center space-x-2 space-y-0">
                     <FormControl>
@@ -209,7 +209,7 @@ export default function Comment({
                 )}
               />
             </div>
-            {form.watch(`comment.has_file`) && (
+            {form.watch("comment.has_file") && (
               <div id="file">
                 <FormLabel>{t("upload_file")}</FormLabel>
                 <div className="mt-2 space-y-2">

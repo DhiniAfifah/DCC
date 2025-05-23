@@ -840,18 +840,31 @@ export default function MeasurementForm({
                 <div className="grid grid-row md:grid-cols-2 gap-4">
                   <div id="method_name">
                     <FormLabel variant="mandatory">{t("nama")}</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name={`methods.${index}.method_name`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                    <div className="space-y-1">
+                      {usedLanguages.map(
+                        (lang: { value: string }, langIndex: number) => (
+                          <FormField
+                            control={form.control}
+                            key={`${field.id}-${langIndex}`}
+                            name={`methods.${index}.method_name.${langIndex}`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-2">
+                                  <FormControl>
+                                    <Input
+                                      placeholder={`${t("bahasa")} ${lang.value}`}
+                                      {...field}
+                                      value={field.value ?? ""}
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )
                       )}
-                    />
+                    </div>
                   </div>
 
                   <div id="norm">
@@ -873,18 +886,31 @@ export default function MeasurementForm({
 
                 <div id="method_desc">
                   <FormLabel>{t("deskripsi")}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`methods.${index}.method_desc`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  <div className="space-y-1">
+                    {usedLanguages.map(
+                      (lang: { value: string }, langIndex: number) => (
+                        <FormField
+                          control={form.control}
+                          key={`${field.id}-${langIndex}`}
+                          name={`methods.${index}.method_desc.${langIndex}`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-2">
+                                <FormControl>
+                                  <Input
+                                    placeholder={`${t("bahasa")} ${lang.value}`}
+                                    {...field}
+                                    value={field.value ?? ""}
+                                  />
+                                </FormControl>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )
                     )}
-                  />
+                  </div>
                 </div>
 
                 <div id="refType" className="mb-3">
@@ -1259,18 +1285,31 @@ export default function MeasurementForm({
                   <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="nama_alat">
                       <FormLabel variant="mandatory">{t("nama")}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`equipments.${index}.nama_alat`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                      <div className="space-y-1">
+                        {usedLanguages.map(
+                          (lang: { value: string }, langIndex: number) => (
+                            <FormField
+                              control={form.control}
+                              key={`${field.id}-${langIndex}`}
+                              name={`equipments.${index}.nama_alat.${langIndex}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="flex items-center gap-2">
+                                    <FormControl>
+                                      <Input
+                                        placeholder={`${t("bahasa")} ${lang.value}`}
+                                        {...field}
+                                        value={field.value ?? ""}
+                                      />
+                                    </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )
                         )}
-                      />
+                      </div>
                     </div>
                     <div id="seri_measuring">
                       <FormLabel variant="mandatory">{t("seri")}</FormLabel>
@@ -1291,33 +1330,59 @@ export default function MeasurementForm({
                   <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="manuf">
                       <FormLabel>{t("manuf")}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`equipments.${index}.manuf`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                      <div className="space-y-1">
+                        {usedLanguages.map(
+                          (lang: { value: string }, langIndex: number) => (
+                            <FormField
+                              control={form.control}
+                              key={`${field.id}-${langIndex}`}
+                              name={`equipments.${index}.manuf.${langIndex}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="flex items-center gap-2">
+                                    <FormControl>
+                                      <Input
+                                        placeholder={`${t("bahasa")} ${lang.value}`}
+                                        {...field}
+                                        value={field.value ?? ""}
+                                      />
+                                    </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )
                         )}
-                      />
+                      </div>
                     </div>
                     <div id="model">
                       <FormLabel>{t("model")}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`equipments.${index}.model`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                      <div className="space-y-1">
+                        {usedLanguages.map(
+                          (lang: { value: string }, langIndex: number) => (
+                            <FormField
+                              control={form.control}
+                              key={`${field.id}-${langIndex}`}
+                              name={`equipments.${index}.model.${langIndex}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="flex items-center gap-2">
+                                    <FormControl>
+                                      <Input
+                                        placeholder={`${t("bahasa")} ${lang.value}`}
+                                        {...field}
+                                        value={field.value ?? ""}
+                                      />
+                                    </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )
                         )}
-                      />
+                      </div>
                     </div>
                   </div>
                   <div id="refType">
@@ -1449,18 +1514,31 @@ export default function MeasurementForm({
                     </div>
                     <div id="kondisi_desc">
                       <FormLabel>{t("deskripsi")}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`conditions.${index}.desc`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                      <div className="space-y-1">
+                        {usedLanguages.map(
+                          (lang: { value: string }, langIndex: number) => (
+                            <FormField
+                              control={form.control}
+                              key={`${field.id}-${langIndex}`}
+                              name={`conditions.${index}.desc.${langIndex}`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <div className="flex items-center gap-2">
+                                    <FormControl>
+                                      <Input
+                                        placeholder={`${t("bahasa")} ${lang.value}`}
+                                        {...field}
+                                        value={field.value ?? ""}
+                                      />
+                                    </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )
                         )}
-                      />
+                      </div>
                     </div>
                   </div>
                   <div id="tengah">

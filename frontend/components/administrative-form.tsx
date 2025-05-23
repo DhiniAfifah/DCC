@@ -314,6 +314,8 @@ export default function AdministrativeForm({
     });
   };
 
+  const usedLanguages = form.watch("administrative_data.used_languages") || [];
+
   // Fungsi onSubmit
   const onSubmit = async (data: any) => {
     const allResponsiblePersons = [
@@ -979,18 +981,31 @@ export default function AdministrativeForm({
                   )}
                   <div id="jenis">
                     <FormLabel variant="mandatory">{t("jenis")}</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name={`objects.${index}.jenis`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                    <div className="space-y-1">
+                      {usedLanguages.map(
+                        (lang: { value: string }, langIndex: number) => (
+                          <FormField
+                            control={form.control}
+                            key={`${field.id}-${langIndex}`}
+                            name={`objects.${index}.jenis.${langIndex}`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-2">
+                                  <FormControl>
+                                    <Input
+                                      placeholder={`${t("bahasa")} ${lang.value}`}
+                                      {...field}
+                                      value={field.value ?? ""}
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )
                       )}
-                    />
+                    </div>
                   </div>
                   <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="merek">
@@ -1086,18 +1101,31 @@ export default function AdministrativeForm({
                       </div>
                       <div id="id_lain">
                         <FormLabel>{t("id_lain")}</FormLabel>
-                        <FormField
-                          control={form.control}
-                          name={`objects.${index}.id_lain`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
+                        <div className="space-y-1">
+                          {usedLanguages.map(
+                            (lang: { value: string }, langIndex: number) => (
+                              <FormField
+                                control={form.control}
+                                key={`${field.id}-${langIndex}`}
+                                name={`objects.${index}.id_lain.${langIndex}`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <div className="flex items-center gap-2">
+                                      <FormControl>
+                                        <Input
+                                          placeholder={`${t("bahasa")} ${lang.value}`}
+                                          {...field}
+                                          value={field.value ?? ""}
+                                        />
+                                      </FormControl>
+                                    </div>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )
                           )}
-                        />
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

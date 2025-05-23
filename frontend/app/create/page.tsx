@@ -187,16 +187,16 @@ export default function CreateDCC() {
         },
       },
     ],
-    comment: [
-      {
-        title: "",
-        desc: "",
-        has_file: false,
-        files: {
+    comment: {
+      title: "",
+      desc: "",
+      has_file: false,
+      files: [
+        {
           file: "",
-        },
-      },
-    ],
+        }
+      ],
+    },
   });
 
   // useEffect(() => {

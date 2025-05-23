@@ -35,6 +35,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea"
 
 const empty_field_error_message = "Input required/dibutuhkan.";
 const FormSchema = z.object({
@@ -266,7 +267,7 @@ export default function Statements({
                         <FormItem>
                           <div className="flex items-center gap-2">
                             <FormControl>
-                              <Input
+                              <Textarea 
                                 placeholder={`${t("bahasa")} ${lang.value}`}
                                 {...field}
                                 value={field.value ?? ""}
