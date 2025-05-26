@@ -23,7 +23,7 @@ export default function Stepper({ currentStep, steps, onStepClick }: StepperProp
                       ? "bg-green-600 border-green-600"
                       : currentStep === index
                       ? "border-sky-500 text-sky-500"
-                      : "border-gray-300 text-gray-300"
+                      : "border-gray-500 text-gray-500"
                   }`}
               >
                 {currentStep > index ? (
@@ -32,10 +32,10 @@ export default function Stepper({ currentStep, steps, onStepClick }: StepperProp
                   <span>{index + 1}</span>
                 )}
               </div>
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-max text-sm">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-22 sm:w-max text-xs sm:text-sm text-center sm:whitespace-nowrap">
                 <span
                   className={
-                    currentStep >= index ? "text-sky-500" : "text-gray-400"
+                    currentStep >= index ? "text-sky-500" : "text-gray-500"
                   }
                 >
                   {step}
@@ -44,8 +44,8 @@ export default function Stepper({ currentStep, steps, onStepClick }: StepperProp
             </button>
             {index < steps.length - 1 && (
               <div
-                className={`w-32 h-0.5 transition-colors duration-200 ${
-                  currentStep > index ? "bg-green-600" : "bg-gray-300"
+                className={`w-8 md:w-32 h-0.5 transition-colors duration-200 ${
+                  currentStep > index ? "bg-green-600" : "bg-gray-500"
                 }`}
               />
             )}

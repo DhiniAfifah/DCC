@@ -1,3 +1,5 @@
+"use client";
+
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,7 +15,9 @@ import {
     FormItem,
     FormMessage,
   } from "@/components/ui/form";
-  import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/context/LanguageContext";
+import { File } from "lucide-react";
 
 const FormSchema = z.object({
     xml: typeof window === 'undefined' ? z.any() : z.instanceof(FileList)
@@ -24,6 +28,8 @@ export default function Importer({
 }: {
     formData: any;
 }) {
+    const { t } = useLanguage();
+
     const form = useForm({
         resolver: zodResolver(FormSchema),
         defaultValues: formData,
@@ -37,7 +43,10 @@ export default function Importer({
                 <div className="space-y-6 max-w-4xl mx-auto p-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Upload PDF</CardTitle>
+                            <CardTitle className="flex items-center gap-2">
+                                <File className="h-5 w-5" />
+                                {t("pdf")}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-6">
                             <FormField

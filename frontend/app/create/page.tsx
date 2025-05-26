@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Stepper from "@/components/ui/stepper";
 import AdministrativeForm from "@/components/administrative-form";
 import MeasurementForm from "@/components/measurement-form";
 import Statements from "@/components/statements";
+import Comment from "@/components/comment";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -23,7 +24,13 @@ export default function CreateDCC() {
   const { t } = useLanguage();
 
   const [currentStep, setCurrentStep] = useState(0);
-  const steps = [t("administrasi"), t("hasil"), t("statements"), t("preview")];
+  const steps = [
+    t("administrasi"), 
+    t("hasil"), 
+    t("statements"), 
+    t("comment"),
+    t("preview")
+  ];
 
   const [fileName, setFileName] = useState<string>("");
 
@@ -108,6 +115,7 @@ export default function CreateDCC() {
         method_name: "",
         method_desc: "",
         norm: "",
+        refType: "",
         has_formula: false,
         formula: {
           latex: "",
@@ -125,8 +133,10 @@ export default function CreateDCC() {
     equipments: [
       {
         nama_alat: "",
-        manuf_model: "",
+        manuf: "",
+        model: "",
         seri_measuring: "",
+        refType: "",
       },
     ],
     conditions: [
@@ -135,8 +145,22 @@ export default function CreateDCC() {
         desc: "",
         tengah: "",
         rentang: "",
-        rentang_unit: "",
-        tengah_unit: "",
+        rentang_unit: {
+          prefix: "",
+          prefix_pdf: "",
+          unit: "",
+          unit_pdf: "",
+          eksponen: "",
+          eksponen_pdf: "",
+        },
+        tengah_unit: {
+          prefix: "",
+          prefix_pdf: "",
+          unit: "",
+          unit_pdf: "",
+          eksponen: "",
+          eksponen_pdf: "",
+        },
       },
     ],
     sheet_name: "",
@@ -147,6 +171,7 @@ export default function CreateDCC() {
         columns: [
           {
             kolom: "",
+            refType: "",
             real_list: "1",
           },
         ],
@@ -161,6 +186,7 @@ export default function CreateDCC() {
     statements: [
       {
         values: "",
+        refType: "",
         has_formula: false,
         formula: {
           latex: "",
@@ -175,7 +201,33 @@ export default function CreateDCC() {
         },
       },
     ],
+    comment: {
+      title: "",
+      desc: "",
+      has_file: false,
+      files: [
+        {
+          file: "",
+        }
+      ],
+    },
   });
+
+  // Kasih warning saat user mencoba meninggalkan halaman (agar isi formulir tidak hilang)
+  // useEffect(() => {
+  //   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  //     event.preventDefault();
+  //     event.returnValue = "";
+  //   };
+
+  //   if (formData) {
+  //     window.addEventListener("beforeunload", handleBeforeUnload);
+  //   }
+
+  //   return () => {
+  //     window.removeEventListener("beforeunload", handleBeforeUnload);
+  //   };
+  // }, [formData]);
 
   const formatDate = (date: Date | string | null): string | null => {
     if (!date) return null;
@@ -392,13 +444,18 @@ export default function CreateDCC() {
 
   return (
     <div className="container mx-auto py-8 pt-20">
+      <div className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-green-100"></div>
+
       <Stepper
         currentStep={currentStep}
         steps={steps}
         onStepClick={setCurrentStep}
       />
 
-      <div className="mt-12 space-y-10">
+      {currentStep !== 4 && (
+        <p className="mt-12 text-center text-red-600 text-sm">* {t("asterisk")}</p>
+      )}
+      <div className="space-y-10">
         {currentStep === 0 && (
           <AdministrativeForm
             formData={formData}
@@ -413,7 +470,15 @@ export default function CreateDCC() {
           />
         )}
         {currentStep === 2 && (
-          <Statements formData={formData} updateFormData={updateFormData} />
+          <Statements 
+            formData={formData} 
+            updateFormData={updateFormData} 
+          />
+        )}
+        {currentStep === 3 && (
+          <Comment 
+            formData={formData} 
+            updateFormData={updateFormData} />
         )}
       </div>
 
@@ -424,7 +489,7 @@ export default function CreateDCC() {
 
         {currentStep === steps.length - 1 ? (
           <Button onClick={handleSubmit} variant="green">
-            Submit
+            {t("submit")}
           </Button>
         ) : (
           <Button onClick={nextStep} variant="blue">
