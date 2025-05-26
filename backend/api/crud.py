@@ -612,7 +612,7 @@ def generate_xml(dcc, table_data):
                     with tag('dcc:mandatoryLangCodeISO639_1'): text(lang)
                 with tag('dcc:uniqueIdentifier'): text(dcc.administrative_data.sertifikat)
                 with tag('dcc:identifications'):
-                    with tag('dcc:identification', {'reftype': 'basic_orderNumber'}):
+                    with tag('dcc:identification', reftype='basic_orderNumber'):
                         with tag('dcc:issuer'): text(dcc.administrative_data.core_issuer)
                         with tag('dcc:value'): text(dcc.administrative_data.order)
                         with tag('dcc:name'):
@@ -633,7 +633,7 @@ def generate_xml(dcc, table_data):
                                 with tag('dcc:content'): text(obj.merek)
                         with tag("dcc:model"): text(obj.tipe)
                         with tag("dcc:identifications"):
-                            with tag("dcc:identification", {'reftype': 'basic_serialNumber'}):
+                            with tag("dcc:identification", reftype='basic_serialNumber'):
                                 with tag("dcc:issuer"): text(obj.item_issuer)
                                 with tag("dcc:value"): text(obj.seri_item)
                                 with tag("dcc:name"):
@@ -755,10 +755,16 @@ def generate_xml(dcc, table_data):
                                             text(stmt.image.fileName)
                                     if getattr(stmt.image, 'mimeType', None):
                                         with tag('dcc:mimeType'):
-                                            text(stmt.image.mimeTpye)
+                                            text(stmt.image.mimeType)
                                     if getattr(stmt.image, 'base64', None):
                                         with tag('dcc:dataBase64'):
-                                            text(stmt.image.base64)
+                                            base64_lines = stmt.image.base64.splitlines()
+                                            doc.asis('\n')
+                                            indent_spaces = 22
+                                            indent_stm = ' ' * indent_spaces
+                                            for line in base64_lines:
+                                                doc.asis(f"{indent_stm}{line}\n")
+                                            doc.asis(' ' * (indent_spaces - 4))
 
         # MEASUREMENT RESULT 
         with tag('dcc:measurementResults'):
@@ -785,23 +791,30 @@ def generate_xml(dcc, table_data):
                                                 text(method.image.fileName)
                                         if getattr(method.image, 'mimeType', None):
                                             with tag('dcc:mimeType'):
-                                                text(method.image.mimeType)
+                                                text(method.image.mimeType)         
                                         if getattr(method.image, 'base64', None):
-                                            with tag('dcc:base64'):
-                                                text(method.image.base64)
+                                            with tag('dcc:dataBase64'):
+                                                base64_lines = method.image.base64.splitlines()
+                                                doc.asis('\n')
+                                                indent_spaces = 22
+                                                indent_mth = ' ' * indent_spaces
+                                                for line in base64_lines:
+                                                    doc.asis(f"{indent_mth}{line}\n")
+                                                doc.asis(' ' * (indent_spaces - 4)) 
+                                                
                             with tag('dcc:norm'): text(method.norm)
 
                 # Measuring Equipment 
                 with tag('dcc:measuringEquipments'):
                     for equip in dcc.equipments:
                         with tag('dcc:measuringEquipment'):
-                            with tag('dcc:name', {'reftype': 'basic_measurementStandard'} ):
+                            with tag('dcc:name', reftype= 'basic_measurementStandard' ):
                                 with tag('dcc:content'): text(equip.nama_alat)
                             with tag('dcc:manufacturer'):
                                 with tag('dcc:name'):
                                     with tag('dcc:content'): text('merk')
                             with tag('dcc:identifications'):
-                                with tag('dcc:identification', {'reftype': 'basic_serialNumber'}):
+                                with tag('dcc:identification', reftype='basic_serialNumber'):
                                     with tag('dcc:issuer'): text('manufacturer')
                                     with tag('dcc:value'): text(equip.seri_measuring)
                                     with tag('dcc:name'):
@@ -817,21 +830,21 @@ def generate_xml(dcc, table_data):
                         else:
                             reftype_value = 'basic_unknown'
 
-                        with tag('dcc:influenceCondition', {'reftype': reftype_value}):
+                        with tag('dcc:influenceCondition', reftype= 'reftype_value'):
                             with tag('dcc:name'):
                                 with tag('dcc:content'): text(condition.jenis_kondisi)
                             with tag('dcc:description'):
                                 with tag('dcc:content'): text(condition.desc)
                             with tag('dcc:data'):
                                 
-                                with tag('dcc:quantity', {'reftype': 'math_minimum'} ):
+                                with tag('dcc:quantity', reftype='math_minimum' ):
                                     with tag('dcc:name'):
                                         with tag('dcc:content'): text('Titik Tengah') #nilai min
                                     with tag('si:real'):
                                         with tag('si:value'): text(condition.tengah) #66-6
                                         with tag('si:unit'): text(condition.tengah_unit)
                                         
-                                with tag('dcc:quantity', {'reftype': 'math_maximum'} ):
+                                with tag('dcc:quantity', reftype='math_maximum' ):
                                     with tag('dcc:name'):
                                         with tag('dcc:content'): text('Rentang') # nilai max
                                     with tag('si:real'):

@@ -179,7 +179,6 @@ export default function Statements({
 
         const result = await response.json();
 
-        // Setelah upload sukses, convert file ke base64 untuk preview di UI
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64String = reader.result as string;
@@ -187,12 +186,16 @@ export default function Statements({
           if (statementIndex !== undefined) {
             form.setValue(
               `statements.${statementIndex}.image.gambar`,
-              file.name
-            ); // nama file yang dikirim ke backend
+              result.filename
+            );
+            form.setValue(
+              `statements.${statementIndex}.image.mimeType`,
+              result.mimeType
+            );
             form.setValue(
               `statements.${statementIndex}.image.base64`,
               base64String
-            ); // base64 untuk preview di UI
+            );
           }
 
           alert("Image uploaded successfully.");

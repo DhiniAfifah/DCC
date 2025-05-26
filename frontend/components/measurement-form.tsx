@@ -523,14 +523,19 @@ export default function MeasurementForm({
 
           const result = await response.json();
 
-          // Step 2: Store file information (name) in the form
+          // Store file information (name and mimeType) in the form
           if (methodIndex !== undefined) {
             form.setValue(
               `methods.${methodIndex}.image.gambar`,
               result.filename // Store the file name after uploading
             );
 
-            // Step 3: Convert the image file to base64 for preview
+            form.setValue(
+              `methods.${methodIndex}.image.mimeType`,
+              result.mimeType // Store the mimeType
+            );
+
+            // Convert the image file to base64 for preview
             const reader = new FileReader();
             reader.onloadend = () => {
               const base64String = reader.result as string;
@@ -549,8 +554,6 @@ export default function MeasurementForm({
           console.error("Error uploading image:", error);
           alert("Image upload failed.");
         }
-
-        // Jika file adalah Excel
       } else if (file.name.endsWith(".xls") || file.name.endsWith(".xlsx")) {
         const formData = new FormData();
         formData.append("excel", file);

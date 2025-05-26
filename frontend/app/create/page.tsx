@@ -117,6 +117,8 @@ export default function CreateDCC() {
         image: {
           gambar: "",
           caption: "",
+          fileName: "",
+          mimeType: "",
         },
       },
     ],
@@ -168,6 +170,8 @@ export default function CreateDCC() {
         image: {
           gambar: "",
           caption: "",
+          fileName: "",
+          mimeType: "",
         },
       },
     ],
@@ -273,6 +277,8 @@ export default function CreateDCC() {
             image: {
               ...method.image,
               gambar: method.image.gambar.name,
+              mimeType: method.image.mimeType, // Ensure mimeType is sent
+              fileName: method.image.gambar,
             },
           };
         }
@@ -285,6 +291,8 @@ export default function CreateDCC() {
             image: {
               ...stmt.image,
               gambar: stmt.image.gambar.name,
+              mimeType: stmt.image.mimeType, // Ensure mimeType is sent
+              fileName: stmt.image.gambar,
             },
           };
         }
@@ -315,7 +323,14 @@ export default function CreateDCC() {
       ) {
         const file = method.image.gambar;
         submitFormData.append(`methods[${index}].image.gambar`, file);
-        modifiedFormData.methods[index].image.gambar = file.name;
+        submitFormData.append(
+          `methods[${index}].image.mimeType`,
+          method.image.mimeType
+        ); // Append mimeType
+        submitFormData.append(
+          `methods[${index}].image.fileName`,
+          method.image.fileName
+        ); // Append fileName
       }
     });
 
@@ -323,7 +338,14 @@ export default function CreateDCC() {
       if (stmt.has_image && stmt.image?.gambar && isFile(stmt.image.gambar)) {
         const file = stmt.image.gambar;
         submitFormData.append(`statements[${index}].image.gambar`, file);
-        modifiedFormData.statements[index].image.gambar = file.name;
+        submitFormData.append(
+          `statements[${index}].image.mimeType`,
+          stmt.image.mimeType
+        ); // Append mimeType
+        submitFormData.append(
+          `statements[${index}].image.fileName`,
+          stmt.image.fileName
+        ); // Append fileName
       }
     });
 

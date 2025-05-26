@@ -84,7 +84,9 @@ class Image(BaseModel):
     gambar: Optional[str] = None 
     caption: Optional[str] = None
     gambar_url: Optional[str] = None
-    base64: Optional[str] = None  
+    base64: Optional[str] = None 
+    fileName: Optional[str] = None
+    mimeType: Optional[str] = None 
 
 class Method(BaseModel):
     method_name: str
