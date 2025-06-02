@@ -1,9 +1,9 @@
-import DccOptions from "@/components/ui/options";
+import Login from "@/components/login";
 
 export default function Page() {
   return (
     <main>
-      <DccOptions />
+      <Login formData={{} as any} />
     </main>
   );
 }

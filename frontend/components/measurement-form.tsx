@@ -1971,9 +1971,23 @@ export default function MeasurementForm({
                   jenis_kondisi: "", // Initialize with empty string to avoid undefined issues
                   desc: createMultilangObject(),
                   tengah: "", // Default empty value for tengah
+                  tengah_unit: {
+                    prefix: "", // Default empty value for prefix
+                    unit: "", // Default empty value for unit
+                    eksponen: "", // Default empty value for eksponen
+                    prefix_pdf: "", // Default empty value for prefix_pdf
+                    unit_pdf: "", // Default empty value for unit_pdf
+                    eksponen_pdf: "", // Default empty value for eksponen_pdf
+                  },
                   rentang: "", // Default empty value for rentang
-                  rentang_unit: "", // Default empty value for rentang_unit
-                  tengah_unit: "", // Default empty value for tengah_unit
+                  rentang_unit: {
+                    prefix: "", // Default empty value for prefix
+                    unit: "", // Default empty value for unit
+                    eksponen: "", // Default empty value for eksponen
+                    prefix_pdf: "", // Default empty value for prefix_pdf
+                    unit_pdf: "", // Default empty value for unit_pdf
+                    eksponen_pdf: "", // Default empty value for eksponen_pdf
+                  },
                 })
               }
             >
@@ -2091,7 +2105,7 @@ export default function MeasurementForm({
                                 <FormItem>
                                   <FormControl>
                                     <Input
-                                      placeholder={`Bahasa ${lang.value}`}
+                                      placeholder={`${t("bahasa")} ${lang.value}`}
                                       {...field}
                                       value={
                                         typeof field.value === "string"

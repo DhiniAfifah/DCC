@@ -80,7 +80,7 @@ export default function Login({formData}: {formData: any}) {
                             </div>
                         </CardContent>
                         <CardFooter className="flex justify-center">
-                            <Link href="/">
+                            <Link href="/main">
                                 <Button variant="green">{t("log_in")}</Button>
                             </Link>
                         </CardFooter>
