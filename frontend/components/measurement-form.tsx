@@ -1,10 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-  Plus, 
-  X, 
-  ChevronsUpDown, 
+import {
+  Plus,
+  X,
+  ChevronsUpDown,
   SlidersHorizontal,
   PencilRuler,
   Thermometer,
@@ -191,7 +191,7 @@ interface Method {
   };
   has_image: boolean;
   image?: {
-    gambar?: File;
+    fileName?: File;
     caption?: string;
   };
 }
@@ -241,7 +241,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
                     <FormField
                       key={langIndex}
                       control={control}
-                      name={`results.${resultIndex}.columns.${columnIndex}.kolom.${langIndex}`}
+                      name={`results.${resultIndex}.columns.${columnIndex}.kolom.${lang.value}`}
                       render={({ field }) => (
                         <>
                           <FormItem>
@@ -279,30 +279,42 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem 
+                        <SelectItem
                           value="basic_measuredValue"
                           className="whitespace-normal break-words max-w-xs"
-                        >{t("basic_measuredValue")}</SelectItem>
-                        <SelectItem 
-                          value="basic_nominalValue" 
+                        >
+                          {t("basic_measuredValue")}
+                        </SelectItem>
+                        <SelectItem
+                          value="basic_nominalValue"
                           className="whitespace-normal break-words max-w-xs"
-                        >{t("basic_nominalValue")}</SelectItem>
-                        <SelectItem 
-                          value="basic_referenceValue" 
+                        >
+                          {t("basic_nominalValue")}
+                        </SelectItem>
+                        <SelectItem
+                          value="basic_referenceValue"
                           className="whitespace-normal break-words max-w-xs"
-                        >{t("basic_referenceValue")}</SelectItem>
-                        <SelectItem 
+                        >
+                          {t("basic_referenceValue")}
+                        </SelectItem>
+                        <SelectItem
                           value="basic_measurementError_error" // di xml = basic_measurementError (ga bisa 2 value sama)
                           className="whitespace-normal break-words max-w-xs"
-                        >{t("basic_measurementError_error")}</SelectItem>
-                        <SelectItem 
+                        >
+                          {t("basic_measurementError_error")}
+                        </SelectItem>
+                        <SelectItem
                           value="basic_measurementError_correction" // di xml = basic_measurementError
                           className="whitespace-normal break-words max-w-xs"
-                        >{t("basic_measurementError_correction")}</SelectItem>
-                        <SelectItem 
+                        >
+                          {t("basic_measurementError_correction")}
+                        </SelectItem>
+                        <SelectItem
                           value="other" // ga ada refType
                           className="whitespace-normal break-words max-w-xs"
-                        >{t("other")}</SelectItem>
+                        >
+                          {t("other")}
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -334,12 +346,17 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
         type="button"
         size="sm"
         className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-        onClick={() =>
+        onClick={() => {
+          const initialKolom: Record<string, string> = {};
+          usedLanguages.forEach((lang) => {
+            initialKolom[lang.value] = "";
+          });
+
           appendColumn({
-            kolom: "",
+            kolom: initialKolom,
             real_list: "1",
-          })
-        }
+          });
+        }}
       >
         <p className="text-xl">
           <Plus />
@@ -612,7 +629,7 @@ export default function MeasurementForm({
           // Store file information (name and mimeType) in the form
           if (methodIndex !== undefined) {
             form.setValue(
-              `methods.${methodIndex}.image.gambar`,
+              `methods.${methodIndex}.image.filename`,
               result.filename // Store the file name after uploading
             );
 
@@ -671,6 +688,14 @@ export default function MeasurementForm({
 
   const usedLanguages = form.watch("administrative_data.used_languages") || [];
 
+  function createMultilangObject(): Record<string, string> {
+    const result: Record<string, string> = {};
+    usedLanguages.forEach((lang: { value: string }) => {
+      result[lang.value] = "";
+    });
+    return result;
+  }
+
   const prefixes = [
     { key: t("yocto"), symbol: "y", value: "\\yocto" },
     { key: "zepto", symbol: "z", value: "\\zepto" },
@@ -701,9 +726,9 @@ export default function MeasurementForm({
     { key: "pebi", symbol: "Pi", value: "\\pebi" },
     { key: t("exbi"), symbol: "Ei", value: "\\exbi" },
     { key: "zebi", symbol: "Zi", value: "\\zebi" },
-    { key: "yobi", symbol: "Yi", value: "\\yobi" }
+    { key: "yobi", symbol: "Yi", value: "\\yobi" },
   ];
-  
+
   const units = [
     { key: t("degreeCelsius"), symbol: "°C", value: "\\degreecelsius" },
     { key: t("percent"), symbol: "%", value: "\\percent" },
@@ -770,7 +795,7 @@ export default function MeasurementForm({
     { key: "gal", symbol: "Gal", value: "\\gal" },
     { key: "maxwell", symbol: "Mx", value: "\\maxwell" },
     { key: "gauss", symbol: "G", value: "\\gauss" },
-    { key: "œrsted", symbol: "Oe", value: "\\oersted" }
+    { key: "œrsted", symbol: "Oe", value: "\\oersted" },
   ];
 
   const onSubmit = async (data: FormValues) => {
@@ -798,7 +823,7 @@ export default function MeasurementForm({
       });
 
       const cleanedMethodsWithImage = cleanedMethods.map((method: Method) => {
-        if (!method.has_image || !method.image || !method.image.gambar) {
+        if (!method.has_image || !method.image || !method.image.fileName) {
           return { ...method, image: undefined };
         }
         return method;
@@ -852,10 +877,7 @@ export default function MeasurementForm({
           </CardHeader>
           <CardContent>
             {methodFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="grid gap-4 border-b pb-4 relative"
-              >
+              <div key={field.id} className="grid gap-4 border-b pb-4 relative">
                 <CardDescription>
                   {t("metode")} {index + 1}
                 </CardDescription>
@@ -874,29 +896,31 @@ export default function MeasurementForm({
                   <div id="method_name">
                     <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                     <div className="space-y-1">
-                      {usedLanguages.map(
-                        (lang: { value: string }, langIndex: number) => (
-                          <FormField
-                            control={form.control}
-                            key={`${field.id}-${langIndex}`}
-                            name={`methods.${index}.method_name.${langIndex}`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <div className="flex items-center gap-2">
-                                  <FormControl>
-                                    <Input
-                                      placeholder={`${t("bahasa")} ${lang.value}`}
-                                      {...field}
-                                      value={field.value ?? ""}
-                                    />
-                                  </FormControl>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )
-                      )}
+                      {usedLanguages.map((lang: { value: string }) => (
+                        <FormField
+                          control={form.control}
+                          key={`${field.id}-${lang.value}`}
+                          name={`methods.${index}.method_name.${lang.value}`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-2">
+                                <FormControl>
+                                  <Input
+                                    placeholder={`${t("bahasa")} ${lang.value}`}
+                                    {...field}
+                                    value={
+                                      typeof field.value === "string"
+                                        ? field.value
+                                        : ""
+                                    }
+                                  />
+                                </FormControl>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      ))}
                     </div>
                   </div>
 
@@ -925,7 +949,7 @@ export default function MeasurementForm({
                         <FormField
                           control={form.control}
                           key={`${field.id}-${langIndex}`}
-                          name={`methods.${index}.method_desc.${langIndex}`}
+                          name={`methods.${index}.method_desc.${lang.value}`}
                           render={({ field }) => (
                             <FormItem>
                               <div className="flex items-center gap-2">
@@ -933,7 +957,11 @@ export default function MeasurementForm({
                                   <Input
                                     placeholder={`${t("bahasa")} ${lang.value}`}
                                     {...field}
-                                    value={field.value ?? ""}
+                                    value={
+                                      typeof field.value === "string"
+                                        ? field.value
+                                        : ""
+                                    }
                                   />
                                 </FormControl>
                               </div>
@@ -963,14 +991,18 @@ export default function MeasurementForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem 
+                            <SelectItem
                               value="basic_methodMeasurementUncertainty"
                               className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
-                            >{t("basic_methodMeasurementUncertainty")}</SelectItem>
-                            <SelectItem 
-                              value="basic_calibrationMethod" 
+                            >
+                              {t("basic_methodMeasurementUncertainty")}
+                            </SelectItem>
+                            <SelectItem
+                              value="basic_calibrationMethod"
                               className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
-                            >{t("other")}</SelectItem>
+                            >
+                              {t("other")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -1074,9 +1106,11 @@ export default function MeasurementForm({
                               <FormControl>
                                 <Input
                                   ref={latexInputRef}
-                                  value={form.watch(
-                                    `methods.${index}.formula.mathjax`
-                                  ) ?? ""}
+                                  value={
+                                    form.watch(
+                                      `methods.${index}.formula.mathjax`
+                                    ) ?? ""
+                                  }
                                   onChange={(e) =>
                                     form.setValue(
                                       `methods.${index}.formula.mathjax`,
@@ -1093,9 +1127,8 @@ export default function MeasurementForm({
                         <Card className="border shadow">
                           <CardContent>
                             <MathJax>{`$$${
-                              form.watch(
-                                `methods.${index}.formula.mathjax`
-                              ) || ""
+                              form.watch(`methods.${index}.formula.mathjax`) ||
+                              ""
                             }$$`}</MathJax>
                           </CardContent>
                         </Card>
@@ -1140,9 +1173,7 @@ export default function MeasurementForm({
                                 <Button
                                   variant="secondary"
                                   key={latex}
-                                  onClick={(e) =>
-                                    insertSymbol(latex, index, e)
-                                  }
+                                  onClick={(e) => insertSymbol(latex, index, e)}
                                 >
                                   <span className="text-lg">
                                     <MathJax>{`\\(${latex}\\)`}</MathJax>
@@ -1158,9 +1189,7 @@ export default function MeasurementForm({
                                   variant="secondary"
                                   key={latex}
                                   value={latex}
-                                  onClick={(e) =>
-                                    insertSymbol(latex, index, e)
-                                  }
+                                  onClick={(e) => insertSymbol(latex, index, e)}
                                 >
                                   <span>
                                     <MathJax>{`\\(${latex}\\)`}</MathJax>
@@ -1176,9 +1205,7 @@ export default function MeasurementForm({
                                   variant="secondary"
                                   key={latex}
                                   value={latex}
-                                  onClick={(e) =>
-                                    insertSymbol(latex, index, e)
-                                  }
+                                  onClick={(e) => insertSymbol(latex, index, e)}
                                   className="h-15"
                                 >
                                   <span>
@@ -1220,7 +1247,7 @@ export default function MeasurementForm({
                         <FormLabel>{t("upload_gambar")}</FormLabel>
                         <FormField
                           control={form.control}
-                          name={`methods.${index}.image.gambar`}
+                          name={`methods.${index}.image.fileName`}
                           render={({ field: { onChange, ref } }) => (
                             <FormItem>
                               <FormControl>
@@ -1265,8 +1292,8 @@ export default function MeasurementForm({
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() =>
                 appendMethod({
-                  method_name: "",
-                  method_desc: "",
+                  method_name: createMultilangObject(),
+                  method_desc: createMultilangObject(),
                   norm: "",
                   has_formula: false,
                   formula: {
@@ -1274,8 +1301,10 @@ export default function MeasurementForm({
                     mathml: "",
                   },
                   image: {
-                    gambar: "",
+                    fileName: "",
                     caption: "",
+                    base64: "",
+                    mimeType: "",
                   },
                 })
               }
@@ -1324,13 +1353,15 @@ export default function MeasurementForm({
                             <FormField
                               control={form.control}
                               key={`${field.id}-${langIndex}`}
-                              name={`equipments.${index}.nama_alat.${langIndex}`}
+                              name={`equipments.${index}.nama_alat.${lang.value}`}
                               render={({ field }) => (
                                 <FormItem>
                                   <div className="flex items-center gap-2">
                                     <FormControl>
                                       <Input
-                                        placeholder={`${t("bahasa")} ${lang.value}`}
+                                        placeholder={`${t("bahasa")} ${
+                                          lang.value
+                                        }`}
                                         {...field}
                                         value={field.value ?? ""}
                                       />
@@ -1361,7 +1392,7 @@ export default function MeasurementForm({
                     </div>
                   </div>
                   <div className="grid grid-row md:grid-cols-2 gap-4">
-                    <div id="manuf">
+                    <div id="manuf_model">
                       <FormLabel>{t("manuf")}</FormLabel>
                       <div className="space-y-1">
                         {usedLanguages.map(
@@ -1369,13 +1400,15 @@ export default function MeasurementForm({
                             <FormField
                               control={form.control}
                               key={`${field.id}-${langIndex}`}
-                              name={`equipments.${index}.manuf.${langIndex}`}
+                              name={`equipments.${index}.manuf_model.${lang.value}`}
                               render={({ field }) => (
                                 <FormItem>
                                   <div className="flex items-center gap-2">
                                     <FormControl>
                                       <Input
-                                        placeholder={`${t("bahasa")} ${lang.value}`}
+                                        placeholder={`${t("bahasa")} ${
+                                          lang.value
+                                        }`}
                                         {...field}
                                         value={field.value ?? ""}
                                       />
@@ -1397,13 +1430,15 @@ export default function MeasurementForm({
                             <FormField
                               control={form.control}
                               key={`${field.id}-${langIndex}`}
-                              name={`equipments.${index}.model.${langIndex}`}
+                              name={`equipments.${index}.model.${lang.value}`}
                               render={({ field }) => (
                                 <FormItem>
                                   <div className="flex items-center gap-2">
                                     <FormControl>
                                       <Input
-                                        placeholder={`${t("bahasa")} ${lang.value}`}
+                                        placeholder={`${t("bahasa")} ${
+                                          lang.value
+                                        }`}
                                         {...field}
                                         value={field.value ?? ""}
                                       />
@@ -1435,14 +1470,18 @@ export default function MeasurementForm({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem 
+                              <SelectItem
                                 value="basic_measurementStandard"
                                 className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
-                              >{t("basic_measurementStandard")}</SelectItem>
-                              <SelectItem 
+                              >
+                                {t("basic_measurementStandard")}
+                              </SelectItem>
+                              <SelectItem
                                 value="other" // ga ada refType
                                 className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
-                              >{t("other")}</SelectItem>
+                              >
+                                {t("other")}
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -1460,8 +1499,9 @@ export default function MeasurementForm({
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() =>
                 appendEquipment({
-                  nama_alat: "",
-                  manuf_model: "",
+                  nama_alat: createMultilangObject(),
+                  manuf_model: createMultilangObject(),
+                  model: createMultilangObject(),
                   seri_measuring: "",
                 })
               }
@@ -1501,7 +1541,9 @@ export default function MeasurementForm({
                   )}
                   <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="jenis_kondisi">
-                      <FormLabel variant="mandatory">{t("lingkungan")}</FormLabel>
+                      <FormLabel variant="mandatory">
+                        {t("lingkungan")}
+                      </FormLabel>
                       <FormField
                         control={form.control}
                         name={`conditions.${index}.jenis_kondisi`}
@@ -1553,13 +1595,15 @@ export default function MeasurementForm({
                             <FormField
                               control={form.control}
                               key={`${field.id}-${langIndex}`}
-                              name={`conditions.${index}.desc.${langIndex}`}
+                              name={`conditions.${index}.desc.${lang.value}`}
                               render={({ field }) => (
                                 <FormItem>
                                   <div className="flex items-center gap-2">
                                     <FormControl>
                                       <Input
-                                        placeholder={`${t("bahasa")} ${lang.value}`}
+                                        placeholder={`${t("bahasa")} ${
+                                          lang.value
+                                        }`}
                                         {...field}
                                         value={field.value ?? ""}
                                       />
@@ -1609,7 +1653,9 @@ export default function MeasurementForm({
                                           className="w-full justify-between"
                                         >
                                           {field.value
-                                            ? prefixes.find((p) => p.value === field.value)?.symbol
+                                            ? prefixes.find(
+                                                (p) => p.value === field.value
+                                              )?.symbol
                                             : `${t("prefix")}`}
                                           <ChevronsUpDown className="opacity-50" />
                                         </Button>
@@ -1662,12 +1708,19 @@ export default function MeasurementForm({
                                           role="combobox"
                                           className="w-full justify-between"
                                         >
-                                          {field.value
-                                            ? units.find((p) => p.value === field.value)?.symbol
-                                            : (<span>
-                                                {t("satuan")}<span className="text-red-500"> *</span>
-                                              </span>)
-                                          }
+                                          {field.value ? (
+                                            units.find(
+                                              (p) => p.value === field.value
+                                            )?.symbol
+                                          ) : (
+                                            <span>
+                                              {t("satuan")}
+                                              <span className="text-red-500">
+                                                {" "}
+                                                *
+                                              </span>
+                                            </span>
+                                          )}
                                           <ChevronsUpDown className="opacity-50" />
                                         </Button>
                                       </FormControl>
@@ -1737,7 +1790,9 @@ export default function MeasurementForm({
                   <div id="rentang">
                     <div className="grid grid-row md:grid-cols-2 gap-4">
                       <div id="rentang_value">
-                        <FormLabel variant="mandatory">{t("rentang")}</FormLabel>
+                        <FormLabel variant="mandatory">
+                          {t("rentang")}
+                        </FormLabel>
                         <FormField
                           control={form.control}
                           name={`conditions.${index}.rentang`}
@@ -1769,7 +1824,9 @@ export default function MeasurementForm({
                                           className="w-full justify-between"
                                         >
                                           {field.value
-                                            ? prefixes.find((p) => p.value === field.value)?.symbol
+                                            ? prefixes.find(
+                                                (p) => p.value === field.value
+                                              )?.symbol
                                             : `${t("prefix")}`}
                                           <ChevronsUpDown className="opacity-50" />
                                         </Button>
@@ -1822,12 +1879,19 @@ export default function MeasurementForm({
                                           role="combobox"
                                           className="w-full justify-between"
                                         >
-                                          {field.value
-                                            ? units.find((p) => p.value === field.value)?.symbol
-                                            : (<span>
-                                                {t("satuan")}<span className="text-red-500"> *</span>
-                                              </span>)
-                                          }
+                                          {field.value ? (
+                                            units.find(
+                                              (p) => p.value === field.value
+                                            )?.symbol
+                                          ) : (
+                                            <span>
+                                              {t("satuan")}
+                                              <span className="text-red-500">
+                                                {" "}
+                                                *
+                                              </span>
+                                            </span>
+                                          )}
                                           <ChevronsUpDown className="opacity-50" />
                                         </Button>
                                       </FormControl>
@@ -1905,7 +1969,7 @@ export default function MeasurementForm({
               onClick={() =>
                 appendCondition({
                   jenis_kondisi: "", // Initialize with empty string to avoid undefined issues
-                  desc: "", // Default empty value for desc
+                  desc: createMultilangObject(),
                   tengah: "", // Default empty value for tengah
                   rentang: "", // Default empty value for rentang
                   rentang_unit: "", // Default empty value for rentang_unit
@@ -2019,17 +2083,21 @@ export default function MeasurementForm({
                       {usedLanguages.map(
                         (lang: { value: string }, langIndex: number) => (
                           <FormField
-                            key={langIndex}
+                            key={lang.value}
                             control={form.control}
-                            name={`results.${resultIndex}.parameters.${langIndex}`}
+                            name={`results.${resultIndex}.parameters.0.${lang.value}`}
                             render={({ field }) => (
                               <>
                                 <FormItem>
                                   <FormControl>
                                     <Input
-                                      placeholder={`${t("bahasa")} ${lang.value}`}
+                                      placeholder={`Bahasa ${lang.value}`}
                                       {...field}
-                                      value={field.value ?? ""}
+                                      value={
+                                        typeof field.value === "string"
+                                          ? field.value
+                                          : ""
+                                      }
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -2056,10 +2124,10 @@ export default function MeasurementForm({
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() =>
                 appendResult({
-                  parameters: usedLanguages.map(() => ""),
+                  parameters: createMultilangObject(),
                   columns: [
                     {
-                      kolom: usedLanguages.map(() => ""),
+                      kolom: createMultilangObject(),
                       real_list: [
                         {
                           value: "",

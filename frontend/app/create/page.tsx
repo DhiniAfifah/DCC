@@ -25,11 +25,11 @@ export default function CreateDCC() {
 
   const [currentStep, setCurrentStep] = useState(0);
   const steps = [
-    t("administrasi"), 
-    t("hasil"), 
-    t("statements"), 
+    t("administrasi"),
+    t("hasil"),
+    t("statements"),
     t("comment"),
-    t("preview")
+    t("preview"),
   ];
 
   const [fileName, setFileName] = useState<string>("");
@@ -112,7 +112,7 @@ export default function CreateDCC() {
     },
     methods: [
       {
-        method_name: "",
+        method_name: {},
         method_desc: "",
         norm: "",
         refType: "",
@@ -123,17 +123,18 @@ export default function CreateDCC() {
         },
         has_image: false,
         image: {
-          gambar: "",
+          //gambar: "",
           caption: "",
           fileName: "",
           mimeType: "",
+          base64: "",
         },
       },
     ],
     equipments: [
       {
         nama_alat: "",
-        manuf: "",
+        manuf_model: "",
         model: "",
         seri_measuring: "",
         refType: "",
@@ -146,10 +147,10 @@ export default function CreateDCC() {
         tengah: "",
         rentang: "",
         rentang_unit: {
-          prefix: "",
+          prefix: "", //
           prefix_pdf: "",
-          unit: "",
-          unit_pdf: "",
+          unit: "", //xml only
+          unit_pdf: "", //
           eksponen: "",
           eksponen_pdf: "",
         },
@@ -194,10 +195,10 @@ export default function CreateDCC() {
         },
         has_image: false,
         image: {
-          gambar: "",
           caption: "",
           fileName: "",
           mimeType: "",
+          base64: "",
         },
       },
     ],
@@ -208,7 +209,7 @@ export default function CreateDCC() {
       files: [
         {
           file: "",
-        }
+        },
       ],
     },
   });
@@ -321,30 +322,34 @@ export default function CreateDCC() {
       methods: formData.methods.map((method, index) => {
         if (
           method.has_image &&
-          method.image?.gambar &&
-          isFile(method.image.gambar)
+          method.image?.fileName &&
+          isFile(method.image.fileName)
         ) {
           return {
             ...method,
             image: {
               ...method.image,
-              gambar: method.image.gambar.name,
-              mimeType: method.image.mimeType, // Ensure mimeType is sent
-              fileName: method.image.gambar,
+              base64: method.image.fileName.name,
+              mimeType: method.image.mimeType,
+              fileName: method.image.fileName,
             },
           };
         }
         return method;
       }),
       statements: formData.statements.map((stmt, index) => {
-        if (stmt.has_image && stmt.image?.gambar && isFile(stmt.image.gambar)) {
+        if (
+          stmt.has_image &&
+          stmt.image?.fileName &&
+          isFile(stmt.image.fileName)
+        ) {
           return {
             ...stmt,
             image: {
               ...stmt.image,
-              gambar: stmt.image.gambar.name,
-              mimeType: stmt.image.mimeType, // Ensure mimeType is sent
-              fileName: stmt.image.gambar,
+              base64: stmt.image.fileName.name,
+              mimeType: stmt.image.mimeType,
+              fileName: stmt.image.fileName,
             },
           };
         }
@@ -370,34 +375,38 @@ export default function CreateDCC() {
     formData.methods.forEach((method, index) => {
       if (
         method.has_image &&
-        method.image?.gambar &&
-        isFile(method.image.gambar)
+        method.image?.fileName &&
+        isFile(method.image.fileName)
       ) {
-        const file = method.image.gambar;
+        const file = method.image.fileName;
         submitFormData.append(`methods[${index}].image.gambar`, file);
         submitFormData.append(
           `methods[${index}].image.mimeType`,
           method.image.mimeType
-        ); // Append mimeType
+        );
         submitFormData.append(
           `methods[${index}].image.fileName`,
           method.image.fileName
-        ); // Append fileName
+        );
       }
     });
 
     formData.statements.forEach((stmt, index) => {
-      if (stmt.has_image && stmt.image?.gambar && isFile(stmt.image.gambar)) {
-        const file = stmt.image.gambar;
+      if (
+        stmt.has_image &&
+        stmt.image?.fileName &&
+        isFile(stmt.image.fileName)
+      ) {
+        const file = stmt.image.fileName;
         submitFormData.append(`statements[${index}].image.gambar`, file);
         submitFormData.append(
           `statements[${index}].image.mimeType`,
           stmt.image.mimeType
-        ); // Append mimeType
+        );
         submitFormData.append(
           `statements[${index}].image.fileName`,
           stmt.image.fileName
-        ); // Append fileName
+        );
       }
     });
 
@@ -453,7 +462,9 @@ export default function CreateDCC() {
       />
 
       {currentStep !== 4 && (
-        <p className="mt-12 text-center text-red-600 text-sm">* {t("asterisk")}</p>
+        <p className="mt-12 text-center text-red-600 text-sm">
+          * {t("asterisk")}
+        </p>
       )}
       <div className="space-y-10">
         {currentStep === 0 && (
@@ -470,15 +481,10 @@ export default function CreateDCC() {
           />
         )}
         {currentStep === 2 && (
-          <Statements 
-            formData={formData} 
-            updateFormData={updateFormData} 
-          />
+          <Statements formData={formData} updateFormData={updateFormData} />
         )}
         {currentStep === 3 && (
-          <Comment 
-            formData={formData} 
-            updateFormData={updateFormData} />
+          <Comment formData={formData} updateFormData={updateFormData} />
         )}
       </div>
 

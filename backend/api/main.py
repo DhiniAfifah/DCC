@@ -14,6 +14,8 @@ import pandas as pd
 import base64
 import tempfile
 import uuid
+import mimetypes
+
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
@@ -92,7 +94,21 @@ async def create_dcc(
                         statement.image.gambar_url = file_path
                 else:
                     logging.warning(f"Statement image file {filename} not found")
-
+                    
+        if dcc.comment and dcc.comment.files:
+            for file in dcc.comment.files:
+                if file.fileName:
+                    file_path = os.path.join(UPLOAD_DIR, file.fileName)
+                    if os.path.exists(file_path):
+                        with open(file_path, "rb") as f:
+                            base64_str = base64.b64encode(f.read()).decode('utf-8')
+                        file.base64 = base64_str
+                        # Cari mimeType berdasarkan ekstensi file
+                        file.mimeType = mimetypes.guess_type(file.fileName)[0] or "application/octet-stream"
+                        # fileName sudah pasti ada dari input, bisa dibiarkan atau assign ulang
+                        file.fileName = file.fileName
+                    else:
+                        logging.warning(f"Comment file {file.fileName} not found")
 
         # Continue with other processing
         result = crud.create_dcc(db=db, dcc=dcc)
@@ -143,6 +159,23 @@ async def upload_image(image: UploadFile = File(...)):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+#UPLOAD FILE
+@app.post("/upload-file/")
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        # Generate unique filename
+        filename = f"{uuid.uuid4()}_{file.filename}"
+        mime_type = file.content_type
+        file_location = os.path.join(UPLOAD_DIR, filename)
+        
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        return {"filename": filename, "mimeType": mime_type, "url": f"/uploads/{filename}"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 
 
 # DOWNLOAD XML FILE 

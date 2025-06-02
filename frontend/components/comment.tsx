@@ -1,9 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-  Plus, 
-  X,
-  NotepadText
-} from "lucide-react";
+import { Plus, X, NotepadText } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState, useRef } from "react";
@@ -40,11 +36,16 @@ const FormSchema = z.object({
     title: z.string().optional(),
     desc: z.string().optional(),
     has_file: z.boolean().default(false),
-    files: z.array(
-      z.object({
-        file: z.any().optional(),
-      })
-    ).optional(),
+    files: z
+      .array(
+        z.object({
+          file: z.any().optional(),
+          fileName: z.string().optional(),
+          mimeType: z.string().optional(),
+          base64: z.string().optional(),
+        })
+      )
+      .optional(),
   }),
 });
 
@@ -88,39 +89,77 @@ export default function Comment({
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
     isFileUpload: boolean,
-    index?: number
+    commentindex?: number
   ) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
 
-      // Set the file in the form state (for the specific comment and file field)
-      if (index !== undefined) {
-        form.setValue(`comment.files[${index}].file`, file);
+      // Upload file ke backend
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/upload-file/", {
+          method: "POST",
+          body: uploadFormData,
+        });
+
+        if (!response.ok) throw new Error("Failed to upload image");
+
+        const result = await response.json();
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result as string;
+
+          if (commentindex !== undefined) {
+            form.setValue(
+              `comment.files.${commentindex}.image.gambar`,
+              result.filename
+            );
+            form.setValue(
+              `comment.files.${commentindex}.image.mimeType`,
+              result.mimeType
+            );
+            form.setValue(
+              `comment.files.${commentindex}.image.base64`,
+              base64String
+            );
+          }
+
+          alert("Image uploaded successfully.");
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+        alert("Image upload failed.");
       }
     }
   };
 
   const onSubmit = async (data: any) => {
     try {
-      const formData = new FormData();
+      const preparedComment = {
+        ...data.comment,
+        files:
+          data.comment.files?.map((fileObj: any) => ({
+            fileName: fileObj.fileName || "",
+            mimeType: fileObj.mimeType || "",
+            base64: fileObj.base64 || "",
+          })) || [],
+      };
 
-      // Append each file in comment to FormData
-      data.comment.forEach((comment: any, index: number) => {
-        if (comment.files?.file) {
-          formData.append(
-            `comment[${index}].files.file`,
-            comment.files.file
-          );
-        }
-      });
+      const submitData = {
+        ...data,
+        comment: preparedComment,
+      };
 
-      // Tambahkan seluruh data comment yang lainnya sebagai JSON
-      formData.append("comment", JSON.stringify(data.comment));
-
-      // Kirim data ke API backend
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -199,9 +238,7 @@ export default function Comment({
                     <FormControl>
                       <Checkbox
                         checked={field.value}
-                        onCheckedChange={(checked) =>
-                          field.onChange(checked)
-                        }
+                        onCheckedChange={(checked) => field.onChange(checked)}
                       />
                     </FormControl>
                     <FormLabel>{t("cb_file")}</FormLabel>

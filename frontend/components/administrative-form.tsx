@@ -1,16 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-  ChevronsUpDown, 
-  CalendarIcon, 
-  Plus, 
+import {
+  ChevronsUpDown,
+  CalendarIcon,
+  Plus,
   X,
   FolderCode,
   FileText,
   Package,
   UserCheck,
-  FileUser
+  FileUser,
 } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
@@ -215,7 +215,9 @@ export default function AdministrativeForm({
     defaultValues: formData,
   });
 
-  const [selectedPlace, setPlace] = useState<string>(form.getValues("administrative_data.tempat") || "");
+  const [selectedPlace, setPlace] = useState<string>(
+    form.getValues("administrative_data.tempat") || ""
+  );
 
   useEffect(() => {
     const subscription = form.watch((values) => {
@@ -314,7 +316,18 @@ export default function AdministrativeForm({
     });
   };
 
-  const usedLanguages = form.watch("administrative_data.used_languages") || [];
+  const usedLanguages: { value: string }[] =
+    form.watch("administrative_data.used_languages") || [];
+
+  function createMultilangObject(
+    usedLanguages: { value: string }[]
+  ): Record<string, string> {
+    const result: Record<string, string> = {};
+    usedLanguages.forEach((lang) => {
+      result[lang.value] = "";
+    });
+    return result;
+  }
 
   // Fungsi onSubmit
   const onSubmit = async (data: any) => {
@@ -423,7 +436,7 @@ export default function AdministrativeForm({
             <CardTitle className="flex items-center gap-2">
               <FileText className="w-5 h-5" />
               {t("data")}
-              </CardTitle>
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-6">
             <div className="grid grid-row md:grid-cols-2 gap-4">
@@ -486,7 +499,7 @@ export default function AdministrativeForm({
                   )}
                 />
               </div>
-            
+
               <div id="tempat">
                 <FormLabel variant="mandatory">{t("tempat")}</FormLabel>
                 <FormField
@@ -497,8 +510,8 @@ export default function AdministrativeForm({
                       <Select
                         value={field.value}
                         onValueChange={(value) => {
-                          setPlace(value);  // Set local selectedPlace state
-                          field.onChange(value);  // Update the form field value
+                          setPlace(value); // Set local selectedPlace state
+                          field.onChange(value); // Update the form field value
 
                           if (value === "laboratory") {
                             form.setValue(
@@ -518,8 +531,12 @@ export default function AdministrativeForm({
                         <SelectContent>
                           <SelectItem value="laboratory">laboratory</SelectItem>
                           <SelectItem value="customer">customer</SelectItem>
-                          <SelectItem value="laboratoryBranch">laboratoryBranch</SelectItem>
-                          <SelectItem value="customerBranch">customerBranch</SelectItem>
+                          <SelectItem value="laboratoryBranch">
+                            laboratoryBranch
+                          </SelectItem>
+                          <SelectItem value="customerBranch">
+                            customerBranch
+                          </SelectItem>
                           <SelectItem value="other">{t("other")}</SelectItem>
                         </SelectContent>
                       </Select>
@@ -527,9 +544,14 @@ export default function AdministrativeForm({
                       {/* Display input only when 'other' is selected */}
                       {selectedPlace && selectedPlace !== "laboratory" && (
                         <Input
-                          value={form.getValues("administrative_data.tempat_pdf")}  // Bind input value to form state
+                          value={form.getValues(
+                            "administrative_data.tempat_pdf"
+                          )} // Bind input value to form state
                           onChange={(e) => {
-                            form.setValue("administrative_data.tempat_pdf", e.target.value);  // Update form value on input change
+                            form.setValue(
+                              "administrative_data.tempat_pdf",
+                              e.target.value
+                            ); // Update form value on input change
                           }}
                         />
                       )}
@@ -725,7 +747,11 @@ export default function AdministrativeForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
-                        <Input {...field} value={field.value ?? ''} onChange={(e) => field.onChange(e.target.value)} />
+                        <Input
+                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(e.target.value)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -987,15 +1013,21 @@ export default function AdministrativeForm({
                           <FormField
                             control={form.control}
                             key={`${field.id}-${langIndex}`}
-                            name={`objects.${index}.jenis.${langIndex}`}
+                            name={`objects.${index}.jenis.${lang.value}`}
                             render={({ field }) => (
                               <FormItem>
                                 <div className="flex items-center gap-2">
                                   <FormControl>
                                     <Input
-                                      placeholder={`${t("bahasa")} ${lang.value}`}
+                                      placeholder={`${t("bahasa")} ${
+                                        lang.value
+                                      }`}
                                       {...field}
-                                      value={field.value ?? ""}
+                                      value={
+                                        typeof field.value === "string"
+                                          ? field.value
+                                          : ""
+                                      }
                                     />
                                   </FormControl>
                                 </div>
@@ -1049,7 +1081,9 @@ export default function AdministrativeForm({
                     <CardContent className="grid gap-6">
                       <div className="grid grid-row md:grid-cols-2 gap-4">
                         <div id="item_issuer">
-                          <FormLabel variant="mandatory">{t("penerbit_seri")}</FormLabel>
+                          <FormLabel variant="mandatory">
+                            {t("penerbit_seri")}
+                          </FormLabel>
                           <FormField
                             control={form.control}
                             name={`objects.${index}.item_issuer`}
@@ -1107,15 +1141,21 @@ export default function AdministrativeForm({
                               <FormField
                                 control={form.control}
                                 key={`${field.id}-${langIndex}`}
-                                name={`objects.${index}.id_lain.${langIndex}`}
+                                name={`objects.${index}.id_lain.${lang.value}`}
                                 render={({ field }) => (
                                   <FormItem>
                                     <div className="flex items-center gap-2">
                                       <FormControl>
                                         <Input
-                                          placeholder={`${t("bahasa")} ${lang.value}`}
+                                          placeholder={`${t("bahasa")} ${
+                                            lang.value
+                                          }`}
                                           {...field}
-                                          value={field.value ?? ""}
+                                          value={
+                                            typeof field.value === "string"
+                                              ? field.value
+                                              : ""
+                                          }
                                         />
                                       </FormControl>
                                     </div>
@@ -1139,12 +1179,12 @@ export default function AdministrativeForm({
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() =>
                 appendItem({
-                  jenis: "",
-                  merek: "",
+                  jenis: createMultilangObject(usedLanguages),
+                  merek: createMultilangObject(usedLanguages),
                   tipe: "",
                   item_issuer: "",
                   seri_item: "",
-                  id_lain: "",
+                  id_lain: createMultilangObject(usedLanguages),
                 })
               }
             >

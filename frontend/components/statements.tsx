@@ -1,9 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-  Plus, 
-  X,
-  ScrollText
-} from "lucide-react";
+import { Plus, X, ScrollText } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
 import { useEffect, useState, useRef } from "react";
@@ -53,7 +49,7 @@ const FormSchema = z.object({
       has_image: z.boolean().default(false),
       image: z
         .object({
-          gambar: z.any().optional(),
+          fileName: z.any().optional(),
           caption: z.string().optional(),
         })
         .optional(),
@@ -147,6 +143,16 @@ export default function Statements({
 
   const usedLanguages = form.watch("administrative_data.used_languages") || [];
 
+  function createMultilangObject(
+    usedLanguages: { value: string }[]
+  ): Record<string, string> {
+    const result: Record<string, string> = {};
+    usedLanguages.forEach((lang) => {
+      result[lang.value] = "";
+    });
+    return result;
+  }
+
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
     isImageUpload: boolean,
@@ -190,7 +196,7 @@ export default function Statements({
 
           if (statementIndex !== undefined) {
             form.setValue(
-              `statements.${statementIndex}.image.gambar`,
+              `statements.${statementIndex}.image.fileName`,
               result.filename
             );
             form.setValue(
@@ -219,10 +225,10 @@ export default function Statements({
 
       // Append each file in statements to FormData
       data.statements.forEach((statement: any, index: number) => {
-        if (statement.image?.gambar) {
+        if (statement.image?.fileName) {
           formData.append(
-            `statements[${index}].image.gambar`,
-            statement.image.gambar
+            `statements[${index}].image.fileName`,
+            statement.image.fileName
           );
         }
       });
@@ -272,10 +278,7 @@ export default function Statements({
           </CardHeader>
           <CardContent>
             {statementFields.map((field, statementIndex) => (
-              <div
-                key={field.id}
-                className="grid gap-1 border-b pb-4 relative"
-              >
+              <div key={field.id} className="grid gap-1 border-b pb-4 relative">
                 <div className="flex items-center justify-between">
                   <CardDescription>
                     {t("statement")} {statementIndex + 1}
@@ -297,12 +300,12 @@ export default function Statements({
                     <FormField
                       control={form.control}
                       key={`${field.id}-${langIndex}`}
-                      name={`statements.${statementIndex}.values.${langIndex}`}
+                      name={`statements.${statementIndex}.values.${lang.value}`}
                       render={({ field }) => (
                         <FormItem>
                           <div className="flex items-center gap-2">
                             <FormControl>
-                              <Textarea 
+                              <Textarea
                                 placeholder={`${t("bahasa")} ${lang.value}`}
                                 {...field}
                                 value={field.value ?? ""}
@@ -333,26 +336,36 @@ export default function Statements({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem 
+                            <SelectItem
                               value="basic_conformity"
                               className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
-                            >{t("basic_conformity")}</SelectItem>
-                            <SelectItem 
-                              value="basic_metrologicallyTraceableToSI" 
+                            >
+                              {t("basic_conformity")}
+                            </SelectItem>
+                            <SelectItem
+                              value="basic_metrologicallyTraceableToSI"
                               className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
-                            >{t("basic_metrologicallyTraceableToSI")}</SelectItem>
-                            <SelectItem 
-                              value="basic_revision" 
+                            >
+                              {t("basic_metrologicallyTraceableToSI")}
+                            </SelectItem>
+                            <SelectItem
+                              value="basic_revision"
                               className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
-                            >{t("basic_revision")}</SelectItem>
-                            <SelectItem 
-                              value="basic_isInCMC" 
+                            >
+                              {t("basic_revision")}
+                            </SelectItem>
+                            <SelectItem
+                              value="basic_isInCMC"
                               className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
-                            >{t("basic_isInCMC")}</SelectItem>
-                            <SelectItem 
+                            >
+                              {t("basic_isInCMC")}
+                            </SelectItem>
+                            <SelectItem
                               value="other" // ga ada refType
                               className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
-                            >{t("other")}</SelectItem>
+                            >
+                              {t("other")}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -456,9 +469,11 @@ export default function Statements({
                               <FormControl>
                                 <Input
                                   ref={latexInputRef}
-                                  value={form.watch(
-                                    `statements.${statementIndex}.formula.mathjax`
-                                  ) ?? ""}
+                                  value={
+                                    form.watch(
+                                      `statements.${statementIndex}.formula.mathjax`
+                                    ) ?? ""
+                                  }
                                   onChange={(e) =>
                                     form.setValue(
                                       `statements.${statementIndex}.formula.mathjax`,
@@ -602,7 +617,7 @@ export default function Statements({
                         <FormLabel>{t("upload_gambar")}</FormLabel>
                         <FormField
                           control={form.control}
-                          name={`statements.${statementIndex}.image.gambar`}
+                          name={`statements.${statementIndex}.image.fileName`}
                           render={({ field: { onChange, ref } }) => (
                             <FormItem>
                               <FormControl>
@@ -613,9 +628,7 @@ export default function Statements({
                                   onChange={(e) => {
                                     handleFileUpload(e, true, statementIndex);
                                     onChange(
-                                      e.target.files
-                                        ? e.target.files[0]
-                                        : null
+                                      e.target.files ? e.target.files[0] : null
                                     );
                                   }}
                                 />
@@ -652,7 +665,7 @@ export default function Statements({
               className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
               onClick={() =>
                 appendStatement({
-                  values: usedLanguages.map(() => ""),
+                  values: createMultilangObject(usedLanguages),
                   refType: "",
                   has_formula: false,
                   formula: {
@@ -661,8 +674,10 @@ export default function Statements({
                   },
                   has_image: false,
                   image: {
-                    gambar: "",
+                    fileName: "",
                     caption: "",
+                    base64: "",
+                    mimeType: "",
                   },
                 })
               }
