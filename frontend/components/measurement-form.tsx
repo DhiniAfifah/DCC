@@ -226,7 +226,7 @@ const Columns = ({ resultIndex, usedLanguages }: ColumnsProps) => {
                 type="button"
                 variant="destructive"
                 size="icon"
-                className="absolute top-0 right-0"
+                className="absolute top-0 right-6"
                 onClick={() => removeColumn(columnIndex)}
               >
                 <X />

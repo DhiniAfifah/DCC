@@ -157,7 +157,7 @@ const translations: Record<string, { id: string; en: string }> = {
     en: 'Measurement error value' 
   },
   basic_measurementError_correction: {
-    id: 'Nilai error pengukuran', 
+    id: 'Nilai koreksi pengukuran', 
     en: 'Measurement correction value' 
   },
   subkolom: { id: 'Jumlah sub-kolom', en: 'Number of sub-columns' },
