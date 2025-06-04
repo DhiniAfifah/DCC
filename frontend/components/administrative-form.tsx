@@ -14,8 +14,9 @@ import {
 } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import axios from "axios";
+import { Language, fetchLanguages } from "@/utils/language";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -73,47 +74,6 @@ const fetchCountries = async (): Promise<Country[]> => {
   }
 };
 
-type Language = { label: string; value: string };
-const fetchLanguages = async (): Promise<Language[]> => {
-  let allLanguages: Language[] = [];
-  let start = 0;
-  const limit = 100;
-  let hasMore = true;
-
-  while (hasMore) {
-    try {
-      const response = await axios.get(
-        "https://public.opendatasoft.com/api/records/1.0/search/",
-        {
-          params: {
-            dataset: "iso-language-codes-639-1-and-639-2",
-            rows: limit,
-            start,
-          },
-        }
-      );
-
-      const languages = response.data.records.map((rec: any) => ({
-        label: rec.fields.english,
-        value: rec.fields.alpha2,
-      }));
-
-      allLanguages = [
-        ...allLanguages,
-        ...languages.filter((c: Country) => c.label && c.value),
-      ];
-
-      start += limit;
-      hasMore = response.data.records.length === limit;
-    } catch (error) {
-      console.error("Error fetching countries:", error);
-      return allLanguages.sort((a, b) => a.label.localeCompare(b.label));
-    }
-  }
-
-  return allLanguages.sort((a, b) => a.label.localeCompare(b.label));
-};
-
 const empty_field_error_message = "Input required/dibutuhkan.";
 export const FormSchema = z.object({
   software: z.string().min(1, { message: empty_field_error_message }),
@@ -143,12 +103,12 @@ export const FormSchema = z.object({
   }),
   objects: z.array(
     z.object({
-      jenis: z.string().min(1, { message: empty_field_error_message }),
+      jenis: z.record(z.string()).optional(),
       merek: z.string().optional(),
       tipe: z.string().optional(),
       item_issuer: z.string().min(1, { message: empty_field_error_message }),
       seri_item: z.string().min(1, { message: empty_field_error_message }),
-      id_lain: z.string().optional(),
+      id_lain: z.record(z.string()).optional(),
     })
   ),
   responsible_persons: z.object({
@@ -219,20 +179,33 @@ export default function AdministrativeForm({
     form.getValues("administrative_data.tempat") || ""
   );
 
+  // Simple debounced update to prevent infinite loops
   useEffect(() => {
-    const subscription = form.watch((values) => {
-      updateFormData(values);
+    const timeoutId = setTimeout(() => {
+      const currentValues = form.getValues();
+      updateFormData(currentValues);
+    }, 100);
+
+    const subscription = form.watch(() => {
+      clearTimeout(timeoutId);
+      const timeoutId2 = setTimeout(() => {
+        const currentValues = form.getValues();
+        updateFormData(currentValues);
+      }, 100);
     });
 
-    return () => subscription.unsubscribe();
-  }, [form.watch]);
+    return () => {
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
+  }, [form, updateFormData]);
 
   const [countries, setCountries] = useState<Country[]>([]);
   useEffect(() => {
     fetchCountries().then(setCountries);
   }, []);
 
-  const [languages, setLanguages] = useState<Country[]>([]);
+  const [languages, setLanguages] = useState<Language[]>([]);
   useEffect(() => {
     fetchLanguages().then(setLanguages);
   }, []);
@@ -316,18 +289,48 @@ export default function AdministrativeForm({
     });
   };
 
+  // Use direct watch without memoization - this ensures immediate updates
   const usedLanguages: { value: string }[] =
     form.watch("administrative_data.used_languages") || [];
 
-  function createMultilangObject(
+  // Memoize createMultilangObject untuk mencegah re-creation
+  const createMultilangObject = useCallback((
     usedLanguages: { value: string }[]
-  ): Record<string, string> {
+  ): Record<string, string> => {
     const result: Record<string, string> = {};
     usedLanguages.forEach((lang) => {
-      result[lang.value] = "";
+      if (lang.value?.trim()) {
+        result[lang.value] = "";
+      }
     });
     return result;
-  }
+  }, []);
+
+  // Memoize handlers untuk mencegah re-creation
+  const handleAppendUsed = useCallback(() => {
+    appendUsed({ value: "" });
+  }, [appendUsed]);
+
+  const handleRemoveUsed = useCallback((index: number) => {
+    removeUsed(index);
+  }, [removeUsed]);
+
+  const handleAppendItem = useCallback(() => {
+    const currentLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
+    
+    appendItem({
+      jenis: createMultilangObject(currentLanguages),
+      merek: "",
+      tipe: "",
+      item_issuer: "",
+      seri_item: "",
+      id_lain: createMultilangObject(currentLanguages),
+    });
+  }, [appendItem, createMultilangObject, usedLanguages]);
+
+  const handleRemoveItem = useCallback((index: number) => {
+    removeItem(index);
+  }, [removeItem]);
 
   // Fungsi onSubmit
   const onSubmit = async (data: any) => {
@@ -377,6 +380,9 @@ export default function AdministrativeForm({
       alert("An error occurred while submitting the form.");
     }
   };
+
+  // Filter languages that have values for rendering
+  const validLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
 
   return (
     <FormProvider {...form}>
@@ -626,7 +632,7 @@ export default function AdministrativeForm({
                                 type="button"
                                 variant="destructive"
                                 size="icon"
-                                onClick={() => removeUsed(index)}
+                                onClick={() => handleRemoveUsed(index)}
                               >
                                 <X />
                               </Button>
@@ -643,7 +649,7 @@ export default function AdministrativeForm({
                   variant="outline"
                   size="sm"
                   className="mt-2 w-10 h-10"
-                  onClick={() => appendUsed({ value: "" })}
+                  onClick={handleAppendUsed}
                 >
                   <p className="text-xl">
                     <Plus />
@@ -1000,7 +1006,7 @@ export default function AdministrativeForm({
                       variant="destructive"
                       size="icon"
                       className="absolute top-0 right-0"
-                      onClick={() => removeItem(index)}
+                      onClick={() => handleRemoveItem(index)}
                     >
                       <X />
                     </Button>
@@ -1008,26 +1014,24 @@ export default function AdministrativeForm({
                   <div id="jenis">
                     <FormLabel variant="mandatory">{t("jenis")}</FormLabel>
                     <div className="space-y-1">
-                      {usedLanguages.map(
-                        (lang: { value: string }, langIndex: number) => (
+                      {validLanguages.length === 0 ? (
+                        <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                      ) : (
+                        validLanguages.map((lang: { value: string }, langIndex: number) => (
                           <FormField
                             control={form.control}
-                            key={`${field.id}-${langIndex}`}
+                            key={`${field.id}-jenis-${langIndex}`}
                             name={`objects.${index}.jenis.${lang.value}`}
-                            render={({ field }) => (
+                            render={({ field: jenisField }) => (
                               <FormItem>
                                 <div className="flex items-center gap-2">
                                   <FormControl>
                                     <Input
                                       placeholder={`${t("bahasa")} ${
-                                        lang.value
+                                        languages.find(l => l.value === lang.value)?.label || lang.value
                                       }`}
-                                      {...field}
-                                      value={
-                                        typeof field.value === "string"
-                                          ? field.value
-                                          : ""
-                                      }
+                                      {...jenisField}
+                                      value={jenisField.value || ""}
                                     />
                                   </FormControl>
                                 </div>
@@ -1035,7 +1039,7 @@ export default function AdministrativeForm({
                               </FormItem>
                             )}
                           />
-                        )
+                        ))
                       )}
                     </div>
                   </div>
@@ -1136,26 +1140,24 @@ export default function AdministrativeForm({
                       <div id="id_lain">
                         <FormLabel>{t("id_lain")}</FormLabel>
                         <div className="space-y-1">
-                          {usedLanguages.map(
-                            (lang: { value: string }, langIndex: number) => (
+                          {validLanguages.length === 0 ? (
+                            <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                          ) : (
+                            validLanguages.map((lang: { value: string }, langIndex: number) => (
                               <FormField
                                 control={form.control}
-                                key={`${field.id}-${langIndex}`}
+                                key={`${field.id}-id_lain-${langIndex}`}
                                 name={`objects.${index}.id_lain.${lang.value}`}
-                                render={({ field }) => (
+                                render={({ field: idLainField }) => (
                                   <FormItem>
                                     <div className="flex items-center gap-2">
                                       <FormControl>
                                         <Input
                                           placeholder={`${t("bahasa")} ${
-                                            lang.value
+                                            languages.find(l => l.value === lang.value)?.label || lang.value
                                           }`}
-                                          {...field}
-                                          value={
-                                            typeof field.value === "string"
-                                              ? field.value
-                                              : ""
-                                          }
+                                          {...idLainField}
+                                          value={idLainField.value || ""}
                                         />
                                       </FormControl>
                                     </div>
@@ -1163,7 +1165,7 @@ export default function AdministrativeForm({
                                   </FormItem>
                                 )}
                               />
-                            )
+                            ))
                           )}
                         </div>
                       </div>
@@ -1177,16 +1179,7 @@ export default function AdministrativeForm({
               type="button"
               size="sm"
               className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={() =>
-                appendItem({
-                  jenis: createMultilangObject(usedLanguages),
-                  merek: createMultilangObject(usedLanguages),
-                  tipe: "",
-                  item_issuer: "",
-                  seri_item: "",
-                  id_lain: createMultilangObject(usedLanguages),
-                })
-              }
+              onClick={handleAppendItem}
             >
               <p className="text-xl">
                 <Plus />

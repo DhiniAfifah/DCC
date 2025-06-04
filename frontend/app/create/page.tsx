@@ -55,12 +55,12 @@ export default function CreateDCC() {
     },
     objects: [
       {
-        jenis: "",
+        jenis: {},
         merek: "",
         tipe: "",
         item_issuer: "",
         seri_item: "",
-        id_lain: "",
+        id_lain: {},
       },
     ],
     responsible_persons: {
@@ -311,9 +311,9 @@ export default function CreateDCC() {
       ...formData,
       administrative_data: {
         ...formData.administrative_data,
-        used_languages: formData.administrative_data.used_languages.map(
-          (lang) => lang.value
-        ),
+        used_languages: formData.administrative_data.used_languages
+          ?.filter(lang => lang.value && lang.value.trim() !== "")
+          .map(lang => lang.value) || [],
         mandatory_languages:
           formData.administrative_data.mandatory_languages.map(
             (lang) => lang.value

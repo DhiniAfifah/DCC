@@ -37,7 +37,7 @@ const empty_field_error_message = "Input required/dibutuhkan.";
 const FormSchema = z.object({
   statements: z.array(
     z.object({
-      values: z.string().min(1, { message: empty_field_error_message }),
+      values: z.record(z.string()).optional(),
       refType: z.string().min(1, { message: empty_field_error_message }),
       has_formula: z.boolean().default(false),
       formula: z

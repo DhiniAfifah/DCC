@@ -7,7 +7,6 @@ const translations: Record<string, { id: string; en: string }> = {
   login: { id: "Masuk ke akun Anda", en: "Log in to your account" },
   email: { id: "Surel", en: "E-mail" },
   password: { id: "Kata sandi", en: "Password" },
-  log_in: { id: "Masuk", en: "Log in" },
 
   logout: { id: "Keluar", en: "Log out" },
 
@@ -32,6 +31,8 @@ const translations: Record<string, { id: string; en: string }> = {
     en: "Indicates required question",
   },
   submit: { id: "Kirim", en: "Submit" },
+
+  pilih_bahasa: {id: "Tolong pilih bahasa yang digunakan.", en: "Please select the used languages."},
 
   // === Administrative ===
   // Software
