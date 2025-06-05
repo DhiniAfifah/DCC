@@ -177,7 +177,7 @@ class Column(BaseModel):
     refType: Optional[str] = None 
 
 class Result(BaseModel):
-    parameters: List[MultilangStr]  
+    parameters: MultilangStr
     columns: List[Column]
     uncertainty: Uncertainty
 

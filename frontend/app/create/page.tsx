@@ -168,7 +168,7 @@ export default function CreateDCC() {
     excel: "",
     results: [
       {
-        parameters: [""],
+        parameters: "",
         columns: [
           {
             kolom: "",
@@ -291,18 +291,18 @@ export default function CreateDCC() {
   };
 
   const handleSubmit = async () => {
-    // Validasi results
-    const isValid = formData.results.every((result) => {
-      return (
-        Array.isArray(result.parameters) &&
-        result.parameters.every((param) => typeof param === "string")
-      );
-    });
+    // // Validasi results
+    // const isValid = formData.results.every((result) => {
+    //   return (
+    //     Array.isArray(result.parameters) &&
+    //     result.parameters.every((param) => typeof param === "string")
+    //   );
+    // });
 
-    if (!isValid) {
-      alert("Parameters harus berupa array yang berisi string.");
-      return;
-    }
+    // if (!isValid) {
+    //   alert("Parameters harus berupa array yang berisi string.");
+    //   return;
+    // }
 
     // Create FormData object for multipart/form-data submission
     const submitFormData = new FormData();

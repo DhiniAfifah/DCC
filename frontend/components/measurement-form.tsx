@@ -129,9 +129,7 @@ const FormSchema = z.object({
   sheet_name: z.string().min(1, { message: empty_field_error_message }),
   results: z.array(
     z.object({
-      parameters: z.array(
-        z.record(z.string()).optional(),
-      ),
+      parameters: z.record(z.string()).optional(),
       columns: z.array(
         z.object({
           kolom: z.record(z.string()).optional(),
@@ -162,7 +160,7 @@ interface Uncertainty {
 }
 
 interface Result {
-  parameters: string[];
+  parameters: string;
   columns: Column[];
   uncertainty: Uncertainty[];
 }
@@ -934,16 +932,16 @@ export default function MeasurementForm({
   }, [appendResult, createMultilangObject, usedLanguages]);
 
   const onSubmit = async (data: FormValues) => {
-    const combinedParameters = data.results.map((result) =>
-      result.parameters.join(", ")
-    );
+    // const combinedParameters = data.results.map((result) =>
+    //   result.parameters.join(", ")
+    // );
 
     // Perbarui data form dengan parameter yang telah digabung
     const modifiedFormData = {
       ...data,
       results: data.results.map((result, index) => ({
         ...result,
-        parameters: combinedParameters[index], // Pastikan parameters adalah string
+        // parameters: combinedParameters[index], // Pastikan parameters adalah string
       })),
     };
 
@@ -2201,7 +2199,7 @@ export default function MeasurementForm({
                           <FormField
                             key={lang.value}
                             control={form.control}
-                            name={`results.${resultIndex}.parameters.0.${lang.value}`}
+                            name={`results.${resultIndex}.parameters.${lang.value}`}
                             render={({ field: parameterField }) => (
                               <>
                                 <FormItem>

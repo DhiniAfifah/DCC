@@ -1058,10 +1058,10 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         # Process the results
         results_data = []
         for result in dcc.results:
-            if not isinstance(result.parameters, list) or not all(isinstance(param, str) for param in result.parameters):
-                raise HTTPException(status_code=422, detail="All 'parameters' must be an array of strings.")
+            # if not isinstance(result.parameters, list) or not all(isinstance(param, str) for param in result.parameters):
+            #     raise HTTPException(status_code=422, detail="All 'parameters' must be an array of strings.")
             result_data = {
-                "parameters": [p.dict() for p in result.parameters],
+                "parameters": result.parameters.dict(),
                 "columns": [
                     {
                         "kolom": col.kolom.dict(),
