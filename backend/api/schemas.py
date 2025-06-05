@@ -180,6 +180,17 @@ class Result(BaseModel):
     parameters: MultilangStr
     columns: List[Column]
     uncertainty: Uncertainty
+    
+# Token JWT
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+# Data pengguna
+class User(BaseModel):
+    username: str
+    email: str | None = None
+    full_name: str | None = None
 
 class DCCFormCreate(BaseModel):
     software: str  # software

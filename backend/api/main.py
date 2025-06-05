@@ -1,21 +1,27 @@
 import logging
-from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form, Request, Body
-from typing import List
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Body, status
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
+from pydantic import BaseModel
+from datetime import datetime, timedelta, timezone
 import api.crud as crud
 import api.schemas as schemas
 import api.database as database
 import os
 import shutil
-import json
 import pandas as pd
 import base64
-import tempfile
 import uuid
 import mimetypes
+import jwt
 
+# Kunci dan algoritma untuk enkripsi token
+SECRET_KEY = "5965815bee66d2c201cabe787a432ba80e31884133cf6c4b8e50a0df54a0c880"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
@@ -24,7 +30,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500"],  # You can set this to your frontend URL for better security
+    allow_origins=["http://127.0.0.1:5500"],  
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
@@ -44,6 +50,58 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+#LOGIN
+# Setup untuk password hashing
+from passlib.context import CryptContext
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# Simulasi database pengguna
+fake_users_db = {
+    "BSN@gmail.com": {
+        "username": "BSN@gmail.com",
+        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",  #secret
+    }
+}
+
+# Fungsi untuk memverifikasi kata sandi
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+# Fungsi untuk memverifikasi pengguna
+def authenticate_user(username: str, password: str):
+    user = fake_users_db.get(username)
+    if not user or not verify_password(password, user["hashed_password"]):
+        return False
+    return user
+
+# Fungsi untuk membuat token JWT
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+# TOKEN
+@app.post("/token", response_model=schemas.Token) 
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    """
+    Endpoint login untuk mendapatkan token. Menerima username dan password dari form.
+    """
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token = create_access_token(data={"sub": user["username"]})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 # CREATE DCC
 @app.post("/create-dcc/")
@@ -176,7 +234,6 @@ async def upload_file(file: UploadFile = File(...)):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
-
 
 # DOWNLOAD XML FILE 
 @app.get("/download-dcc/{dcc_id}")
