@@ -174,6 +174,7 @@ async def create_dcc(
                 else:
                     logging.warning(f"Statement image file {filename} not found")
                     
+                    
         if dcc.comment and dcc.comment.files:
             for file in dcc.comment.files:
                 if file.fileName:
@@ -182,12 +183,11 @@ async def create_dcc(
                         with open(file_path, "rb") as f:
                             base64_str = base64.b64encode(f.read()).decode('utf-8')
                         file.base64 = base64_str
-                        # Cari mimeType berdasarkan ekstensi file
                         file.mimeType = mimetypes.guess_type(file.fileName)[0] or "application/octet-stream"
-                        # fileName sudah pasti ada dari input, bisa dibiarkan atau assign ulang
                         file.fileName = file.fileName
                     else:
                         logging.warning(f"Comment file {file.fileName} not found")
+
 
         # Continue with other processing
         result = crud.create_dcc(db=db, dcc=dcc)

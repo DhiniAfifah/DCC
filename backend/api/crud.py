@@ -954,30 +954,31 @@ def generate_xml(dcc, table_data):
 
                                                             
         # COMMENT
-        with tag('dcc:comment'):
-            with tag('dcc:name'):
-                with tag('dcc:content'): text(dcc.comment.title or "") 
-            with tag('dcc:description'):
-                with tag('dcc:content'): text(dcc.comment.desc or "")
-                
-            if dcc.comment.has_file:  # Jika ada file, masukkan informasi file
-                with tag('dcc:file'):
-                    for file in dcc.comment.files or []:  # Jika ada file, iterasi melalui files
-                        if getattr(file, 'fileName', None):
-                            with tag('dcc:fileName'):
-                                text(file.fileName)
-                        if getattr(file, 'mimeType', None):
-                            with tag('dcc:mimeType'):
-                                text(file.mimeType)
-                        if getattr(file, 'base64', None):
-                            with tag('dcc:dataBase64'):
-                                base64_lines = file.base64.splitlines()
-                                doc.asis('\n')
-                                indent_spaces = 22
-                                indent_stm = ' ' * indent_spaces
-                                for line in base64_lines:
-                                    doc.asis(f"{indent_stm}{line}\n")
-                                doc.asis(' ' * (indent_spaces - 4))
+        if dcc.comment and dcc.comment.has_file:  
+            with tag('dcc:comment'):
+                with tag('dcc:name'):
+                    with tag('dcc:content'): text(dcc.comment.title or "") 
+                with tag('dcc:description'):
+                    with tag('dcc:content'): text(dcc.comment.desc or "")
+                        
+                if dcc.comment.files: 
+                    for file in dcc.comment.files:
+                        with tag('dcc:file'):
+                            if getattr(file, 'fileName', None):
+                                with tag('dcc:fileName'):
+                                    text(file.fileName)  
+                            if getattr(file, 'mimeType', None):
+                                with tag('dcc:mimeType'):
+                                    text(file.mimeType) 
+                            if getattr(file, 'base64', None):
+                                with tag('dcc:dataBase64'):
+                                    base64_lines = file.base64.splitlines()
+                                    doc.asis('\n')
+                                    indent_spaces = 22
+                                    indent_stm = ' ' * indent_spaces
+                                    for line in base64_lines:
+                                        doc.asis(f"{indent_stm}{line}\n")
+                                    doc.asis(' ' * (indent_spaces - 4))  
                                     
             
         doc.asis('</dcc:digitalCalibrationCertificate>')
