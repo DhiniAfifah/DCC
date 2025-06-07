@@ -2,6 +2,7 @@ from pydantic import BaseModel, RootModel
 from typing import List, Optional, Any, Union, Dict
 from fastapi import UploadFile
 from datetime import date
+from pydantic import BaseModel, validator  
 
 
 class Language(BaseModel):
@@ -19,14 +20,19 @@ class Language(BaseModel):
             return cls(**value)
         raise ValueError("Invalid language format")
     
-class MultilangStr(RootModel[Dict[str, str]]):
-    pass
+class MultilangStr(RootModel):
+    root: Dict[str, str]  # Tambahkan deklarasi tipe root
 
     def __getitem__(self, item):
-        return self.__root__.get(item)
+        return self.root.get(item)
 
-    def dict(self, *args, **kwargs):
-        return self.__root__
+    def __hash__(self):
+        # Mengubah objek menjadi representasi yang bisa di-hash
+        return hash(frozenset(self.root.items()))
+
+    def __eq__(self, other):
+        # Perbandingan objek MultilangStr berdasarkan nilai di dalam root
+        return isinstance(other, MultilangStr) and self.root == other.root
 
 class ObjectDescription(BaseModel):
     jenis: MultilangStr
@@ -93,6 +99,7 @@ class Formula(BaseModel):
 class Image(BaseModel):
     caption: Optional[str] = None
     gambar_url: Optional[str] = None
+    gambar: Optional[str] = None
     base64: Optional[str] = None 
     fileName: Optional[str] = None
     mimeType: Optional[str] = None 
@@ -190,7 +197,13 @@ class Token(BaseModel):
 class User(BaseModel):
     username: str
     email: str | None = None
-    full_name: str | None = None
+    password: str | None = None
+    
+    @validator('email')
+    def email_must_be_valid(cls, v):
+        if '@' not in v:
+            raise ValueError('Invalid email format')
+        return v
 
 class DCCFormCreate(BaseModel):
     software: str  # software

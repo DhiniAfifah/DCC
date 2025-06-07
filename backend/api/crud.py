@@ -617,7 +617,7 @@ def generate_xml(dcc, table_data):
                     with tag("dcc:item"):
                         with tag("dcc:name"):
                             for lang in dcc.administrative_data.used_languages:
-                                with tag("dcc:content", lang=lang): text(obj.jenis.get(lang) or "")
+                                with tag("dcc:content", lang=lang): text(obj.jenis.root.get(lang, ""))
                         with tag("dcc:manufacturer"):
                             with tag("dcc:name"):
                                 with tag('dcc:content'): text(obj.merek)
@@ -627,7 +627,7 @@ def generate_xml(dcc, table_data):
                                 with tag("dcc:issuer"): text(obj.item_issuer)
                                 with tag("dcc:value"): text(obj.seri_item)
                                 with tag("dcc:name"):
-                                    with tag("dcc:content"): text(obj.id_lain)
+                                    with tag("dcc:content"): text(obj.id_lain.root.get(lang, ""))
             
             #MUTLAK                    
             with tag('dcc:calibrationLaboratory'): 
@@ -730,7 +730,7 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:declaration'):
                             for lang in dcc.administrative_data.used_languages:
                                 with tag('dcc:content', lang=lang): 
-                                    text(stmt.values.get(lang) or "")
+                                    text(stmt.values.root.get(lang, "") or "")
                                 
                             if stmt.has_formula and stmt.formula:
                                 with tag('dcc:formula'):
@@ -773,10 +773,10 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:usedMethod', refType=ref_type):
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(method.method_name.get(lang) or "") #Multilang
+                                    with tag('dcc:content', lang=lang): text(method.method_name.root.get(lang, "")) #Multilang
                             with tag('dcc:description'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(method.method_desc.get(lang) or "") #Multilang
+                                    with tag('dcc:content', lang=lang): text(method.method_desc.root.get(lang, "")) #Multilang
                                 if method.has_formula and method.formula:
                                     with tag('dcc:formula'):
                                         with tag('dcc:latex'): text(method.formula.latex or "")
@@ -808,18 +808,18 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:measuringEquipment', refType=ref_type):
                             with tag('dcc:name', refType= 'basic_measurementStandard' ):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(equip.nama_alat.get(lang) or "") #Multilang
+                                    with tag('dcc:content', lang=lang): text(equip.nama_alat.root.get(lang, "")) #Multilang
                             with tag('dcc:manufacturer'):
                                 with tag('dcc:name'):
                                     for lang in dcc.administrative_data.used_languages:
-                                        with tag('dcc:content', lang=lang): text(equip.model.get(lang) or "") #Multilang
+                                        with tag('dcc:content', lang=lang): text(equip.model.root.get(lang, "")) #Multilang
                             with tag('dcc:identifications'):
                                 with tag('dcc:identification', refType='basic_serialNumber'):
                                     with tag('dcc:issuer'): text('manufacturer')
                                     with tag('dcc:value'): text(equip.seri_measuring)
                                     with tag('dcc:name'):
                                          for lang in dcc.administrative_data.used_languages:
-                                            with tag('dcc:content', lang=lang): text(equip.manuf_model.get(lang) or "") #Multilang
+                                            with tag('dcc:content', lang=lang): text(equip.manuf_model.root.get(lang, "")) #Multilang
 
                 # Adding Room Conditions 
                 with tag('dcc:influenceConditions'):
@@ -836,7 +836,7 @@ def generate_xml(dcc, table_data):
                                 with tag('dcc:content'): text(condition.jenis_kondisi)
                             with tag('dcc:description'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(condition.desc.get(lang) or "") #Multilang
+                                    with tag('dcc:content', lang=lang): text(condition.desc.root.get(lang, "") or "") #Multilang
                                 
                             with tag('dcc:data'):
                                 # Tengah / nilai minimum
@@ -892,7 +892,7 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:result'):
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(result.parameters[0].get(lang) or "") #Multilang
+                                    with tag('dcc:content', lang=lang): text(result.parameters.root.get(lang, "") or "") #Multilang
 
                             with tag('dcc:data'):
                                 with tag('dcc:list'):
@@ -918,7 +918,7 @@ def generate_xml(dcc, table_data):
                                         with tag('dcc:quantity', refType=ref_type):
                                             with tag('dcc:name'):
                                                 for lang in dcc.administrative_data.used_languages:
-                                                    with tag('dcc:content', lang=lang): text(result.columns[col_idx].kolom.get(lang) if col_idx < len(result.columns) else col_name) #Multilang
+                                                    with tag('dcc:content', lang=lang): text(result.columns[col_idx].kolom.root.get(lang, "") if col_idx < len(result.columns) else col_name) #Multilang
 
 
                                             if col_name == "Uncertainty" and hasattr(result, 'uncertainty'):
@@ -956,15 +956,28 @@ def generate_xml(dcc, table_data):
         # COMMENT
         with tag('dcc:comment'):
             with tag('dcc:name'):
-                with tag('dcc:content'): text()
+                with tag('dcc:content'): text(dcc.comment.title or "") 
             with tag('dcc:description'):
-                with tag('dcc:content'): text()
-            with tag('dcc:file'): 
-                with tag('dcc:fileName'):  text()
-                with tag('dcc:mimeType'):  text()
-                with tag('dataBase64'):  text()
-                                                                    
-
+                with tag('dcc:content'): text(dcc.comment.desc or "")
+                
+            if dcc.comment.has_file:  # Jika ada file, masukkan informasi file
+                with tag('dcc:file'):
+                    for file in dcc.comment.files or []:  # Jika ada file, iterasi melalui files
+                        if getattr(file, 'fileName', None):
+                            with tag('dcc:fileName'):
+                                text(file.fileName)
+                        if getattr(file, 'mimeType', None):
+                            with tag('dcc:mimeType'):
+                                text(file.mimeType)
+                        if getattr(file, 'base64', None):
+                            with tag('dcc:dataBase64'):
+                                base64_lines = file.base64.splitlines()
+                                doc.asis('\n')
+                                indent_spaces = 22
+                                indent_stm = ' ' * indent_spaces
+                                for line in base64_lines:
+                                    doc.asis(f"{indent_stm}{line}\n")
+                                doc.asis(' ' * (indent_spaces - 4))
                                     
             
         doc.asis('</dcc:digitalCalibrationCertificate>')
@@ -1023,7 +1036,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         for condition in dcc.conditions:
             environmental_conditions.append({
                 "jenis_kondisi": condition.jenis_kondisi,
-                "desc": condition.desc.dict(),
+                "desc": condition.desc.root,
                 "tengah": condition.tengah,
                 "tengah_unit": condition.tengah_unit.dict() if condition.tengah_unit else None,
                 "rentang": condition.rentang,
@@ -1045,8 +1058,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         methods_data = []
         for method in dcc.methods:
             method_data = {
-                "method_name": method.method_name.dict(), 
-                "method_desc": method.method_desc.dict(), 
+                "method_name": method.method_name.root,
+                "method_desc": method.method_desc.root,
                 "norm": method.norm,
                 "has_formula": method.has_formula,
                 "formula": method.formula.dict() if method.has_formula and method.formula else None,
@@ -1061,10 +1074,10 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             # if not isinstance(result.parameters, list) or not all(isinstance(param, str) for param in result.parameters):
             #     raise HTTPException(status_code=422, detail="All 'parameters' must be an array of strings.")
             result_data = {
-                "parameters": result.parameters.dict(),
+                "parameters": result.parameters.root,
                 "columns": [
                     {
-                        "kolom": col.kolom.dict(),
+                        "kolom": col.kolom.root,
                         "real_list": col.real_list
                     }
                     for col in result.columns
@@ -1083,19 +1096,19 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         objects_description = []
         for obj in dcc.objects:
             objects_description.append({
-                "jenis": obj.jenis.dict(),
+                "jenis": obj.jenis.root,
                 "merek": obj.merek,
                 "tipe": obj.tipe,
                 "item_issuer": obj.item_issuer,
                 "seri_item": obj.seri_item,
-                "id_lain": obj.id_lain.dict()
+                "id_lain": obj.id_lain.root,
             })
 
         equipments_data = []
         for eq in dcc.equipments:
             equipments_data.append({
-                "nama_alat": eq.nama_alat.dict(),
-                "manuf_model": eq.manuf_model.dict(),
+                "nama_alat": eq.nama_alat.root,
+                "manuf_model": eq.manuf_model.root,
                 "model": eq.model.dict(),
                 "seri_measuring": eq.seri_measuring,
                 "refType": eq.refType
@@ -1104,7 +1117,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         statements_data = []
         for stmt in dcc.statements:
             statements_data.append({
-                "values": stmt.values.dict(),  
+                "values": stmt.values.root,  
                 "refType": stmt.refType,
                 "has_formula": stmt.has_formula,
                 "formula": stmt.formula.dict() if stmt.has_formula and stmt.formula else None,
