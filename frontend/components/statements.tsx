@@ -51,6 +51,8 @@ const FormSchema = z.object({
         .object({
           fileName: z.any().optional(),
           caption: z.string().optional(),
+          mimeType: z.string().optional(),
+          base64: z.string().optional(),
         })
         .optional(),
     })

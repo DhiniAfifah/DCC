@@ -14,7 +14,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-20">
           <div className="flex items-center">
-            <Link href="/">
+            <Link href="/main">
               <Image
                 src="/image/BSN.png"
                 alt="BSN logo"
@@ -25,7 +25,7 @@ const Navbar = () => {
             </Link>
           </div>
           <div className="flex space-x-4">
-            {/* <NavLink href="">{t("logout")}</NavLink> */}
+            <NavLink href="/">{t("logout")}</NavLink>
             <NavLink href="/about">{t("about")}</NavLink>            
             <LanguageSwitch />
           </div>

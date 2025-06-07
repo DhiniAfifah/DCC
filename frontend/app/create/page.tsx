@@ -209,6 +209,9 @@ export default function CreateDCC() {
       files: [
         {
           file: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
         },
       ],
     },

@@ -52,7 +52,7 @@ export default function Login({ formData }: { formData: any }) {
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/token",
-        `username=${data.email}&password=${data.password}`,
+        `email=${data.email}&password=${data.password}`,
         {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
         }
@@ -60,60 +60,82 @@ export default function Login({ formData }: { formData: any }) {
       localStorage.setItem("access_token", response.data.access_token);
       window.location.href = "/main";
     } catch (error) {
-      setErrorMessage("Login failed, please check your credentials.");
+      setErrorMessage(t("login_fail"));
     }
   };
 
   return (
     <FormProvider {...form}>
-      <div className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-red-200"></div>
+      <div className="flex min-h-screen">
+        <div className="w-1/2 h-screen relative pt-10">
+          <div
+            className="absolute inset-0 bg-cover bg-center filter grayscale"
+            style={{ backgroundImage: "url('/image/panjang.jpg')" }}
+          ></div>
+          <div className="absolute inset-0 bg-red-200 bg-opacity-80 pointer-events-none"></div>
+<div className="relative z-10 flex items-center justify-center h-full">
+            <h1 className="text-2xl md:text-4xl lg:text-5xl text-black p-10 text-center">
+              <span dangerouslySetInnerHTML={{ __html: t('welcome') }} />
+            </h1>
+          </div>
+        </div>
 
-      <div className="flex items-center justify-center min-h-screen mt-0 md:mt-20">
-        <Card className="w-[350px]">
-          <CardHeader>
-            <CardTitle className="text-center">{t("login")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div id="email">
-              <FormLabel>{t("email")}</FormLabel>
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <div className="w-1/2 flex items-center justify-center pt-16">
+          <div className="w-[350px] p-6 space-y-12">
+            <div className="text-center font-semibold leading-tight tracking-tight text-indigo-950 text-2xl">
+              {t("log_in")}
             </div>
-            <div id="password">
-              <FormLabel>{t("password")}</FormLabel>
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input {...field} type="password" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            
+            <div className="space-y-4">
+              <div id="email">
+                <FormLabel>{t("email")}</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div id="password">
+                <FormLabel>{t("password")}</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input {...field} type="password" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
             </div>
-            {errorMessage && <p className="text-red-500">{errorMessage}</p>}{" "}
-          </CardContent>
-          <CardFooter className="flex justify-center">
-            <Link href="/">
-              <Button variant="green" onClick={form.handleSubmit(onSubmit)}>
-                {t("login")}
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
+            <div>
+              <div className="flex justify-center pt-2">
+                <Link href="/">
+                  <Button variant="green" onClick={form.handleSubmit(onSubmit)}>
+                    {t("login")}
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="flex justify-center pt-2">
+                <Link href="/register">
+                  <small className="text-sky-500">{t("to_register")}</small>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </FormProvider>
   );

@@ -1836,7 +1836,7 @@ export default function MeasurementForm({
                                           ) : (
                                             <span>
                                               {t("satuan")}
-                                              <span className="text-red-500">
+                                              <span className="text-red-600">
                                                 {" "}
                                                 *
                                               </span>
@@ -2007,7 +2007,7 @@ export default function MeasurementForm({
                                           ) : (
                                             <span>
                                               {t("satuan")}
-                                              <span className="text-red-500">
+                                              <span className="text-red-600">
                                                 {" "}
                                                 *
                                               </span>

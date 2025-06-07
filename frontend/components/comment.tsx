@@ -104,7 +104,7 @@ export default function Comment({
           body: uploadFormData,
         });
 
-        if (!response.ok) throw new Error("Failed to upload image");
+        if (!response.ok) throw new Error("Failed to upload file");
 
         const result = await response.json();
 
@@ -114,25 +114,25 @@ export default function Comment({
 
           if (commentindex !== undefined) {
             form.setValue(
-              `comment.files.${commentindex}.image.gambar`,
+              `comment.files.${commentindex}.filename`,
               result.filename
             );
             form.setValue(
-              `comment.files.${commentindex}.image.mimeType`,
+              `comment.files.${commentindex}.mimeType`,
               result.mimeType
             );
             form.setValue(
-              `comment.files.${commentindex}.image.base64`,
+              `comment.files.${commentindex}.base64`,
               base64String
             );
           }
 
-          alert("Image uploaded successfully.");
+          alert("File uploaded successfully.");
         };
         reader.readAsDataURL(file);
       } catch (error) {
-        console.error("Error uploading image:", error);
-        alert("Image upload failed.");
+        console.error("Error uploading file:", error);
+        alert("File upload failed.");
       }
     }
   };
@@ -288,7 +288,14 @@ export default function Comment({
                   variant="outline"
                   size="sm"
                   className="mt-2 w-10 h-10"
-                  onClick={() => appendFile({ file: "" })}
+                  onClick={() => 
+                    appendFile({ 
+                      file: "",
+                      fileName: "",
+                      mimeType: "",
+                      base64: ""
+                    })
+                  }
                 >
                   <p className="text-xl">
                     <Plus />
