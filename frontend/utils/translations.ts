@@ -1,12 +1,23 @@
+import { register } from "module";
 import { comment } from "postcss";
 
 type Language = "id" | "en";
 
 const translations: Record<string, { id: string; en: string }> = {
   // Login
-  login: { id: "Masuk ke akun Anda", en: "Log in to your account" },
+  welcome: { id: "Selamat datang di <b>DCC</b>", en: "Welcome to <b>DCC</b>" },
+  log_in: { id: "Masuk ke akun Anda", en: "Log in to your account" },
   email: { id: "Surel", en: "E-mail" },
   password: { id: "Kata sandi", en: "Password" },
+  login: { id: "Masuk", en: "Log in" },
+  fail: { id: "Gagal masuk, silakan periksa kredensial Anda.", 
+          en: "Login failed, please check your credentials." },
+
+  to_register: { id: "Belum punya akun? Daftar di sini.", en: "Don't have an account? Register here." },
+
+  // Register
+  register_account: { id: "Daftar akun baru", en: "Register a new account" },
+  register: { id: "Daftar", en: "Register" },
 
   logout: { id: "Keluar", en: "Log out" },
 
