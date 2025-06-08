@@ -842,10 +842,10 @@ def generate_xml(dcc, table_data):
                                 # Tengah / nilai minimum
                                 with tag('dcc:quantity', refType='math_minimum'):
                                     with tag('dcc:name'):
-                                        with tag('dcc:content'): text('nilai minimum')  # nilai min
+                                        with tag('dcc:content'): text('nilai minimum') 
                                     with tag('si:real'):
-                                        min_value_str = condition.tengah - condition.rentang
-                                        with tag('si:value'): text(min_value_str)
+                                        min_value = float(condition.tengah) - float(condition.rentang)
+                                        with tag('si:value'): text(f"{min_value}") 
                                         unit_str = ""
                                         if condition.tengah_unit.prefix:
                                             unit_str += condition.tengah_unit.prefix + " "
@@ -858,10 +858,10 @@ def generate_xml(dcc, table_data):
                                 # Rentang / nilai maksimum        
                                 with tag('dcc:quantity', refType='math_maximum'):
                                     with tag('dcc:name'):
-                                        with tag('dcc:content'): text('nilai maksimum')  # nilai max
+                                        with tag('dcc:content'): text('nilai maksimum') 
                                     with tag('si:real'):
-                                        max_value_str = condition.tengah + condition.rentang
-                                        with tag('si:value'): text(max_value_str)  
+                                        max_value = float(condition.tengah) + float(condition.rentang)
+                                        with tag('si:value'): text(f"{max_value}")  
                                         unit_str = ""
                                         if condition.rentang_unit.prefix:
                                             unit_str += condition.rentang_unit.prefix + " "
@@ -899,86 +899,86 @@ def generate_xml(dcc, table_data):
                             with tag('dcc:data'):
                                 with tag('dcc:list'):
                                     flat_index = 0
+                                    uncertainty_data = None  # Menyimpan data ketidakpastian
+                                    uncertainty_attached = False  # Penanda apakah uncertainty sudah ditempelkan
                                     
+                                    # Loop pertama: kumpulkan data ketidakpastian jika ada
                                     for col_idx, col_name in enumerate(column_names):
                                         subcol_count = subcol_counts[col_idx]
-
-                                        ref_type = result.columns[col_idx].refType if col_idx < len(result.columns) else "basic_measuredValue"
-                                        for column in result.columns:
-                                            if column.kolom["id"] == col_name:  
-                                                ref_type = column.refType 
-
-                                        # if not ref_type:
-                                        #     ref_type = "basic_measuredValue"
                                         
-                                        # Tentukan refType untuk dcc:quantity
-                                        with tag('dcc:quantity', refType=ref_type):  
+                                        # Cari kolom Uncertainty dan simpan datanya
+                                        if col_name == "Uncertainty" and hasattr(result, 'uncertainty'):
+                                            if flat_index < len(flat_columns):
+                                                numbers, _ = flat_columns[flat_index]
+                                                uncertainty_data = {
+                                                    'values': numbers,
+                                                    'factor': result.uncertainty.factor or "2",
+                                                    'probability': result.uncertainty.probability or "0.95",
+                                                    'distribution': result.uncertainty.distribution or "normal"
+                                                }
+                                            flat_index += subcol_count
+                                            break  # Keluar setelah menemukan Uncertainty
+                                    
+                                    # Loop kedua: proses semua kolom
+                                    for col_idx, col_name in enumerate(column_names):
+                                        subcol_count = subcol_counts[col_idx]
+                                        
+                                        # Skip kolom Uncertainty
+                                        if col_name == "Uncertainty":
+                                            continue
+                                            
+                                        # Dapatkan refType yang benar
+                                        ref_type = result.columns[col_idx].refType if col_idx < len(result.columns) else "basic_measuredValue"
+                                        
+                                        # Tentukan apakah ini kolom target untuk ketidakpastian
+                                        is_target = False
+                                        if ref_type == "basic_measurementError_error":
+                                            # Ubah refType menjadi basic_measurementError
+                                            ref_type = "basic_measurementError"
+                                            is_target = True
+                                        elif not uncertainty_attached and ref_type == "basic_nominalValue":
+                                            is_target = True
+                                        
+                                        with tag('dcc:quantity', refType=ref_type):
+                                            # Tulis nama kolom
                                             with tag('dcc:name'):
                                                 for lang in dcc.administrative_data.used_languages:
-                                                    with tag('dcc:content', lang=lang): text(result.columns[col_idx].kolom.root.get(lang, "") if col_idx < len(result.columns) else col_name)
+                                                    text_content = result.columns[col_idx].kolom.root.get(lang, "") if col_idx < len(result.columns) else col_name
+                                                    with tag('dcc:content', lang=lang):
+                                                        text(text_content)
                                             
-                                            # Handle uncertainty attachment
-                                            if col_name == "Uncertainty" and hasattr(result, 'uncertainty'):
-                                                # Find the column with `refType` "basic_measurementError_error" or "basic_nominalValue"
-                                                uncertainty_attached = False
-                                                for column in result.columns:
-                                                    if column.refType == "basic_measurementError_error":
-                                                        # Attach uncertainty to the column with refType "basic_measurementError_error"
-                                                        with tag('si:realListXMLList'):
-                                                            with tag('si:measurementUncertaintyUnivariateXMLList'):
-                                                                with tag('si:expandedMUXMLList'):
-                                                                    with tag('si:valueExpandedMUXMLList'):
-                                                                        if flat_index < len(flat_columns):
-                                                                            numbers, _ = flat_columns[flat_index]
-                                                                            text(" ".join(numbers))
-                                                                        else:
-                                                                            text("")
-                                                                with tag('si:coverageFactorXMLList'):
-                                                                    text(result.uncertainty.factor or "2")
-                                                                with tag('si:coverageProbabilityXMLList'):
-                                                                    text(result.uncertainty.probability or "0.95")
-                                                                with tag('si:distributionXMLList'):
-                                                                    text(result.uncertainty.distribution or "normal")
-                                                        flat_index += subcol_count
-                                                        uncertainty_attached = True
-                                                        break
-                                                
-                                                if not uncertainty_attached:
-                                                    # If no column with `basic_measurementError_error` found, attach to `basic_nominalValue` if available
-                                                    for column in result.columns:
-                                                        if column.refType == "basic_nominalValue":
-                                                            with tag('si:realListXMLList'):
-                                                                with tag('si:measurementUncertaintyUnivariateXMLList'):
-                                                                    with tag('si:expandedMUXMLList'):
-                                                                        with tag('si:valueExpandedMUXMLList'):
-                                                                            if flat_index < len(flat_columns):
-                                                                                numbers, _ = flat_columns[flat_index]
-                                                                                text(" ".join(numbers))
-                                                                            else:
-                                                                                text("")
-                                                                    with tag('si:coverageFactorXMLList'):
-                                                                        text(result.uncertainty.factor or "2")
-                                                                    with tag('si:coverageProbabilityXMLList'):
-                                                                        text(result.uncertainty.probability or "0.95")
-                                                                    with tag('si:distributionXMLList'):
-                                                                        text(result.uncertainty.distribution or "normal")
-                                                            flat_index += subcol_count
-                                                            break
-
-                                            else:
-                                                # Data biasa (bukan uncertainty)
+                                            # Tulis data utama
+                                            with tag('si:realListXMLList'):
+                                                # Tulis nilai dan satuan
                                                 for _ in range(subcol_count):
                                                     if flat_index >= len(flat_columns):
                                                         break
                                                     numbers, units = flat_columns[flat_index]
                                                     flat_index += 1
-                                                    with tag('si:realListXMLList'):
-                                                        with tag('si:valueXMLList'):
-                                                            text(" ".join(numbers))
-                                                        with tag('si:unitXMLList'):
-                                                            text(" ".join(d_si(unit) if unit else "" for unit in units))
-
-
+                                                    
+                                                    with tag('si:valueXMLList'):
+                                                        text(" ".join(numbers))
+                                                    with tag('si:unitXMLList'):
+                                                        # Pastikan units adalah list
+                                                        if isinstance(units, list) and len(units) > 0:
+                                                            # Gunakan satuan pertama untuk semua nilai
+                                                            text(d_si(units[0]) if units[0] else "")
+                                                        else:
+                                                            text("")
+                                                
+                                                # Tambahkan ketidakpastian jika ini kolom target
+                                                if is_target and uncertainty_data and not uncertainty_attached:
+                                                    with tag('si:measurementUncertaintyUnivariateXMLList'):
+                                                        with tag('si:expandedMUXMLList'):
+                                                            with tag('si:valueExpandedMUXMLList'):
+                                                                text(" ".join(uncertainty_data['values']))
+                                                            with tag('si:coverageFactorXMLList'):
+                                                                text(uncertainty_data['factor'])
+                                                            with tag('si:coverageProbabilityXMLList'):
+                                                                text(uncertainty_data['probability'])
+                                                            with tag('si:distributionXMLList'):
+                                                                text(uncertainty_data['distribution'])
+                                                    uncertainty_attached = True  # Tandai sudah ditempelkan
 
 
                                                             
