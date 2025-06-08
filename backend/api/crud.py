@@ -844,7 +844,7 @@ def generate_xml(dcc, table_data):
                                     with tag('dcc:name'):
                                         with tag('dcc:content'): text('nilai minimum')  # nilai min
                                     with tag('si:real'):
-                                        min_value_str = f"{condition.tengah}-{condition.rentang}"
+                                        min_value_str = condition.tengah - condition.rentang
                                         with tag('si:value'): text(min_value_str)
                                         unit_str = ""
                                         if condition.tengah_unit.prefix:
@@ -860,7 +860,7 @@ def generate_xml(dcc, table_data):
                                     with tag('dcc:name'):
                                         with tag('dcc:content'): text('nilai maksimum')  # nilai max
                                     with tag('si:real'):
-                                        max_value_str = f"{condition.tengah}+{condition.rentang}"
+                                        max_value_str = condition.tengah + condition.rentang
                                         with tag('si:value'): text(max_value_str)  
                                         unit_str = ""
                                         if condition.rentang_unit.prefix:
@@ -903,13 +903,13 @@ def generate_xml(dcc, table_data):
                                     for col_idx, col_name in enumerate(column_names):
                                         subcol_count = subcol_counts[col_idx]
 
-                                        ref_type = None
+                                        ref_type = result.columns[col_idx].refType if col_idx < len(result.columns) else "basic_measuredValue"
                                         for column in result.columns:
                                             if column.kolom["id"] == col_name:  
                                                 ref_type = column.refType 
 
-                                        if not ref_type:
-                                            ref_type = "basic_measuredValue"  # Default refType if not found
+                                        # if not ref_type:
+                                        #     ref_type = "basic_measuredValue"
                                         
                                         # Tentukan refType untuk dcc:quantity
                                         with tag('dcc:quantity', refType=ref_type):  

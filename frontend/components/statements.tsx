@@ -87,7 +87,7 @@ export default function Statements({
       const match = name.match(/^statements\.(\d+)\.has_formula$/);
       if (match) {
         const index = Number(match[1]);
-        const hasFormula = value?.methods?.[index]?.has_formula;
+        const hasFormula = value?.statements?.[index]?.has_formula;
         if (!hasFormula) {
           form.setValue(`statements.${index}.formula`, "");
         }
@@ -124,7 +124,7 @@ export default function Statements({
       const match = name.match(/^statements\.(\d+)\.has_image$/);
       if (match) {
         const index = Number(match[1]);
-        const hasImage = value?.methods?.[index]?.has_image;
+        const hasImage = value?.statements?.[index]?.has_image;
         if (!hasImage) {
           form.setValue(`statements.${index}.image`, "");
         }

@@ -362,6 +362,7 @@ export default function CreateDCC() {
         parameters: result.parameters,
         columns: result.columns.map((col) => ({
           kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
+          refType: col.refType || "",
           real_list: Number(col.real_list) || 1,
         })),
         uncertainty: {

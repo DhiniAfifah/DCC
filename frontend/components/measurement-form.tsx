@@ -86,8 +86,10 @@ const FormSchema = z.object({
       has_image: z.boolean().default(false),
       image: z
         .object({
-          gambar: z.any().optional(),
+          fileName: z.any().optional(),
           caption: z.string().optional(),
+          mimeType: z.string().optional(),
+          base64: z.string().optional(),
         })
         .optional(),
     })
@@ -149,6 +151,7 @@ const FormSchema = z.object({
 
 interface Column {
   kolom: string;
+  refType: string;
   real_list: string;
 }
 
@@ -521,6 +524,14 @@ export default function MeasurementForm({
     resolver: zodResolver(FormSchema),
     defaultValues: formData,
   });
+
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      updateFormData(values);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
 
   // Simple debounced update to prevent infinite loops
   useEffect(() => {
