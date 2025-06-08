@@ -840,41 +840,43 @@ def generate_xml(dcc, table_data):
                                 
                             with tag('dcc:data'):
                                 # Tengah / nilai minimum
-                                with tag('dcc:quantity', refType='math_minimum' ):
+                                with tag('dcc:quantity', refType='math_minimum'):
                                     with tag('dcc:name'):
-                                        with tag('dcc:content'): text('nilai minimum') #nilai min
+                                        with tag('dcc:content'): text('nilai minimum')  # nilai min
                                     with tag('si:real'):
-                                        with tag('si:value'): text(condition.tengah) #66-6
+                                        min_value_str = f"{condition.tengah}-{condition.rentang}"
+                                        with tag('si:value'): text(min_value_str)
                                         unit_str = ""
                                         if condition.tengah_unit.prefix:
                                             unit_str += condition.tengah_unit.prefix + " "
                                         if condition.tengah_unit.unit:
                                             unit_str += condition.tengah_unit.unit
                                         if condition.tengah_unit.eksponen:
-                                            unit_str += condition.tengah_unit.eksponen
-                                        with tag('si:unit'): text(unit_str.strip())
+                                            unit_str += f"\\tothe{{{condition.tengah_unit.eksponen}}}"
+                                        with tag('si:unit'): text(d_si(unit_str.strip()))
 
                                 # Rentang / nilai maksimum        
-                                with tag('dcc:quantity', refType='math_maximum' ):
+                                with tag('dcc:quantity', refType='math_maximum'):
                                     with tag('dcc:name'):
-                                        with tag('dcc:content'): text('nilai maximum') # nilai max
+                                        with tag('dcc:content'): text('nilai maksimum')  # nilai max
                                     with tag('si:real'):
-                                        with tag('si:value'): text(condition.rentang) #66+6
+                                        max_value_str = f"{condition.tengah}+{condition.rentang}"
+                                        with tag('si:value'): text(max_value_str)  
                                         unit_str = ""
                                         if condition.rentang_unit.prefix:
                                             unit_str += condition.rentang_unit.prefix + " "
                                         if condition.rentang_unit.unit:
                                             unit_str += condition.rentang_unit.unit
                                         if condition.rentang_unit.eksponen:
-                                            unit_str += condition.rentang_unit.eksponen
-                                        with tag('si:unit'): text(unit_str.strip())
+                                            unit_str += f"\\tothe{{{condition.rentang_unit.eksponen}}}"
+                                        with tag('si:unit'): text(d_si(unit_str.strip()))
+
                                         
                 # Results from Excel and user input
                 with tag('dcc:results'):
                     input_tables = prepare_input_tables(dcc)
                     
                     for result_idx, result in enumerate(dcc.results):
-                        # Tentukan nama parameter yang dipakai sebagai key untuk data excel
                         if isinstance(result.parameters, list) and len(result.parameters) > 0:
                             parameter_name = result.parameters[0]
                         else:
@@ -888,12 +890,12 @@ def generate_xml(dcc, table_data):
                         column_map = input_tables.get(parameter_name, {})
                         column_names = list(column_map.keys())
                         subcol_counts = list(column_map.values())
-
+                        
                         with tag('dcc:result'):
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(result.parameters.root.get(lang, "") or "") #Multilang
-
+                                    with tag('dcc:content', lang=lang): text(result.parameters.root.get(lang, "") or "")
+                            
                             with tag('dcc:data'):
                                 with tag('dcc:list'):
                                     flat_index = 0
@@ -901,44 +903,68 @@ def generate_xml(dcc, table_data):
                                     for col_idx, col_name in enumerate(column_names):
                                         subcol_count = subcol_counts[col_idx]
 
-                                        ref_type = "basic_measuredValue"
-                                        
-                                        # Jika kolom Uncertainty, prioritas refType:
-                                        if col_name == "Uncertainty":
-                                            if any(c.refType == "basic_measurementError" for c in result.columns if hasattr(c, 'refType')):
-                                                ref_type = "basic_measurementError"
-                                            elif any(c.refType == "basic_nominalValue" for c in result.columns if hasattr(c, 'refType')):
-                                                ref_type = "basic_nominalValue"
-                                            else:
-                                                ref_type = "basic_measurementError" 
-                                        else:
-                                            if col_idx < len(result.columns) and getattr(result.columns[col_idx], 'refType', None):
-                                                ref_type = result.columns[col_idx].refType
+                                        ref_type = None
+                                        for column in result.columns:
+                                            if column.kolom["id"] == col_name:  
+                                                ref_type = column.refType 
 
-                                        with tag('dcc:quantity', refType=ref_type):
+                                        if not ref_type:
+                                            ref_type = "basic_measuredValue"  # Default refType if not found
+                                        
+                                        # Tentukan refType untuk dcc:quantity
+                                        with tag('dcc:quantity', refType=ref_type):  
                                             with tag('dcc:name'):
                                                 for lang in dcc.administrative_data.used_languages:
-                                                    with tag('dcc:content', lang=lang): text(result.columns[col_idx].kolom.root.get(lang, "") if col_idx < len(result.columns) else col_name) #Multilang
-
-
+                                                    with tag('dcc:content', lang=lang): text(result.columns[col_idx].kolom.root.get(lang, "") if col_idx < len(result.columns) else col_name)
+                                            
+                                            # Handle uncertainty attachment
                                             if col_name == "Uncertainty" and hasattr(result, 'uncertainty'):
-                                                # Struktur khusus untuk Uncertainty
-                                                with tag('si:realListXMLList'):
-                                                    with tag('si:measurementUncertaintyUnivariateXMLList'):
-                                                        with tag('si:expandedMUXMLList'):
-                                                            with tag('si:valueExpandedMUXMLList'):
-                                                                if flat_index < len(flat_columns):
-                                                                    numbers, _ = flat_columns[flat_index]
-                                                                    text(" ".join(numbers))
-                                                                else:
-                                                                    text("")
-                                                        with tag('si:coverageFactorXMLList'):
-                                                            text(result.uncertainty.factor or "2")
-                                                        with tag('si:coverageProbabilityXMLList'):
-                                                            text(result.uncertainty.probability or "0.95")
-                                                        with tag('si:distributionXMLList'):
-                                                            text(result.uncertainty.distribution or "normal")
-                                                flat_index += subcol_count
+                                                # Find the column with `refType` "basic_measurementError_error" or "basic_nominalValue"
+                                                uncertainty_attached = False
+                                                for column in result.columns:
+                                                    if column.refType == "basic_measurementError_error":
+                                                        # Attach uncertainty to the column with refType "basic_measurementError_error"
+                                                        with tag('si:realListXMLList'):
+                                                            with tag('si:measurementUncertaintyUnivariateXMLList'):
+                                                                with tag('si:expandedMUXMLList'):
+                                                                    with tag('si:valueExpandedMUXMLList'):
+                                                                        if flat_index < len(flat_columns):
+                                                                            numbers, _ = flat_columns[flat_index]
+                                                                            text(" ".join(numbers))
+                                                                        else:
+                                                                            text("")
+                                                                with tag('si:coverageFactorXMLList'):
+                                                                    text(result.uncertainty.factor or "2")
+                                                                with tag('si:coverageProbabilityXMLList'):
+                                                                    text(result.uncertainty.probability or "0.95")
+                                                                with tag('si:distributionXMLList'):
+                                                                    text(result.uncertainty.distribution or "normal")
+                                                        flat_index += subcol_count
+                                                        uncertainty_attached = True
+                                                        break
+                                                
+                                                if not uncertainty_attached:
+                                                    # If no column with `basic_measurementError_error` found, attach to `basic_nominalValue` if available
+                                                    for column in result.columns:
+                                                        if column.refType == "basic_nominalValue":
+                                                            with tag('si:realListXMLList'):
+                                                                with tag('si:measurementUncertaintyUnivariateXMLList'):
+                                                                    with tag('si:expandedMUXMLList'):
+                                                                        with tag('si:valueExpandedMUXMLList'):
+                                                                            if flat_index < len(flat_columns):
+                                                                                numbers, _ = flat_columns[flat_index]
+                                                                                text(" ".join(numbers))
+                                                                            else:
+                                                                                text("")
+                                                                    with tag('si:coverageFactorXMLList'):
+                                                                        text(result.uncertainty.factor or "2")
+                                                                    with tag('si:coverageProbabilityXMLList'):
+                                                                        text(result.uncertainty.probability or "0.95")
+                                                                    with tag('si:distributionXMLList'):
+                                                                        text(result.uncertainty.distribution or "normal")
+                                                            flat_index += subcol_count
+                                                            break
+
                                             else:
                                                 # Data biasa (bukan uncertainty)
                                                 for _ in range(subcol_count):
@@ -951,6 +977,9 @@ def generate_xml(dcc, table_data):
                                                             text(" ".join(numbers))
                                                         with tag('si:unitXMLList'):
                                                             text(" ".join(d_si(unit) if unit else "" for unit in units))
+
+
+
 
                                                             
         # COMMENT
@@ -1072,14 +1101,13 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         # Process the results
         results_data = []
         for result in dcc.results:
-            # if not isinstance(result.parameters, list) or not all(isinstance(param, str) for param in result.parameters):
-            #     raise HTTPException(status_code=422, detail="All 'parameters' must be an array of strings.")
             result_data = {
                 "parameters": result.parameters.root,
                 "columns": [
                     {
                         "kolom": col.kolom.root,
-                        "real_list": col.real_list
+                        "real_list": col.real_list,
+                        "refType": col.refType
                     }
                     for col in result.columns
                 ],

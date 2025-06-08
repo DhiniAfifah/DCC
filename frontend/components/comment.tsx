@@ -114,17 +114,14 @@ export default function Comment({
 
           if (commentindex !== undefined) {
             form.setValue(
-              `comment.files.${commentindex}.filename`,
+              `comment.files.${commentindex}.fileName`,
               result.filename
             );
             form.setValue(
               `comment.files.${commentindex}.mimeType`,
               result.mimeType
             );
-            form.setValue(
-              `comment.files.${commentindex}.base64`,
-              base64String
-            );
+            form.setValue(`comment.files.${commentindex}.base64`, base64String);
           }
 
           alert("File uploaded successfully.");
@@ -288,12 +285,12 @@ export default function Comment({
                   variant="outline"
                   size="sm"
                   className="mt-2 w-10 h-10"
-                  onClick={() => 
-                    appendFile({ 
+                  onClick={() =>
+                    appendFile({
                       file: "",
                       fileName: "",
                       mimeType: "",
-                      base64: ""
+                      base64: "",
                     })
                   }
                 >

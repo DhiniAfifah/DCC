@@ -197,7 +197,12 @@ interface Method {
   };
 }
 
-const Columns = ({ resultIndex, usedLanguages, createMultilangObject, validLanguages }: ColumnsProps) => {
+const Columns = ({
+  resultIndex,
+  usedLanguages,
+  createMultilangObject,
+  validLanguages,
+}: ColumnsProps) => {
   const { control, register } = useFormContext();
 
   const [selectedDistribution, setDistribution] = useState<string>("");
@@ -213,17 +218,23 @@ const Columns = ({ resultIndex, usedLanguages, createMultilangObject, validLangu
   const { t } = useLanguage();
 
   const handleAppendColumn = useCallback(() => {
-    const currentLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
+    const currentLanguages = usedLanguages.filter(
+      (lang) => lang.value && lang.value.trim()
+    );
 
     appendColumn({
       kolom: createMultilangObject(currentLanguages),
       real_list: "1",
+      refType: "",
     });
   }, [appendColumn, createMultilangObject, usedLanguages]);
 
-  const handleRemoveColumn = useCallback((index: number) => {
-    removeColumn(index);
-  }, [removeColumn]);
+  const handleRemoveColumn = useCallback(
+    (index: number) => {
+      removeColumn(index);
+    },
+    [removeColumn]
+  );
 
   const [languages, setLanguages] = useState<Language[]>([]);
   useEffect(() => {
@@ -261,29 +272,33 @@ const Columns = ({ resultIndex, usedLanguages, createMultilangObject, validLangu
                 {validLanguages.length === 0 ? (
                   <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
                 ) : (
-                  validLanguages.map((lang: { value: string }, langIndex: number) => (
-                    <FormField
-                      key={langIndex}
-                      control={control}
-                      name={`results.${resultIndex}.columns.${columnIndex}.kolom.${lang.value}`}
-                      render={({ field: columnField }) => (
-                        <>
-                          <FormItem>
-                            <FormControl>
-                              <Input
-                                placeholder={`${t("bahasa")} ${
-                                  languages.find(l => l.value === lang.value)?.label || lang.value
-                                }`}
-                                {...columnField}
-                                value={columnField.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        </>
-                      )}
-                    />
-                  ))
+                  validLanguages.map(
+                    (lang: { value: string }, langIndex: number) => (
+                      <FormField
+                        key={langIndex}
+                        control={control}
+                        name={`results.${resultIndex}.columns.${columnIndex}.kolom.${lang.value}`}
+                        render={({ field: columnField }) => (
+                          <>
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  placeholder={`${t("bahasa")} ${
+                                    languages.find(
+                                      (l) => l.value === lang.value
+                                    )?.label || lang.value
+                                  }`}
+                                  {...columnField}
+                                  value={columnField.value || ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          </>
+                        )}
+                      />
+                    )
+                  )
                 )}
               </div>
             </div>
@@ -324,19 +339,19 @@ const Columns = ({ resultIndex, usedLanguages, createMultilangObject, validLangu
                           {t("basic_referenceValue")}
                         </SelectItem>
                         <SelectItem
-                          value="basic_measurementError_error" // di xml = basic_measurementError (ga bisa 2 value sama)
+                          value="basic_measurementError_error"
                           className="whitespace-normal break-words max-w-xs"
                         >
                           {t("basic_measurementError_error")}
                         </SelectItem>
                         <SelectItem
-                          value="basic_measurementError_correction" // di xml = basic_measurementError
+                          value="basic_measurementError_correction"
                           className="whitespace-normal break-words max-w-xs"
                         >
                           {t("basic_measurementError_correction")}
                         </SelectItem>
                         <SelectItem
-                          value="other" // ga ada refType
+                          value="other"
                           className="whitespace-normal break-words max-w-xs"
                         >
                           {t("other")}
@@ -658,7 +673,7 @@ export default function MeasurementForm({
           // Store file information (name and mimeType) in the form
           if (methodIndex !== undefined) {
             form.setValue(
-              `methods.${methodIndex}.image.filename`,
+              `methods.${methodIndex}.image.fileName`,
               result.filename // Store the file name after uploading
             );
 
@@ -718,17 +733,18 @@ export default function MeasurementForm({
   const usedLanguages: { value: string }[] =
     form.watch("administrative_data.used_languages") || [];
 
-  const createMultilangObject = useCallback((
-    usedLanguages: { value: string }[]
-  ): Record<string, string> => {
-    const result: Record<string, string> = {};
-    usedLanguages.forEach((lang) => {
-      if (lang.value?.trim()) {
-        result[lang.value] = "";
-      }
-    });
-    return result;
-  }, []);
+  const createMultilangObject = useCallback(
+    (usedLanguages: { value: string }[]): Record<string, string> => {
+      const result: Record<string, string> = {};
+      usedLanguages.forEach((lang) => {
+        if (lang.value?.trim()) {
+          result[lang.value] = "";
+        }
+      });
+      return result;
+    },
+    []
+  );
 
   const [languages, setLanguages] = useState<Language[]>([]);
   useEffect(() => {
@@ -837,13 +853,18 @@ export default function MeasurementForm({
     { key: "œrsted", symbol: "Oe", value: "\\oersted" },
   ];
 
-  const handleRemoveMethod = useCallback((index: number) => {
-    removeMethod(index);
-  }, [removeMethod]);
+  const handleRemoveMethod = useCallback(
+    (index: number) => {
+      removeMethod(index);
+    },
+    [removeMethod]
+  );
 
   const handleAppendMethod = useCallback(() => {
-    const currentLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
-    
+    const currentLanguages = usedLanguages.filter(
+      (lang) => lang.value && lang.value.trim()
+    );
+
     appendMethod({
       method_name: createMultilangObject(currentLanguages),
       method_desc: createMultilangObject(currentLanguages),
@@ -862,13 +883,18 @@ export default function MeasurementForm({
     });
   }, [appendMethod, createMultilangObject, usedLanguages]);
 
-  const handleRemoveEquipment = useCallback((index: number) => {
-    removeEquipment(index);
-  }, [removeEquipment]);
+  const handleRemoveEquipment = useCallback(
+    (index: number) => {
+      removeEquipment(index);
+    },
+    [removeEquipment]
+  );
 
   const handleAppendEquipment = useCallback(() => {
-    const currentLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
-    
+    const currentLanguages = usedLanguages.filter(
+      (lang) => lang.value && lang.value.trim()
+    );
+
     appendEquipment({
       nama_alat: createMultilangObject(currentLanguages),
       manuf_model: createMultilangObject(currentLanguages),
@@ -877,13 +903,18 @@ export default function MeasurementForm({
     });
   }, [appendEquipment, createMultilangObject, usedLanguages]);
 
-  const handleRemoveCondition = useCallback((index: number) => {
-    removeCondition(index);
-  }, [removeCondition]);
+  const handleRemoveCondition = useCallback(
+    (index: number) => {
+      removeCondition(index);
+    },
+    [removeCondition]
+  );
 
   const handleAppendCondition = useCallback(() => {
-    const currentLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
-    
+    const currentLanguages = usedLanguages.filter(
+      (lang) => lang.value && lang.value.trim()
+    );
+
     appendCondition({
       jenis_kondisi: "", // Initialize with empty string to avoid undefined issues
       desc: createMultilangObject(currentLanguages),
@@ -908,26 +939,34 @@ export default function MeasurementForm({
     });
   }, [appendCondition, createMultilangObject, usedLanguages]);
 
-  const handleRemoveResult = useCallback((index: number) => {
-    removeResult(index);
-  }, [removeResult]);
+  const handleRemoveResult = useCallback(
+    (index: number) => {
+      removeResult(index);
+    },
+    [removeResult]
+  );
 
   const handleAppendResult = useCallback(() => {
-    const currentLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
-    
+    const currentLanguages = usedLanguages.filter(
+      (lang) => lang.value && lang.value.trim()
+    );
+
     appendResult({
       parameters: createMultilangObject(currentLanguages),
       columns: [
         {
           kolom: createMultilangObject(currentLanguages),
-          real_list: [
-            {
-              value: "",
-              unit: "",
-            },
-          ],
+          refType: "", // TAMBAHKAN INI
+          real_list: "1",
         },
       ],
+      uncertainty: {
+        // JANGAN LUPA TAMBAHKAN INISIALISASI UNCERTAINTY
+        factor: "",
+        probability: "",
+        distribution: "",
+        real_list: "1",
+      },
     });
   }, [appendResult, createMultilangObject, usedLanguages]);
 
@@ -992,7 +1031,9 @@ export default function MeasurementForm({
     }
   };
 
-  const validLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
+  const validLanguages = usedLanguages.filter(
+    (lang) => lang.value && lang.value.trim()
+  );
 
   return (
     <FormProvider {...form}>
@@ -1032,31 +1073,37 @@ export default function MeasurementForm({
                     <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                     <div className="space-y-1">
                       {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                        <p className="text-sm text-red-600">
+                          {t("pilih_bahasa")}
+                        </p>
                       ) : (
-                        validLanguages.map((lang: { value: string }, langIndex: number) => (
-                          <FormField
-                            control={form.control}
-                            key={`${field.id}-method_name-${lang.value}`}
-                            name={`methods.${index}.method_name.${lang.value}`}
-                            render={({ field: methodNameField }) => (
-                              <FormItem>
-                                <div className="flex items-center gap-2">
-                                  <FormControl>
-                                    <Input
-                                      placeholder={`${t("bahasa")} ${
-                                        languages.find(l => l.value === lang.value)?.label || lang.value
-                                      }`}
-                                      {...methodNameField}
-                                      value={methodNameField.value || ""}
-                                    />
-                                  </FormControl>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        ))
+                        validLanguages.map(
+                          (lang: { value: string }, langIndex: number) => (
+                            <FormField
+                              control={form.control}
+                              key={`${field.id}-method_name-${lang.value}`}
+                              name={`methods.${index}.method_name.${lang.value}`}
+                              render={({ field: methodNameField }) => (
+                                <FormItem>
+                                  <div className="flex items-center gap-2">
+                                    <FormControl>
+                                      <Input
+                                        placeholder={`${t("bahasa")} ${
+                                          languages.find(
+                                            (l) => l.value === lang.value
+                                          )?.label || lang.value
+                                        }`}
+                                        {...methodNameField}
+                                        value={methodNameField.value || ""}
+                                      />
+                                    </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )
+                        )
                       )}
                     </div>
                   </div>
@@ -1082,9 +1129,12 @@ export default function MeasurementForm({
                   <FormLabel>{t("deskripsi")}</FormLabel>
                   <div className="space-y-1">
                     {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
-                      ) : (
-                        validLanguages.map((lang: { value: string }, langIndex: number) => (
+                      <p className="text-sm text-red-600">
+                        {t("pilih_bahasa")}
+                      </p>
+                    ) : (
+                      validLanguages.map(
+                        (lang: { value: string }, langIndex: number) => (
                           <FormField
                             control={form.control}
                             key={`${field.id}-method_desc-${langIndex}`}
@@ -1095,7 +1145,9 @@ export default function MeasurementForm({
                                   <FormControl>
                                     <Input
                                       placeholder={`${t("bahasa")} ${
-                                        languages.find(l => l.value === lang.value)?.label || lang.value
+                                        languages.find(
+                                          (l) => l.value === lang.value
+                                        )?.label || lang.value
                                       }`}
                                       {...methodDescField}
                                       value={methodDescField.value || ""}
@@ -1106,7 +1158,8 @@ export default function MeasurementForm({
                               </FormItem>
                             )}
                           />
-                      ))
+                        )
+                      )
                     )}
                   </div>
                 </div>
@@ -1469,31 +1522,37 @@ export default function MeasurementForm({
                       <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                       <div className="space-y-1">
                         {validLanguages.length === 0 ? (
-                          <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                          <p className="text-sm text-red-600">
+                            {t("pilih_bahasa")}
+                          </p>
                         ) : (
-                          validLanguages.map((lang: { value: string }, langIndex: number) => (
-                            <FormField
-                              control={form.control}
-                              key={`${field.id}-nama_alat-${langIndex}`}
-                              name={`equipments.${index}.nama_alat.${lang.value}`}
-                              render={({ field: namaAlatField }) => (
-                                <FormItem>
-                                  <div className="flex items-center gap-2">
-                                    <FormControl>
-                                      <Input
-                                        placeholder={`${t("bahasa")} ${
-                                          languages.find(l => l.value === lang.value)?.label || lang.value
-                                        }`}
-                                        {...namaAlatField}
-                                        value={namaAlatField.value || ""}
-                                      />
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          ))
+                          validLanguages.map(
+                            (lang: { value: string }, langIndex: number) => (
+                              <FormField
+                                control={form.control}
+                                key={`${field.id}-nama_alat-${langIndex}`}
+                                name={`equipments.${index}.nama_alat.${lang.value}`}
+                                render={({ field: namaAlatField }) => (
+                                  <FormItem>
+                                    <div className="flex items-center gap-2">
+                                      <FormControl>
+                                        <Input
+                                          placeholder={`${t("bahasa")} ${
+                                            languages.find(
+                                              (l) => l.value === lang.value
+                                            )?.label || lang.value
+                                          }`}
+                                          {...namaAlatField}
+                                          value={namaAlatField.value || ""}
+                                        />
+                                      </FormControl>
+                                    </div>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )
+                          )
                         )}
                       </div>
                     </div>
@@ -1518,31 +1577,37 @@ export default function MeasurementForm({
                       <FormLabel>{t("manuf")}</FormLabel>
                       <div className="space-y-1">
                         {validLanguages.length === 0 ? (
-                          <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                          <p className="text-sm text-red-600">
+                            {t("pilih_bahasa")}
+                          </p>
                         ) : (
-                          validLanguages.map((lang: { value: string }, langIndex: number) => (
-                            <FormField
-                              control={form.control}
-                              key={`${field.id}-manuf_model-${langIndex}`}
-                              name={`equipments.${index}.manuf_model.${lang.value}`}
-                              render={({ field: manufField }) => (
-                                <FormItem>
-                                  <div className="flex items-center gap-2">
-                                    <FormControl>
-                                      <Input
-                                        placeholder={`${t("bahasa")} ${
-                                          languages.find(l => l.value === lang.value)?.label || lang.value
-                                        }`}
-                                        {...manufField}
-                                        value={manufField.value || ""}
-                                      />
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          ))
+                          validLanguages.map(
+                            (lang: { value: string }, langIndex: number) => (
+                              <FormField
+                                control={form.control}
+                                key={`${field.id}-manuf_model-${langIndex}`}
+                                name={`equipments.${index}.manuf_model.${lang.value}`}
+                                render={({ field: manufField }) => (
+                                  <FormItem>
+                                    <div className="flex items-center gap-2">
+                                      <FormControl>
+                                        <Input
+                                          placeholder={`${t("bahasa")} ${
+                                            languages.find(
+                                              (l) => l.value === lang.value
+                                            )?.label || lang.value
+                                          }`}
+                                          {...manufField}
+                                          value={manufField.value || ""}
+                                        />
+                                      </FormControl>
+                                    </div>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )
+                          )
                         )}
                       </div>
                     </div>
@@ -1550,31 +1615,37 @@ export default function MeasurementForm({
                       <FormLabel>{t("model")}</FormLabel>
                       <div className="space-y-1">
                         {validLanguages.length === 0 ? (
-                          <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                          <p className="text-sm text-red-600">
+                            {t("pilih_bahasa")}
+                          </p>
                         ) : (
-                          validLanguages.map((lang: { value: string }, langIndex: number) => (
-                            <FormField
-                              control={form.control}
-                              key={`${field.id}-model-${langIndex}`}
-                              name={`equipments.${index}.model.${lang.value}`}
-                              render={({ field: modelField }) => (
-                                <FormItem>
-                                  <div className="flex items-center gap-2">
-                                    <FormControl>
-                                      <Input
-                                        placeholder={`${t("bahasa")} ${
-                                          languages.find(l => l.value === lang.value)?.label || lang.value
-                                        }`}
-                                        {...modelField}
-                                        value={modelField.value || ""}
-                                      />
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          ))
+                          validLanguages.map(
+                            (lang: { value: string }, langIndex: number) => (
+                              <FormField
+                                control={form.control}
+                                key={`${field.id}-model-${langIndex}`}
+                                name={`equipments.${index}.model.${lang.value}`}
+                                render={({ field: modelField }) => (
+                                  <FormItem>
+                                    <div className="flex items-center gap-2">
+                                      <FormControl>
+                                        <Input
+                                          placeholder={`${t("bahasa")} ${
+                                            languages.find(
+                                              (l) => l.value === lang.value
+                                            )?.label || lang.value
+                                          }`}
+                                          {...modelField}
+                                          value={modelField.value || ""}
+                                        />
+                                      </FormControl>
+                                    </div>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )
+                          )
                         )}
                       </div>
                     </div>
@@ -1710,31 +1781,37 @@ export default function MeasurementForm({
                       <FormLabel>{t("deskripsi")}</FormLabel>
                       <div className="space-y-1">
                         {validLanguages.length === 0 ? (
-                          <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                          <p className="text-sm text-red-600">
+                            {t("pilih_bahasa")}
+                          </p>
                         ) : (
-                          validLanguages.map((lang: { value: string }, langIndex: number) => (
-                            <FormField
-                              control={form.control}
-                              key={`${field.id}-desc-${langIndex}`}
-                              name={`conditions.${index}.desc.${lang.value}`}
-                              render={({ field: kondisiDescField }) => (
-                                <FormItem>
-                                  <div className="flex items-center gap-2">
-                                    <FormControl>
-                                      <Input
-                                        placeholder={`${t("bahasa")} ${
-                                          languages.find(l => l.value === lang.value)?.label || lang.value
-                                        }`}
-                                        {...kondisiDescField}
-                                        value={kondisiDescField.value || ""}
-                                      />
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          ))
+                          validLanguages.map(
+                            (lang: { value: string }, langIndex: number) => (
+                              <FormField
+                                control={form.control}
+                                key={`${field.id}-desc-${langIndex}`}
+                                name={`conditions.${index}.desc.${lang.value}`}
+                                render={({ field: kondisiDescField }) => (
+                                  <FormItem>
+                                    <div className="flex items-center gap-2">
+                                      <FormControl>
+                                        <Input
+                                          placeholder={`${t("bahasa")} ${
+                                            languages.find(
+                                              (l) => l.value === lang.value
+                                            )?.label || lang.value
+                                          }`}
+                                          {...kondisiDescField}
+                                          value={kondisiDescField.value || ""}
+                                        />
+                                      </FormControl>
+                                    </div>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )
+                          )
                         )}
                       </div>
                     </div>
@@ -2193,35 +2270,42 @@ export default function MeasurementForm({
                     <FormLabel variant="mandatory">{t("judul")}</FormLabel>
                     <div className="space-y-1">
                       {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                        <p className="text-sm text-red-600">
+                          {t("pilih_bahasa")}
+                        </p>
                       ) : (
-                        validLanguages.map((lang: { value: string }, langIndex: number) => (
-                          <FormField
-                            key={lang.value}
-                            control={form.control}
-                            name={`results.${resultIndex}.parameters.${lang.value}`}
-                            render={({ field: parameterField }) => (
-                              <>
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      placeholder={`${t("bahasa")} ${
-                                        languages.find(l => l.value === lang.value)?.label || lang.value
-                                      }`}
-                                      {...parameterField}
-                                      value={
-                                        typeof parameterField.value === "string"
-                                          ? parameterField.value
-                                          : ""
-                                      }
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              </>
-                            )}
-                          />
-                        ))
+                        validLanguages.map(
+                          (lang: { value: string }, langIndex: number) => (
+                            <FormField
+                              key={lang.value}
+                              control={form.control}
+                              name={`results.${resultIndex}.parameters.${lang.value}`}
+                              render={({ field: parameterField }) => (
+                                <>
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input
+                                        placeholder={`${t("bahasa")} ${
+                                          languages.find(
+                                            (l) => l.value === lang.value
+                                          )?.label || lang.value
+                                        }`}
+                                        {...parameterField}
+                                        value={
+                                          typeof parameterField.value ===
+                                          "string"
+                                            ? parameterField.value
+                                            : ""
+                                        }
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                </>
+                              )}
+                            />
+                          )
+                        )
                       )}
                     </div>
                   </div>
