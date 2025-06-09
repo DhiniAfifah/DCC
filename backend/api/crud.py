@@ -753,11 +753,11 @@ def generate_xml(dcc, table_data):
                                         with tag('dcc:dataBase64'):
                                             base64_lines = stmt.image.base64.splitlines()
                                             doc.asis('\n')
-                                            indent_spaces = 22
+                                            indent_spaces = 21
                                             indent_stm = ' ' * indent_spaces
                                             for line in base64_lines:
                                                 doc.asis(f"{indent_stm}{line}\n")
-                                            doc.asis(' ' * (indent_spaces - 4))
+                                            doc.asis(' ' * (indent_spaces - 3))
 
         # MEASUREMENT RESULT 
         with tag('dcc:measurementResults'):
@@ -782,7 +782,7 @@ def generate_xml(dcc, table_data):
                                         with tag('dcc:latex'): text(method.formula.latex or "")
                                         with tag('dcc:mathml'): text(method.formula.mathml or "")
                                 if method.has_image and method.image:
-                                    with tag('dcc:image'):
+                                    with tag('dcc:file'):
                                         if getattr(method.image, 'fileName', None):
                                             with tag('dcc:fileName'):
                                                 text(method.image.fileName)
@@ -793,7 +793,7 @@ def generate_xml(dcc, table_data):
                                             with tag('dcc:dataBase64'):
                                                 base64_lines = method.image.base64.splitlines()
                                                 doc.asis('\n')
-                                                indent_spaces = 22
+                                                indent_spaces = 24
                                                 indent_mth = ' ' * indent_spaces
                                                 for line in base64_lines:
                                                     doc.asis(f"{indent_mth}{line}\n")
@@ -1003,11 +1003,11 @@ def generate_xml(dcc, table_data):
                                 with tag('dcc:dataBase64'):
                                     base64_lines = file.base64.splitlines()
                                     doc.asis('\n')
-                                    indent_spaces = 22
+                                    indent_spaces = 12
                                     indent_stm = ' ' * indent_spaces
                                     for line in base64_lines:
                                         doc.asis(f"{indent_stm}{line}\n")
-                                    doc.asis(' ' * (indent_spaces - 4))  
+                                    doc.asis(' ' * (indent_spaces - 3))  
                                     
             
         doc.asis('</dcc:digitalCalibrationCertificate>')
