@@ -1296,7 +1296,7 @@ export default function MeasurementForm({
                     </Button>
                   </div>
                 )}
-                <MathJaxContext>
+                {/* <MathJaxContext>
                   <div id="rumus" className="mt-2">
                     <FormLabel>Rumus</FormLabel>
                     <div className="grid grid-row md:grid-cols-2 gap-4">
@@ -1421,7 +1421,7 @@ export default function MeasurementForm({
                       </ScrollArea>
                     </div>
                   </div>
-                </MathJaxContext>
+                </MathJaxContext> */}
 
                 <div id="checkbox_gambar">
                   <FormField
