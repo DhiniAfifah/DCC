@@ -112,6 +112,8 @@ export default function Comment({
         reader.onloadend = () => {
           const base64String = reader.result as string;
 
+          const base64WithoutPrefix = base64String.split(",")[1];
+
           if (commentindex !== undefined) {
             form.setValue(
               `comment.files.${commentindex}.fileName`,
@@ -121,7 +123,10 @@ export default function Comment({
               `comment.files.${commentindex}.mimeType`,
               result.mimeType
             );
-            form.setValue(`comment.files.${commentindex}.base64`, base64String);
+            form.setValue(
+              `comment.files.${commentindex}.base64`,
+              base64WithoutPrefix
+            );
           }
 
           alert("File uploaded successfully.");

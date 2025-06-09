@@ -227,14 +227,19 @@ async def upload_excel(excel: UploadFile = File(...)):
 async def upload_image(image: UploadFile = File(...)):
     try:
         # Generate unique filename
-        filename = f"{uuid.uuid4()}_{image.filename}"
+        filename = image.filename
         mime_type = image.content_type
         file_location = os.path.join(UPLOAD_DIR, filename)
 
         with open(file_location, "wb") as buffer:
             shutil.copyfileobj(image.file, buffer)
+            
+        with open(file_location, "rb") as img_file:
+            image_data = img_file.read()
+            base64_str = base64.b64encode(image_data).decode('utf-8')
+            base64_str = base64_str.split(",")[-1]
 
-        return {"filename": filename, "mimeType": mime_type, "url": f"/uploads/{filename}"}
+        return {"filename": filename, "mimeType": mime_type, "base64": base64_str, "url": f"/uploads/{filename}"}
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -244,12 +249,16 @@ async def upload_image(image: UploadFile = File(...)):
 async def upload_file(file: UploadFile = File(...)):
     try:
         # Generate unique filename
-        filename = f"{uuid.uuid4()}_{file.filename}"
+        filename = file.filename
         mime_type = file.content_type
         file_location = os.path.join(UPLOAD_DIR, filename)
         
         with open(file_location, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
+            
+        with open(file_location, "rb") as f:
+            base64_str = base64.b64encode(f.read()).decode('utf-8')
+            base64_str = base64_str.split(",")[-1] 
         
         return {"filename": filename, "mimeType": mime_type, "url": f"/uploads/{filename}"}
     

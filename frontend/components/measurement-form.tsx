@@ -698,10 +698,12 @@ export default function MeasurementForm({
             reader.onloadend = () => {
               const base64String = reader.result as string;
 
+              const base64WithoutPrefix = base64String.split(",")[1];
+
               // Store base64 image string in the form for preview
               form.setValue(
                 `methods.${methodIndex}.image.base64`,
-                base64String
+                base64WithoutPrefix
               );
             };
             reader.readAsDataURL(file); // Convert file to base64

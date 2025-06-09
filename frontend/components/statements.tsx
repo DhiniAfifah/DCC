@@ -196,6 +196,8 @@ export default function Statements({
         reader.onloadend = () => {
           const base64String = reader.result as string;
 
+          const base64WithoutPrefix = base64String.split(",")[1];
+
           if (statementIndex !== undefined) {
             form.setValue(
               `statements.${statementIndex}.image.fileName`,
@@ -207,7 +209,7 @@ export default function Statements({
             );
             form.setValue(
               `statements.${statementIndex}.image.base64`,
-              base64String
+              base64WithoutPrefix
             );
           }
 
