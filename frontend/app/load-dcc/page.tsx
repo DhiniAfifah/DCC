@@ -10,11 +10,7 @@ export default function LoadDCC() {
 
   const [formData, setFormData] = useState({
     xml: null,
-  })
-
-  const handleSubmit = async () => {
-
-  }
+  });
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -29,19 +25,27 @@ export default function LoadDCC() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [formData]); // Depend on formData to track changes
-  
+  }, [formData]);
+
+  const handleFormSubmit = (data: any) => {
+    console.log("Form Data Submitted:", data);
+    setFormData(data);
+  };
+
   return (
     <div className="container mx-auto py-8 pt-20">
       <div className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-sky-200"></div>
 
       <div className="mt-12 space-y-10">
-        <Importer formData={formData} />
-        
+        <Importer formData={formData} onSubmit={handleFormSubmit} />
       </div>
+
+      {/* Submit button: This triggers form submission */}
       <div className="flex justify-end max-w-4xl mx-auto px-4 mt-8">
-        <Button onClick={handleSubmit} variant="green">{t("submit")}</Button>
+        <Button type="submit" form="importer-form" variant="green">
+          {t("submit")}
+        </Button>
       </div>
     </div>
-  )
+  );
 }

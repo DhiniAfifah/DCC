@@ -221,3 +221,6 @@ class DCCFormCreate(BaseModel):
     sheet_name: str
     statements: List[Statements]  # Catatan
     comment: Optional[Comment]
+
+class ExcelFileResponse(BaseModel):
+    excel_file_path: str

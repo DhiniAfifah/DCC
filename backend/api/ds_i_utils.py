@@ -170,3 +170,31 @@ def d_si(expr: str) -> str:
             latex_parts.append(parse_token(token, -1))
 
     return "".join(latex_parts)
+
+
+def convert_unit(unit):
+    """Convert LaTeX or DS-I unit format to human-readable format."""
+    
+    # Ganti prefix sesuai dengan yang ada di dictionary
+    for prefix, latex_prefix in prefixes.items():
+        if latex_prefix in unit:
+            unit = unit.replace(latex_prefix, prefix)
+    
+    # Ganti unit dasar sesuai dengan yang ada di dictionary
+    for base_unit, latex_unit in base_units.items():
+        if latex_unit in unit:
+            unit = unit.replace(latex_unit, base_unit)  
+    
+    # Mengganti binary prefix
+    for binary_prefix, latex_binary_prefix in binary_prefixes.items():
+        if latex_binary_prefix in unit:
+            unit = unit.replace(latex_binary_prefix, binary_prefix)  
+
+    # Menangani \tothe dan simbol lainnya
+    if "\\tothe" in unit:
+        unit = unit.replace("\\tothe", "^")
+        unit = unit.replace("}", "")  
+        unit = unit.replace("{", "") 
+    
+    return unit
+

@@ -806,7 +806,7 @@ def generate_xml(dcc, table_data):
                     for equip in dcc.equipments:
                         ref_type = equip.refType if equip.refType else "basic_measurementStandard"
                         with tag('dcc:measuringEquipment', refType=ref_type):
-                            with tag('dcc:name', refType= 'basic_measurementStandard' ):
+                            with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
                                     with tag('dcc:content', lang=lang): text(equip.nama_alat.root.get(lang, "")) #Multilang
                             with tag('dcc:manufacturer'):

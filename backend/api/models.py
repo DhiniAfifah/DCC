@@ -21,3 +21,11 @@ class DCC(Base):
     comment = Column(JSON, nullable=True) 
     excel = Column(String, nullable=False)  
     sheet_name = Column(String, nullable=False)
+    
+class XML(Base):
+    __tablename__ = "uploaded_files"
+
+    id = Column(Integer, primary_key=True, index=True)
+    filename = Column(String, index=True)
+    file_path = Column(String, index=True)
+    status = Column(String, default="pending")

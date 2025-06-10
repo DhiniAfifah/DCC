@@ -8,6 +8,8 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from datetime import datetime, timedelta, timezone
+from fastapi.responses import JSONResponse
+from openpyxl.styles import Font, Alignment
 import api.crud as crud
 import api.schemas as schemas
 import api.database as database
@@ -20,6 +22,9 @@ import mimetypes
 import jwt
 from sqlalchemy import inspect
 from api.database import engine
+from openpyxl import Workbook
+from xml.etree import ElementTree as ET
+from .converter import convert_xml_to_excel
 #from slowapi import Limiter
 #from slowapi.errors import RateLimitExceeded
 
@@ -122,8 +127,6 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     access_token = create_access_token(data={"sub": user["username"]})
     return {"access_token": access_token, "token_type": "bearer"}
 
-
-
 # CREATE DCC
 @app.post("/create-dcc/")
 async def create_dcc(
@@ -198,6 +201,30 @@ async def create_dcc(
         logging.error(f"Error occurred while creating DCC: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+#XML FILE
+@app.post("/upload-xml/")
+async def upload_xml(xml_file: UploadFile = File(...)):
+    try:
+        logging.debug(f"Menerima file: {xml_file.filename}")
+        
+        # Simpan file XML yang diunggah
+        file_location = os.path.join(UPLOAD_DIR, xml_file.filename)
+        print(f"File will be saved at: {file_location}") #ceklog
+        
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(xml_file.file, buffer)
+
+        # Konversi XML ke Excel
+        excel_path = convert_xml_to_excel(file_location)
+
+        # Kembalikan path file Excel yang sudah diproses
+        return JSONResponse(content={"excel_file_path": f"/uploads/{os.path.basename(excel_path)}"})
+
+    except Exception as e:
+        logging.exception("Error dalam upload_xml")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 
 # EXCEL FILE 
 @app.post("/upload-excel/")
@@ -264,7 +291,6 @@ async def upload_file(file: UploadFile = File(...)):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
-
 
 # DOWNLOAD XML FILE 
 @app.get("/download-dcc/{dcc_id}")
