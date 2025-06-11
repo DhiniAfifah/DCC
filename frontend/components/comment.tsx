@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, X, NotepadText } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -15,26 +15,19 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/context/LanguageContext";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { Language, fetchLanguages } from "@/utils/language";
+import { Textarea } from "@/components/ui/textarea";
 
-const empty_field_error_message = "Input required.";
+const empty_field_error_message = "Input required/dibutuhkan.";
 const FormSchema = z.object({
   comment: z.object({
     title: z.string().optional(),
-    desc: z.string().optional(),
+    desc: z.record(z.string()).optional(),
     has_file: z.boolean().default(false),
     files: z
       .array(
@@ -78,6 +71,31 @@ export default function Comment({
     control: form.control,
     name: "comment.files",
   });
+
+  const usedLanguages: { value: string }[] =
+    form.watch("administrative_data.used_languages") || [];
+
+  const createMultilangObject = useCallback(
+    (usedLanguages: { value: string }[]): Record<string, string> => {
+      const result: Record<string, string> = {};
+      usedLanguages.forEach((lang) => {
+        if (lang.value?.trim()) {
+          result[lang.value] = "";
+        }
+      });
+      return result;
+    },
+    []
+  );
+
+  const [languages, setLanguages] = useState<Language[]>([]);
+  useEffect(() => {
+    fetchLanguages().then(setLanguages);
+  }, []);
+
+  const validLanguages = usedLanguages.filter(
+    (lang) => lang.value && lang.value.trim()
+  );
 
   useEffect(() => {
     const currentFiles = form.getValues("comment.files");
@@ -217,18 +235,31 @@ export default function Comment({
               </div>
               <div id="description">
                 <FormLabel>{t("deskripsi")}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="comment.desc"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {validLanguages.length === 0 ? (
+                  <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                ) : (
+                  validLanguages.map((lang: { value: string }, langIndex: number) => (
+                    <FormField
+                      control={form.control}
+                      key={`comment-${langIndex}`}
+                      name="comment.desc"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Textarea 
+                              placeholder={`${t("bahasa")} ${
+                                languages.find((l) => l.value === lang.value)?.label || lang.value
+                              }`}
+                              {...field}
+                              value={field.value || ""}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  ))
+                )}
               </div>
             </div>
             <div id="checkbox_file">

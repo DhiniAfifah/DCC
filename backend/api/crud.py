@@ -627,7 +627,7 @@ def generate_xml(dcc, table_data):
                                 with tag("dcc:issuer"): text(obj.item_issuer)
                                 with tag("dcc:value"): text(obj.seri_item)
                                 with tag("dcc:name"):
-                                    with tag("dcc:content"): text(obj.id_lain.root.get(lang, ""))
+                                    with tag("dcc:content", lang=lang): text(obj.id_lain.root.get(lang, ""))
             
             #MUTLAK                    
             with tag('dcc:calibrationLaboratory'): 
@@ -645,8 +645,8 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:state'): text('Banten')
                         with tag('dcc:street'): text('KST BJ Habibie Setu')
                         with tag('dcc:streetNo'): text('Gedung 420')
-                with tag('dcc:cryptElectronicSignature'): pass
-                with tag('dcc:cryptElectronicTimeStamp'): pass
+                # with tag('dcc:cryptElectronicSignature'): pass
+                # with tag('dcc:cryptElectronicTimeStamp'): pass
                 
             #RESP_PERSON    
             with tag('dcc:respPersons'): 
@@ -656,8 +656,8 @@ def generate_xml(dcc, table_data):
                             with tag('dcc:name'): 
                                 with tag('dcc:content'): text(resp.nama_resp)
                         with tag('dcc:description'): 
-                            with tag('dcc:name'): 
-                                with tag('dcc:content'): text(resp.nip)
+                            # with tag('dcc:name'): 
+                            with tag('dcc:content'): text(resp.nip)
                         with tag('dcc:role'): text(resp.peran)
                         with tag('dcc:mainSigner'): text(str(resp.main_signer))
                         with tag('dcc:cryptElectronicSignature'): text(str(resp.signature))
@@ -670,8 +670,8 @@ def generate_xml(dcc, table_data):
                             with tag('dcc:name'): 
                                 with tag('dcc:content'): text(resp.nama_resp)
                         with tag('dcc:description'): 
-                            with tag('dcc:name'): 
-                                with tag('dcc:content'): text(resp.nip)
+                            # with tag('dcc:name'): 
+                            with tag('dcc:content'): text(resp.nip)
                         with tag('dcc:role'): text(resp.peran)
                         with tag('dcc:mainSigner'): text(str(resp.main_signer))
                         with tag('dcc:cryptElectronicSignature'): text(str(resp.signature))
@@ -683,8 +683,8 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:name'): 
                             with tag('dcc:content'): text(dcc.responsible_persons.kepala.nama_resp)
                     with tag('dcc:description'): 
-                        with tag('dcc:name'): 
-                            with tag('dcc:content'): text(dcc.responsible_persons.kepala.nip)
+                        # with tag('dcc:name'): 
+                        with tag('dcc:content'): text(dcc.responsible_persons.kepala.nip)
                     with tag('dcc:role'): text(dcc.responsible_persons.kepala.peran)
                     with tag('dcc:mainSigner'): text(str(dcc.responsible_persons.kepala.main_signer))
                     with tag('dcc:cryptElectronicSignature'): text(str(dcc.responsible_persons.kepala.signature))
@@ -696,8 +696,8 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:name'): 
                             with tag('dcc:content'): text(dcc.responsible_persons.direktur.nama_resp)
                     with tag('dcc:description'): 
-                        with tag('dcc:name'): 
-                            with tag('dcc:content'): text(dcc.responsible_persons.direktur.nip)
+                        # with tag('dcc:name'): 
+                        with tag('dcc:content'): text(dcc.responsible_persons.direktur.nip)
                     with tag('dcc:role'): text(dcc.responsible_persons.direktur.peran)
                     with tag('dcc:mainSigner'): text(str(dcc.responsible_persons.direktur.main_signer))
                     with tag('dcc:cryptElectronicSignature'): text(str(dcc.responsible_persons.direktur.signature))
@@ -734,9 +734,9 @@ def generate_xml(dcc, table_data):
                                 
                             if stmt.has_formula and stmt.formula:
                                 with tag('dcc:formula'):
-                                    if stmt.formula.latex:
-                                        with tag('dcc:latex'):
-                                            text(stmt.formula.latex)
+                                    # if stmt.formula.latex:
+                                    #     with tag('dcc:latex'):
+                                    #         text(stmt.formula.latex)
                                     if stmt.formula.mathml:
                                         with tag('dcc:mathml'):
                                             text(stmt.formula.mathml)
@@ -779,7 +779,7 @@ def generate_xml(dcc, table_data):
                                     with tag('dcc:content', lang=lang): text(method.method_desc.root.get(lang, "")) #Multilang
                                 if method.has_formula and method.formula:
                                     with tag('dcc:formula'):
-                                        with tag('dcc:latex'): text(method.formula.latex or "")
+                                        # with tag('dcc:latex'): text(method.formula.latex or "")
                                         with tag('dcc:mathml'): text(method.formula.mathml or "")
                                 if method.has_image and method.image:
                                     with tag('dcc:file'):
@@ -824,14 +824,14 @@ def generate_xml(dcc, table_data):
                 # Adding Room Conditions 
                 with tag('dcc:influenceConditions'):
                     for condition in dcc.conditions:
-                        if condition.jenis_kondisi.lower() == 'temperatur' or condition.jenis_kondisi.lower() == 'temperature':
+                        if condition.jenis_kondisi == 'suhu':
                             reftype_value = 'basic_temperature'
-                        elif condition.jenis_kondisi.lower() == 'kelembapan' or condition.jenis_kondisi.lower() == 'humidity':
+                        elif condition.jenis_kondisi == 'lembap':
                             reftype_value = 'basic_humidityRelative'
                         else:
-                            reftype_value = 'basic_unknown'
+                            reftype_value = None
 
-                        with tag('dcc:influenceCondition', refType= 'reftype_value'):
+                        with tag('dcc:influenceCondition', **({'refType': reftype_value} if reftype_value else {})):
                             with tag('dcc:name'):
                                 with tag('dcc:content'): text(condition.jenis_kondisi)
                             with tag('dcc:description'):

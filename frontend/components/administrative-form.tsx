@@ -1512,7 +1512,7 @@ export default function AdministrativeForm({
                 <FormLabel variant="mandatory">{t("nama")}</FormLabel>
                 <FormField
                   control={form.control}
-                  name={`owner.nama_cust`}
+                  name="owner.nama_cust"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -1534,7 +1534,7 @@ export default function AdministrativeForm({
                       <FormLabel>{t("jalan")}</FormLabel>
                       <FormField
                         control={form.control}
-                        name={`owner.jalan_cust`}
+                        name="owner.jalan_cust"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -1549,7 +1549,7 @@ export default function AdministrativeForm({
                       <FormLabel>{t("no_jalan")}</FormLabel>
                       <FormField
                         control={form.control}
-                        name={`owner.no_jalan_cust`}
+                        name="owner.no_jalan_cust"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -1566,7 +1566,7 @@ export default function AdministrativeForm({
                       <FormLabel>{t("kota")}</FormLabel>
                       <FormField
                         control={form.control}
-                        name={`owner.kota_cust`}
+                        name="owner.kota_cust"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -1581,7 +1581,7 @@ export default function AdministrativeForm({
                       <FormLabel>{t("provinsi")}</FormLabel>
                       <FormField
                         control={form.control}
-                        name={`owner.state_cust`}
+                        name="owner.state_cust"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -1598,7 +1598,7 @@ export default function AdministrativeForm({
                       <FormLabel>{t("pos")}</FormLabel>
                       <FormField
                         control={form.control}
-                        name={`owner.pos_cust`}
+                        name="owner.pos_cust"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -1613,12 +1613,56 @@ export default function AdministrativeForm({
                       <FormLabel>{t("negara_cust")}</FormLabel>
                       <FormField
                         control={form.control}
-                        name={`owner.negara_cust`}
+                        name="owner.negara_cust"
                         render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
+                          <FormItem className="flex flex-col">
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    className={cn(
+                                      "w-full justify-between",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value
+                                      ? countries.find(
+                                          (country) => country.value === field.value
+                                        )?.label
+                                      : ""}
+                                    <ChevronsUpDown className="opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                <Command>
+                                  <CommandInput
+                                    placeholder={`${t("cari_negara")}`}
+                                    className="h-9"
+                                  />
+                                  <CommandList>
+                                    <CommandGroup>
+                                      {countries.map((country) => (
+                                        <CommandItem
+                                          value={country.label}
+                                          key={country.value}
+                                          onSelect={() => {
+                                            form.setValue(
+                                              "owner.negara_cust",
+                                              country.value
+                                            );
+                                          }}
+                                        >
+                                          {country.label}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                             <FormMessage />
                           </FormItem>
                         )}

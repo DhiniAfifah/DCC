@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, X, ScrollText } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -32,6 +32,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Language, fetchLanguages } from "@/utils/language";
 
 const empty_field_error_message = "Input required/dibutuhkan.";
 const FormSchema = z.object({
@@ -143,17 +144,55 @@ export default function Statements({
     name: "statements",
   });
 
-  const usedLanguages = form.watch("administrative_data.used_languages") || [];
+  const usedLanguages: { value: string }[] =
+    form.watch("administrative_data.used_languages") || [];
 
-  function createMultilangObject(
-    usedLanguages: { value: string }[]
-  ): Record<string, string> {
-    const result: Record<string, string> = {};
-    usedLanguages.forEach((lang) => {
-      result[lang.value] = "";
+  const createMultilangObject = useCallback(
+    (usedLanguages: { value: string }[]): Record<string, string> => {
+      const result: Record<string, string> = {};
+      usedLanguages.forEach((lang) => {
+        if (lang.value?.trim()) {
+          result[lang.value] = "";
+        }
+      });
+      return result;
+    },
+    []
+  );
+
+  const [languages, setLanguages] = useState<Language[]>([]);
+  useEffect(() => {
+    fetchLanguages().then(setLanguages);
+  }, []);
+
+  const handleRemoveStatement = useCallback((index: number) => {
+    removeStatement(index);
+  }, [removeStatement]);
+
+  const handleAppendStatement = useCallback(() => {
+    const currentLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
+    
+    appendStatement({
+      values: createMultilangObject(currentLanguages),
+      refType: "",
+      has_formula: false,
+      formula: {
+        latex: "",
+        mathml: "",
+      },
+      has_image: false,
+      image: {
+        fileName: "",
+        caption: "",
+        base64: "",
+        mimeType: "",
+      },
     });
-    return result;
-  }
+  }, [appendStatement, createMultilangObject, usedLanguages]);
+
+  const validLanguages = usedLanguages.filter(
+    (lang) => lang.value && lang.value.trim()
+  );
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -293,26 +332,30 @@ export default function Statements({
                       variant="destructive"
                       size="icon"
                       className="flex items-center justify-center"
-                      onClick={() => removeStatement(statementIndex)}
+                      onClick={() => handleRemoveStatement(statementIndex)}
                     >
                       <X />
                     </Button>
                   )}
                 </div>
-                {usedLanguages.map(
-                  (lang: { value: string }, langIndex: number) => (
+                {validLanguages.length === 0 ? (
+                  <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                ) : (
+                  validLanguages.map((lang: { value: string }, langIndex: number) => (
                     <FormField
                       control={form.control}
-                      key={`${field.id}-${langIndex}`}
+                      key={`${field.id}-statement-${langIndex}`}
                       name={`statements.${statementIndex}.values.${lang.value}`}
-                      render={({ field }) => (
+                      render={({ field: statementField }) => (
                         <FormItem>
                           <div className="flex items-center gap-2">
                             <FormControl>
                               <Textarea
-                                placeholder={`${t("bahasa")} ${lang.value}`}
-                                {...field}
-                                value={field.value ?? ""}
+                                placeholder={`${t("bahasa")} ${
+                                  languages.find(l => l.value === lang.value)?.label || lang.value
+                                }`}
+                                {...statementField}
+                                value={statementField.value || ""}
                               />
                             </FormControl>
                           </div>
@@ -320,7 +363,7 @@ export default function Statements({
                         </FormItem>
                       )}
                     />
-                  )
+                  ))
                 )}
 
                 <div id="refType" className="my-3">
@@ -667,24 +710,7 @@ export default function Statements({
               type="button"
               size="sm"
               className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={() =>
-                appendStatement({
-                  values: createMultilangObject(usedLanguages),
-                  refType: "",
-                  has_formula: false,
-                  formula: {
-                    latex: "",
-                    mathml: "",
-                  },
-                  has_image: false,
-                  image: {
-                    fileName: "",
-                    caption: "",
-                    base64: "",
-                    mimeType: "",
-                  },
-                })
-              }
+              onClick={handleAppendStatement}
             >
               <p className="text-xl">
                 <Plus />

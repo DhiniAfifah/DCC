@@ -17,7 +17,7 @@ import {
   FormProvider,
   useFormContext,
 } from "react-hook-form";
-import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,6 +61,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Language, fetchLanguages } from "@/utils/language";
+import { Textarea } from "@/components/ui/textarea";
 
 declare global {
   interface Window {
@@ -1157,7 +1158,7 @@ export default function MeasurementForm({
                               <FormItem>
                                 <div className="flex items-center gap-2">
                                   <FormControl>
-                                    <Input
+                                    <Textarea
                                       placeholder={`${t("bahasa")} ${
                                         languages.find(
                                           (l) => l.value === lang.value
@@ -1769,10 +1770,10 @@ export default function MeasurementForm({
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="Suhu">
+                                <SelectItem value="suhu">
                                   {t("suhu")}
                                 </SelectItem>
-                                <SelectItem value="Kelembapan Relatif">
+                                <SelectItem value="lembap">
                                   {t("lembap")}
                                 </SelectItem>
                                 <SelectItem value="other">
@@ -1809,7 +1810,7 @@ export default function MeasurementForm({
                                   <FormItem>
                                     <div className="flex items-center gap-2">
                                       <FormControl>
-                                        <Input
+                                        <Textarea
                                           placeholder={`${t("bahasa")} ${
                                             languages.find(
                                               (l) => l.value === lang.value
