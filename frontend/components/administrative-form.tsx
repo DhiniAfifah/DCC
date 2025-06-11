@@ -294,30 +294,36 @@ export default function AdministrativeForm({
     form.watch("administrative_data.used_languages") || [];
 
   // Memoize createMultilangObject untuk mencegah re-creation
-  const createMultilangObject = useCallback((
-    usedLanguages: { value: string }[]
-  ): Record<string, string> => {
-    const result: Record<string, string> = {};
-    usedLanguages.forEach((lang) => {
-      if (lang.value?.trim()) {
-        result[lang.value] = "";
-      }
-    });
-    return result;
-  }, []);
+  const createMultilangObject = useCallback(
+    (usedLanguages: { value: string }[]): Record<string, string> => {
+      const result: Record<string, string> = {};
+      usedLanguages.forEach((lang) => {
+        if (lang.value?.trim()) {
+          result[lang.value] = "";
+        }
+      });
+      return result;
+    },
+    []
+  );
 
   // Memoize handlers untuk mencegah re-creation
   const handleAppendUsed = useCallback(() => {
     appendUsed({ value: "" });
   }, [appendUsed]);
 
-  const handleRemoveUsed = useCallback((index: number) => {
-    removeUsed(index);
-  }, [removeUsed]);
+  const handleRemoveUsed = useCallback(
+    (index: number) => {
+      removeUsed(index);
+    },
+    [removeUsed]
+  );
 
   const handleAppendItem = useCallback(() => {
-    const currentLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
-    
+    const currentLanguages = usedLanguages.filter(
+      (lang) => lang.value && lang.value.trim()
+    );
+
     appendItem({
       jenis: createMultilangObject(currentLanguages),
       merek: "",
@@ -328,9 +334,12 @@ export default function AdministrativeForm({
     });
   }, [appendItem, createMultilangObject, usedLanguages]);
 
-  const handleRemoveItem = useCallback((index: number) => {
-    removeItem(index);
-  }, [removeItem]);
+  const handleRemoveItem = useCallback(
+    (index: number) => {
+      removeItem(index);
+    },
+    [removeItem]
+  );
 
   // Fungsi onSubmit
   const onSubmit = async (data: any) => {
@@ -346,13 +355,13 @@ export default function AdministrativeForm({
         person.peran === "Direktur SNSU Termoelektrik dan Kimia" ||
         person.peran === "Direktur SNSU Mekanika, Radiasi, dan Biologi"
       ) {
-        person.main_signer = true;
-        person.signature = true;
-        person.timestamp = true;
+        person.main_signer = 1;
+        person.signature = 1;
+        person.timestamp = 1;
       } else {
-        person.main_signer = false;
-        person.signature = false;
-        person.timestamp = false;
+        person.main_signer = 0;
+        person.signature = 0;
+        person.timestamp = 0;
       }
     });
 
@@ -382,7 +391,9 @@ export default function AdministrativeForm({
   };
 
   // Filter languages that have values for rendering
-  const validLanguages = usedLanguages.filter(lang => lang.value && lang.value.trim());
+  const validLanguages = usedLanguages.filter(
+    (lang) => lang.value && lang.value.trim()
+  );
 
   return (
     <FormProvider {...form}>
@@ -1015,31 +1026,37 @@ export default function AdministrativeForm({
                     <FormLabel variant="mandatory">{t("jenis")}</FormLabel>
                     <div className="space-y-1">
                       {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                        <p className="text-sm text-red-600">
+                          {t("pilih_bahasa")}
+                        </p>
                       ) : (
-                        validLanguages.map((lang: { value: string }, langIndex: number) => (
-                          <FormField
-                            control={form.control}
-                            key={`${field.id}-jenis-${langIndex}`}
-                            name={`objects.${index}.jenis.${lang.value}`}
-                            render={({ field: jenisField }) => (
-                              <FormItem>
-                                <div className="flex items-center gap-2">
-                                  <FormControl>
-                                    <Input
-                                      placeholder={`${t("bahasa")} ${
-                                        languages.find(l => l.value === lang.value)?.label || lang.value
-                                      }`}
-                                      {...jenisField}
-                                      value={jenisField.value || ""}
-                                    />
-                                  </FormControl>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        ))
+                        validLanguages.map(
+                          (lang: { value: string }, langIndex: number) => (
+                            <FormField
+                              control={form.control}
+                              key={`${field.id}-jenis-${langIndex}`}
+                              name={`objects.${index}.jenis.${lang.value}`}
+                              render={({ field: jenisField }) => (
+                                <FormItem>
+                                  <div className="flex items-center gap-2">
+                                    <FormControl>
+                                      <Input
+                                        placeholder={`${t("bahasa")} ${
+                                          languages.find(
+                                            (l) => l.value === lang.value
+                                          )?.label || lang.value
+                                        }`}
+                                        {...jenisField}
+                                        value={jenisField.value || ""}
+                                      />
+                                    </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )
+                        )
                       )}
                     </div>
                   </div>
@@ -1141,31 +1158,37 @@ export default function AdministrativeForm({
                         <FormLabel>{t("id_lain")}</FormLabel>
                         <div className="space-y-1">
                           {validLanguages.length === 0 ? (
-                            <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                            <p className="text-sm text-red-600">
+                              {t("pilih_bahasa")}
+                            </p>
                           ) : (
-                            validLanguages.map((lang: { value: string }, langIndex: number) => (
-                              <FormField
-                                control={form.control}
-                                key={`${field.id}-id_lain-${langIndex}`}
-                                name={`objects.${index}.id_lain.${lang.value}`}
-                                render={({ field: idLainField }) => (
-                                  <FormItem>
-                                    <div className="flex items-center gap-2">
-                                      <FormControl>
-                                        <Input
-                                          placeholder={`${t("bahasa")} ${
-                                            languages.find(l => l.value === lang.value)?.label || lang.value
-                                          }`}
-                                          {...idLainField}
-                                          value={idLainField.value || ""}
-                                        />
-                                      </FormControl>
-                                    </div>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            ))
+                            validLanguages.map(
+                              (lang: { value: string }, langIndex: number) => (
+                                <FormField
+                                  control={form.control}
+                                  key={`${field.id}-id_lain-${langIndex}`}
+                                  name={`objects.${index}.id_lain.${lang.value}`}
+                                  render={({ field: idLainField }) => (
+                                    <FormItem>
+                                      <div className="flex items-center gap-2">
+                                        <FormControl>
+                                          <Input
+                                            placeholder={`${t("bahasa")} ${
+                                              languages.find(
+                                                (l) => l.value === lang.value
+                                              )?.label || lang.value
+                                            }`}
+                                            {...idLainField}
+                                            value={idLainField.value || ""}
+                                          />
+                                        </FormControl>
+                                      </div>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              )
+                            )
                           )}
                         </div>
                       </div>
@@ -1258,9 +1281,9 @@ export default function AdministrativeForm({
                       nama_resp: "",
                       nip: "",
                       peran: "Pelaksana Kalibrasi",
-                      main_signer: false,
-                      signature: false,
-                      timestamp: false,
+                      main_signer: 0,
+                      signature: 0,
+                      timestamp: 0,
                     })
                   }
                 >
@@ -1330,9 +1353,9 @@ export default function AdministrativeForm({
                       nama_resp: "",
                       nip: "",
                       peran: "Penyelia Kalibrasi",
-                      main_signer: false,
-                      signature: false,
-                      timestamp: false,
+                      main_signer: 0,
+                      signature: 0,
+                      timestamp: 0,
                     })
                   }
                 >
@@ -1629,7 +1652,8 @@ export default function AdministrativeForm({
                                   >
                                     {field.value
                                       ? countries.find(
-                                          (country) => country.value === field.value
+                                          (country) =>
+                                            country.value === field.value
                                         )?.label
                                       : ""}
                                     <ChevronsUpDown className="opacity-50" />

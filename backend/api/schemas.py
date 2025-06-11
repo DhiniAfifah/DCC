@@ -122,7 +122,7 @@ class CommentFile(BaseModel):
 
 class Comment(BaseModel):
     title: Optional[str] = None
-    desc: Optional[str] = None
+    desc: MultilangStr
     has_file: bool = False
     files: Optional[List[CommentFile]] = None
 

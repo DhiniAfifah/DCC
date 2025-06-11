@@ -648,7 +648,8 @@ def generate_xml(dcc, table_data):
                 # with tag('dcc:cryptElectronicSignature'): pass
                 # with tag('dcc:cryptElectronicTimeStamp'): pass
                 
-            #RESP_PERSON    
+            #RESP_PERSON 
+            # Iterasi untuk penyelia
             with tag('dcc:respPersons'): 
                 for resp in dcc.responsible_persons.pelaksana:
                     with tag('dcc:respPerson'): 
@@ -659,9 +660,9 @@ def generate_xml(dcc, table_data):
                             # with tag('dcc:name'): 
                             with tag('dcc:content'): text(resp.nip)
                         with tag('dcc:role'): text(resp.peran)
-                        with tag('dcc:mainSigner'): text(str(resp.main_signer))
-                        with tag('dcc:cryptElectronicSignature'): text(str(resp.signature))
-                        with tag('dcc:cryptElectronicTimeStamp'): text(str(resp.timestamp))
+                        with tag('dcc:mainSigner'): text(int(resp.main_signer))
+                        with tag('dcc:cryptElectronicSignature'): text(int(resp.signature))
+                        with tag('dcc:cryptElectronicTimeStamp'): text(int(resp.timestamp))
 
                 # Iterasi untuk penyelia
                 for resp in dcc.responsible_persons.penyelia:
@@ -673,9 +674,9 @@ def generate_xml(dcc, table_data):
                             # with tag('dcc:name'): 
                             with tag('dcc:content'): text(resp.nip)
                         with tag('dcc:role'): text(resp.peran)
-                        with tag('dcc:mainSigner'): text(str(resp.main_signer))
-                        with tag('dcc:cryptElectronicSignature'): text(str(resp.signature))
-                        with tag('dcc:cryptElectronicTimeStamp'): text(str(resp.timestamp))
+                        with tag('dcc:mainSigner'): text(int(resp.main_signer))
+                        with tag('dcc:cryptElectronicSignature'): text(int(resp.signature))
+                        with tag('dcc:cryptElectronicTimeStamp'): text(int(resp.timestamp))
 
                 # Iterasi untuk kepala laboratorium
                 with tag('dcc:respPerson'): 
@@ -686,9 +687,9 @@ def generate_xml(dcc, table_data):
                         # with tag('dcc:name'): 
                         with tag('dcc:content'): text(dcc.responsible_persons.kepala.nip)
                     with tag('dcc:role'): text(dcc.responsible_persons.kepala.peran)
-                    with tag('dcc:mainSigner'): text(str(dcc.responsible_persons.kepala.main_signer))
-                    with tag('dcc:cryptElectronicSignature'): text(str(dcc.responsible_persons.kepala.signature))
-                    with tag('dcc:cryptElectronicTimeStamp'): text(str(dcc.responsible_persons.kepala.timestamp))
+                    with tag('dcc:mainSigner'): text(int(dcc.responsible_persons.kepala.main_signer))
+                    with tag('dcc:cryptElectronicSignature'): text(int(dcc.responsible_persons.kepala.signature))
+                    with tag('dcc:cryptElectronicTimeStamp'): text(int(dcc.responsible_persons.kepala.timestamp))
 
                 # Iterasi untuk direktur
                 with tag('dcc:respPerson'): 
@@ -699,9 +700,9 @@ def generate_xml(dcc, table_data):
                         # with tag('dcc:name'): 
                         with tag('dcc:content'): text(dcc.responsible_persons.direktur.nip)
                     with tag('dcc:role'): text(dcc.responsible_persons.direktur.peran)
-                    with tag('dcc:mainSigner'): text(str(dcc.responsible_persons.direktur.main_signer))
-                    with tag('dcc:cryptElectronicSignature'): text(str(dcc.responsible_persons.direktur.signature))
-                    with tag('dcc:cryptElectronicTimeStamp'): text(str(dcc.responsible_persons.direktur.timestamp))
+                    with tag('dcc:mainSigner'): text(int(dcc.responsible_persons.direktur.main_signer))
+                    with tag('dcc:cryptElectronicSignature'): text(int(dcc.responsible_persons.direktur.signature))
+                    with tag('dcc:cryptElectronicTimeStamp'): text(int(dcc.responsible_persons.direktur.timestamp))
         
             #owner
             with tag('dcc:customer'):
@@ -983,7 +984,6 @@ def generate_xml(dcc, table_data):
                                                                 text(uncertainty_data['distribution'])
                                                     uncertainty_attached = True 
 
-
                                                             
         # COMMENT
         if dcc.comment and dcc.comment.has_file:  
@@ -991,7 +991,8 @@ def generate_xml(dcc, table_data):
                 with tag('dcc:name'):
                     with tag('dcc:content'): text(dcc.comment.title or "") 
                 with tag('dcc:description'):
-                    with tag('dcc:content'): text(dcc.comment.desc or "")
+                    for lang in dcc.administrative_data.used_languages:
+                        with tag('dcc:content', lang=lang): text(dcc.comment.desc.root.get(lang, "") or "")
                         
                 if dcc.comment.files: 
                     for file in dcc.comment.files:

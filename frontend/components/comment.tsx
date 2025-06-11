@@ -11,12 +11,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/context/LanguageContext";
@@ -238,27 +233,36 @@ export default function Comment({
                 {validLanguages.length === 0 ? (
                   <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
                 ) : (
-                  validLanguages.map((lang: { value: string }, langIndex: number) => (
-                    <FormField
-                      control={form.control}
-                      key={`comment-${langIndex}`}
-                      name="comment.desc"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Textarea 
-                              placeholder={`${t("bahasa")} ${
-                                languages.find((l) => l.value === lang.value)?.label || lang.value
-                              }`}
-                              {...field}
-                              value={field.value || ""}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  ))
+                  validLanguages.map(
+                    (lang: { value: string }, langIndex: number) => (
+                      <div
+                        key={`comment-wrapper-${langIndex}`}
+                        className="mb-1"
+                      >
+                        <FormField
+                          control={form.control}
+                          key={`comment-${langIndex}`}
+                          name={`comment.desc.${lang.value}`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Textarea
+                                  placeholder={`${t("bahasa")} ${
+                                    languages.find(
+                                      (l) => l.value === lang.value
+                                    )?.label || lang.value
+                                  }`}
+                                  {...field}
+                                  value={field.value || ""}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )
+                  )
                 )}
               </div>
             </div>
