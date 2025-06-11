@@ -107,6 +107,7 @@ const FormSchema = z.object({
     z.object({
       jenis_kondisi: z.string().min(1, { message: empty_field_error_message }),
       desc: z.record(z.string()).optional(),
+      refType: z.string().min(1, { message: empty_field_error_message }),
       tengah: z.string().min(1, { message: empty_field_error_message }),
       tengah_unit: z.object({
         prefix: z.string().optional(),

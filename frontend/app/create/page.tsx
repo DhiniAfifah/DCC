@@ -69,9 +69,9 @@ export default function CreateDCC() {
           nama_resp: "",
           nip: "",
           peran: "Pelaksana Kalibrasi",
-          main_signer: "false",
-          signature: "false",
-          timestamp: "false",
+          main_signer: "0",
+          signature: "0",
+          timestamp: "0",
         },
       ],
       penyelia: [
@@ -79,26 +79,26 @@ export default function CreateDCC() {
           nama_resp: "",
           nip: "",
           peran: "Penyelia Kalibrasi",
-          main_signer: "false",
-          signature: "false",
-          timestamp: "false",
+          main_signer: "0",
+          signature: "0",
+          timestamp: "0",
         },
       ],
       kepala: {
         nama_resp: "",
         nip: "",
         peran: "",
-        main_signer: "false",
-        signature: "false",
-        timestamp: "false",
+        main_signer: "0",
+        signature: "0",
+        timestamp: "0",
       },
       direktur: {
         nama_resp: "",
         nip: "",
         peran: "",
-        main_signer: "true",
-        signature: "true",
-        timestamp: "true",
+        main_signer: "1",
+        signature: "1",
+        timestamp: "1",
       },
     },
     owner: {
@@ -314,9 +314,10 @@ export default function CreateDCC() {
       ...formData,
       administrative_data: {
         ...formData.administrative_data,
-        used_languages: formData.administrative_data.used_languages
-          ?.filter(lang => lang.value && lang.value.trim() !== "")
-          .map(lang => lang.value) || [],
+        used_languages:
+          formData.administrative_data.used_languages
+            ?.filter((lang) => lang.value && lang.value.trim() !== "")
+            .map((lang) => lang.value) || [],
         mandatory_languages:
           formData.administrative_data.mandatory_languages.map(
             (lang) => lang.value

@@ -48,33 +48,33 @@ class Pelaksana(BaseModel):
     nama_resp: str
     nip: str
     peran: str = "Pelaksana"
-    main_signer: bool = False
-    signature: bool = False
-    timestamp: bool = False
+    main_signer: bool = 0
+    signature: bool = 0
+    timestamp: bool = 0
 
 class Penyelia(BaseModel):
     nama_resp: str
     nip: str
     peran: str = "Penyelia"
-    main_signer: bool = False
-    signature: bool = False
-    timestamp: bool = False
+    main_signer: bool = 0
+    signature: bool = 0
+    timestamp: bool = 0
 
 class KepalaLaboratorium(BaseModel):
     nama_resp: str
     nip: str
     peran: str  
-    main_signer: bool = False
-    signature: bool = False
-    timestamp: bool = False
+    main_signer: bool = 0
+    signature: bool = 0
+    timestamp: bool = 0
 
 class Direktur(BaseModel):
     nama_resp: str
     nip: str
     peran: str  
-    main_signer: bool = True
-    signature: bool = True
-    timestamp: bool = True
+    main_signer: bool = 1
+    signature: bool = 1
+    timestamp: bool = 1
 
 class ResponsiblePersons(BaseModel):
     pelaksana: List[Pelaksana]
@@ -93,8 +93,8 @@ class OwnerIdentity(BaseModel):
     negara_cust: str
     
 class Formula(BaseModel):
-    latex: str
-    mathml: str
+    latex: Optional[str] = None 
+    mathml: Optional[str] = None
 
 class Image(BaseModel):
     caption: Optional[str] = None
@@ -148,6 +148,7 @@ class Condition(BaseModel):
     rentang: str  
     rentang_unit: UnitDetail 
     tengah_unit: UnitDetail
+    refType: Optional[str] = None
 
 class Statements(BaseModel):
     values: MultilangStr

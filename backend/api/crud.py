@@ -910,6 +910,8 @@ def generate_xml(dcc, table_data):
                                         if col_name == "Uncertainty" and hasattr(result, 'uncertainty'):
                                             if flat_index < len(flat_columns):
                                                 numbers, _ = flat_columns[flat_index]
+                                                numbers = [num.replace('-', '') for num in numbers] #mengahpus tanda '-'
+                                                
                                                 uncertainty_data = {
                                                     'values': numbers,
                                                     'factor': result.uncertainty.factor or "2",
@@ -933,7 +935,6 @@ def generate_xml(dcc, table_data):
                                         # Tentukan apakah ini kolom target untuk ketidakpastian
                                         is_target = False
                                         if ref_type == "basic_measurementError_error":
-                                            # Ubah refType menjadi basic_measurementError
                                             ref_type = "basic_measurementError"
                                             is_target = True
                                         elif not uncertainty_attached and ref_type == "basic_nominalValue":
@@ -955,6 +956,8 @@ def generate_xml(dcc, table_data):
                                                         break
                                                     numbers, units = flat_columns[flat_index]
                                                     flat_index += 1
+                                                    
+                                                    numbers = [num.replace('-', '') for num in numbers]
                                                     
                                                     with tag('si:valueXMLList'):
                                                         text(" ".join(numbers))
@@ -978,7 +981,7 @@ def generate_xml(dcc, table_data):
                                                                 text(uncertainty_data['probability'])
                                                             with tag('si:distributionXMLList'):
                                                                 text(uncertainty_data['distribution'])
-                                                    uncertainty_attached = True  # Tandai sudah ditempelkan
+                                                    uncertainty_attached = True 
 
 
                                                             
