@@ -72,6 +72,7 @@
                   <dcc:issuer>calibrationLaboratory</dcc:issuer>
                   <dcc:value>8976543097</dcc:value>
                   <dcc:name>
+                     <dcc:content lang="id">apa</dcc:content>
                      <dcc:content lang="en">what</dcc:content>
                   </dcc:name>
                </dcc:identification>

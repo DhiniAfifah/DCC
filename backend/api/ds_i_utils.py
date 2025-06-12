@@ -175,15 +175,17 @@ def d_si(expr: str) -> str:
 def convert_unit(unit):
     """Convert LaTeX or DS-I unit format to human-readable format."""
     
+    all_units = list(base_units.items()) + list(prefixes.items()) + list(binary_prefixes.items())
+    
+    # Ganti unit dasar sesuai dengan yang ada di dictionary (urutkan agar yang lebih spesifik terlebih dahulu)
+    for base_unit, latex_unit in sorted(base_units.items(), key=lambda item: len(item[1]), reverse=True):
+        if latex_unit in unit:
+            unit = unit.replace(latex_unit, base_unit)  # Ganti unit dasar dengan unit standar
+    
     # Ganti prefix sesuai dengan yang ada di dictionary
     for prefix, latex_prefix in prefixes.items():
         if latex_prefix in unit:
             unit = unit.replace(latex_prefix, prefix)
-    
-    # Ganti unit dasar sesuai dengan yang ada di dictionary
-    for base_unit, latex_unit in base_units.items():
-        if latex_unit in unit:
-            unit = unit.replace(latex_unit, base_unit)  
     
     # Mengganti binary prefix
     for binary_prefix, latex_binary_prefix in binary_prefixes.items():

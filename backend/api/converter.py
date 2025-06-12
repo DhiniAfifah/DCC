@@ -498,9 +498,14 @@ def convert_xml_to_excel(xml_file_path: str):
 
                         values = value_elem.text.strip().split() if value_elem is not None else []
                         units = unit_elem.text.strip().split() if unit_elem is not None else []
-                        
-                        # Convert unit and append each value with its unit
-                        quantity_data.append([(v, convert_unit(unit)) for v, unit in zip(values, units)])
+
+                        # Handle the case where there's only one unit for all values
+                        if len(units) == 1:
+                            unit = units[0]
+                            quantity_data.append([(v, convert_unit(unit)) for v in values])
+                        else:
+                            quantity_data.append([(v, convert_unit(unit)) for v, unit in zip(values, units)])
+
                 else:
                     real_lists = q.findall('si:realListXMLList', ns)
                     for rl in real_lists:
@@ -509,9 +514,13 @@ def convert_xml_to_excel(xml_file_path: str):
 
                         values = value_elem.text.strip().split() if value_elem is not None else []
                         units = unit_elem.text.strip().split() if unit_elem is not None else []
-                        
-                        # Convert unit and append each value with its unit
-                        quantity_data.append([(v, convert_unit(unit)) for v, unit in zip(values, units)])
+
+                        # Handle the case where there's only one unit for all values
+                        if len(units) == 1:
+                            unit = units[0]
+                            quantity_data.append([(v, convert_unit(unit)) for v in values])
+                        else:
+                            quantity_data.append([(v, convert_unit(unit)) for v, unit in zip(values, units)])
 
                 all_quantity_data.append(quantity_data)
                 if quantity_data:
@@ -537,7 +546,7 @@ def convert_xml_to_excel(xml_file_path: str):
                 header_cell.font = Font(bold=True)
                 header_cell.alignment = Alignment(horizontal="center")
                 header_range.append((col, col + span * 2 - 1))
-                col += span * 2 
+                col += span * 2
 
             for start_col, end_col in header_range:
                 if start_col > end_col:  # Ensure start_col is less than end_col
@@ -562,6 +571,7 @@ def convert_xml_to_excel(xml_file_path: str):
 
             apply_borders(ws, row - max_rows, row - 1, 1, total_columns)
             row += 1
+
 
 
 

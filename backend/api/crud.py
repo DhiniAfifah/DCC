@@ -438,7 +438,7 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         uploads_dir = os.path.join(current_dir, 'uploads')
         excel_path = os.path.join(uploads_dir, excel_filename)
-        excel_path = os.path.abspath(excel_path)  # Pastikan path absolut
+        excel_path = os.path.abspath(excel_path) 
         
         logging.info(f"Membuka file Excel: {excel_path}")
         if not os.path.exists(excel_path):
@@ -539,7 +539,6 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
         logging.error(f"Error processing Excel file: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
     finally:
-        # Pastikan untuk membersihkan COM objects dan menutup Excel
         try:
             if 'wb' in locals() and wb:
                 wb.Close(False)
@@ -627,7 +626,8 @@ def generate_xml(dcc, table_data):
                                 with tag("dcc:issuer"): text(obj.item_issuer)
                                 with tag("dcc:value"): text(obj.seri_item)
                                 with tag("dcc:name"):
-                                    with tag("dcc:content", lang=lang): text(obj.id_lain.root.get(lang, ""))
+                                    for lang in dcc.administrative_data.used_languages:
+                                        with tag("dcc:content", lang=lang): text(obj.id_lain.root.get(lang, ""))
             
             #MUTLAK                    
             with tag('dcc:calibrationLaboratory'): 
@@ -878,10 +878,7 @@ def generate_xml(dcc, table_data):
                     input_tables = prepare_input_tables(dcc)
                     
                     for result_idx, result in enumerate(dcc.results):
-                        if isinstance(result.parameters, list) and len(result.parameters) > 0:
-                            parameter_name = result.parameters[0]
-                        else:
-                            parameter_name = result.parameters
+                        parameter_name = result.parameters[0] if isinstance(result.parameters, list) else result.parameters
                         
                         if parameter_name not in table_data:
                             logging.warning(f"Table '{parameter_name}' not found in Excel data")
@@ -900,18 +897,17 @@ def generate_xml(dcc, table_data):
                             with tag('dcc:data'):
                                 with tag('dcc:list'):
                                     flat_index = 0
-                                    uncertainty_data = None  # Menyimpan data ketidakpastian
-                                    uncertainty_attached = False  # Penanda apakah uncertainty sudah ditempelkan
+                                    uncertainty_data = None  
+                                    uncertainty_attached = False
                                     
-                                    # Loop pertama: kumpulkan data ketidakpastian jika ada
+                                    # Proses ketidakpastian (uncertainty) jika ada
                                     for col_idx, col_name in enumerate(column_names):
                                         subcol_count = subcol_counts[col_idx]
                                         
-                                        # Cari kolom Uncertainty dan simpan datanya
                                         if col_name == "Uncertainty" and hasattr(result, 'uncertainty'):
                                             if flat_index < len(flat_columns):
                                                 numbers, _ = flat_columns[flat_index]
-                                                numbers = [num.replace('-', '') for num in numbers] #mengahpus tanda '-'
+                                                numbers = [num.replace('-', '') for num in numbers]
                                                 
                                                 uncertainty_data = {
                                                     'values': numbers,
@@ -920,69 +916,70 @@ def generate_xml(dcc, table_data):
                                                     'distribution': result.uncertainty.distribution or "normal"
                                                 }
                                             flat_index += subcol_count
-                                            break  # Keluar setelah menemukan Uncertainty
+                                            break
                                     
-                                    # Loop kedua: proses semua kolom
+                                    # Proses semua kolom data
                                     for col_idx, col_name in enumerate(column_names):
                                         subcol_count = subcol_counts[col_idx]
                                         
                                         # Skip kolom Uncertainty
                                         if col_name == "Uncertainty":
                                             continue
-                                            
-                                        # Dapatkan refType yang benar
-                                        ref_type = result.columns[col_idx].refType if col_idx < len(result.columns) else "basic_measuredValue"
                                         
-                                        # Tentukan apakah ini kolom target untuk ketidakpastian
+                                        ref_type = result.columns[col_idx].refType if col_idx < len(result.columns) else "basic_measuredValue"
                                         is_target = False
+                                        
+                                        # Penanganan refType untuk kolom dengan measurement error
                                         if ref_type == "basic_measurementError_error":
                                             ref_type = "basic_measurementError"
                                             is_target = True
-                                        elif not uncertainty_attached and ref_type == "basic_nominalValue":
+                                        elif ref_type == "basic_measurementError_correction":
+                                            ref_type = "basic_measurementError"
                                             is_target = True
                                         
                                         with tag('dcc:quantity', refType=ref_type):
-                                            # Tulis nama kolom
+                                            # Nama kolom
                                             with tag('dcc:name'):
                                                 for lang in dcc.administrative_data.used_languages:
                                                     text_content = result.columns[col_idx].kolom.root.get(lang, "") if col_idx < len(result.columns) else col_name
                                                     with tag('dcc:content', lang=lang):
                                                         text(text_content)
                                             
-                                            # Tulis data utama
+                                            # Data utama
                                             with tag('si:realListXMLList'):
-                                                # Tulis nilai dan satuan
                                                 for _ in range(subcol_count):
                                                     if flat_index >= len(flat_columns):
                                                         break
                                                     numbers, units = flat_columns[flat_index]
                                                     flat_index += 1
                                                     
-                                                    numbers = [num.replace('-', '') for num in numbers]
+                                                    # Penanganan measurement error correction
+                                                    if ref_type == "basic_measurementError" and ref_type == "basic_measurementError_correction":
+                                                        numbers = [str(float(num) * -1) for num in numbers]
                                                     
                                                     with tag('si:valueXMLList'):
                                                         text(" ".join(numbers))
                                                     with tag('si:unitXMLList'):
-                                                        # Pastikan units adalah list
                                                         if isinstance(units, list) and len(units) > 0:
-                                                            # Gunakan satuan pertama untuk semua nilai
                                                             text(d_si(units[0]) if units[0] else "")
                                                         else:
                                                             text("")
-                                                
-                                                # Tambahkan ketidakpastian jika ini kolom target
-                                                if is_target and uncertainty_data and not uncertainty_attached:
-                                                    with tag('si:measurementUncertaintyUnivariateXMLList'):
-                                                        with tag('si:expandedMUXMLList'):
-                                                            with tag('si:valueExpandedMUXMLList'):
-                                                                text(" ".join(uncertainty_data['values']))
-                                                            with tag('si:coverageFactorXMLList'):
-                                                                text(uncertainty_data['factor'])
-                                                            with tag('si:coverageProbabilityXMLList'):
-                                                                text(uncertainty_data['probability'])
-                                                            with tag('si:distributionXMLList'):
-                                                                text(uncertainty_data['distribution'])
-                                                    uncertainty_attached = True 
+                                            
+                                            # Tambahkan ketidakpastian jika kolom ini adalah target (measurement error)
+                                            if is_target and uncertainty_data and not uncertainty_attached:
+                                                with tag('si:measurementUncertaintyUnivariateXMLList'):
+                                                    with tag('si:expandedMUXMLList'):
+                                                        with tag('si:valueExpandedMUXMLList'):
+                                                            text(" ".join(uncertainty_data['values']))
+                                                        with tag('si:coverageFactorXMLList'):
+                                                            text(uncertainty_data['factor'])
+                                                        with tag('si:coverageProbabilityXMLList'):
+                                                            text(uncertainty_data['probability'])
+                                                        with tag('si:distributionXMLList'):
+                                                            text(uncertainty_data['distribution'])
+                                                uncertainty_attached = True
+
+
 
                                                             
         # COMMENT
@@ -1098,7 +1095,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                 "has_formula": method.has_formula,
                 "formula": method.formula.dict() if method.has_formula and method.formula else None,
                 "has_image": method.has_image,
-                "image": method.image.dict() if method.has_image and method.image else None
+                "image": method.image.dict() if method.has_image and method.image else None,
+                "refType": method.refType
             }
             methods_data.append(method_data)
         
@@ -1136,6 +1134,16 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                 "seri_item": obj.seri_item,
                 "id_lain": obj.id_lain.root,
             })
+            
+        owner_data = {
+            "nama_cust": dcc.owner.nama_cust,
+            "jalan_cust": dcc.owner.jalan_cust,
+            "no_jalan_cust": dcc.owner.no_jalan_cust,
+            "kota_cust": dcc.owner.kota_cust,
+            "state_cust": dcc.owner.state_cust,
+            "pos_cust": dcc.owner.pos_cust,
+            "negara_cust": dcc.owner.negara_cust
+        }
 
         equipments_data = []
         for eq in dcc.equipments:
@@ -1166,16 +1174,17 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             software_version=dcc.version,
             administrative_data=administrative_data_dict,
             Measurement_TimeLine=measurement_timeline_data,
-            objects_description=json.dumps(objects_description),
-            responsible_persons=json.dumps(responsible_persons_data),
-            owner=json.dumps(dcc.owner.dict()),
-            methods=json.dumps(methods_data),
-            equipments=json.dumps(equipments_data),
+            objects_description=objects_description,
+            responsible_persons=responsible_persons_data,
+            owner=owner_data,
+            methods=methods_data,
+            equipments=equipments_data,
             conditions=json.dumps(conditions_data), 
             excel=dcc.excel,
             sheet_name=dcc.sheet_name,
             statement=json.dumps(statements_data),
             comment=comment_data,
+            results=json.dumps(results_data),
         )
 
         #logging.info(f"Saving DCC: {dcc.sertifikat} to the database")

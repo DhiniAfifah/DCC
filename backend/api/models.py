@@ -21,6 +21,7 @@ class DCC(Base):
     comment = Column(JSON, nullable=True) 
     excel = Column(String, nullable=False)  
     sheet_name = Column(String, nullable=False)
+    results = Column(JSON)
     
 class XML(Base):
     __tablename__ = "uploaded_files"
