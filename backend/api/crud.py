@@ -318,74 +318,74 @@ def populate_template(dcc_data, word_path, new_word_path):
 
 
 # Memproses data tabel dari Excel dan input pengguna
-def some_function_to_get_table_data(dcc):
-    logging.info(f"Processing table data for DCC: {dcc.sertifikat}")
+#def some_function_to_get_table_data(dcc):
+#    logging.info(f"Processing table data for DCC: {dcc.sertifikat}")
     
     # Dictionary to store the processed table data
-    table_data = {}
+ #   table_data = {}
     
     # Get paths
-    paths = get_project_paths(dcc)
-    excel_path = str(paths['excel'])
+  #  paths = get_project_paths(dcc)
+   # excel_path = str(paths['excel'])
     
     # Initialize result tables based on user input from frontend
-    input_tables = {}
+    #input_tables = {}
     
     # Process the result fields from the form
-    for result in dcc.results:
+    #for result in dcc.results:
         # Get the parameter name (table name)
-        parameter_name = result.parameter
+     #   parameter_name = result.parameter
         
         # Create mapping of column names to number of sub-columns
-        column_mapping = {}
+      #  column_mapping = {}
         
         # Add all regular columns
-        for column in result.columns:
+       # for column in result.columns:
             # Get the column name and number of sub-columns
-            column_name = column.kolom
+        #    column_name = column.kolom
             # Convert number of sub-columns to integer if it's a string
-            num_subcols = int(column.real_list) if isinstance(column.real_list, str) else len(column.real_list)
-            column_mapping[column_name] = num_subcols
+         #   num_subcols = int(column.real_list) if isinstance(column.real_list, str) else len(column.real_list)
+          #  column_mapping[column_name] = num_subcols
             
         # Add uncertainty column (always present)
-        if hasattr(result, 'uncertainty'):
-            uncertainty_column = "Uncertainty"
-            column_mapping[uncertainty_column] = 1
+        #if hasattr(result, 'uncertainty'):
+         #   uncertainty_column = "Uncertainty"
+          #  column_mapping[uncertainty_column] = 1
         
         # Add table to input tables
-        input_tables[parameter_name] = column_mapping
+        #input_tables[parameter_name] = column_mapping
     
     # Process the Excel data using the helper function
-    if hasattr(dcc, 'sheet_name') and dcc.sheet_name:
-        try:
-            processed_data = process_excel_data(excel_path, dcc.sheet_name, input_tables)
-            table_data.update(processed_data)
-            logging.info(f"Successfully processed {len(processed_data)} tables from Excel")
-        except Exception as e:
-            logging.error(f"Error processing Excel data: {str(e)}")
-            raise
+    #if hasattr(dcc, 'sheet_name') and dcc.sheet_name:
+     #   try:
+      #      processed_data = process_excel_data(excel_path, dcc.sheet_name, input_tables)
+       #     table_data.update(processed_data)
+        #    logging.info(f"Successfully processed {len(processed_data)} tables from Excel")
+        #except Exception as e:
+         #   logging.error(f"Error processing Excel data: {str(e)}")
+          #  raise
     
     # Add uncertainty data from user input (not from Excel)
-    for result in dcc.results:
-        parameter_name = result.parameter
+    #for result in dcc.results:
+     #   parameter_name = result.parameter
         
-        if parameter_name in table_data and hasattr(result, 'uncertainty'):
+      #  if parameter_name in table_data and hasattr(result, 'uncertainty'):
             # Create uncertainty data structure
-            uncertainty_data = []
+       #     uncertainty_data = []
             
             # If uncertainty value is provided
-            if hasattr(result.uncertainty, 'real_list') and result.uncertainty.real_list:
+        #    if hasattr(result.uncertainty, 'real_list') and result.uncertainty.real_list:
                 # Process values and units
-                values = result.uncertainty.real_list.split() if isinstance(result.uncertainty.real_list, str) else [str(val) for val in result.uncertainty.real_list]
-                units = [""] * len(values)  # Default empty units
+         #       values = result.uncertainty.real_list.split() if isinstance(result.uncertainty.real_list, str) else [str(val) for val in result.uncertainty.real_list]
+          #      units = [""] * len(values)  # Default empty units
                 
-                uncertainty_data.append((values, units))
+           #     uncertainty_data.append((values, units))
                 
                 # Add the uncertainty data to the table
-                table_data[parameter_name].append(uncertainty_data)
+            #    table_data[parameter_name].append(uncertainty_data)
     
-    logging.info(f"Completed table data processing, returning {len(table_data)} tables")
-    return table_data
+    #logging.info(f"Completed table data processing, returning {len(table_data)} tables")
+    #return table_data
 
 
 # Mempersiapkan struktur tabel dari data formulir pengguna
@@ -418,10 +418,10 @@ def prepare_input_tables(dcc):
                 
             column_mapping[column_name] = num_subcols
         
-        # Tambahkan kolom ketidakpastian jika ada
-        if hasattr(result, 'uncertainty') and result.uncertainty:
-            uncertainty_column = "Uncertainty"
-            column_mapping[uncertainty_column] = 1
+        # Periksa apakah kolom Uncertainty didefinisikan dalam result.columns
+        uncertainty_defined = any(col.kolom == "Uncertainty" for col in result.columns)
+        if uncertainty_defined and hasattr(result, 'uncertainty') and result.uncertainty:
+            column_mapping["Uncertainty"] = 1
         
         input_tables[parameter_name] = column_mapping
     
@@ -452,6 +452,7 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
         
         try:
             wb = excel.Workbooks.Open(excel_path)
+            logging.info(f"File Excel berhasil dibuka: {excel_path}")
         except Exception as e:
             logging.error(f"Error opening Excel file: {e}")
             raise Exception(f"Failed to open Excel file: {e}")
@@ -471,12 +472,14 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
 
         max_columns = ws.UsedRange.Columns.Count
         max_rows = ws.UsedRange.Rows.Count
+        logging.info(f"Excel sheet loaded with {max_rows} rows and {max_columns} columns.")
 
         tables = []
         in_table = False
         first_row, last_row = None, None
 
         # Detecting rows and columns in the table
+        logging.info("Detecting table rows and columns...")
         for row in range(1, max_rows + 1):
             filled_cells = [ws.Cells(row, col).Value for col in range(1, max_columns + 1)]
             filled_cells = [cell for cell in filled_cells if cell not in [None, ""]]
@@ -494,8 +497,11 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
         if in_table:
             tables.append((first_row, last_row))
 
+        logging.info(f"Table detection completed. Found {len(tables)} tables.")
+
         # Extracting table data
         table_names = list(input_tables.keys())
+        logging.info(f"Processing {len(table_names)} tables as per input_tables.")
 
         for idx, (first_row, last_row) in enumerate(tables):
             table_name = table_names[idx] if idx < len(table_names) else f"Table {idx + 1}"
@@ -504,6 +510,7 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
             subcol_counts = list(column_map.values())
 
             extracted_data = []
+            logging.info(f"Extracting data for table: {table_name} from row {first_row} to {last_row}")
 
             for col in range(1, max_columns + 1):
                 numbers = []
@@ -514,7 +521,7 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
                         numbers.append(str(value))
                         unit = ws.Cells(row, col + 1).Value
                         if isinstance(unit, str):
-                            converted_unit = d_si(unit) #DS-I
+                            converted_unit = d_si(unit)  # DS-I
                             units.append(converted_unit)
                         else:
                             units.append(None)
@@ -523,10 +530,12 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
                     extracted_data.append((numbers, units))
 
             table_data[table_name] = extracted_data
+            logging.debug(f"Data extracted for {table_name}: {extracted_data}")
 
         wb.Close(False)
         excel.Quit()
 
+        logging.info(f"Data extraction completed for {len(table_data)} tables.")
         return table_data
 
     except FileNotFoundError as e:
@@ -548,6 +557,7 @@ def process_excel_data(excel_filename, sheet_name, input_tables):
             logging.error(f"Error during cleanup: {str(e)}")
 
         pythoncom.CoUninitialize()
+
 
 
 
@@ -875,24 +885,22 @@ def generate_xml(dcc, table_data):
                                         
                 # Results from Excel and user input
                 with tag('dcc:results'):
-                    input_tables = prepare_input_tables(dcc)
-                    
                     for result_idx, result in enumerate(dcc.results):
                         parameter_name = result.parameters[0] if isinstance(result.parameters, list) else result.parameters
                         
+                        # Pastikan parameter_name ada dalam table_data
                         if parameter_name not in table_data:
                             logging.warning(f"Table '{parameter_name}' not found in Excel data")
                             continue
                         
                         flat_columns = table_data[parameter_name]
-                        column_map = input_tables.get(parameter_name, {})
-                        column_names = list(column_map.keys())
-                        subcol_counts = list(column_map.values())
                         
                         with tag('dcc:result'):
+                            # Nama parameter dalam berbagai bahasa
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(result.parameters.root.get(lang, "") or "")
+                                    with tag('dcc:content', lang=lang): 
+                                        text(result.parameters.root.get(lang, "") or "")
                             
                             with tag('dcc:data'):
                                 with tag('dcc:list'):
@@ -901,10 +909,9 @@ def generate_xml(dcc, table_data):
                                     uncertainty_attached = False
                                     
                                     # Proses ketidakpastian (uncertainty) jika ada
-                                    for col_idx, col_name in enumerate(column_names):
-                                        subcol_count = subcol_counts[col_idx]
-                                        
-                                        if col_name == "Uncertainty" and hasattr(result, 'uncertainty'):
+                                    for col_idx, col_name in enumerate(result.columns):
+                                        # Pastikan kolom 'Uncertainty' diproses terlebih dahulu jika ada
+                                        if col_name.kolom == "Uncertainty" and hasattr(result, 'uncertainty'):
                                             if flat_index < len(flat_columns):
                                                 numbers, _ = flat_columns[flat_index]
                                                 numbers = [num.replace('-', '') for num in numbers]
@@ -915,18 +922,16 @@ def generate_xml(dcc, table_data):
                                                     'probability': result.uncertainty.probability or "0.95",
                                                     'distribution': result.uncertainty.distribution or "normal"
                                                 }
-                                            flat_index += subcol_count
+                                            flat_index += 1
                                             break
                                     
-                                    # Proses semua kolom data
-                                    for col_idx, col_name in enumerate(column_names):
-                                        subcol_count = subcol_counts[col_idx]
-                                        
-                                        # Skip kolom Uncertainty
-                                        if col_name == "Uncertainty":
+                                    # Proses kolom lainnya
+                                    for col_idx, col_name in enumerate(result.columns):
+                                        # Skip kolom ketidakpastian
+                                        if col_name.kolom == "Uncertainty":
                                             continue
                                         
-                                        ref_type = result.columns[col_idx].refType if col_idx < len(result.columns) else "basic_measuredValue"
+                                        ref_type = col_name.refType if hasattr(col_name, 'refType') else "basic_measuredValue"
                                         is_target = False
                                         
                                         # Penanganan refType untuk kolom dengan measurement error
@@ -941,29 +946,26 @@ def generate_xml(dcc, table_data):
                                             # Nama kolom
                                             with tag('dcc:name'):
                                                 for lang in dcc.administrative_data.used_languages:
-                                                    text_content = result.columns[col_idx].kolom.root.get(lang, "") if col_idx < len(result.columns) else col_name
+                                                    text_content = col_name.kolom.root.get(lang, "") if hasattr(col_name, 'kolom') else col_name.kolom
                                                     with tag('dcc:content', lang=lang):
                                                         text(text_content)
                                             
-                                            # Data utama
+                                            # Data utama (nilai dan unit)
                                             with tag('si:realListXMLList'):
-                                                for _ in range(subcol_count):
-                                                    if flat_index >= len(flat_columns):
-                                                        break
-                                                    numbers, units = flat_columns[flat_index]
-                                                    flat_index += 1
+                                                numbers, units = flat_columns[flat_index]
+                                                flat_index += 1
+                                                
+                                                # Penanganan measurement error correction
+                                                if ref_type == "basic_measurementError" and ref_type == "basic_measurementError_correction":
+                                                    numbers = [str(float(num) * -1) for num in numbers]
                                                     
-                                                    # Penanganan measurement error correction
-                                                    if ref_type == "basic_measurementError" and ref_type == "basic_measurementError_correction":
-                                                        numbers = [str(float(num) * -1) for num in numbers]
-                                                    
-                                                    with tag('si:valueXMLList'):
-                                                        text(" ".join(numbers))
-                                                    with tag('si:unitXMLList'):
-                                                        if isinstance(units, list) and len(units) > 0:
-                                                            text(d_si(units[0]) if units[0] else "")
-                                                        else:
-                                                            text("")
+                                                with tag('si:valueXMLList'):
+                                                    text(" ".join(numbers))
+                                                with tag('si:unitXMLList'):
+                                                    if isinstance(units, list) and len(units) > 0:
+                                                        text(d_si(units[0]) if units[0] else "")
+                                                    else:
+                                                        text("")
                                             
                                             # Tambahkan ketidakpastian jika kolom ini adalah target (measurement error)
                                             if is_target and uncertainty_data and not uncertainty_attached:
@@ -978,7 +980,6 @@ def generate_xml(dcc, table_data):
                                                         with tag('si:distributionXMLList'):
                                                             text(uncertainty_data['distribution'])
                                                 uncertainty_attached = True
-
 
 
                                                             
@@ -1017,11 +1018,11 @@ def generate_xml(dcc, table_data):
         return result
 
 #
-def embed_xml_in_pdf(pdf_path, xml_path, output_path):
-    pdf = Pdf.open(pdf_path)
-    filespec = AttachedFileSpec.from_filepath(pdf, xml_path, mime_type="application/xml")
-    pdf.attachments[xml_path.name] = filespec
-    pdf.save(output_path)
+#def embed_xml_in_pdf(pdf_path, xml_path, output_path):
+#    pdf = Pdf.open(pdf_path)
+#    filespec = AttachedFileSpec.from_filepath(pdf, xml_path, mime_type="application/xml")
+#    pdf.attachments[xml_path.name] = filespec
+#    pdf.save(output_path)
 
 # def parse_date(date_str):
     # try:
@@ -1307,17 +1308,17 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                 excel.Quit()
 
         # Konversi ke PDF
-        convert(new_word_path)
-        converter = PdfStandardsConverter(str(paths['pdf_output']))
-        converter.ToPdfA3A(str(paths['pdf_output']))
-        logging.info(f"Converted {new_word_path} to PDFA/3-A")
+        #convert(new_word_path)
+        #converter = PdfStandardsConverter(str(paths['pdf_output']))
+        #converter.ToPdfA3A(str(paths['pdf_output']))
+        #logging.info(f"Converted {new_word_path} to PDFA/3-A")
         
         # XML -> PDF/A-3
-        embedded_pdf_path = str(paths['pdf_output'].with_name(f"{dcc.sertifikat}_embedded.pdf"))
-        embed_xml_in_pdf(str(paths['pdf_output']), xml_path, embedded_pdf_path)
-        logging.info(f"Embedded XML into PDF: {embedded_pdf_path}")
+        #embedded_pdf_path = str(paths['pdf_output'].with_name(f"{dcc.sertifikat}_embedded.pdf"))
+        #embed_xml_in_pdf(str(paths['pdf_output']), xml_path, embedded_pdf_path)
+        #logging.info(f"Embedded XML into PDF: {embedded_pdf_path}")
         
-        return {"download_link": f"http://127.0.0.1:8000/download-dcc/{dcc.sertifikat}_embedded.pdf"}
+        #return {"download_link": f"http://127.0.0.1:8000/download-dcc/{dcc.sertifikat}_embedded.pdf"}
     
     except Exception as e:
         logging.error(f"Error occurred: {e}", exc_info=True)

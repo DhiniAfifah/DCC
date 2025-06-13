@@ -259,7 +259,7 @@ def convert_xml_to_excel(xml_file_path: str):
         for person in resp.findall('dcc:respPerson', ns):
             # Ambil nama penanggung jawab
             nama_resp = person.find('dcc:person/dcc:name/dcc:content', ns).text if person.find('dcc:person/dcc:name/dcc:content', ns) is not None else 'N/A'
-            nip_resp = person.find('dcc:description/dcc:name/dcc:content', ns).text if person.find('dcc:description/dcc:name/dcc:content', ns) is not None else 'N/A'
+            nip_resp = person.find('dcc:description/dcc:content', ns).text if person.find('dcc:description/dcc:content', ns) is not None else 'N/A'
             
             # Ambil role jika ada, jika tidak, gunakan fallback
             role_element = person.find('dcc:role', ns)
