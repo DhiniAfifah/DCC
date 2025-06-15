@@ -176,13 +176,12 @@ class Uncertainty(BaseModel):
     factor: str
     probability: str
     distribution: Optional[str] = ""
-    real_list: str
 
 class Column(BaseModel):
     kolom: MultilangStr
+    refType: str  
     real_list: int 
-    refType: Optional[str] = None 
-
+    
 class Result(BaseModel):
     parameters: MultilangStr
     columns: List[Column]

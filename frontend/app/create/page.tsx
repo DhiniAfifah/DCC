@@ -123,7 +123,6 @@ export default function CreateDCC() {
         },
         has_image: false,
         image: {
-          //gambar: "",
           caption: "",
           fileName: "",
           mimeType: "",
@@ -147,10 +146,10 @@ export default function CreateDCC() {
         tengah: "",
         rentang: "",
         rentang_unit: {
-          prefix: "", //
+          prefix: "",
           prefix_pdf: "",
-          unit: "", //xml only
-          unit_pdf: "", //
+          unit: "",
+          unit_pdf: "",
           eksponen: "",
           eksponen_pdf: "",
         },
@@ -168,19 +167,18 @@ export default function CreateDCC() {
     excel: "",
     results: [
       {
-        parameters: "",
+        parameters: "", // This should be a string or an object for multilingual support
         columns: [
           {
-            kolom: "",
-            refType: "",
+            kolom: "", // Multilingual string for column name
+            refType: "", // Reference type for the column
             real_list: "1",
           },
         ],
         uncertainty: {
-          factor: "2",
-          probability: "0.95",
-          distribution: "",
-          real_list: "1",
+          factor: "2", // Numeric factor
+          probability: "0.95", // Probability value
+          distribution: "", // Distribution type (e.g., "normal", "uniform", etc.)
         },
       },
     ],
@@ -363,15 +361,16 @@ export default function CreateDCC() {
         parameters: result.parameters,
         columns: result.columns.map((col) => ({
           kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
-          refType: col.refType || "",
           real_list: Number(col.real_list) || 1,
+          refType: col.refType || "",
         })),
-        uncertainty: {
-          factor: result.uncertainty.factor,
-          probability: result.uncertainty.probability,
-          distribution: result.uncertainty.distribution || "",
-          real_list: result.uncertainty.real_list,
-        },
+        uncertainty: result.uncertainty
+          ? {
+              factor: result.uncertainty.factor || "0",
+              probability: result.uncertainty.probability || "0",
+              distribution: result.uncertainty.distribution || "",
+            }
+          : { factor: "0", probability: "0", distribution: "" },
       })),
       excel: fileName,
     };

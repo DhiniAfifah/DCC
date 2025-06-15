@@ -16,6 +16,7 @@ import {
   useForm,
   FormProvider,
   useFormContext,
+  Control,
 } from "react-hook-form";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { z } from "zod";
@@ -145,29 +146,27 @@ const FormSchema = z.object({
         factor: z.string().optional(),
         probability: z.string().optional(),
         distribution: z.string().optional(),
-        real_list: z.string().min(1, { message: empty_field_error_message }),
       }),
     })
   ),
 });
 
-interface Column {
-  kolom: string;
-  refType: string;
-  real_list: string;
-}
-
 interface Uncertainty {
   factor: string;
   probability: string;
   distribution: string;
+}
+
+interface Column {
+  kolom: Record<string, string>;
+  refType: string;
   real_list: string;
 }
 
 interface Result {
-  parameters: string;
+  parameters: Record<string, string>;
   columns: Column[];
-  uncertainty: Uncertainty[];
+  uncertainty: Uncertainty;
 }
 
 interface FormValues {
@@ -186,6 +185,12 @@ interface ColumnsProps {
   validLanguages: { value: string }[];
 }
 
+interface UncertaintyCardProps {
+  resultIndex: number;
+  control: Control<FormValues>;
+  t: (key: string) => string;
+}
+
 interface Method {
   method_name: string;
   method_desc: string;
@@ -202,15 +207,133 @@ interface Method {
   };
 }
 
+const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
+  resultIndex,
+  control,
+  t,
+}) => {
+  const [distribution, setDistribution] = useState<string>("");
+
+  return (
+    <Card id="uncertainty" className="border shadow">
+      <CardHeader>
+        <h3 className="text-sm font-semibold">{t("ketidakpastian")}</h3>
+        <p className="text-xs text-muted-foreground mt-1">
+          {t("ketidakpastian_desc")}
+        </p>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        <div id="factor" className="grid gap-1">
+          <FormLabel>{t("factor")}</FormLabel>
+          <FormField
+            control={control}
+            name={`results.${resultIndex}.uncertainty.factor`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0"
+                    {...field}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*\.?\d{0,2}$/.test(value)) {
+                        field.onChange(e);
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div id="probability" className="grid gap-1">
+          <FormLabel>{t("probability")}</FormLabel>
+          <FormField
+            control={control}
+            name={`results.${resultIndex}.uncertainty.probability`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step={"0.01"}
+                    {...field}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*\.?\d{0,2}$/.test(value)) {
+                        field.onChange(e);
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div id="distribution" className="grid gap-1">
+          <FormLabel>{t("distribution")}</FormLabel>
+          <FormField
+            control={control}
+            name={`results.${resultIndex}.uncertainty.distribution`}
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <FormItem>
+                    <Select
+                      onValueChange={(value) => {
+                        setDistribution(value);
+                        field.onChange(value);
+                      }}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="normal">Normal</SelectItem>
+                        <SelectItem value="segiempat">
+                          {t("segiempat")}
+                        </SelectItem>
+                        <SelectItem value="segitiga">
+                          {t("segitiga")}
+                        </SelectItem>
+                        <SelectItem value="other">{t("other")}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {distribution === "other" && (
+                      <Input
+                        placeholder={`${t("other_distribution")}`}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        className="mt-2"
+                      />
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 const Columns = ({
   resultIndex,
   usedLanguages,
   createMultilangObject,
   validLanguages,
 }: ColumnsProps) => {
-  const { control, register } = useFormContext();
-
-  const [selectedDistribution, setDistribution] = useState<string>("");
+  const { control } = useFormContext();
 
   const {
     fields: columnFields,
@@ -398,115 +521,6 @@ const Columns = ({
           <Plus />
         </p>
       </Button>
-
-      <Card id="uncertainty" className="border shadow">
-        <CardHeader>
-          <h3 className="text-sm font-semibold">{t("ketidakpastian")}</h3>
-          <p className="text-xs text-muted-foreground mt-1">
-            {t("ketidakpastian_desc")}
-          </p>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div id="factor" className="grid gap-1">
-            <FormLabel>{t("factor")}</FormLabel>
-            <FormField
-              control={control}
-              name={`results.${resultIndex}.uncertainty.factor`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="0"
-                      {...field}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d{0,2}$/.test(value)) {
-                          field.onChange(e);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div id="probability" className="grid gap-1">
-            <FormLabel>{t("probability")}</FormLabel>
-            <FormField
-              control={control}
-              name={`results.${resultIndex}.uncertainty.probability`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="1"
-                      step={"0.01"}
-                      {...field}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (/^\d*\.?\d{0,2}$/.test(value)) {
-                          field.onChange(e);
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div id="distribution" className="grid gap-1">
-            <FormLabel>{t("distribution")}</FormLabel>
-            <FormField
-              control={control}
-              name={`results.${resultIndex}.uncertainty.distribution`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <FormItem>
-                      <Select
-                        onValueChange={(value) => {
-                          setDistribution(value);
-                          field.onChange(value);
-                        }}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="normal">Normal</SelectItem>
-                          <SelectItem value="segiempat">
-                            {t("segiempat")}
-                          </SelectItem>
-                          <SelectItem value="segitiga">
-                            {t("segitiga")}
-                          </SelectItem>
-                          <SelectItem value="other">{t("other")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {selectedDistribution === "other" && (
-                        <Input
-                          placeholder={`${t("other_distribution")}`}
-                          onChange={(e) => field.onChange(e.target.value)}
-                        />
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
@@ -971,16 +985,15 @@ export default function MeasurementForm({
       columns: [
         {
           kolom: createMultilangObject(currentLanguages),
-          refType: "", // TAMBAHKAN INI
+          refType: "",
           real_list: "1",
         },
       ],
+      // Tambahkan inisialisasi uncertainty
       uncertainty: {
-        // JANGAN LUPA TAMBAHKAN INISIALISASI UNCERTAINTY
         factor: "",
         probability: "",
         distribution: "",
-        real_list: "1",
       },
     });
   }, [appendResult, createMultilangObject, usedLanguages]);
@@ -2330,6 +2343,11 @@ export default function MeasurementForm({
                     usedLanguages={usedLanguages}
                     createMultilangObject={createMultilangObject}
                     validLanguages={validLanguages}
+                  />
+                  <UncertaintyCard
+                    resultIndex={resultIndex}
+                    control={form.control}
+                    t={t}
                   />
                 </div>
               ))}
