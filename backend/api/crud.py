@@ -317,117 +317,6 @@ def save_image_and_get_base64(upload_file):
     return new_word_path
 
 
-# Memproses data tabel dari Excel dan input pengguna
-#def some_function_to_get_table_data(dcc):
-#    logging.info(f"Processing table data for DCC: {dcc.sertifikat}")
-    
-    # Dictionary to store the processed table data
- #   table_data = {}
-    
-    # Get paths
-  #  paths = get_project_paths(dcc)
-   # excel_path = str(paths['excel'])
-    
-    # Initialize result tables based on user input from frontend
-    #input_tables = {}
-    
-    # Process the result fields from the form
-    #for result in dcc.results:
-        # Get the parameter name (table name)
-     #   parameter_name = result.parameter
-        
-        # Create mapping of column names to number of sub-columns
-      #  column_mapping = {}
-        
-        # Add all regular columns
-       # for column in result.columns:
-            # Get the column name and number of sub-columns
-        #    column_name = column.kolom
-            # Convert number of sub-columns to integer if it's a string
-         #   num_subcols = int(column.real_list) if isinstance(column.real_list, str) else len(column.real_list)
-          #  column_mapping[column_name] = num_subcols
-            
-        # Add uncertainty column (always present)
-        #if hasattr(result, 'uncertainty'):
-         #   uncertainty_column = "Uncertainty"
-          #  column_mapping[uncertainty_column] = 1
-        
-        # Add table to input tables
-        #input_tables[parameter_name] = column_mapping
-    
-    # Process the Excel data using the helper function
-    #if hasattr(dcc, 'sheet_name') and dcc.sheet_name:
-     #   try:
-      #      processed_data = process_excel_data(excel_path, dcc.sheet_name, input_tables)
-       #     table_data.update(processed_data)
-        #    logging.info(f"Successfully processed {len(processed_data)} tables from Excel")
-        #except Exception as e:
-         #   logging.error(f"Error processing Excel data: {str(e)}")
-          #  raise
-    
-    # Add uncertainty data from user input (not from Excel)
-    #for result in dcc.results:
-     #   parameter_name = result.parameter
-        
-      #  if parameter_name in table_data and hasattr(result, 'uncertainty'):
-            # Create uncertainty data structure
-       #     uncertainty_data = []
-            
-            # If uncertainty value is provided
-        #    if hasattr(result.uncertainty, 'real_list') and result.uncertainty.real_list:
-                # Process values and units
-         #       values = result.uncertainty.real_list.split() if isinstance(result.uncertainty.real_list, str) else [str(val) for val in result.uncertainty.real_list]
-          #      units = [""] * len(values)  # Default empty units
-                
-           #     uncertainty_data.append((values, units))
-                
-                # Add the uncertainty data to the table
-            #    table_data[parameter_name].append(uncertainty_data)
-    
-    #logging.info(f"Completed table data processing, returning {len(table_data)} tables")
-    #return table_data
-
-
-# Mempersiapkan struktur tabel dari data formulir pengguna
-def prepare_input_tables(dcc):
-    input_tables = {}
-    
-    # Proses setiap hasil dari formulir
-    for result in dcc.results:
-        parameter_name = result.parameters[0] if isinstance(result.parameters, list) else result.parameters
-        column_mapping = {}
-        
-        # Proses kolom biasa
-        for column in result.columns:
-            column_name = column.kolom
-            try:
-                # Periksa jika real_list adalah integer atau string/list
-                if isinstance(column.real_list, int):
-                    num_subcols = column.real_list
-                elif isinstance(column.real_list, str):
-                    num_subcols = int(column.real_list)
-                elif hasattr(column.real_list, "__len__"):
-                    num_subcols = len(column.real_list)
-                else:
-                    num_subcols = 1  # Default jika tidak ada value yang valid
-                    
-                logging.debug(f"Determined num_subcols: {num_subcols}")
-            except Exception as e:
-                logging.error(f"Error processing column {column.kolom}: {e}")
-                num_subcols = 1  # Default jika terjadi error
-                
-            column_mapping[column_name] = num_subcols
-        
-        # Periksa apakah kolom Uncertainty didefinisikan dalam result.columns
-        uncertainty_defined = any(col.kolom == "Uncertainty" for col in result.columns)
-        if uncertainty_defined and hasattr(result, 'uncertainty') and result.uncertainty:
-            column_mapping["Uncertainty"] = 1
-        
-        input_tables[parameter_name] = column_mapping
-    
-    return input_tables
-
-
 # Memproses data Excel dan mengembalikan hasil terstruktur untuk XML
 def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> dict:
     """Membaca tabel dari file Excel dengan struktur sesuai kebutuhan XML"""
@@ -545,6 +434,12 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
         pythoncom.CoUninitialize()
 
 
+def clean_text(value):
+    """Membersihkan teks dengan menghilangkan spasi di awal/akhir dan mengonversi None ke string kosong"""
+    if value is None:
+        return ""
+    return str(value).strip()
+
 #XML
 def generate_xml(dcc, table_data):
         #Generate XML for DCC
@@ -560,8 +455,8 @@ def generate_xml(dcc, table_data):
             with tag('dcc:dccSoftware'): 
                 with tag('dcc:software'): 
                     with tag('dcc:name'): 
-                        with tag('dcc:content'): text(dcc.software)
-                    with tag('dcc:release'): text(dcc.version)
+                        with tag('dcc:content'): text(clean_text(dcc.software))
+                    with tag('dcc:release'): text(clean_text(dcc.version))
             
             #DEFINISI REFTYPE        
             with tag('dcc:refTypeDefinitions'):
@@ -592,16 +487,16 @@ def generate_xml(dcc, table_data):
                     with tag('dcc:usedLangCodeISO639_1'): text(lang)
                 for lang in dcc.administrative_data.mandatory_languages:
                     with tag('dcc:mandatoryLangCodeISO639_1'): text(lang)
-                with tag('dcc:uniqueIdentifier'): text(dcc.administrative_data.sertifikat)
+                with tag('dcc:uniqueIdentifier'): text(clean_text(dcc.administrative_data.sertifikat))
                 with tag('dcc:identifications'):
                     with tag('dcc:identification', refType='basic_orderNumber'):
-                        with tag('dcc:issuer'): text(dcc.administrative_data.core_issuer)
-                        with tag('dcc:value'): text(dcc.administrative_data.order)
+                        with tag('dcc:issuer'): text(clean_text(dcc.administrative_data.core_issuer))
+                        with tag('dcc:value'): text(clean_text(dcc.administrative_data.order))
                         with tag('dcc:name'):
                             with tag('dcc:content'): text('Nomor Order')
                 with tag('dcc:beginPerformanceDate'): text(dcc.Measurement_TimeLine.tgl_mulai)
                 with tag('dcc:endPerformanceDate'): text(dcc.Measurement_TimeLine.tgl_akhir)
-                with tag('dcc:performanceLocation'): text(dcc.administrative_data.tempat)
+                with tag('dcc:performanceLocation'): text(clean_text(dcc.administrative_data.tempat))
                 with tag('dcc:issueDate'): text(dcc.Measurement_TimeLine.tgl_pengesahan)
             
             #ITEMS    
@@ -610,18 +505,18 @@ def generate_xml(dcc, table_data):
                     with tag("dcc:item"):
                         with tag("dcc:name"):
                             for lang in dcc.administrative_data.used_languages:
-                                with tag("dcc:content", lang=lang): text(obj.jenis.root.get(lang, ""))
+                                with tag("dcc:content", lang=lang): text(clean_text(obj.jenis.root.get(lang, "")))
                         with tag("dcc:manufacturer"):
                             with tag("dcc:name"):
-                                with tag('dcc:content'): text(obj.merek)
-                        with tag("dcc:model"): text(obj.tipe)
+                                with tag('dcc:content'): text(clean_text(obj.merek))
+                        with tag("dcc:model"): text(clean_text(obj.tipe))
                         with tag("dcc:identifications"):
                             with tag("dcc:identification", refType='basic_serialNumber'):
-                                with tag("dcc:issuer"): text(obj.item_issuer)
-                                with tag("dcc:value"): text(obj.seri_item)
+                                with tag("dcc:issuer"): text(clean_text(obj.item_issuer))
+                                with tag("dcc:value"): text(clean_text(obj.seri_item))
                                 with tag("dcc:name"):
                                     for lang in dcc.administrative_data.used_languages:
-                                        with tag("dcc:content", lang=lang): text(obj.id_lain.root.get(lang, ""))
+                                        with tag("dcc:content", lang=lang): text(clean_text(obj.id_lain.root.get(lang, "")))
             
             #MUTLAK                    
             with tag('dcc:calibrationLaboratory'): 
@@ -649,11 +544,11 @@ def generate_xml(dcc, table_data):
                     with tag('dcc:respPerson'): 
                         with tag('dcc:person'): 
                             with tag('dcc:name'): 
-                                with tag('dcc:content'): text(resp.nama_resp)
+                                with tag('dcc:content'): text(clean_text(resp.nama_resp))
                         with tag('dcc:description'): 
                             # with tag('dcc:name'): 
-                            with tag('dcc:content'): text(resp.nip)
-                        with tag('dcc:role'): text(resp.peran)
+                            with tag('dcc:content'): text(clean_text(resp.nip))
+                        with tag('dcc:role'): text(clean_text(resp.peran))
                         with tag('dcc:mainSigner'): text(int(resp.main_signer))
                         with tag('dcc:cryptElectronicSignature'): text(int(resp.signature))
                         with tag('dcc:cryptElectronicTimeStamp'): text(int(resp.timestamp))
@@ -701,20 +596,21 @@ def generate_xml(dcc, table_data):
             #owner
             with tag('dcc:customer'):
                 with tag('dcc:name'):
-                    with tag('dcc:content'): text(dcc.owner.nama_cust)
+                    with tag('dcc:content'): 
+                        text(clean_text(dcc.owner.nama_cust))
                 with tag('dcc:location'):
                     with tag('dcc:city'):
-                        text(dcc.owner.kota_cust)
+                        text(clean_text(dcc.owner.kota_cust))
                     with tag('dcc:countryCode'):
-                        text(dcc.owner.negara_cust)
+                        text(clean_text(dcc.owner.negara_cust))
                     with tag('dcc:postCode'):
-                        text(dcc.owner.pos_cust)
+                        text(clean_text(dcc.owner.pos_cust))
                     with tag('dcc:state'):
-                        text(dcc.owner.state_cust)
+                        text(clean_text(dcc.owner.state_cust))
                     with tag('dcc:street'):
-                        text(dcc.owner.jalan_cust)
+                        text(clean_text(dcc.owner.jalan_cust))
                     with tag('dcc:streetNo'):
-                        text(dcc.owner.no_jalan_cust)                 
+                        text(clean_text(dcc.owner.no_jalan_cust))                 
                             
             # Statements
             with tag('dcc:statements'):
@@ -725,7 +621,7 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:declaration'):
                             for lang in dcc.administrative_data.used_languages:
                                 with tag('dcc:content', lang=lang): 
-                                    text(stmt.values.root.get(lang, "") or "")
+                                    text(clean_text(stmt.values.root.get(lang, "") or ""))
                                 
                             if stmt.has_formula and stmt.formula:
                                 with tag('dcc:formula'):
@@ -768,10 +664,10 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:usedMethod', refType=ref_type):
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(method.method_name.root.get(lang, "")) #Multilang
+                                    with tag('dcc:content', lang=lang): text(clean_text(method.method_name.root.get(lang, ""))) #Multilang
                             with tag('dcc:description'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(method.method_desc.root.get(lang, "")) #Multilang
+                                    with tag('dcc:content', lang=lang): text(clean_text(method.method_desc.root.get(lang, ""))) #Multilang
                                 if method.has_formula and method.formula:
                                     with tag('dcc:formula'):
                                         # with tag('dcc:latex'): text(method.formula.latex or "")
@@ -794,7 +690,7 @@ def generate_xml(dcc, table_data):
                                                     doc.asis(f"{indent_mth}{line}\n")
                                                 doc.asis(' ' * (indent_spaces - 4)) 
                                                 
-                            with tag('dcc:norm'): text(method.norm)
+                            with tag('dcc:norm'): text(clean_text(method.norm))
 
                 # Measuring Equipment 
                 with tag('dcc:measuringEquipments'):
@@ -803,18 +699,18 @@ def generate_xml(dcc, table_data):
                         with tag('dcc:measuringEquipment', refType=ref_type):
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(equip.nama_alat.root.get(lang, "")) #Multilang
+                                    with tag('dcc:content', lang=lang): text(clean_text(equip.nama_alat.root.get(lang, ""))) #Multilang
                             with tag('dcc:manufacturer'):
                                 with tag('dcc:name'):
                                     for lang in dcc.administrative_data.used_languages:
-                                        with tag('dcc:content', lang=lang): text(equip.model.root.get(lang, "")) #Multilang
+                                        with tag('dcc:content', lang=lang): text(clean_text(equip.model.root.get(lang, ""))) #Multilang
                             with tag('dcc:identifications'):
                                 with tag('dcc:identification', refType='basic_serialNumber'):
                                     with tag('dcc:issuer'): text('manufacturer')
-                                    with tag('dcc:value'): text(equip.seri_measuring)
+                                    with tag('dcc:value'): text(clean_text(equip.seri_measuring))
                                     with tag('dcc:name'):
                                          for lang in dcc.administrative_data.used_languages:
-                                            with tag('dcc:content', lang=lang): text(equip.manuf_model.root.get(lang, "")) #Multilang
+                                            with tag('dcc:content', lang=lang): text(clean_text(equip.manuf_model.root.get(lang, ""))) #Multilang
 
                 # Adding Room Conditions 
                 with tag('dcc:influenceConditions'):
@@ -828,10 +724,10 @@ def generate_xml(dcc, table_data):
 
                         with tag('dcc:influenceCondition', **({'refType': reftype_value} if reftype_value else {})):
                             with tag('dcc:name'):
-                                with tag('dcc:content'): text(condition.jenis_kondisi)
+                                with tag('dcc:content'): text(clean_text(condition.jenis_kondisi))
                             with tag('dcc:description'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(condition.desc.root.get(lang, "") or "") #Multilang
+                                    with tag('dcc:content', lang=lang): text(clean_text(condition.desc.root.get(lang, "") or "")) #Multilang
                                 
                             with tag('dcc:data'):
                                 # Tengah / nilai minimum
@@ -878,7 +774,7 @@ def generate_xml(dcc, table_data):
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
                                     with tag('dcc:content', lang=lang):
-                                        text(config.parameters.root.get(lang, ""))
+                                        text(clean_text(config.parameters.root.get(lang, "")))
                             
                             with tag('dcc:data'):
                                 with tag('dcc:list'):
@@ -901,7 +797,7 @@ def generate_xml(dcc, table_data):
                                             with tag('dcc:name'):
                                                 for lang in dcc.administrative_data.used_languages:
                                                     with tag('dcc:content', lang=lang):
-                                                        text(col_config.kolom.root.get(lang, ""))
+                                                        text(clean_text(col_config.kolom.root.get(lang, "")))
                                             
                                             # Proses sub-kolom
                                             for _ in range(real_list_count):
@@ -912,38 +808,35 @@ def generate_xml(dcc, table_data):
                                                 
                                                 with tag('si:realListXMLList'):
                                                     with tag('si:valueXMLList'):
-                                                        # REVISI: Hilangkan spasi di awal dengan strip()
                                                         text(" ".join(numbers).strip())
                                                     with tag('si:unitXMLList'):
                                                         text(" ".join(units).strip())
-                                            
-                                            # Tambahkan uncertainty jika diperlukan
-                                            if ref_type == "basic_measurementError" and flat_index < len(flat_columns):
-                                                uncertainty_numbers, _ = flat_columns[flat_index]
-                                                flat_index += 1
-                                                
-                                                with tag('si:measurementUncertaintyUnivariateXMLList'):
-                                                    with tag('si:expandedUncXMLList'):
-                                                        with tag('si:uncertaintyXMLList'):
-                                                            # REVISI: Hilangkan spasi di awal dengan strip()
-                                                            text(" ".join(uncertainty_numbers).strip())
-                                                        with tag('si:coverageFactorXMLList'):
-                                                            text(str(config.uncertainty.factor) if config.uncertainty and config.uncertainty.factor else "")
-                                                        with tag('si:coverageProbabilityXMLList'):
-                                                            text(str(config.uncertainty.probability) if config.uncertainty and config.uncertainty.probability else "")
-                                                        with tag('si:distributionXMLList'):
-                                                            text(config.uncertainty.distribution if config.uncertainty and config.uncertainty.distribution else "normal")
+                                                    
+                                                    # Tambahkan uncertainty di dalam blok yang sama
+                                                    if ref_type == "basic_measurementError" and flat_index < len(flat_columns):
+                                                        uncertainty_numbers, _ = flat_columns[flat_index]
+                                                        flat_index += 1
+                                                        
+                                                        with tag('si:measurementUncertaintyUnivariateXMLList'):
+                                                            with tag('si:expandedMUXMLList'):
+                                                                with tag('si:valueExpandedMUXMLList'):
+                                                                    text(" ".join(uncertainty_numbers).strip())
+                                                                with tag('si:coverageFactorXMLList'):
+                                                                    text(str(config.uncertainty.factor) if config.uncertainty and config.uncertainty.factor else "")
+                                                                with tag('si:coverageProbabilityXMLList'):
+                                                                    text(str(config.uncertainty.probability) if config.uncertainty and config.uncertainty.probability else "")
+                                                                with tag('si:distributionXMLList'):
+                                                                    text(config.uncertainty.distribution if config.uncertainty and config.uncertainty.distribution else "normal")
 
                                                             
         # COMMENT
         if dcc.comment and dcc.comment.has_file:  
             with tag('dcc:comment'):
                 with tag('dcc:name'):
-                    with tag('dcc:content'): text(dcc.comment.title or "") 
+                    with tag('dcc:content'): text(clean_text(dcc.comment.title or ""))
                 with tag('dcc:description'):
                     for lang in dcc.administrative_data.used_languages:
-                        with tag('dcc:content', lang=lang): text(dcc.comment.desc.root.get(lang, "") or "")
-                        
+                        with tag('dcc:content', lang=lang): text(clean_text(dcc.comment.desc.root.get(lang, "") or ""))
                 if dcc.comment.files: 
                     for file in dcc.comment.files:
                         with tag('dcc:file'):
@@ -968,22 +861,6 @@ def generate_xml(dcc, table_data):
 
         result = indent(doc.getvalue(), indentation='   ')
         return result
-
-#
-#def embed_xml_in_pdf(pdf_path, xml_path, output_path):
-#    pdf = Pdf.open(pdf_path)
-#    filespec = AttachedFileSpec.from_filepath(pdf, xml_path, mime_type="application/xml")
-#    pdf.attachments[xml_path.name] = filespec
-#    pdf.save(output_path)
-
-# def parse_date(date_str):
-    # try:
-        # Adjusting to handle ISO 8601 format (with time and timezone)
-        # Replace 'Z' with '+00:00' to make it a valid format for fromisoformat
-        #date_str = date_str.replace("Z", "+00:00")
-        #return datetime.fromisoformat(date_str)  # Converts ISO 8601 to datetime
-    #except ValueError:
-        #raise HTTPException(status_code=400, detail=f"Invalid date format: {date_str}")
 
 #db n excel 
 def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
@@ -1173,103 +1050,6 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         with open(xml_path, "w", encoding="utf-8") as f:
             f.write(xml_content)
         logging.info(f"XML file generated at {xml_path}")
-        
-        
-        # Proses template Word
-        #populate_template(
-        #    dcc.dict(),
-        #    str(paths['template']),
-        #    new_word_path
-        #)
-
-        # Proses Excel (masuk ke word)
-        try:
-            logging.debug("Initializing Excel COM object")
-            excel = win32.Dispatch("Excel.Application")
-            excel.Visible = False
-            
-            logging.debug("Opening Excel file")
-            wb = excel.Workbooks.Open(str(paths['excel']))
-            ws = wb.Sheets(dcc.sheet_name)
-
-            first_row, last_row = None, None
-            first_col, last_col = None, None
-            max_columns = ws.UsedRange.Columns.Count
-
-            for row in range(1, ws.UsedRange.Rows.Count + 1):
-                filled_cells = [ws.Cells(row, col).Value for col in range(1, max_columns + 1)]
-                filled_cells = [cell for cell in filled_cells if cell not in [None, ""]]
-                
-                if len(filled_cells) > 2:
-                    if first_row is None:
-                        first_row = row - 1
-                    last_row = row
-
-            logging.debug(f"Detected first row: {first_row}, last row: {last_row}")
-
-            if first_row is not None and last_row is not None:
-                for col in range(1, max_columns + 1):
-                    col_has_data = any(ws.Cells(row, col).Value not in [None, ""] for row in range(first_row, last_row + 1))
-                    if col_has_data:
-                        if first_col is None:
-                            first_col = col
-                        last_col = col
-
-                logging.debug(f"Detected first column: {first_col}, last column: {last_col}")
-                
-            if first_row and first_col and last_row and last_col:
-                start_cell = ws.Cells(first_row, first_col).Address.replace("$", "")
-                end_cell = ws.Cells(last_row, last_col).Address.replace("$", "")
-                logging.info(f"Detected table range: {start_cell}:{end_cell}")
-                    
-                table_range = f"{start_cell}:{end_cell}"
-                ws.Range(table_range).Copy()
-                    
-                word = win32.Dispatch("Word.Application")
-                word.Visible = False
-                    
-                logging.info("Opening Word template")
-                doc = word.Documents.Open(new_word_path)
-                find_text = "{{ tabel }}"
-                find = word.Selection.Find
-                find.Text = find_text
-                # find.ClearFormatting()  # Menghapus formatting pencarian yang mungkin mengganggu
-                find.MatchCase = False  # Tidak case-sensitive
-                find.MatchWholeWord = True  # Pencarian sesuai dengan kata lengkap
-                find.Execute()
-                    
-                if find.Found:
-                    logging.info("Placeholder found. Inserting table...")
-                    word.Selection.Paste()
-                else:
-                    logging.warning("Placeholder '{{ tabel }}' not found in the document.")
-                    
-                    doc.SaveAs(new_word_path)
-                    doc.Close()
-                    logging.info(f"Table successfully copied to {new_word_path}")
-
-        except Exception as e:
-            logging.error(f"Error processing Office files: {str(e)}")
-            raise
-        finally:
-        # Tutup Excel
-            if wb:
-                wb.Close(False)
-            if excel:
-                excel.Quit()
-
-        # Konversi ke PDF
-        #convert(new_word_path)
-        #converter = PdfStandardsConverter(str(paths['pdf_output']))
-        #converter.ToPdfA3A(str(paths['pdf_output']))
-        #logging.info(f"Converted {new_word_path} to PDFA/3-A")
-        
-        # XML -> PDF/A-3
-        #embedded_pdf_path = str(paths['pdf_output'].with_name(f"{dcc.sertifikat}_embedded.pdf"))
-        #embed_xml_in_pdf(str(paths['pdf_output']), xml_path, embedded_pdf_path)
-        #logging.info(f"Embedded XML into PDF: {embedded_pdf_path}")
-        
-        #return {"download_link": f"http://127.0.0.1:8000/download-dcc/{dcc.sertifikat}_embedded.pdf"}
     
     except Exception as e:
         logging.error(f"Error occurred: {e}", exc_info=True)
@@ -1286,19 +1066,3 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                 doc.Close(SaveChanges=False)
             word.Quit()
             
-            
-            
-     # Konversi ke PDF
-        #convert(new_word_path)
-
-        #pdf_path = fr"C:\Users\a516e\Documents\GitHub\DCC\backend\dcc_files\{dcc.sertifikat}.pdf"
-
-        #converter = PdfStandardsConverter(pdf_path)
-        #converter.ToPdfA3A(pdf_path)
-        #logging.info(f"Converted {new_word_path} to PDFA/3-A")
-        #return {"download_link": download_link}
-
-    #except Exception as e:
-     #   logging.error(f"Error occurred while saving DCC {dcc.sertifikat}: {e}", exc_info=True)
-      #  db.rollback()
-       # raise HTTPException(status_code=400, detail=f"Error saving data to database: {str(e)}")
