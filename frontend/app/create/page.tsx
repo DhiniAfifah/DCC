@@ -36,38 +36,38 @@ export default function CreateDCC() {
 
   // Simpan data form di state
   const [formData, setFormData] = useState({
-    software: "",
-    version: "",
+    software: "A",
+    version: "A",
     Measurement_TimeLine: {
-      tgl_mulai: "",
-      tgl_akhir: "",
-      tgl_pengesahan: "",
+      tgl_mulai: "2025-06-15",
+      tgl_akhir: "2025-06-15",
+      tgl_pengesahan: "2025-06-15",
     },
     administrative_data: {
       core_issuer: "calibrationLaboratory",
-      country_code: "",
-      used_languages: [{ value: "" }],
-      mandatory_languages: [{ value: "" }],
-      sertifikat: "",
-      order: "",
-      tempat: "",
-      tempat_pdf: "",
+      country_code: "ID",
+      used_languages: [{ value: "id" }, { value: "en" }],
+      mandatory_languages: [{ value: "id" }],
+      sertifikat: "A",
+      order: "A",
+      tempat: "A",
+      tempat_pdf: "A",
     },
     objects: [
       {
-        jenis: {},
-        merek: "",
-        tipe: "",
-        item_issuer: "",
-        seri_item: "",
-        id_lain: {},
+        jenis: {id: 'A', en: 'A'},
+        merek: "A",
+        tipe: "A",
+        item_issuer: "A",
+        seri_item: "A",
+        id_lain: {id: 'A', en: 'A'},
       },
     ],
     responsible_persons: {
       pelaksana: [
         {
-          nama_resp: "",
-          nip: "",
+          nama_resp: "A",
+          nip: "A",
           peran: "Pelaksana Kalibrasi",
           main_signer: "0",
           signature: "0",
@@ -76,8 +76,8 @@ export default function CreateDCC() {
       ],
       penyelia: [
         {
-          nama_resp: "",
-          nip: "",
+          nama_resp: "A",
+          nip: "A",
           peran: "Penyelia Kalibrasi",
           main_signer: "0",
           signature: "0",
@@ -85,45 +85,46 @@ export default function CreateDCC() {
         },
       ],
       kepala: {
-        nama_resp: "",
-        nip: "",
-        peran: "",
+        nama_resp: "A",
+        nip: "A",
+        peran: "Kepala Laboratorium SNSU Biologi",
         main_signer: "0",
         signature: "0",
         timestamp: "0",
       },
       direktur: {
-        nama_resp: "",
-        nip: "",
-        peran: "",
+        nama_resp: "A",
+        nip: "A",
+        peran: "Direktur SNSU Termoelektrik dan Kimia",
         main_signer: "1",
         signature: "1",
         timestamp: "1",
       },
     },
     owner: {
-      nama_cust: "",
-      jalan_cust: "",
-      no_jalan_cust: "",
-      kota_cust: "",
-      state_cust: "",
-      pos_cust: "",
-      negara_cust: "",
+      nama_cust: "A",
+      jalan_cust: "A",
+      no_jalan_cust: "A",
+      kota_cust: "A",
+      state_cust: "A",
+      pos_cust: "A",
+      negara_cust: "ID",
     },
     methods: [
       {
-        method_name: {},
-        method_desc: "",
-        norm: "",
-        refType: "",
-        has_formula: false,
+        method_name: {id: 'A', en: 'A'},
+        method_desc: {id: 'A', en: 'A'},
+        norm: "A",
+        refType: "basic_methodMeasurementUncertainty",
+        has_formula: true,
         formula: {
-          latex: "",
-          mathml: "",
+          latex: "A",
+          mathml: "A",
         },
-        has_image: false,
+        has_image: true,
         image: {
-          caption: "",
+          //gambar: "",
+          caption: "A",
           fileName: "",
           mimeType: "",
           base64: "",
@@ -132,68 +133,69 @@ export default function CreateDCC() {
     ],
     equipments: [
       {
-        nama_alat: "",
-        manuf_model: "",
-        model: "",
-        seri_measuring: "",
-        refType: "",
+        nama_alat: {id: 'A', en: 'A'},
+        manuf_model: {id: 'A', en: 'A'},
+        model: {id: 'A', en: 'A'},
+        seri_measuring: "A",
+        refType: "basic_measurementStandard",
       },
     ],
     conditions: [
       {
-        jenis_kondisi: "",
-        desc: "",
-        tengah: "",
-        rentang: "",
+        jenis_kondisi: "suhu",
+        desc: {id: 'A', en: 'A'},
+        tengah: "A",
+        rentang: "A",
         rentang_unit: {
-          prefix: "",
-          prefix_pdf: "",
-          unit: "",
-          unit_pdf: "",
-          eksponen: "",
-          eksponen_pdf: "",
+          prefix: "\\centi", //
+          prefix_pdf: "c",
+          unit: "\\metre", //xml only
+          unit_pdf: "m", //
+          eksponen: "1",
+          eksponen_pdf: "1",
         },
         tengah_unit: {
-          prefix: "",
-          prefix_pdf: "",
-          unit: "",
-          unit_pdf: "",
-          eksponen: "",
-          eksponen_pdf: "",
+          prefix: "\\centi",
+          prefix_pdf: "c",
+          unit: "\\metre",
+          unit_pdf: "m",
+          eksponen: "1",
+          eksponen_pdf: "1",
         },
       },
     ],
-    sheet_name: "",
+    sheet_name: "Lap",
     excel: "",
     results: [
       {
-        parameters: "", // This should be a string or an object for multilingual support
+        parameters: {id: 'Resistansi DC', en: 'DC Resistance'},
         columns: [
           {
-            kolom: "", // Multilingual string for column name
-            refType: "", // Reference type for the column
+            kolom: {id: 'Arus Uji Nominal', en: 'Nominal Test Current'},
+            refType: "basic_nominalValue",
             real_list: "1",
           },
         ],
         uncertainty: {
-          factor: "2", // Numeric factor
-          probability: "0.95", // Probability value
-          distribution: "", // Distribution type (e.g., "normal", "uniform", etc.)
+          factor: "2",
+          probability: "0.95",
+          distribution: "normal",
+          real_list: "1",
         },
       },
     ],
     statements: [
       {
-        values: "",
-        refType: "",
-        has_formula: false,
+        values: {id: 'A', en: 'A'},
+        refType: "basic_conformity",
+        has_formula: true,
         formula: {
-          latex: "",
-          mathml: "",
+          latex: "A",
+          mathml: "A",
         },
-        has_image: false,
+        has_image: true,
         image: {
-          caption: "",
+          caption: "A",
           fileName: "",
           mimeType: "",
           base64: "",
@@ -201,9 +203,9 @@ export default function CreateDCC() {
       },
     ],
     comment: {
-      title: "",
-      desc: "",
-      has_file: false,
+      title: "A",
+      desc: {id: 'A', en: 'A'},
+      has_file: true,
       files: [
         {
           file: "",

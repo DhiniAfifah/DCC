@@ -1,10 +1,16 @@
+# SPDX-FileCopyrightText: 2025 @rakurtz
+# SPDX-FileCopyrightText: 2025 James R. Barlow
+# SPDX-License-Identifier: MPL-2.0
+
 """Parsing the matrixes in a PDF file."""
 
 from __future__ import annotations
 
 from logging import getLogger
 
-from pikepdf import Matrix, Operator, Page, parse_content_stream
+from pikepdf._core import Matrix, Page
+from pikepdf.models._content_stream import parse_content_stream
+from pikepdf.objects import Operator
 
 logger = getLogger(__file__)
 OPERATOR_CM = Operator(
