@@ -1,5 +1,5 @@
 import logging
-from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Body, status, Request 
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Body, status, Request, APIRouter
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,6 +14,7 @@ import api.crud as crud
 import api.schemas as schemas
 import api.database as database
 import os
+import json
 import shutil
 import pandas as pd
 import base64
@@ -25,6 +26,8 @@ from api.database import engine
 from openpyxl import Workbook
 from xml.etree import ElementTree as ET
 from .converter import convert_xml_to_excel
+from .pdf_generator import PDFGenerator
+from .models import DCC
 #from slowapi import Limiter
 #from slowapi.errors import RateLimitExceeded
 
@@ -47,8 +50,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
-
-
 
 # Directory to store uploaded files
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -196,7 +197,28 @@ async def create_dcc(
         # Continue with other processing
         result = crud.create_dcc(db=db, dcc=dcc)
         logging.info(f"DCC Created Successfully: {result}")
+        
+        
+        try:
+            paths = crud.get_project_paths(dcc)
+            xml_path = paths['xml_output']
+            pdf_path = paths['pdf_output']
+
+            if os.path.exists(xml_path):
+                with open(xml_path, "r", encoding="utf-8") as f:
+                    xml_content = f.read()
+
+                pdf_generator = PDFGenerator()
+                pdf_generator.generate_pdf(xml_content, pdf_path)
+                logging.info(f"PDF generated at: {pdf_path}")
+            else:
+                logging.warning(f"XML file not found at: {xml_path}")
+
+        except Exception as e:
+            logging.error(f"Gagal generate PDF: {e}", exc_info=True)
+
         return result
+    
 
     except Exception as e:
         logging.error(f"Error occurred while creating DCC: {e}", exc_info=True)
@@ -224,7 +246,6 @@ async def upload_xml(xml_file: UploadFile = File(...)):
     except Exception as e:
         logging.exception("Error dalam upload_xml")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 # EXCEL FILE 
@@ -292,6 +313,37 @@ async def upload_file(file: UploadFile = File(...)):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
+
+#PDF
+@app.get("/generate-pdf/{certificate_number}")
+async def generate_pdf(certificate_number: str, db: Session = Depends(get_db)):
+    try:
+        # Ambil data DCC berdasarkan nomor sertifikat
+        dcc = crud.get_dcc_by_certificate_number(db, certificate_number)
+        if not dcc:
+            raise HTTPException(status_code=404, detail="DCC not found")
+
+        # Ambil path template dan PDF output
+        paths = crud.get_project_paths(dcc)
+        xml_path = paths['xml_output']
+        pdf_path = paths['pdf_output']
+
+        # Pastikan file XML-nya ada
+        if not os.path.exists(xml_path):
+            raise HTTPException(status_code=404, detail="XML file not found")
+
+        with open(xml_path, "r", encoding="utf-8") as f:
+            xml_content = f.read()
+
+        generator = PDFGenerator()
+        generator.generate_pdf(xml_content, pdf_path)
+
+        return FileResponse(pdf_path, media_type="application/pdf", filename=os.path.basename(pdf_path))
+
+    except Exception as e:
+        logging.error(f"Failed to generate PDF: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail="PDF generation failed")
+
 
 # DOWNLOAD XML FILE 
 @app.get("/download-dcc/{dcc_id}")

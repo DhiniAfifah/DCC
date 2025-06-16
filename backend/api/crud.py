@@ -31,6 +31,8 @@ import logging
 import base64
 import tempfile
 from fastapi import UploadFile
+from api.pdf_generator import PDFGenerator
+
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
@@ -40,6 +42,8 @@ def get_project_paths(dcc: schemas.DCCFormCreate):
     """Mengambil semua path berdasarkan struktur folder proyek"""
     try:
         backend_root = Path(__file__).parent.parent
+        dcc_files_dir = backend_root / "dcc_files"
+        dcc_files_dir.mkdir(exist_ok=True)  
         
         # folder assets
         assets_dir = backend_root / "assets"
@@ -64,6 +68,7 @@ def get_project_paths(dcc: schemas.DCCFormCreate):
             'template': template_path,
             'word_output': backend_root / "dcc_files" / f"{dcc.administrative_data.sertifikat}.docx",
             'pdf_output': backend_root / "dcc_files" / f"{dcc.administrative_data.sertifikat}.pdf",
+            'xml_output': dcc_files_dir / f"{dcc.administrative_data.sertifikat}.xml", 
             'excel': excel_path
         }
         
@@ -1050,11 +1055,17 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         with open(xml_path, "w", encoding="utf-8") as f:
             f.write(xml_content)
         logging.info(f"XML file generated at {xml_path}")
-    
-    except Exception as e:
-        logging.error(f"Error occurred: {e}", exc_info=True)
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        
+        # Generate PDF
+        from api.pdf_generator import PDFGenerator
+        pdf_generator = PDFGenerator()
+        pdf_path = str(paths['pdf_output'])
+        success = pdf_generator.generate_pdf(xml_content, pdf_path)
+
+        if success:
+            logging.info(f"PDF generated successfully at {pdf_path}")
+        else:
+            logging.error("Failed to generate PDF")
         
     finally:
         if wb:
