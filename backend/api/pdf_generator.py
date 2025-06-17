@@ -3,14 +3,21 @@ import base64
 import tempfile
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
-from jinja2 import Template
+from jinja2 import Template, DebugUndefined
 from weasyprint import HTML
 import logging
 from datetime import datetime
+import traceback
 
 # Konfigurasi logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO)  # or logging.ERROR if you want to suppress your own logs too
 logger = logging.getLogger("PDF Generator")
+
+# Suppress weasyprint and fontTools logging
+logging.getLogger('weasyprint').setLevel(logging.ERROR)
+logging.getLogger('fontTools').setLevel(logging.ERROR)
+logging.getLogger('fontTools.subset').setLevel(logging.ERROR)
+logging.getLogger('fontTools.ttLib.ttFont').setLevel(logging.ERROR)
 
 # Namespace untuk parsing XML
 XML_NS = {
@@ -30,288 +37,319 @@ class PDFGenerator:
         logger.info(f"Using template path: {self.template_path}")
         if not os.path.exists(self.template_path):
             logger.error(f"Template file not found at {self.template_path}")
-            # Don't return False here, just log the error
+            return False
         
         self.temp_dir = tempfile.TemporaryDirectory()
         logger.info(f"Using temporary directory: {self.temp_dir.name}")
     
+    def _get_text_by_lang(self, text_obj, lang='id'):
+        """
+        Helper function to safely get text by language
+        Returns the text in specified language, or first available, or empty string
+        """
+        try:
+            if isinstance(text_obj, dict):
+                # If it's a dictionary, try to get the specified language
+                if lang in text_obj:
+                    return text_obj[lang]
+                # If specified language not found, try 'id' first, then 'en', then any available
+                for fallback_lang in ['id', 'en']:
+                    if fallback_lang in text_obj:
+                        return text_obj[fallback_lang]
+                # If no common languages found, return first available value
+                if text_obj:
+                    return list(text_obj.values())[0]
+                return ""
+            elif isinstance(text_obj, str):
+                # If it's already a string, return as is
+                return text_obj
+            elif text_obj is None:
+                return ""
+            else:
+                # If it's some other type, try to convert to string
+                return str(text_obj)
+        except Exception as e:
+            logger.warning(f"Error in _get_text_by_lang: {e}, text_obj: {text_obj}")
+            return ""
+    
+    def _safe_get_multilang_dict(self, text_obj):
+        """
+        Safely convert text object to multilingual dictionary
+        """
+        try:
+            if isinstance(text_obj, dict):
+                return text_obj
+            elif isinstance(text_obj, str):
+                return {'id': text_obj, 'en': text_obj}
+            elif text_obj is None:
+                return {'id': '', 'en': ''}
+            else:
+                str_val = str(text_obj)
+                return {'id': str_val, 'en': str_val}
+        except Exception as e:
+            logger.warning(f"Error in _safe_get_multilang_dict: {e}, text_obj: {text_obj}")
+            return {'id': '', 'en': ''}
+
+    def _debug_data_structure(self, data, max_depth=3, current_depth=0):
+        """Debug function to analyze data structure"""
+        debug_info = {}
+        
+        if current_depth >= max_depth:
+            return f"Max depth reached: {type(data)}"
+            
+        if isinstance(data, dict):
+            debug_info = {}
+            for key, value in data.items():
+                try:
+                    if hasattr(value, 'items') and not isinstance(value, str):
+                        debug_info[key] = f"Dict with {len(value)} items"
+                    elif isinstance(value, list):
+                        debug_info[key] = f"List with {len(value)} items"
+                    elif isinstance(value, str):
+                        debug_info[key] = f"String: '{value[:50]}...'" if len(value) > 50 else f"String: '{value}'"
+                    else:
+                        debug_info[key] = f"{type(value).__name__}: {value}"
+                except Exception as e:
+                    debug_info[key] = f"Error analyzing: {e}"
+        elif isinstance(data, list):
+            debug_info = []
+            for i, item in enumerate(data[:5]):  # Only show first 5 items
+                debug_info.append(self._debug_data_structure(item, max_depth, current_depth + 1))
+                
+        return debug_info
+
+    #FUNGSI MULTI LANG
     def _get_multilang_text(self, element):
         """Ekstrak teks multi-bahasa dari elemen XML"""
         if element is None:
             return {}
         
+        # Handle case where element has no children
+        if len(element) == 0:
+            # If element has text directly, use it
+            if element.text:
+                return {'id': element.text.strip()}
+            return {}
+        
         texts = {}
         for content_elem in element.findall('.//dcc:content', namespaces=XML_NS):
             lang = content_elem.get('lang', 'id')
-            text_content = content_elem.text
-            texts[lang] = text_content.strip() if text_content else ""
+            texts[lang] = content_elem.text.strip() if content_elem.text else ""
         
-        # If no multilang content found, check if element has text directly
+        # If no content elements found, try to get text directly
         if not texts and element.text:
             texts['id'] = element.text.strip()
             
         return texts
 
     def __del__(self):
-        if hasattr(self, 'temp_dir'):
+        try:
             self.temp_dir.cleanup()
+        except:
+            pass
 
     def extract_data_from_xml(self, xml_content):
         """Ekstrak data dari XML ke struktur Python"""
         try:
             root = ET.fromstring(xml_content)
-        except ET.ParseError as e:
-            logger.error(f"XML parsing error: {e}")
-            return self._get_empty_data_structure()
-        
-        # Extract all data with proper error handling
-        responsible_persons = self._extract_responsible_persons(root)
-        
-        data = {
-            'admin': self._extract_admin_data(root),
-            'Measurement_TimeLine': self._extract_timeline(root),
-            'objects': self._extract_objects(root),
-            'responsible_persons': responsible_persons,
-            'owner': self._extract_owner(root),
-            'methods': self._extract_methods(root),
-            'equipments': self._extract_equipments(root),
-            'conditions': self._extract_conditions(root),
-            'uncertainty': self._extract_uncertainty(root),
-            'statements': self._extract_statements(root),
-            # Redundant fields for backward compatibility
-            'kepala': responsible_persons.get('kepala', {}),
-            'penyelia': responsible_persons.get('penyelia', []),
-            'pelaksana': responsible_persons.get('pelaksana', [])
-        }
+            
+            # Extract all data
+            responsible_persons = self._extract_responsible_persons(root) or {
+                'pelaksana': [], 'penyelia': [], 'kepala': {}, 'direktur': {}
+            }
+            
+            data = {
+                'admin': self._extract_admin_data(root) or {},
+                'Measurement_TimeLine': self._extract_timeline(root) or {},
+                'objects': self._extract_objects(root) or [],
+                'responsible_persons': responsible_persons,
+                'owner': self._extract_owner(root) or {},
+                'methods': self._extract_methods(root) or [],
+                'equipments': self._extract_equipments(root) or [],
+                'conditions': self._extract_conditions(root) or [],
+                'uncertainty': self._extract_uncertainty(root) or {
+                    'probability': '', 'factor': ''
+                },
+                'statements': self._extract_statements(root) or [],
+                'direktur': responsible_persons.get('direktur', {}),
+                'kepala': responsible_persons.get('kepala', {}),
+                'penyelia': responsible_persons.get('penyelia', []),
+                'pelaksana': responsible_persons.get('pelaksana', []),
+                # Add helper functions for template
+                'get_text': self._get_text_by_lang,
+                'safe_dict': self._safe_get_multilang_dict
+            }
+            
+            return data
+            
+        except Exception as e:
+            logger.error(f"Error extracting data from XML: {e}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            raise
 
-        return data
-    
-    def _get_empty_data_structure(self):
-        """Return empty data structure when XML parsing fails"""
-        return {
-            'admin': {'certificate': '', 'order': '', 'tempat': ''},
-            'Measurement_TimeLine': {'tgl_mulai': '', 'tgl_akhir': '', 'tgl_pengesahan': ''},
-            'objects': [],
-            'responsible_persons': {'pelaksana': [], 'penyelia': [], 'kepala': {}, 'direktur': {}},
-            'owner': {'nama_cust': '', 'jalan_cust': '', 'no_jalan_cust': '', 'kota_cust': '', 'state_cust': '', 'pos_cust': '', 'negara_cust': ''},
-            'methods': [],
-            'equipments': [],
-            'conditions': [],
-            'uncertainty': {'probability': '', 'factor': ''},
-            'statements': [],
-            'kepala': {},
-            'penyelia': [],
-            'pelaksana': []
-        }
-
+    #ADMIN
     def _extract_admin_data(self, root):
-        """Extract admin data with safe defaults"""
-        try:
-            return {
-                'certificate': root.findtext('.//dcc:uniqueIdentifier', namespaces=XML_NS) or '',
-                'order': root.findtext('.//dcc:identification[@refType="basic_orderNumber"]/dcc:value', namespaces=XML_NS) or '',
-                'tempat': root.findtext('.//dcc:performanceLocation', namespaces=XML_NS) or ''
-            }
-        except Exception as e:
-            logger.error(f"Error extracting admin data: {e}")
-            return {'certificate': '', 'order': '', 'tempat': ''}
+        return {
+            'certificate': root.findtext('.//dcc:uniqueIdentifier', namespaces=XML_NS) or '',
+            'order': root.findtext('.//dcc:identification[@refType="basic_orderNumber"]/dcc:value', namespaces=XML_NS) or '',
+            'tempat': root.findtext('.//dcc:performanceLocation', namespaces=XML_NS) or ''
+        }
 
+    # TIMELINE
     def _extract_timeline(self, root): 
-        """Extract timeline data with safe defaults"""
-        try:
-            return {
-                'tgl_mulai': root.findtext('.//dcc:beginPerformanceDate', namespaces=XML_NS) or '',
-                'tgl_akhir': root.findtext('.//dcc:endPerformanceDate', namespaces=XML_NS) or '',
-                'tgl_pengesahan': root.findtext('.//dcc:issueDate', namespaces=XML_NS) or ''
-            }
-        except Exception as e:
-            logger.error(f"Error extracting timeline: {e}")
-            return {'tgl_mulai': '', 'tgl_akhir': '', 'tgl_pengesahan': ''}
+        return {
+            'tgl_mulai': root.findtext('.//dcc:beginPerformanceDate', namespaces=XML_NS) or '',
+            'tgl_akhir': root.findtext('.//dcc:endPerformanceDate', namespaces=XML_NS) or '',
+            'tgl_pengesahan': root.findtext('.//dcc:issueDate', namespaces=XML_NS) or ''
+        }
     
+    #OBJECT
     def _extract_objects(self, root):
-        """Extract objects with safe defaults"""
         objects = []
-        try:
-            for obj in root.findall('.//dcc:items/dcc:item', namespaces=XML_NS):
-                jenis_elem = obj.find('.//dcc:name', namespaces=XML_NS)
-                merek = obj.findtext('.//dcc:manufacturer/dcc:name/dcc:content', namespaces=XML_NS) or "-"
-                tipe = obj.findtext('.//dcc:model', namespaces=XML_NS) or "-"
-                seri = obj.findtext('.//dcc:identifications/dcc:identification[@refType="basic_serialNumber"]/dcc:value', namespaces=XML_NS) or "-"
-                id_lain_elem = obj.find('.//dcc:identifications/dcc:identification[@refType="basic_serialNumber"]/dcc:name', namespaces=XML_NS)
+        for obj in root.findall('.//dcc:items/dcc:item', namespaces=XML_NS):
+            jenis_elem = obj.find('.//dcc:name', namespaces=XML_NS)
+            merek = obj.findtext('.//dcc:manufacturer/dcc:name/dcc:content', namespaces=XML_NS) or "-"
+            tipe = obj.findtext('.//dcc:model', namespaces=XML_NS) or "-"
+            seri = obj.findtext('.//dcc:identifications/dcc:identification[@refType="basic_serialNumber"]/dcc:value', namespaces=XML_NS) or "-"
+            id_lain_elem = obj.find('.//dcc:identifications/dcc:identification[@refType="basic_serialNumber"]/dcc:name', namespaces=XML_NS)
 
-                # Ensure always dictionary
-                jenis = self._get_multilang_text(jenis_elem)
-                id_lain = self._get_multilang_text(id_lain_elem)
+            # Pastikan selalu dictionary
+            jenis = self._get_multilang_text(jenis_elem) if jenis_elem is not None else {}
+            id_lain = self._get_multilang_text(id_lain_elem) if id_lain_elem is not None else {}
 
-                objects.append({
-                    'jenis': jenis,
-                    'merek': merek,
-                    'tipe': tipe,
-                    'seri_item': seri,
-                    'id_lain': id_lain
-                })
-        except Exception as e:
-            logger.error(f"Error extracting objects: {e}")
-        
+            objects.append({
+                'jenis': jenis,
+                'merek': merek,
+                'tipe': tipe,
+                'seri_item': seri,
+                'id_lain': id_lain
+            })
         return objects
 
+    #RESPONSIBLE PERSONS
     def _extract_responsible_persons(self, root):
-        """Extract responsible persons with safe defaults"""
         roles = {
             'pelaksana': [],
             'penyelia': [],
             'kepala': {},
             'direktur': {}
         }
-        
-        try:
-            for resp in root.findall('.//dcc:respPersons/dcc:respPerson', namespaces=XML_NS):
-                person = {
-                    'nama_resp': resp.findtext('.//dcc:person/dcc:name/dcc:content', namespaces=XML_NS) or '',
-                    'nip': resp.findtext('.//dcc:description/dcc:content', namespaces=XML_NS) or '',
-                    'peran': resp.findtext('.//dcc:role', namespaces=XML_NS) or ''
-                }
 
-                role = person['peran']
-                if 'Pelaksana' in role:
-                    roles['pelaksana'].append(person)
-                elif 'Penyelia' in role:
-                    roles['penyelia'].append(person)
-                elif 'Kepala' in role:
-                    roles['kepala'] = person
-                elif 'Direktur' in role:
-                    roles['direktur'] = person
-        except Exception as e:
-            logger.error(f"Error extracting responsible persons: {e}")
+        for resp in root.findall('.//dcc:respPersons/dcc:respPerson', namespaces=XML_NS):
+            person = {
+                'nama_resp': resp.findtext('.//dcc:person/dcc:name/dcc:content', namespaces=XML_NS) or '',
+                'nip': resp.findtext('.//dcc:description/dcc:content', namespaces=XML_NS) or '',
+                'peran': resp.findtext('.//dcc:role', namespaces=XML_NS) or ''
+            }
+
+            role = person['peran']
+            if 'Pelaksana' in role:
+                roles['pelaksana'].append(person)
+            elif 'Penyelia' in role:
+                roles['penyelia'].append(person)
+            elif 'Kepala' in role:
+                roles['kepala'] = person
+            elif 'Direktur' in role:
+                roles['direktur'] = person
 
         return roles
-    
+
+    #OWNER
     def _extract_owner(self, root):
-        """Extract owner data with safe defaults"""
-        try:
-            owner_location = root.find('.//dcc:customer/dcc:location', namespaces=XML_NS)
-            if owner_location is None:
-                return {
-                    'nama_cust': root.findtext('.//dcc:customer/dcc:name/dcc:content', namespaces=XML_NS) or '',
-                    'jalan_cust': '', 'no_jalan_cust': '', 'kota_cust': '', 
-                    'state_cust': '', 'pos_cust': '', 'negara_cust': ''
-                }
+        owner_elem = root.find('.//dcc:customer/dcc:location', namespaces=XML_NS)
+        if owner_elem is None:
+            return {
+                'nama_cust': '',
+                'jalan_cust': '',
+                'no_jalan_cust': '',
+                'kota_cust': '',
+                'state_cust': '',
+                'pos_cust': '',
+                'negara_cust': ''
+            }
             
-            return {
-                'nama_cust': root.findtext('.//dcc:customer/dcc:name/dcc:content', namespaces=XML_NS) or '',
-                'jalan_cust': owner_location.findtext('.//dcc:street', namespaces=XML_NS) or '',
-                'no_jalan_cust': owner_location.findtext('.//dcc:streetNo', namespaces=XML_NS) or '',
-                'kota_cust': owner_location.findtext('.//dcc:city', namespaces=XML_NS) or '',
-                'state_cust': owner_location.findtext('.//dcc:state', namespaces=XML_NS) or '',
-                'pos_cust': owner_location.findtext('.//dcc:postCode', namespaces=XML_NS) or '',
-                'negara_cust': root.findtext('.//dcc:customer/dcc:countryCode', namespaces=XML_NS) or ''
-            }
-        except Exception as e:
-            logger.error(f"Error extracting owner: {e}")
-            return {
-                'nama_cust': '', 'jalan_cust': '', 'no_jalan_cust': '', 'kota_cust': '', 
-                'state_cust': '', 'pos_cust': '', 'negara_cust': ''
-            }
+        return {
+            'nama_cust': root.findtext('.//dcc:customer/dcc:name/dcc:content', namespaces=XML_NS) or '',
+            'jalan_cust': owner_elem.findtext('.//dcc:street', namespaces=XML_NS) or '',
+            'no_jalan_cust': owner_elem.findtext('.//dcc:streetNo', namespaces=XML_NS) or '',
+            'kota_cust': owner_elem.findtext('.//dcc:city', namespaces=XML_NS) or '',
+            'state_cust': owner_elem.findtext('.//dcc:state', namespaces=XML_NS) or '',
+            'pos_cust': owner_elem.findtext('.//dcc:postCode', namespaces=XML_NS) or '',
+            'negara_cust': root.findtext('.//dcc:customer/dcc:countryCode', namespaces=XML_NS) or ''
+        }
     
+    #EQUIPMENT
     def _extract_equipments(self, root):
-        """Extract equipments with safe defaults"""
         equipments = []
-        try:
-            for eq in root.findall('.//dcc:measurementResults/dcc:measurementResult/dcc:measuringEquipments/dcc:measuringEquipment', namespaces=XML_NS):
-                nama_alat_elem = eq.find('.//dcc:name', namespaces=XML_NS)
-                manuf_model_elem = eq.find('.//dcc:identifications/dcc:identification[@refType="basic_serialNumber"]/dcc:name', namespaces=XML_NS)
-                model = eq.findtext('.//dcc:manufacturer/dcc:name/dcc:content', namespaces=XML_NS) or '-'
-                seri = eq.findtext('.//dcc:identifications/dcc:identification[@refType="basic_serialNumber"]/dcc:value', namespaces=XML_NS) or '-'
+        for eq in root.findall('.//dcc:measurementResults/dcc:measurementResult/dcc:measuringEquipments/dcc:measuringEquipment', namespaces=XML_NS):
+            nama_alat = self._get_multilang_text(eq.find('.//dcc:name', namespaces=XML_NS))
+            manuf_model = self._get_multilang_text(eq.find('.//dcc:identifications/dcc:identification[@refType="basic_serialNumber"]/dcc:name', namespaces=XML_NS))
+            model = self._get_multilang_text(eq.find('.//dcc:manufacturer/dcc:name', namespaces=XML_NS))
+            seri = eq.findtext('.//dcc:identifications/dcc:identification[@refType="basic_serialNumber"]/dcc:value', namespaces=XML_NS) or '-'
 
-                nama_alat = self._get_multilang_text(nama_alat_elem)
-                manuf_model = self._get_multilang_text(manuf_model_elem)
-
-                equipments.append({
-                    'nama_alat': nama_alat,
-                    'manuf_model': manuf_model,
-                    'model': model,
-                    'seri_measuring': seri
-                })
-        except Exception as e:
-            logger.error(f"Error extracting equipments: {e}")
-        
+            # Pastikan tidak ada nilai None
+            equipments.append({
+                'nama_alat': nama_alat if nama_alat else {},
+                'manuf_model': manuf_model if manuf_model else {},
+                'model': model,
+                'seri_measuring': seri
+            })
         return equipments
     
+    #CONDITIONS
     def _extract_conditions(self, root):
-        """Extract conditions with safe defaults"""
         conditions = []
-        try:
-            for cond in root.findall('.//dcc:influenceConditions/dcc:influenceCondition', namespaces=XML_NS):
-                jenis_kondisi_elem = cond.find('.//dcc:name', namespaces=XML_NS)
-                tengah = cond.findtext('.//dcc:quantity[@refType="math_minimum"]/si:real/si:value', namespaces=XML_NS) or ''
-                tengah_unit = cond.findtext('.//dcc:quantity[@refType="math_minimum"]/si:real/si:unit', namespaces=XML_NS) or ''
-                rentang = cond.findtext('.//dcc:quantity[@refType="math_maximum"]/si:real/si:value', namespaces=XML_NS) or ''
-                rentang_unit = cond.findtext('.//dcc:quantity[@refType="math_maximum"]/si:real/si:unit', namespaces=XML_NS) or ''
+        for cond in root.findall('.//dcc:influenceConditions/dcc:influenceCondition', namespaces=XML_NS):
+            jenis_kondisi = cond.findtext('.//dcc:name/dcc:content', namespaces=XML_NS) or ''
+            tengah = cond.findtext('.//dcc:quantity[@refType="math_minimum"]/si:real/si:value', namespaces=XML_NS) or ''
+            tengah_unit = cond.findtext('.//dcc:quantity[@refType="math_minimum"]/si:real/si:unit', namespaces=XML_NS) or ''
+            rentang = cond.findtext('.//dcc:quantity[@refType="math_maximum"]/si:real/si:value', namespaces=XML_NS) or ''
+            rentang_unit = cond.findtext('.//dcc:quantity[@refType="math_maximum"]/si:real/si:unit', namespaces=XML_NS) or ''
 
-                jenis_kondisi = self._get_multilang_text(jenis_kondisi_elem)
-
-                conditions.append({
-                    'jenis_kondisi': jenis_kondisi,
-                    'tengah': tengah,
-                    'tengah_unit': tengah_unit,
-                    'rentang': rentang,
-                    'rentang_unit': rentang_unit
-                })
-        except Exception as e:
-            logger.error(f"Error extracting conditions: {e}")
-        
+            conditions.append({
+                'jenis_kondisi': jenis_kondisi if jenis_kondisi else {},
+                'tengah': tengah,
+                'tengah_unit': tengah_unit,
+                'rentang': rentang,
+                'rentang_unit': rentang_unit
+            })
         return conditions
     
+    #METHOD
     def _extract_methods(self, root):
-        """Extract methods with safe defaults"""
         methods = []
-        try:
-            for met in root.findall('.//dcc:measurementResults/dcc:measurementResult/dcc:usedMethods/dcc:usedMethod', namespaces=XML_NS):
-                method_name_elem = met.find('.//dcc:name', namespaces=XML_NS)
-                method_desc_elem = met.find('.//dcc:description', namespaces=XML_NS)
+        for met in root.findall('.//dcc:measurementResults/dcc:measurementResult/dcc:usedMethods/dcc:usedMethod', namespaces=XML_NS):
+            method_name = self._get_multilang_text(met.find('.//dcc:name', namespaces=XML_NS))
+            method_desc = self._get_multilang_text(met.find('.//dcc:description', namespaces=XML_NS))
 
-                method_name = self._get_multilang_text(method_name_elem)
-                method_desc = self._get_multilang_text(method_desc_elem)
-
-                methods.append({
-                    'method_name': method_name,
-                    'method_desc': method_desc
-                })
-        except Exception as e:
-            logger.error(f"Error extracting methods: {e}")
-        
+            methods.append({
+                'method_name': method_name if method_name else {},
+                'method_desc': method_desc if method_desc else {}
+            })
         return methods
     
+    #STATEMENT
     def _extract_statements(self, root):
-        """Extract statements with safe defaults"""
         statements = []
-        try:
-            for stmt in root.findall('.//dcc:statements/dcc:statement', namespaces=XML_NS):
-                declaration_elem = stmt.find('.//dcc:declaration', namespaces=XML_NS)
-                declaration = self._get_multilang_text(declaration_elem)
-                
-                statements.append({
-                    'value': declaration
-                })
-        except Exception as e:
-            logger.error(f"Error extracting statements: {e}")
-        
+        for stmt in root.findall('.//dcc:statements/dcc:statement', namespaces=XML_NS):
+            declaration = self._get_multilang_text(stmt.find('.//dcc:declaration', namespaces=XML_NS))
+            statements.append({
+                'value': declaration if declaration else {}
+            })
         return statements
 
+    # UNCERTAINTY
     def _extract_uncertainty(self, root):
-        """Extract uncertainty with safe defaults"""
-        try:
-            uncert = root.find('.//dcc:measurementUncertainty', namespaces=XML_NS)
-            if uncert is None:
-                return {'probability': '', 'factor': ''}
-            
+        uncert = root.find('.//si:measurementUncertaintyUnivariateXMLList', namespaces=XML_NS)
+        if uncert is None:
             return {
-                'probability': uncert.findtext('.//dcc:coverageProbability', namespaces=XML_NS) or '',
-                'factor': uncert.findtext('.//dcc:coverageFactor', namespaces=XML_NS) or ''
+                'probability': '',
+                'factor': ''
             }
-        except Exception as e:
-            logger.error(f"Error extracting uncertainty: {e}")
-            return {'probability': '', 'factor': ''}
+        return {
+            'probability': uncert.findtext('.//si:coverageProbabilityXMLList', namespaces=XML_NS) or '',
+            'factor': uncert.findtext('.//si:coverageFactorXMLList', namespaces=XML_NS) or ''
+        }
     
     def create_formula_image(self, formula, prefix, index):
         """Buat gambar PNG dari formula matematika"""
@@ -329,30 +367,66 @@ class PDFGenerator:
             logger.error(f"Error creating formula image: {e}")
             return None
 
-    def generate_pdf(self, xml_content, output_path):
-        """Generate PDF dari konten XML"""
+    def test_template_rendering(self, data):
+        """Test template rendering with better error handling"""
         try:
-            # Validate template exists
-            if not os.path.exists(self.template_path):
-                logger.error(f"Template file not found at {self.template_path}")
-                return False
-            
-            # Ekstrak data dari XML
-            data = self.extract_data_from_xml(xml_content)
-            
-            # Debug: Log the extracted data structure 
-            logger.info("Extracted data structure:")
-            for key, value in data.items():
-                logger.info(f"  {key}: {type(value)} - {len(value) if isinstance(value, (list, dict)) else 'N/A'}")
-            
-            # Render template HTML
+            # Read template
             with open(self.template_path, 'r', encoding='utf-8') as f:
                 template_html = f.read()
             
-            template = Template(template_html)
+            # Create Jinja2 template with debug undefined
+            template = Template(template_html, undefined=DebugUndefined)
+            
+            # Add custom functions to the template environment
+            template.globals['get_text'] = self._get_text_by_lang
+            template.globals['safe_dict'] = self._safe_get_multilang_dict
+            
+            # Try rendering
+            logger.info("Attempting to render template...")
             rendered_html = template.render(**data)
             
+            logger.info("Template rendered successfully!")
+            return rendered_html
+            
+        except Exception as e:
+            logger.error(f"Template rendering failed: {e}")
+            logger.error(f"Error type: {type(e).__name__}")
+            logger.error(f"Full traceback: {traceback.format_exc()}")
+            
+            # Try to identify problematic variables
+            logger.info("=== DEBUGGING DATA FOR TEMPLATE ===")
+            for key, value in data.items():
+                if callable(value):
+                    continue
+                try:
+                    logger.info(f"{key}: {type(value)} - {str(value)[:100]}...")
+                    if hasattr(value, 'items') and not isinstance(value, str):
+                        logger.info(f"  -> Has .items() method")
+                    if isinstance(value, str):
+                        logger.info(f"  -> Is string, length: {len(value)}")
+                except Exception as debug_error:
+                    logger.error(f"  -> Error debugging {key}: {debug_error}")
+            
+            raise
+
+    def generate_pdf(self, xml_path, output_path):
+        """Generate PDF dari konten XML"""
+        try:
+            # Read XML file
+            with open(xml_path, 'r', encoding='utf-8') as f:
+                xml_content = f.read()
+            
+            logger.info(f"XML file loaded, size: {len(xml_content)} characters")
+            
+            # Extract data from XML
+            logger.info("Extracting data from XML...")
+            data = self.extract_data_from_xml(xml_content)
+            
+            # Test template rendering
+            rendered_html = self.test_template_rendering(data)
+            
             # Generate PDF/A-3
+            logger.info("Generating PDF...")
             HTML(string=rendered_html).write_pdf(
                 output_path,
                 pdfa='PDF/A-3b',
@@ -365,24 +439,12 @@ class PDFGenerator:
             
             logger.info(f"PDF generated successfully at {output_path}")
             return True
+            
         except Exception as e:
             logger.error(f"PDF generation failed: {e}")
-            import traceback
-            logger.error(f"Traceback: {traceback.format_exc()}")
+            logger.error(f"Full traceback: {traceback.format_exc()}")
             return False
         
 if __name__ == "__main__":
-    # Test with minimal XML
-    test_xml = """<?xml version="1.0" encoding="UTF-8"?>
-    <dcc:digitalCalibrationCertificate xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si">
-        <dcc:administrativeData>
-            <dcc:coreData>
-                <dcc:uniqueIdentifier>TEST-001</dcc:uniqueIdentifier>
-                <dcc:performanceLocation>Test Location</dcc:performanceLocation>
-            </dcc:coreData>
-        </dcc:administrativeData>
-    </dcc:digitalCalibrationCertificate>"""
-    
     generator = PDFGenerator()
-    success = generator.generate_pdf(test_xml, "test.pdf")
-    print(f"PDF generation {'successful' if success else 'failed'}")
+    generator.generate_pdf("16.xml", "test.pdf")

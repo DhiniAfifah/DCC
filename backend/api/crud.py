@@ -630,12 +630,12 @@ def generate_xml(dcc, table_data):
                                 
                             if stmt.has_formula and stmt.formula:
                                 with tag('dcc:formula'):
-                                    # if stmt.formula.latex:
-                                    #     with tag('dcc:latex'):
-                                    #         text(stmt.formula.latex)
-                                    if stmt.formula.mathml:
-                                        with tag('dcc:mathml'):
-                                            text(stmt.formula.mathml)
+                                    if stmt.formula.latex:
+                                        with tag('dcc:latex'):
+                                            text(stmt.formula.latex)
+                                    # if stmt.formula.mathml:
+                                    #     with tag('dcc:mathml'):
+                                    #         text(stmt.formula.mathml)
                             # bagian gambar (jika ada)
                             if stmt.has_image and stmt.image:
                                 with tag('dcc:file'):
@@ -675,8 +675,8 @@ def generate_xml(dcc, table_data):
                                     with tag('dcc:content', lang=lang): text(clean_text(method.method_desc.root.get(lang, ""))) #Multilang
                                 if method.has_formula and method.formula:
                                     with tag('dcc:formula'):
-                                        # with tag('dcc:latex'): text(method.formula.latex or "")
-                                        with tag('dcc:mathml'): text(method.formula.mathml or "")
+                                        with tag('dcc:latex'): text(method.formula.latex or "")
+                                        # with tag('dcc:mathml'): text(method.formula.mathml or "")
                                 if method.has_image and method.image:
                                     with tag('dcc:file'):
                                         if getattr(method.image, 'fileName', None):
