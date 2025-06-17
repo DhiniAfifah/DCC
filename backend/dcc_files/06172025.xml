@@ -50,10 +50,10 @@
                </dcc:name>
             </dcc:identification>
          </dcc:identifications>
-         <dcc:beginPerformanceDate>2025-06-02</dcc:beginPerformanceDate>
-         <dcc:endPerformanceDate>2025-06-04</dcc:endPerformanceDate>
+         <dcc:beginPerformanceDate>2025-06-03</dcc:beginPerformanceDate>
+         <dcc:endPerformanceDate>2025-06-05</dcc:endPerformanceDate>
          <dcc:performanceLocation>laboratory</dcc:performanceLocation>
-         <dcc:issueDate>2025-06-12</dcc:issueDate>
+         <dcc:issueDate>2025-06-09</dcc:issueDate>
       </dcc:coreData>
       <dcc:items>
          <dcc:item>
@@ -63,17 +63,17 @@
             </dcc:name>
             <dcc:manufacturer>
                <dcc:name>
-                  <dcc:content>reee</dcc:content>
+                  <dcc:content>rrr</dcc:content>
                </dcc:name>
             </dcc:manufacturer>
-            <dcc:model>w43</dcc:model>
+            <dcc:model>w41</dcc:model>
             <dcc:identifications>
                <dcc:identification refType="basic_serialNumber">
                   <dcc:issuer>calibrationLaboratory</dcc:issuer>
                   <dcc:value>8976543097</dcc:value>
                   <dcc:name>
-                     <dcc:content lang="id">bagus</dcc:content>
-                     <dcc:content lang="en">good</dcc:content>
+                     <dcc:content lang="id">apa</dcc:content>
+                     <dcc:content lang="en">what</dcc:content>
                   </dcc:name>
                </dcc:identification>
             </dcc:identifications>
@@ -106,7 +106,7 @@
                </dcc:name>
             </dcc:person>
             <dcc:description>
-               <dcc:content>8</dcc:content>
+               <dcc:content>8000</dcc:content>
             </dcc:description>
             <dcc:role>Pelaksana Kalibrasi</dcc:role>
             <dcc:mainSigner>0</dcc:mainSigner>
@@ -120,7 +120,7 @@
                </dcc:name>
             </dcc:person>
             <dcc:description>
-               <dcc:content>9</dcc:content>
+               <dcc:content>9000</dcc:content>
             </dcc:description>
             <dcc:role>Penyelia Kalibrasi</dcc:role>
             <dcc:mainSigner>0</dcc:mainSigner>
@@ -134,7 +134,7 @@
                </dcc:name>
             </dcc:person>
             <dcc:description>
-               <dcc:content>10</dcc:content>
+               <dcc:content>100</dcc:content>
             </dcc:description>
             <dcc:role>Kepala Laboratorium SNSU Biologi</dcc:role>
             <dcc:mainSigner>0</dcc:mainSigner>
@@ -148,7 +148,7 @@
                </dcc:name>
             </dcc:person>
             <dcc:description>
-               <dcc:content>11</dcc:content>
+               <dcc:content>110</dcc:content>
             </dcc:description>
             <dcc:role>Direktur SNSU Mekanika, Radiasi, dan Biologi</dcc:role>
             <dcc:mainSigner>1</dcc:mainSigner>
@@ -161,7 +161,7 @@
             <dcc:content>BSN SNSU</dcc:content>
          </dcc:name>
          <dcc:location>
-            <dcc:city>tangerang</dcc:city>
+            <dcc:city>Tangerang</dcc:city>
             <dcc:countryCode>ID</dcc:countryCode>
             <dcc:postCode>18239</dcc:postCode>
             <dcc:state>Banten</dcc:state>
@@ -175,7 +175,7 @@
                <dcc:content lang="id">ini peryataan</dcc:content>
                <dcc:content lang="en">this is statement</dcc:content>
                <dcc:formula>
-                  <dcc:mathml>&lt;math xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;mfrac&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;mn&gt;4&lt;/mn&gt;&lt;/mfrac&gt;&lt;/math&gt;</dcc:mathml>
+                  <dcc:latex>1\frac{2}{4}</dcc:latex>
                </dcc:formula>
                <dcc:file>
                   <dcc:fileName>gajah.jpg</dcc:fileName>
@@ -203,7 +203,7 @@
                   <dcc:content lang="id">bagus</dcc:content>
                   <dcc:content lang="en">good</dcc:content>
                   <dcc:formula>
-                     <dcc:mathml>&lt;math xmlns="http://www.w3.org/1998/Math/MathML"&gt;&lt;mfrac&gt;&lt;mn&gt;1&lt;/mn&gt;&lt;mn&gt;2&lt;/mn&gt;&lt;/mfrac&gt;&lt;mo&gt;+&lt;/mo&gt;&lt;mfrac&gt;&lt;mn&gt;3&lt;/mn&gt;&lt;mn&gt;4&lt;/mn&gt;&lt;/mfrac&gt;&lt;mo&gt;=&lt;/mo&gt;&lt;mfenced open="|" close="|"&gt;&lt;mn&gt;23&lt;/mn&gt;&lt;/mfenced&gt;&lt;/math&gt;</dcc:mathml>
+                     <dcc:latex>\frac{1}{2} + \frac{3}{4} = \left|23\right|</dcc:latex>
                   </dcc:formula>
                   <dcc:file>
                      <dcc:fileName>loopy.jpg</dcc:fileName>
@@ -255,7 +255,7 @@
                         <dcc:content>nilai minimum</dcc:content>
                      </dcc:name>
                      <si:real>
-                        <si:value>61.0</si:value>
+                        <si:value>60.0</si:value>
                         <si:unit>\degreecelsius\tothe{1}</si:unit>
                      </si:real>
                   </dcc:quantity>
@@ -264,7 +264,7 @@
                         <dcc:content>nilai maksimum</dcc:content>
                      </dcc:name>
                      <si:real>
-                        <si:value>71.0</si:value>
+                        <si:value>72.0</si:value>
                         <si:unit>\degreecelsius\tothe{1}</si:unit>
                      </si:real>
                   </dcc:quantity>
@@ -329,7 +329,7 @@
                            <si:measurementUncertaintyUnivariateXMLList>
                               <si:expandedMUXMLList>
                                  <si:valueExpandedMUXMLList>0.000857647782733368 0.00085522818089939 0.000644897794937216 0.000644765742058876 0.000617470981022878 0.000617387957003282 0.000615199907372648 0.000615011982392246</si:valueExpandedMUXMLList>
-                                 <si:coverageFactorXMLList>5</si:coverageFactorXMLList>
+                                 <si:coverageFactorXMLList>3</si:coverageFactorXMLList>
                                  <si:coverageProbabilityXMLList>0.97</si:coverageProbabilityXMLList>
                                  <si:distributionXMLList>normal</si:distributionXMLList>
                               </si:expandedMUXMLList>

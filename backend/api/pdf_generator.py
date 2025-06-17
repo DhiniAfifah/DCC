@@ -8,6 +8,7 @@ from weasyprint import HTML
 import logging
 from datetime import datetime
 import traceback
+from weasyprint import HTML
 
 # Konfigurasi logging
 logging.basicConfig(level=logging.INFO)  # or logging.ERROR if you want to suppress your own logs too
@@ -24,6 +25,7 @@ XML_NS = {
     'dcc': 'https://ptb.de/dcc',
     'si': 'https://ptb.de/si'
 }
+
 
 
 class PDFGenerator:
@@ -370,6 +372,7 @@ class PDFGenerator:
     def test_template_rendering(self, data):
         """Test template rendering with better error handling"""
         try:
+            
             # Read template
             with open(self.template_path, 'r', encoding='utf-8') as f:
                 template_html = f.read()
@@ -412,6 +415,16 @@ class PDFGenerator:
     def generate_pdf(self, xml_path, output_path):
         """Generate PDF dari konten XML"""
         try:
+            
+            # Perbaiki base_url ke direktori assets yang benar
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.dirname(current_dir)  # Naik ke parent directory (backend)
+            assets_path = os.path.join(parent_dir, 'assets')
+            
+            # Gunakan path absolut dan normalisasi untuk URL
+            base_url = 'file:///' + assets_path.replace('\\', '/')
+            logger.info(f"Corrected base_url: {base_url}")
+            
             # Read XML file
             with open(xml_path, 'r', encoding='utf-8') as f:
                 xml_content = f.read()
@@ -427,7 +440,7 @@ class PDFGenerator:
             
             # Generate PDF/A-3
             logger.info("Generating PDF...")
-            HTML(string=rendered_html).write_pdf(
+            HTML(string=rendered_html, base_url=base_url).write_pdf(
                 output_path,
                 pdfa='PDF/A-3b',
                 metadata={
@@ -439,12 +452,12 @@ class PDFGenerator:
             
             logger.info(f"PDF generated successfully at {output_path}")
             return True
+        
             
         except Exception as e:
             logger.error(f"PDF generation failed: {e}")
             logger.error(f"Full traceback: {traceback.format_exc()}")
             return False
         
-if __name__ == "__main__":
-    generator = PDFGenerator()
-    generator.generate_pdf("16.xml", "test.pdf")
+#if __name__ == "__main__":
+   ## generator.generate_pdf("16.xml", "test.pdf")

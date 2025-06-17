@@ -15,8 +15,6 @@ import api.database as database
 import os
 import shutil
 import logging
-import tempfile
-import zipfile
 import xml.etree.ElementTree as ET
 import shutil
 import pandas as pd
@@ -32,6 +30,13 @@ from .pdf_generator import PDFGenerator
 from .models import DCC
 from starlette.background import BackgroundTask
 from pikepdf import Pdf, Name, String
+import tempfile
+import matplotlib.pyplot as plt
+from jinja2 import Template, DebugUndefined
+from weasyprint import HTML
+import logging
+from datetime import datetime
+import traceback
 
 #from slowapi import Limiter
 #from slowapi.errors import RateLimitExceeded
@@ -44,6 +49,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # Set log level
 #logging.basicConfig(level=logging.DEBUG)
 logging.basicConfig(level=logging.INFO)
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -209,21 +217,44 @@ async def create_dcc(
             xml_path = paths['xml_output']
             pdf_path = paths['pdf_output']
 
+            # Pastikan direktori output ada
+            os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+            
+            logging.info(f"XML path: {xml_path}")
+            logging.info(f"PDF path: {pdf_path}")
+            
             if os.path.exists(xml_path):
-                with open(xml_path, "r", encoding="utf-8") as f:
-                    xml_content = f.read()
-
+                logging.info(f"XML file exists, size: {os.path.getsize(xml_path)} bytes")
+                
+                # Gunakan PDFGenerator
                 pdf_generator = PDFGenerator()
-                pdf_generator.generate_pdf(xml_content, pdf_path)
-                logging.info(f"PDF generated at: {pdf_path}")
+                success = pdf_generator.generate_pdf(str(xml_path), str(pdf_path))
+                
+                if success:
+                    logging.info(f"PDF generated at: {pdf_path}")
+                    # Berikan response dengan link download
+                    return {
+                        "message": "DCC created successfully",
+                        "pdf_url": f"/generate-pdf/{dcc.administrative_data.sertifikat}"
+                    }
+                else:
+                    logging.error("PDF generation failed during DCC creation")
+                    return JSONResponse(
+                        status_code=500,
+                        content={"detail": "PDF generation failed"}
+                    )
             else:
-                logging.warning(f"XML file not found at: {xml_path}")
-
+                logging.error(f"XML file not found at: {xml_path}")
+                return JSONResponse(
+                    status_code=404,
+                    content={"detail": "XML file not found"}
+                )
         except Exception as e:
-            logging.error(f"Gagal generate PDF: {e}", exc_info=True)
-
-        return result
-    
+            logging.exception("Error during PDF generation")
+            return JSONResponse(
+                status_code=500,
+                content={"detail": f"PDF generation error: {str(e)}"}
+            )
 
     except Exception as e:
         logging.error(f"Error occurred while creating DCC: {e}", exc_info=True)
@@ -390,34 +421,61 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 
 #PDF
-@app.get("/generate-pdf/{certificate_number}")
-async def generate_pdf(certificate_number: str, db: Session = Depends(get_db)):
+def generate_pdf(self, xml_path, output_path):
+    """Generate PDF dari konten XML"""
+    logger = logging.getLogger("PDF Generator")
+    
     try:
-        # Ambil data DCC berdasarkan nomor sertifikat
-        dcc = crud.get_dcc_by_certificate_number(db, certificate_number)
-        if not dcc:
-            raise HTTPException(status_code=404, detail="DCC not found")
-
-        # Ambil path template dan PDF output
-        paths = crud.get_project_paths(dcc)
-        xml_path = paths['xml_output']
-        pdf_path = paths['pdf_output']
-
-        # Pastikan file XML-nya ada
-        if not os.path.exists(xml_path):
-            raise HTTPException(status_code=404, detail="XML file not found")
-
-        with open(xml_path, "r", encoding="utf-8") as f:
+        # Pastikan direktori output ada
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        logger.info(f"Processing XML file: {xml_path}")
+        
+        # Baca file XML
+        with open(xml_path, 'r', encoding='utf-8') as f:
             xml_content = f.read()
-
-        generator = PDFGenerator()
-        generator.generate_pdf(xml_content, pdf_path)
-
-        return FileResponse(pdf_path, media_type="application/pdf", filename=os.path.basename(pdf_path))
-
+        
+        # Ekstrak data dari XML
+        logger.info("Extracting data from XML...")
+        data = self.extract_data_from_xml(xml_content)
+        
+        # Baca template HTML
+        with open(self.template_path, 'r', encoding='utf-8') as f:
+            template_html = f.read()
+            
+        
+        # Render template
+        logger.info("Rendering HTML template...")
+        template = Template(template_html, undefined=DebugUndefined)
+        template.globals['get_text'] = self._get_text_by_lang
+        template.globals['safe_dict'] = self._safe_get_multilang_dict
+        rendered_html = template.render(**data)
+        
+        # Generate PDF
+        logger.info(f"Generating PDF to: {output_path}")
+        HTML(string=rendered_html).write_pdf(
+            output_path,
+            pdfa='PDF/A-3b',
+            metadata={
+                'title': 'Digital Calibration Certificate',
+                'author': 'SNSU-BSN',
+                'creationDate': datetime.now()
+            }
+        )
+        
+        if os.path.exists(output_path):
+            logger.info(f"PDF successfully generated: {output_path} ({os.path.getsize(output_path)} bytes)")
+            return True
+        else:
+            logger.error("PDF generation failed - no output file created")
+            return False
+            
     except Exception as e:
-        logging.error(f"Failed to generate PDF: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail="PDF generation failed")
+        logger.error(f"PDF generation failed: {e}")
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        return False
+        
+        return False
 
 
 # DOWNLOAD XML FILE 
