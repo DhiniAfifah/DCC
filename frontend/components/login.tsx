@@ -50,17 +50,28 @@ export default function Login({ formData }: { formData: any }) {
   // Fungsi untuk menangani login
   const onSubmit = async (data: { email: string; password: string }) => {
     try {
+      const formData = new URLSearchParams();
+      formData.append("username", data.email);
+      formData.append("password", data.password);
+
       const response = await axios.post(
         "http://127.0.0.1:8000/token",
-        `email=${data.email}&password=${data.password}`,
+        formData,
         {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
         }
       );
+
       localStorage.setItem("access_token", response.data.access_token);
       window.location.href = "/main";
-    } catch (error) {
-      setErrorMessage(t("login_fail"));
+    } catch (error: any) {
+      if (error.response && error.response.data && error.response.data.detail) {
+        setErrorMessage(error.response.data.detail);
+      } else {
+        setErrorMessage(t("login_fail"));
+      }
     }
   };
 
@@ -73,9 +84,9 @@ export default function Login({ formData }: { formData: any }) {
             style={{ backgroundImage: "url('/image/panjang.jpg')" }}
           ></div>
           <div className="absolute inset-0 bg-red-200 bg-opacity-80 pointer-events-none"></div>
-<div className="relative z-10 flex items-center justify-center h-full">
+          <div className="relative z-10 flex items-center justify-center h-full">
             <h1 className="text-2xl md:text-4xl lg:text-5xl text-black p-10 text-center">
-              <span dangerouslySetInnerHTML={{ __html: t('welcome') }} />
+              <span dangerouslySetInnerHTML={{ __html: t("welcome") }} />
             </h1>
           </div>
         </div>
@@ -85,7 +96,7 @@ export default function Login({ formData }: { formData: any }) {
             <div className="text-center font-semibold leading-tight tracking-tight text-indigo-950 text-2xl">
               {t("log_in")}
             </div>
-            
+
             <div className="space-y-4">
               <div id="email">
                 <FormLabel>{t("email")}</FormLabel>
@@ -117,7 +128,11 @@ export default function Login({ formData }: { formData: any }) {
                   )}
                 />
               </div>
-              {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
+              {errorMessage && (
+                <p className="text-red-600">
+                  <small>{errorMessage}</small>
+                </p>
+              )}
             </div>
             <div>
               <div className="flex justify-center pt-2">

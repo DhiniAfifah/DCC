@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Date, Text, JSON
+from sqlalchemy import Column, String, Integer, Date, Text, JSON, Boolean
 from .database import Base
 from sqlalchemy.orm import Mapped
 
@@ -30,3 +30,12 @@ class XML(Base):
     filename = Column(String, index=True)
     file_path = Column(String, index=True)
     status = Column(String, default="pending")
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    full_name = Column(String, nullable=True)
+    disabled = Column(Boolean, default=False)

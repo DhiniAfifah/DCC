@@ -187,22 +187,32 @@ class Result(BaseModel):
     columns: List[Column]
     uncertainty: Uncertainty
     
-# Token JWT
+#LOGIN & REGISTER    
+class UserBase(BaseModel):
+    email: str
+
+class UserCreate(UserBase):
+    password: str
+    full_name: Optional[str] = None
+
+class User(UserBase):
+    id: int
+    full_name: Optional[str] = None
+    disabled: Optional[bool] = None
+
+    class Config:
+        orm_mode = True
+
+class UserInDB(User):
+    hashed_password: str
+
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-# Data pengguna
-class User(BaseModel):
-    username: str
-    email: str | None = None
-    password: str | None = None
-    
-    @validator('email')
-    def email_must_be_valid(cls, v):
-        if '@' not in v:
-            raise ValueError('Invalid email format')
-        return v
+class TokenData(BaseModel):
+    username: str | None = None
+    scopes: list[str] = []
 
 class DCCFormCreate(BaseModel):
     software: str  # software
