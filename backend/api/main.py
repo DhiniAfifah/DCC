@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
-from pydantic import BaseModel
 from datetime import datetime, timedelta, timezone
 from fastapi.responses import JSONResponse
 from openpyxl.styles import Font, Alignment
@@ -14,11 +13,14 @@ import api.crud as crud
 import api.schemas as schemas
 import api.database as database
 import os
-import json
+import shutil
+import logging
+import tempfile
+import zipfile
+import xml.etree.ElementTree as ET
 import shutil
 import pandas as pd
 import base64
-import uuid
 import mimetypes
 import jwt
 from sqlalchemy import inspect
@@ -28,6 +30,9 @@ from xml.etree import ElementTree as ET
 from .converter import convert_xml_to_excel
 from .pdf_generator import PDFGenerator
 from .models import DCC
+from starlette.background import BackgroundTask
+from pikepdf import Pdf, Name, String
+
 #from slowapi import Limiter
 #from slowapi.errors import RateLimitExceeded
 
@@ -224,29 +229,99 @@ async def create_dcc(
         logging.error(f"Error occurred while creating DCC: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-#XML FILE
-@app.post("/upload-xml/")
-async def upload_xml(xml_file: UploadFile = File(...)):
+#IMPORTER
+def cleanup_file(path: str):
+    """Hapus file setelah dikirim"""
     try:
-        logging.debug(f"Menerima file: {xml_file.filename}")
-        
-        # Simpan file XML yang diunggah
-        file_location = os.path.join(UPLOAD_DIR, xml_file.filename)
-        print(f"File will be saved at: {file_location}") #ceklog
-        
-        with open(file_location, "wb") as buffer:
-            shutil.copyfileobj(xml_file.file, buffer)
+        os.unlink(path)
+    except Exception as e:
+        logging.warning(f"Gagal menghapus file {path}: {str(e)}")
 
-        # Konversi XML ke Excel
-        excel_path = convert_xml_to_excel(file_location)
+def extract_xml_from_pdf(pdf_path: str) -> str:
+    """Extract embedded XML from PDF file"""
+    try:
+        xml_content = None
+        with Pdf.open(pdf_path) as pdf:
+            root = pdf.Root
+            
+            if Name.Names in root and Name.EmbeddedFiles in root.Names:
+                embedded_files = root.Names.EmbeddedFiles
+                files = embedded_files.Names
+                
+                for i in range(0, len(files), 2):
+                    file_name = files[i]
+                    
+                    if isinstance(file_name, String):
+                        file_name = str(file_name)
+                    elif isinstance(file_name, Name):
+                        file_name = str(file_name)
+                    else:
+                        continue
+                    
+                    if file_name.lower().endswith('.xml'):
+                        file_spec = files[i+1]
+                        if Name.EF in file_spec:
+                            stream = file_spec.EF.F
+                            xml_content = stream.read_bytes()
+                            break
 
-        # Kembalikan path file Excel yang sudah diproses
-        return JSONResponse(content={"excel_file_path": f"/uploads/{os.path.basename(excel_path)}"})
+            if not xml_content and Name.EmbeddedFiles in root:
+                embedded_files = root.EmbeddedFiles
+                for name, file_spec in embedded_files.items():
+                    # Konversi nama ke string
+                    if isinstance(name, String):
+                        name = str(name)
+                    elif isinstance(name, Name):
+                        name = str(name)
+                    else:
+                        continue
+                    
+                    if name.lower().endswith('.xml') and Name.EF in file_spec:
+                        stream = file_spec.EF.F
+                        xml_content = stream.read_bytes()
+                        break
+
+        if not xml_content:
+            raise ValueError("PDF tidak mengandung XML yang disematkan")
+
+        xml_filename = os.path.basename(pdf_path) + ".xml"
+        xml_path = os.path.join(UPLOAD_DIR, xml_filename)
+        
+        with open(xml_path, "wb") as xml_file:
+            xml_file.write(xml_content)
+            
+        return xml_path
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise RuntimeError(f"Ekstraksi XML gagal: {str(e)}")
+
+@app.post("/upload-pdf/")
+async def upload_pdf(pdf_file: UploadFile = File(...)):
+    try:
+        pdf_path = os.path.join(UPLOAD_DIR, pdf_file.filename)
+        with open(pdf_path, "wb") as buffer:
+            shutil.copyfileobj(pdf_file.file, buffer)
+
+        xml_path = extract_xml_from_pdf(pdf_path)
+        excel_path = convert_xml_to_excel(xml_path)
+        
+        return FileResponse(
+            excel_path,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename={os.path.basename(excel_path)}"
+            },
+            background=BackgroundTask(cleanup_file, excel_path)  
+        )
 
     except Exception as e:
-        logging.exception("Error dalam upload_xml")
-        raise HTTPException(status_code=500, detail=str(e))
-
+        logging.exception("Error in upload_pdf")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Proses PDF gagal: {str(e)}"
+        )
 
 # EXCEL FILE 
 @app.post("/upload-excel/")

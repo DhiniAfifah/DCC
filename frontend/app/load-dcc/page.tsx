@@ -2,7 +2,6 @@
 
 import Importer from "@/components/importer";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function LoadDCC() {
@@ -15,7 +14,7 @@ export default function LoadDCC() {
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
-      event.returnValue = ""; // Show warning when user attempts to leave
+      event.returnValue = "";
     };
 
     if (formData) {
@@ -38,13 +37,6 @@ export default function LoadDCC() {
 
       <div className="mt-12 space-y-10">
         <Importer formData={formData} onSubmit={handleFormSubmit} />
-      </div>
-
-      {/* Submit button: This triggers form submission */}
-      <div className="flex justify-end max-w-4xl mx-auto px-4 mt-8">
-        <Button type="submit" form="importer-form" variant="green">
-          {t("submit")}
-        </Button>
       </div>
     </div>
   );

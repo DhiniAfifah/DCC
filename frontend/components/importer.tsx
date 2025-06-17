@@ -16,9 +16,8 @@ import { File } from "lucide-react";
 import axios from "axios";
 import { useState } from "react";
 
-// Validation schema for the form
 const FormSchema = z.object({
-  xml: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
+  pdf: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
 });
 
 export default function Importer({
@@ -29,48 +28,87 @@ export default function Importer({
   onSubmit: (data: any) => void;
 }) {
   const { t } = useLanguage();
-
-  const [downloadLink, setDownloadLink] = useState<string | null>(null);
-  const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [progressMessage, setProgressMessage] = useState<string>("");
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
     defaultValues: formData,
   });
 
-  const fileRef = form.register("xml");
+  const fileRef = form.register("pdf");
 
   const handleFormSubmit = async (data: any) => {
-    const file = data.xml[0];
-    console.log("File submitted:", file);
-
+    const file = data.pdf[0];
     if (!file) {
       console.error("No file selected!");
       return;
     }
 
+    setIsProcessing(true);
+    setProgressMessage("Mengekstrak XML dari PDF...");
+
     const formData = new FormData();
-    formData.append("xml_file", file);
+    formData.append("pdf_file", file);
 
     try {
+      setProgressMessage("Mengonversi ke Excel...");
+
       const response = await axios.post(
-        "http://127.0.0.1:8000/upload-xml/",
+        "http://127.0.0.1:8000/upload-pdf/",
         formData,
         {
+          responseType: "blob",
           headers: {
             "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / (progressEvent.total || 1)
+            );
+            setProgressMessage(`Mengunggah file: ${percentCompleted}% selesai`);
           },
         }
       );
 
-      // Handle response
-      console.log("File converted successfully", response.data);
-      setUploadSuccess(true);
-      setDownloadLink(response.data.excel_file_path);
+      // Buat URL untuk file blob
+      const url = window.URL.createObjectURL(new Blob([response.data]));
 
+      // Buat elemen <a> untuk memicu download
+      const link = document.createElement("a");
+      link.href = url;
+
+      // Dapatkan nama file dari header atau buat default
+      const contentDisposition = response.headers["content-disposition"];
+      let fileName = "hasil-konversi.xlsx";
+
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (fileNameMatch && fileNameMatch[1]) {
+          fileName = fileNameMatch[1];
+        }
+      }
+
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+
+      // Bersihkan
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      setProgressMessage("Konversi berhasil! File sedang diunduh...");
+
+      // Panggil fungsi onSubmit untuk menandai submit selesai
       onSubmit(data);
-    } catch (error) {
-      console.error("Error uploading file", error);
+
+      setTimeout(() => setIsProcessing(false), 2000);
+    } catch (error: any) {
+      console.error("Error processing file", error);
+      setProgressMessage(
+        `Error: ${error.response?.data?.detail || error.message}`
+      );
+      setIsProcessing(false);
     }
   };
 
@@ -82,32 +120,56 @@ export default function Importer({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <File className="h-5 w-5" />
-                {t("xml_to_excel")}
+                {t("pdf_to_excel")}
               </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-6">
               <FormField
                 control={form.control}
-                name="xml"
+                name="pdf"
                 render={({ field }) => {
                   return (
                     <FormItem>
                       <FormControl>
-                        <Input type="file" {...fileRef} accept=".xml" />
+                        <Input
+                          type="file"
+                          {...fileRef}
+                          accept=".pdf"
+                          disabled={isProcessing}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   );
                 }}
               />
-              <button type="submit" disabled={uploadSuccess}>
-                {uploadSuccess ? "Processing..." : "Convert to Excel"}
+
+              <button
+                type="submit"
+                disabled={isProcessing}
+                className={`px-4 py-2 rounded w-full ${
+                  isProcessing
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                }`}
+              >
+                {isProcessing ? "Memproses..." : "Konversi ke Excel dan Submit"}
               </button>
 
-              {uploadSuccess && downloadLink && (
-                <a href={downloadLink} download>
-                  <button className="mt-4">Download Excel</button>
-                </a>
+              {isProcessing && (
+                <div className="mt-4 p-3 bg-blue-50 rounded-md">
+                  <p className="text-blue-700">{progressMessage}</p>
+                  <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-blue-600 h-2.5 rounded-full"
+                      style={{
+                        width: progressMessage.includes("%")
+                          ? progressMessage.match(/\d+%/)![0]
+                          : "50%",
+                      }}
+                    ></div>
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
