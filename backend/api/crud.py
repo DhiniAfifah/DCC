@@ -1056,16 +1056,25 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             f.write(xml_content)
         logging.info(f"XML file generated at {xml_path}")
         
-        # Generate PDF
-        from api.pdf_generator import PDFGenerator
+         # Generate PDF
         pdf_generator = PDFGenerator()
         pdf_path = str(paths['pdf_output'])
-        success = pdf_generator.generate_pdf(xml_content, pdf_path)
-
-        if success:
-            logging.info(f"PDF generated successfully at {pdf_path}")
-        else:
-            logging.error("Failed to generate PDF")
+        # Baca konten XML untuk di-embed
+        with open(xml_path, "r", encoding="utf-8") as f:
+            xml_content = f.read()
+        success = pdf_generator.generate_pdf_with_embedded_xml(
+            xml_content,
+            pdf_path,
+            xml_path
+        )
+        
+        if not success:
+            raise Exception("PDF generation failed")
+        
+        return {
+            "pdf_path": pdf_path,
+            "certificate_name": dcc.administrative_data.sertifikat
+        }
         
     finally:
         if wb:

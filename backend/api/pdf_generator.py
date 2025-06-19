@@ -9,6 +9,7 @@ import logging
 from datetime import datetime
 import traceback
 from weasyprint import HTML
+from spire.pdf import PdfDocument, PdfAttachment, FileFormat, PdfStandardsConverter
 
 # Konfigurasi logging
 logging.basicConfig(level=logging.INFO)  # or logging.ERROR if you want to suppress your own logs too
@@ -411,36 +412,92 @@ class PDFGenerator:
                     logger.error(f"  -> Error debugging {key}: {debug_error}")
             
             raise
+        
+    def generate_pdf_with_embedded_xml(self, xml_content: str, output_path: str, xml_path: str) -> bool:
+        try:
+            # Generate PDF sementara tanpa embedded XML
+            temp_pdf_path = os.path.join(self.temp_dir.name, "temp.pdf")
+            if not self.generate_pdf(xml_path, temp_pdf_path):
+                return False
+
+            # Konversi ke PDF/A-3a dan tambahkan XML
+            converter = PdfStandardsConverter(temp_pdf_path)
+            converter.ToPdfA3A(output_path)
+            
+            # Tambahkan attachment XML ke PDF/A
+            pdf = PdfDocument()
+            pdf.LoadFromFile(output_path)
+            
+            # Tambahkan lampiran XML
+            attachment = PdfAttachment(xml_path)
+            # 1. Set MIME type (Subtype) to application/xml
+            attachment.MimeType = "application/xml"
+            
+            # 2. Set relationship description (AFRelationship entry)
+            attachment.Description = "Digital Calibration Certificate Source Data"
+            attachment.Relationship = "Source"
+            
+            # 3. Set consistent file name
+            attachment.FileName = "dcc_data.xml"
+            
+            pdf.Attachments.Add(attachment)
+            
+            pdf.DocumentInformation.Title = "Digital Calibration Certificate"
+            pdf.DocumentInformation.Author = "SNSU-BSN"
+            pdf.DocumentInformation.Subject = "Calibration Data"
+            pdf.DocumentInformation.Keywords = "DCC, Calibration, Certificate"
+            #pdf.DocumentInformation.CreationDate = datetime.now()
+            
+            # Simpan perubahan
+            pdf.SaveToFile(output_path, FileFormat.PDF)
+            pdf.Close()
+
+            return True
+        except Exception as e:
+            logger.error(f"PDF generation with embedded XML failed: {e}")
+            return False
 
     def generate_pdf(self, xml_path, output_path):
         """Generate PDF dari konten XML"""
         try:
             
-            # Perbaiki base_url ke direktori assets yang benar
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            parent_dir = os.path.dirname(current_dir)  # Naik ke parent directory (backend)
-            assets_path = os.path.join(parent_dir, 'assets')
+             # Pastikan direktori output ada
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
             
-            # Gunakan path absolut dan normalisasi untuk URL
-            base_url = 'file:///' + assets_path.replace('\\', '/')
-            logger.info(f"Corrected base_url: {base_url}")
+            logger.info(f"Processing XML file: {xml_path}")
             
-            # Read XML file
+            # Baca file XML
             with open(xml_path, 'r', encoding='utf-8') as f:
                 xml_content = f.read()
             
-            logger.info(f"XML file loaded, size: {len(xml_content)} characters")
-            
-            # Extract data from XML
+            # Ekstrak data dari XML
             logger.info("Extracting data from XML...")
             data = self.extract_data_from_xml(xml_content)
             
-            # Test template rendering
-            rendered_html = self.test_template_rendering(data)
+            # Perbaiki base_url ke direktori assets yang benar
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            parent_dir = os.path.dirname(current_dir)
+            assets_path = os.path.join(parent_dir, 'assets')
+            base_url = 'file:///' + assets_path.replace('\\', '/')
+            logger.info(f"Corrected base_url: {base_url}")
             
-            # Generate PDF/A-3
-            logger.info("Generating PDF...")
-            HTML(string=rendered_html, base_url=base_url).write_pdf(
+            # Baca template HTML
+            with open(self.template_path, 'r', encoding='utf-8') as f:
+                template_html = f.read()
+                
+            # Render template
+            logger.info("Rendering HTML template...")
+            template = Template(template_html, undefined=DebugUndefined)
+            template.globals['get_text'] = self._get_text_by_lang
+            template.globals['safe_dict'] = self._safe_get_multilang_dict
+            rendered_html = template.render(**data)
+            
+            # Generate PDF
+            logger.info(f"Generating PDF to: {output_path}")
+            HTML(
+                string=rendered_html, 
+                base_url=base_url
+            ).write_pdf(
                 output_path,
                 pdfa='PDF/A-3b',
                 metadata={
@@ -450,14 +507,14 @@ class PDFGenerator:
                 }
             )
             
-            logger.info(f"PDF generated successfully at {output_path}")
-            return True
-        
-            
+            if os.path.exists(output_path):
+                logger.info(f"PDF successfully generated: {output_path} ({os.path.getsize(output_path)} bytes)")
+                return True
+            else:
+                logger.error("PDF generation failed - no output file created")
+                return False
+                
         except Exception as e:
             logger.error(f"PDF generation failed: {e}")
             logger.error(f"Full traceback: {traceback.format_exc()}")
             return False
-        
-#if __name__ == "__main__":
-   ## generator.generate_pdf("16.xml", "test.pdf")

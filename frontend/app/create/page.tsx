@@ -434,15 +434,17 @@ export default function CreateDCC() {
         );
       }
 
-      const data = await response.json();
-      console.log("Response from backend:", data);
+      // Handle PDF response
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${modifiedFormData.administrative_data.sertifikat}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
 
-      if (data.download_link) {
-        setDownloadLink(data.download_link);
-        alert(`DCC Created! Click the button below to download.`);
-      } else {
-        alert("DCC Created, but download link is missing.");
-      }
+      alert("DCC created and downloaded successfully!");
     } catch (error: unknown) {
       console.error("Error submitting form:", error);
       if (error instanceof Error) {
@@ -452,8 +454,6 @@ export default function CreateDCC() {
       }
     }
   };
-
-  const [downloadLink, setDownloadLink] = useState<string | null>(null);
 
   return (
     <div className="container mx-auto py-8 pt-20">
@@ -507,19 +507,6 @@ export default function CreateDCC() {
           </Button>
         )}
       </div>
-
-      {downloadLink && (
-        <div className="text-center mt-6">
-          <p className="text-green-500 font-semibold">
-            DCC Created Successfully!
-          </p>
-          <a href={downloadLink} target="_blank" rel="noopener noreferrer">
-            <Button variant="default" className="mt-2">
-              Download DCC
-            </Button>
-          </a>
-        </div>
-      )}
     </div>
   );
 }

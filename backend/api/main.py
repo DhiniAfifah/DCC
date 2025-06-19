@@ -41,6 +41,7 @@ from passlib.context import CryptContext
 from .database import get_db
 from .import user, schemas
 
+
 #from slowapi import Limiter
 #from slowapi.errors import RateLimitExceeded
 
@@ -236,50 +237,20 @@ async def create_dcc(
         result = crud.create_dcc(db=db, dcc=dcc)
         logging.info(f"DCC Created Successfully: {result}")
         
-        
-        try:
-            paths = crud.get_project_paths(dcc)
-            xml_path = paths['xml_output']
-            pdf_path = paths['pdf_output']
-
-            # Pastikan direktori output ada
-            os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
-            
-            logging.info(f"XML path: {xml_path}")
-            logging.info(f"PDF path: {pdf_path}")
-            
-            if os.path.exists(xml_path):
-                logging.info(f"XML file exists, size: {os.path.getsize(xml_path)} bytes")
-                
-                # Gunakan PDFGenerator
-                pdf_generator = PDFGenerator()
-                success = pdf_generator.generate_pdf(str(xml_path), str(pdf_path))
-                
-                if success:
-                    logging.info(f"PDF generated at: {pdf_path}")
-                    # Berikan response dengan link download
-                    return {
-                        "message": "DCC created successfully",
-                        "pdf_url": f"/generate-pdf/{dcc.administrative_data.sertifikat}"
-                    }
-                else:
-                    logging.error("PDF generation failed during DCC creation")
-                    return JSONResponse(
-                        status_code=500,
-                        content={"detail": "PDF generation failed"}
-                    )
-            else:
-                logging.error(f"XML file not found at: {xml_path}")
-                return JSONResponse(
-                    status_code=404,
-                    content={"detail": "XML file not found"}
-                )
-        except Exception as e:
-            logging.exception("Error during PDF generation")
-            return JSONResponse(
-                status_code=500,
-                content={"detail": f"PDF generation error: {str(e)}"}
+        #PDF
+        result = crud.create_dcc(db=db, dcc=dcc)
+        if "pdf_path" in result:
+            return FileResponse(
+                result["pdf_path"],
+                media_type="application/pdf",
+                filename=f"{result['certificate_name']}.pdf",
+                headers={
+                    "Content-Disposition": f"attachment; filename={result['certificate_name']}.pdf"
+                }
             )
+        else:
+            raise HTTPException(status_code=500, detail="PDF generation failed")
+            
 
     except Exception as e:
         logging.error(f"Error occurred while creating DCC: {e}", exc_info=True)
