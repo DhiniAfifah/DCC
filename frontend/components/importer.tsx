@@ -15,6 +15,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { File } from "lucide-react";
 import axios from "axios";
 import { useState } from "react";
+import { Button } from "./ui/button";
 
 // Validation schema for the form
 const FormSchema = z.object({
@@ -82,7 +83,7 @@ export default function Importer({
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <File className="h-5 w-5" />
-                {t("xml_to_excel")}
+                {t("upload_pdf")}
               </CardTitle>
             </CardHeader>
             <CardContent className="grid gap-6">
@@ -93,20 +94,20 @@ export default function Importer({
                   return (
                     <FormItem>
                       <FormControl>
-                        <Input type="file" {...fileRef} accept=".xml" />
+                        <Input type="file" {...fileRef} accept=".xml, .pdf" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   );
                 }}
               />
-              <button type="submit" disabled={uploadSuccess}>
-                {uploadSuccess ? "Processing..." : "Convert to Excel"}
-              </button>
+              <Button type="submit" disabled={uploadSuccess} variant="green">
+                {uploadSuccess ? t("processing") : t("convert")}
+              </Button>
 
               {uploadSuccess && downloadLink && (
                 <a href={downloadLink} download>
-                  <button className="mt-4">Download Excel</button>
+                  <Button className="mt-4">Download Excel</Button>
                 </a>
               )}
             </CardContent>

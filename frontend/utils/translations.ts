@@ -259,7 +259,9 @@ const translations: Record<string, { id: string; en: string }> = {
   upload_file: { id: "Unggah file", en: "Upload file" },
 
   // Importer
-  pdf: { id: "Unggah file PDF", en: "Upload PDF file" },
+  upload_pdf: { id: "Unggah file PDF", en: "Upload PDF file" },
+  processing: {id: "Memproses...", en: "Processing..."},
+  convert: {id: "Konversi ke Excel", en: "Convert to Excel"},
 
   // === D-SI ===
 

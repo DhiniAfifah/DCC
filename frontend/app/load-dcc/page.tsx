@@ -41,11 +41,11 @@ export default function LoadDCC() {
       </div>
 
       {/* Submit button: This triggers form submission */}
-      <div className="flex justify-end max-w-4xl mx-auto px-4 mt-8">
+      {/* <div className="flex justify-end max-w-4xl mx-auto px-4 mt-8">
         <Button type="submit" form="importer-form" variant="green">
           {t("submit")}
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 }
