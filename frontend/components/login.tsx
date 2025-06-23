@@ -69,10 +69,10 @@ export default function Login({ formData }: { formData: any }) {
       <div className="flex min-h-screen">
         <div className="w-1/2 h-screen relative pt-10">
           <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('/image/SNSU.jpg')" }}
+            className="absolute inset-0 bg-cover bg-center filter grayscale"
+            style={{ backgroundImage: "url('/image/panjang.jpg')" }}
           ></div>
-          {/* <div className="absolute inset-0 bg-indigo-200 bg-opacity-80 pointer-events-none"></div> */}
+          <div className="absolute inset-0 bg-red-200 bg-opacity-80 pointer-events-none"></div>
           <div className="relative z-10 flex items-center justify-center h-full">
             {/* <h1 className="text-2xl md:text-4xl lg:text-5xl text-black p-10 text-center">
               <span dangerouslySetInnerHTML={{ __html: t('welcome') }} />

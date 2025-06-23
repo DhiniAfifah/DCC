@@ -63,6 +63,14 @@ export default function LoginForm({ formData }: { formData: any }) {
       <div className="flex flex-col gap-6">
         <Card className="overflow-hidden p-0">
           <CardContent className="grid p-0 md:grid-cols-2">
+            <div className="bg-muted relative hidden md:block">
+              <img
+                src="/image/panjang.jpg"
+                alt="Image"
+                className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              />
+              <div className="absolute inset-0 bg-red-500 opacity-50"></div>
+            </div>
             <form className="p-6 md:p-8">
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col items-center text-center">
@@ -119,13 +127,6 @@ export default function LoginForm({ formData }: { formData: any }) {
                 </div>
               </div>
             </form>
-            <div className="bg-muted relative hidden md:block">
-              <img
-                src="/image/SNSU.jpg"
-                alt="Image"
-                className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-              />
-            </div>
           </CardContent>
         </Card>
       </div>
