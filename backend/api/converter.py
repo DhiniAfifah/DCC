@@ -634,7 +634,12 @@ def convert_xml_to_excel(xml_file_path: str):
         # Iterate over each result
         for hasil in results:
             quantities = hasil.findall('dcc:data/dcc:list/dcc:quantity', ns)
-            quantity_names = [q.find('dcc:name/dcc:content[@lang="en"]', ns).text if q.find('dcc:name/dcc:content[@lang="en"]', ns) is not None else "No Name" for q in quantities]
+            quantity_names = []
+            for q in quantities:
+                content = q.find('dcc:name/dcc:content[@lang="en"]', ns)
+                if content is None:
+                    content = q.find('dcc:name/dcc:content', ns)
+                quantity_names.append(gt(content) if content is not None else "No Name")
 
             all_quantity_data = []
             max_rows = 0
@@ -681,7 +686,10 @@ def convert_xml_to_excel(xml_file_path: str):
                     max_rows = max(max_rows, len(quantity_data[0]))
 
             total_columns = sum(len(q_data) * 2 for q_data in all_quantity_data)
-            title = hasil.find('dcc:name/dcc:content[@lang="en"]', ns).text if hasil.find('dcc:name/dcc:content[@lang="en"]', ns) is not None else "No Title"
+            title_elem = hasil.find('dcc:name/dcc:content[@lang="en"]', ns)
+            if title_elem is None:
+                title_elem = hasil.find('dcc:name/dcc:content', ns)
+            title = gt(title_elem) if title_elem is not None else "No Title"
 
             # Write the title and create merged cells for the table header
             ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=total_columns)
