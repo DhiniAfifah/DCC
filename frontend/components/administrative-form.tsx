@@ -60,12 +60,14 @@ import { useLanguage } from "@/context/LanguageContext";
 type Country = { label: string; value: string };
 const fetchCountries = async (): Promise<Country[]> => {
   try {
-    const response = await axios.get("https://restcountries.com/v3.1/all");
+    const response = await axios.get(
+      "https://restcountries.com/v3.1/all?fields=name,cca2"
+    );
 
     return response.data
       .map((country: any) => ({
-        label: country.name.common,
-        value: country.cca2,
+        label: country?.name?.common ?? "Unknown",
+        value: country?.cca2 ?? "XX",
       }))
       .sort((a: Country, b: Country) => a.label.localeCompare(b.label));
   } catch (error) {

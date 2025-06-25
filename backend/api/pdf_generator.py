@@ -10,6 +10,7 @@ from datetime import datetime
 import traceback
 from weasyprint import HTML
 from spire.pdf import PdfDocument, PdfAttachment, FileFormat, PdfStandardsConverter
+from io import BytesIO
 
 # Konfigurasi logging
 logging.basicConfig(level=logging.INFO)  # or logging.ERROR if you want to suppress your own logs too
@@ -27,7 +28,39 @@ XML_NS = {
     'si': 'https://ptb.de/si'
 }
 
+def render_latex_base64(latex_expr: str) -> str:
+        fig = plt.figure(figsize=(0.01, 0.01), dpi=200)
+        fig.text(0.1, 0.5, f"${latex_expr}$", fontsize=14)
+        plt.axis('off')
+        buf = BytesIO()
+        fig.savefig(buf, format='png', bbox_inches='tight', dpi=200)
+        plt.close(fig)
+        encoded = base64.b64encode(buf.getvalue()).decode("utf-8")
+        return f"data:image/png;base64,{encoded}"
 
+
+def format_tanggal_by_lang(tanggal_str, lang='id'):
+    if not tanggal_str:
+        return ''
+
+    try:
+        dt = datetime.strptime(tanggal_str, '%Y-%m-%d')
+        bulan = {
+            'id': [
+                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            ],
+            'en': [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ]
+        }
+
+        nama_bulan = bulan.get(lang, bulan['id'])[dt.month - 1]
+        return f"{dt.day} {nama_bulan} {dt.year}"
+
+    except ValueError:
+        return tanggal_str
 
 class PDFGenerator:
     def __init__(self, template_path=None):
@@ -200,10 +233,18 @@ class PDFGenerator:
 
     # TIMELINE
     def _extract_timeline(self, root): 
+        # Deteksi bahasa utama dari salah satu tag
+        lang_elem = root.find('.//dcc:declaration/dcc:content', namespaces=XML_NS)
+        lang = lang_elem.attrib.get('lang', 'id') if lang_elem is not None else 'id'
+
+        mulai = root.findtext('.//dcc:beginPerformanceDate', namespaces=XML_NS) or ''
+        akhir = root.findtext('.//dcc:endPerformanceDate', namespaces=XML_NS) or ''
+        pengesahan = root.findtext('.//dcc:issueDate', namespaces=XML_NS) or ''
+
         return {
-            'tgl_mulai': root.findtext('.//dcc:beginPerformanceDate', namespaces=XML_NS) or '',
-            'tgl_akhir': root.findtext('.//dcc:endPerformanceDate', namespaces=XML_NS) or '',
-            'tgl_pengesahan': root.findtext('.//dcc:issueDate', namespaces=XML_NS) or ''
+            'tgl_mulai': format_tanggal_by_lang(mulai, lang),
+            'tgl_akhir': format_tanggal_by_lang(akhir, lang),
+            'tgl_pengesahan': format_tanggal_by_lang(pengesahan, lang)
         }
     
     #OBJECT
@@ -321,24 +362,85 @@ class PDFGenerator:
     #METHOD
     def _extract_methods(self, root):
         methods = []
+
         for met in root.findall('.//dcc:measurementResults/dcc:measurementResult/dcc:usedMethods/dcc:usedMethod', namespaces=XML_NS):
             method_name = self._get_multilang_text(met.find('.//dcc:name', namespaces=XML_NS))
             method_desc = self._get_multilang_text(met.find('.//dcc:description', namespaces=XML_NS))
 
+            #Formula
+            formula_image = None
+            formula_elem = met.find('.//dcc:description/dcc:formula/dcc:latex', namespaces=XML_NS)
+            if formula_elem is not None and formula_elem.text:
+                try:
+                    formula_image = render_latex_base64(formula_elem.text.strip())
+                except Exception as e:
+                    logging.warning(f"[METHOD] Gagal render latex: {e}")
+
+            #Gambar
+            image_data = None
+            file_elem = met.find('.//dcc:description/dcc:file', namespaces=XML_NS)
+            if file_elem is not None:
+                mime_elem = file_elem.find('dcc:mimeType', namespaces=XML_NS)
+                data_elem = file_elem.find('dcc:dataBase64', namespaces=XML_NS)
+
+                if mime_elem is not None and data_elem is not None and data_elem.text:
+                    try:
+                        mimetype = mime_elem.text.strip()
+                        b64 = data_elem.text.strip().replace('\n', '').replace(' ', '')
+                        image_data = f"data:{mimetype};base64,{b64}"
+                    except Exception as e:
+                        logging.warning(f"[METHOD] Gagal decode gambar: {e}")
+
             methods.append({
                 'method_name': method_name if method_name else {},
-                'method_desc': method_desc if method_desc else {}
+                'method_desc': method_desc if method_desc else {},
+                'formula_image': formula_image,
+                'image': image_data
             })
+
         return methods
+
     
     #STATEMENT
     def _extract_statements(self, root):
         statements = []
+
         for stmt in root.findall('.//dcc:statements/dcc:statement', namespaces=XML_NS):
-            declaration = self._get_multilang_text(stmt.find('.//dcc:declaration', namespaces=XML_NS))
+            declaration = stmt.find('.//dcc:declaration', namespaces=XML_NS)
+
+            # multi-bahasa
+            value = self._get_multilang_text(declaration)
+
+            #Formula
+            formula_image = None
+            formula_elem = declaration.find('.//dcc:formula/dcc:latex', namespaces=XML_NS)
+            if formula_elem is not None and formula_elem.text:
+                try:
+                    formula_image = render_latex_base64(formula_elem.text.strip())
+                except Exception as e:
+                    logging.warning(f"Gagal render rumus latex: {e}")
+
+            #Gambar
+            image_data = None
+            file_elem = declaration.find('dcc:file', namespaces=XML_NS)
+            if file_elem is not None:
+                mime_elem = file_elem.find('dcc:mimeType', namespaces=XML_NS)
+                data_elem = file_elem.find('dcc:dataBase64', namespaces=XML_NS)
+
+                if mime_elem is not None and data_elem is not None and data_elem.text:
+                    try:
+                        mimetype = mime_elem.text.strip()
+                        b64 = data_elem.text.strip().replace('\n', '').replace(' ', '')
+                        image_data = f"data:{mimetype};base64,{b64}"
+                    except Exception as e:
+                        logging.warning(f"Gagal decode gambar pernyataan: {e}")
+
             statements.append({
-                'value': declaration if declaration else {}
+                'value': value if value else {},
+                'formula_image': formula_image,
+                'image': image_data
             })
+
         return statements
 
     # UNCERTAINTY
@@ -490,12 +592,21 @@ class PDFGenerator:
             template = Template(template_html, undefined=DebugUndefined)
             template.globals['get_text'] = self._get_text_by_lang
             template.globals['safe_dict'] = self._safe_get_multilang_dict
+
+            # 5. Render pertama (tanpa total_pages)
             rendered_html = template.render(**data)
+
+            # 6. Hitung jumlah halaman PDF
+            total_pages = len(HTML(string=rendered_html, base_url=base_url).render().pages)
+            data['total_pages'] = total_pages  # masukkan ke context
+
+            # 7. Render ulang HTML dengan jumlah halaman
+            final_html = template.render(**data)
             
-            # Generate PDF
+            # 8. Buat PDF
             logger.info(f"Generating PDF to: {output_path}")
             HTML(
-                string=rendered_html, 
+                string=final_html,
                 base_url=base_url
             ).write_pdf(
                 output_path,
@@ -506,14 +617,14 @@ class PDFGenerator:
                     'creationDate': datetime.now()
                 }
             )
-            
+
             if os.path.exists(output_path):
                 logger.info(f"PDF successfully generated: {output_path} ({os.path.getsize(output_path)} bytes)")
                 return True
             else:
                 logger.error("PDF generation failed - no output file created")
                 return False
-                
+
         except Exception as e:
             logger.error(f"PDF generation failed: {e}")
             logger.error(f"Full traceback: {traceback.format_exc()}")
