@@ -11,7 +11,7 @@ export default function About() {
                 <div
                     className="absolute inset-0 bg-cover bg-no-repeat filter grayscale"
                     style={{
-                    backgroundImage: "url('image/about.png')",
+                    backgroundImage: "url('image/SNSU.jpg')",
                     backgroundPosition: '0% 37%',
                     }}
                 ></div>
