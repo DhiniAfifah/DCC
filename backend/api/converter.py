@@ -15,6 +15,8 @@ import tempfile
 import logging
 from openpyxl.drawing.image import Image as ExcelImage
 from PIL import Image as PILImage
+import matplotlib.pyplot as plt
+from openpyxl.drawing.image import Image as ExcelImage
 
 
 # Function to handle None values in XML parsing
@@ -50,7 +52,6 @@ def save_base64_image(base64_str, file_extension=".png"):
         # Decode base64
         image_data = base64.b64decode(base64_str)
         
-        # Buat file sementara
         temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=file_extension)
         temp_file.write(image_data)
         temp_file.close()
@@ -60,6 +61,18 @@ def save_base64_image(base64_str, file_extension=".png"):
         logging.error(f"Error saving base64 image: {str(e)}")
         return None
 
+#RUMUS
+def render_latex_to_excel_image(latex_expr: str) -> BytesIO:
+    fig = plt.figure(figsize=(0.01, 0.01), dpi=200)
+    fig.text(0.1, 0.5, f"${latex_expr}$", fontsize=14)
+    plt.axis('off')
+    buf = BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight', dpi=200)
+    buf.seek(0)
+    plt.close(fig)
+    return buf
+
+#GAMBAR
 def mime_to_extension(mime_type: str) -> str:
     if not mime_type:
         return ".png"
@@ -112,7 +125,6 @@ def add_image_to_worksheet(ws, base64_str, mime_type, caption, row, col='E'):
             img.width = max_width
             img.height = int(img.height * ratio)
 
-        # Sisipkan gambar langsung di baris saat ini
         img_anchor = f'{col}{row}'
         ws.add_image(img, img_anchor)
 
@@ -144,7 +156,7 @@ def convert_xml_to_excel(xml_file_path: str):
         # Initialize Excel workbook
         wb = Workbook()
         ws = wb.active
-        ws.title = "DCC"
+        ws.title = "Hasil"
         row = 1
 
         ns = {  # XML namespaces
@@ -457,10 +469,41 @@ def convert_xml_to_excel(xml_file_path: str):
             ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
             ws.cell(row=row, column=5, value=method_desc)
             row += 2
+            
+            # RUMUS
+            formula_elem = method.find('dcc:description/dcc:formula/dcc:latex', ns)
+            latex_raw = gt(formula_elem) if formula_elem is not None else ""
+
             ws.cell(row=row, column=1, value="Rumus")
             ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
-            ws.cell(row=row, column=5, value="-")
-            row += 2
+
+            if latex_raw:
+                try:
+                    latex_buf = render_latex_to_excel_image(latex_raw)
+                    latex_img = ExcelImage(latex_buf)
+                    
+                    # Atur ukuran maksimum di Excel
+                    max_excel_width = 400  # pixel
+                    if latex_img.width > max_excel_width:
+                        ratio = max_excel_width / latex_img.width
+                        latex_img.width = max_excel_width
+                        latex_img.height = int(latex_img.height * ratio)
+                    
+                    # Hitung tinggi baris yang diperlukan (1.2 = faktor padding)
+                    row_height = max(20, int(latex_img.height * 1.2))
+                    ws.row_dimensions[row].height = row_height
+                    
+                    ws.add_image(latex_img, f"E{row}")
+                    row += int(row_height / 25) + 1
+                    
+                except Exception as e:
+                    logging.error(f"[ERROR] Gagal render rumus: {e}")
+                    ws.cell(row=row, column=5, value="[Rumus gagal ditampilkan]")
+                    row += 2
+            else:
+                ws.cell(row=row, column=5, value="-")
+                row += 2
+                
             
             # GAMBAR
             description_elem = method.find('dcc:description', ns)
@@ -514,7 +557,7 @@ def convert_xml_to_excel(xml_file_path: str):
             manuf_model_id_elements = equip.findall('dcc:identifications/dcc:identification/dcc:name/dcc:content', ns)
             manuf_model = ', '.join([gt(manuf_model_id_element) for manuf_model_id_element in manuf_model_id_elements if manuf_model_id_element.text])
 
-            # Write equipment details to Excel
+           
             ws.cell(row=row, column=1, value=f"Alat {i}").font = Font(bold=True, size=12)
             row += 2
             ws.cell(row=row, column=1, value="Nama")
@@ -549,7 +592,7 @@ def convert_xml_to_excel(xml_file_path: str):
             kondisi_desc_elements = kondisi.findall('dcc:description/dcc:content', ns)
             kondisi_desc = ', '.join([gt(kondisi_desc_element) for kondisi_desc_element in kondisi_desc_elements if kondisi_desc_element.text])
 
-            # Write the condition name and description to Excel
+            
             ws.cell(row=row, column=1, value=f"Parameter {i}").font = Font(bold=True, size=12)
             row += 2
             ws.cell(row=row, column=1, value="Parameter lingkungan")
@@ -564,17 +607,17 @@ def convert_xml_to_excel(xml_file_path: str):
             # Extracting variables (values) for this condition
             variables = kondisi.findall('dcc:data/dcc:quantity', ns)
             for var in variables:
-                # Extract the variable name (e.g., "minimum", "maximum", etc.)
+                
                 variabel = gt(var.find('dcc:name/dcc:content', ns))
-                # Extract the value of the variable (e.g., temperature or humidity value)
+               
                 kondisi_value = gt(var.find('si:real/si:value', ns))
-                # Extract the unit for the variable (e.g., °C, %)
+         
                 kondisi_unit = gt(var.find('si:real/si:unit', ns))
 
                 # Convert unit to a more readable form
                 kondisi_unit_converted = convert_unit(kondisi_unit)
 
-                # Write the variable details (value and unit) to Excel
+                
                 ws.cell(row=row, column=1, value=variabel)
                 ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
                 ws.cell(row=row, column=5, value=kondisi_value)
@@ -660,14 +703,13 @@ def convert_xml_to_excel(xml_file_path: str):
                 col += span * 2
 
             for start_col, end_col in header_range:
-                if start_col > end_col:  # Ensure start_col is less than end_col
+                if start_col > end_col:  
                     start_col, end_col = end_col, start_col
                 ws.merge_cells(start_row=row, start_column=start_col, end_row=row, end_column=end_col)
 
             apply_borders(ws, row, row, 1, total_columns)
             row += 1
 
-            # Writing the quantity values (including unit conversion) to the Excel sheet
             for i in range(max_rows):
                 col = 1
                 for q_data in all_quantity_data:
@@ -689,28 +731,53 @@ def convert_xml_to_excel(xml_file_path: str):
         ws.cell(row=row, column=1, value="Pernyataan").font = Font(bold=True, size=14)
         row += 2
 
-        # Iterate over each statement in the 'statements' list
         for i, pernyataan in enumerate(statements, start=1):
             declaration = pernyataan.find('dcc:declaration', ns)
             
-            # Extract all available language content for the statement
             statement_elements = pernyataan.findall('dcc:declaration/dcc:content', ns)
             statement_text = ', '.join([gt(statement_element) for statement_element in statement_elements if statement_element.text])
 
-            # Write statement title
             ws.cell(row=row, column=1, value=f"Pernyataan {i}").font = Font(bold=True, size=12)
             row += 1
-
-            # Write the statement content in multiple languages
             ws.cell(row=row, column=1, value=statement_text)
             row += 2
-            # Write the formula placeholder
+            
+            # RUMUS
+            formula_elem = declaration.find('dcc:formula/dcc:latex', ns) if declaration is not None else None
+            latex_raw = gt(formula_elem) if formula_elem is not None else ""
+
             ws.cell(row=row, column=1, value="Rumus")
             ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
-            ws.cell(row=row, column=5, value="-")
-            row += 2
+
+            if latex_raw:
+                try:
+                    latex_buf = render_latex_to_excel_image(latex_raw)
+                    latex_img = ExcelImage(latex_buf)
+
+                    max_excel_width = 120
+                    if latex_img.width > max_excel_width:
+                        ratio = max_excel_width / latex_img.width
+                        latex_img.width = max_excel_width
+                        latex_img.height = int(latex_img.height * ratio)
+
+                    ws.row_dimensions[row].height = latex_img.height * 0.75
+
+                    img_anchor = f"E{row}"
+                    ws.add_image(latex_img, img_anchor)
+
+                    row += 1
+                    row += 5
+
+                except Exception as e:
+                    logging.error(f"[ERROR] Gagal render rumus di pernyataan: {e}")
+                    ws.cell(row=row, column=5, value="[Rumus gagal ditampilkan]")
+                    row += 2
+            else:
+                ws.cell(row=row, column=5, value="-")
+                row += 2
             
-            # Gambar
+            
+            # GAMBAR
             file_elem = declaration.find('dcc:file', ns) if declaration is not None else None
 
             if file_elem is not None:
