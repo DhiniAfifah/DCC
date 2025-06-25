@@ -10,6 +10,8 @@ from datetime import datetime
 import traceback
 from weasyprint import HTML
 from spire.pdf import PdfDocument, PdfAttachment, FileFormat, PdfStandardsConverter
+from api.ds_i_utils import d_si
+from api.ds_i_utils import convert_latex_unit
 
 # Konfigurasi logging
 logging.basicConfig(level=logging.INFO)  # or logging.ERROR if you want to suppress your own logs too
@@ -26,8 +28,6 @@ XML_NS = {
     'dcc': 'https://ptb.de/dcc',
     'si': 'https://ptb.de/si'
 }
-
-
 
 class PDFGenerator:
     def __init__(self, template_path=None):
@@ -341,18 +341,59 @@ class PDFGenerator:
             })
         return statements
 
-    # UNCERTAINTY
-    def _extract_uncertainty(self, root):
-        uncert = root.find('.//si:measurementUncertaintyUnivariateXMLList', namespaces=XML_NS)
-        if uncert is None:
-            return {
-                'probability': '',
-                'factor': ''
-            }
-        return {
-            'probability': uncert.findtext('.//si:coverageProbabilityXMLList', namespaces=XML_NS) or '',
-            'factor': uncert.findtext('.//si:coverageFactorXMLList', namespaces=XML_NS) or ''
-        }
+    #RESULTS
+    def _extract_results(self, root):
+        results = []
+    
+        for result in root.findall('.//dcc:result', namespaces=XML_NS):
+            param_multilang = self._get_multilang_text(result.find('./dcc:name', namespaces=XML_NS))
+    
+            columns = []
+            uncertainty_data = {}
+    
+            # Prepare variable to capture reference units
+            ref_units = None
+    
+            for quantity in result.findall('.//dcc:quantity', namespaces=XML_NS):
+                col_name = self._get_multilang_text(quantity.find('./dcc:name', namespaces=XML_NS))
+                ref_type = quantity.attrib.get('refType', '')
+    
+                subcolumn_data = []
+                for rl in quantity.findall('./si:realListXMLList', namespaces=XML_NS):
+                    values = (rl.findtext('./si:valueXMLList', namespaces=XML_NS) or '').strip().split()
+                    raw_units = (rl.findtext('./si:unitXMLList', namespaces=XML_NS) or '').strip().split()
+                    units = [convert_latex_unit(u) for u in raw_units]
+    
+                    subcolumn_data.append({
+                        'value': values,
+                        'unit': units
+                    })
+    
+                    # Capture the units from measurementError or fallback to nominalValue
+                    if ref_units is None and ref_type in ['basic_measurementError', 'basic_nominalValue']:
+                        ref_units = units  # This captures the first set of units found
+    
+                columns.append({
+                    'name': col_name,
+                    'subcolumn': subcolumn_data
+                })
+    
+                unc = quantity.find('.//si:expandedMUXMLList', namespaces=XML_NS)
+                if unc is not None:
+                    uncertainty_data = {
+                        'value': (unc.findtext('./si:valueExpandedMUXMLList', namespaces=XML_NS) or '').strip().split(),
+                        'factor': (unc.findtext('./si:coverageFactorXMLList', namespaces=XML_NS) or '').strip(),
+                        'probability': (unc.findtext('./si:coverageProbabilityXMLList', namespaces=XML_NS) or '').strip(),
+                        'unit': ref_units if ref_units else []
+                    }
+    
+            results.append({
+                'parameters': param_multilang,
+                'columns': columns,
+                'uncertainty': uncertainty_data
+            })
+    
+        return results
     
     def create_formula_image(self, formula, prefix, index):
         """Buat gambar PNG dari formula matematika"""

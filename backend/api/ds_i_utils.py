@@ -200,3 +200,55 @@ def convert_unit(unit):
     
     return unit
 
+def convert_latex_unit(latex_unit):
+    import re
+
+    # Tokenize LaTeX string: separate prefixes, units, exponents, etc.
+    tokens = re.findall(r'\\[a-zA-Z]+|\{[^}]+\}', latex_unit)
+
+    units = []
+    i = 0
+    while i < len(tokens):
+        token = tokens[i]
+
+        # Handle exponent: \tothe + {exponent}
+        if token == '\\tothe' and i + 1 < len(tokens):
+            exponent = tokens[i + 1].strip("{}")
+            if exponent == '-1':
+                if units:
+                    units[-1] = f"/{units[-1]}"  # Divide for -1 exponent
+            else:
+                if units:
+                    units[-1] = f"{units[-1]}<sup>{exponent}</sup>"  # Apply exponent
+            i += 2
+            continue
+
+        # Handle prefix + base unit
+        if i + 1 < len(tokens):
+            prefix_token = tokens[i]
+            unit_token = tokens[i + 1]
+            prefix = next((k for k, v in prefixes.items() if v == prefix_token), None)
+            base = next((k for k, v in base_units.items() if v == unit_token), None)
+            if prefix and base:
+                units.append(prefix + base)  # Combine prefix + unit
+                i += 2
+                continue
+
+        # Handle base unit without prefix
+        base = next((k for k, v in base_units.items() if v == token), None)
+        if base:
+            units.append(base)
+            i += 1
+        else:
+            # If unmatched, just append the token (e.g., keep unknown)
+            units.append(token)
+            i += 1
+
+    # Now handle the final output
+    result = ''.join(units)
+
+    # Clean up extra parts like backslashes or curly braces
+    result = result.replace("\\", "")  # Remove LaTeX backslashes
+    result = result.replace("{", "").replace("}", "")  # Remove curly braces
+
+    return result
