@@ -4,7 +4,17 @@ import xml.etree.ElementTree as ET
 import os
 from api.ds_i_utils import d_si
 from api.ds_i_utils import convert_unit
-
+import base64
+import tempfile
+from openpyxl.drawing.image import Image
+from io import BytesIO
+import logging
+import mimetypes
+import base64
+import tempfile
+import logging
+from openpyxl.drawing.image import Image as ExcelImage
+from PIL import Image as PILImage
 
 
 # Function to handle None values in XML parsing
@@ -34,6 +44,94 @@ def create_table_header(ws, row, headers):
         col += 1
     return row + 1
 
+# Fungsi pembantu untuk menyimpan base64 ke file gambar sementara
+def save_base64_image(base64_str, file_extension=".png"):
+    try:
+        # Decode base64
+        image_data = base64.b64decode(base64_str)
+        
+        # Buat file sementara
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=file_extension)
+        temp_file.write(image_data)
+        temp_file.close()
+        
+        return temp_file.name
+    except Exception as e:
+        logging.error(f"Error saving base64 image: {str(e)}")
+        return None
+
+def mime_to_extension(mime_type: str) -> str:
+    if not mime_type:
+        return ".png"
+    ext = mimetypes.guess_extension(mime_type)
+    if ext:
+        return ext
+    fallback = {
+        "image/jpeg": ".jpg",
+        "image/jpg": ".jpg",
+        "image/png": ".png",
+        "image/gif": ".gif",
+        "image/bmp": ".bmp",
+        "image/tiff": ".tiff"
+    }
+    return fallback.get(mime_type.lower(), ".png")
+
+def add_image_to_worksheet(ws, base64_str, mime_type, caption, row, col='E'):
+    try:
+        base64_str = base64_str.replace('\n', '').replace('\r', '').replace(' ', '')
+        if base64_str.startswith('data:'):
+            base64_str = base64_str.split(',', 1)[1]
+
+        try:
+            image_data = base64.b64decode(base64_str)
+        except Exception as e:
+            logging.error(f"[Base64 Decode Error] Tidak bisa decode: {e}")
+            ws[f'{col}{row}'] = "[Gambar gagal decode]"
+            return 2
+
+        extension = mime_to_extension(mime_type)
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=extension) as tmp_file:
+            tmp_file.write(image_data)
+            tmp_file_path = tmp_file.name
+
+        try:
+            with PILImage.open(tmp_file_path) as pil_img:
+                pil_img.load()
+                width, height = pil_img.size
+        except Exception as e:
+            logging.error(f"[Gambar Invalid] {e}")
+            ws[f'{col}{row}'] = "[Gambar tidak valid]"
+            os.unlink(tmp_file_path)
+            return 2
+
+        img = ExcelImage(tmp_file_path)
+        max_width = 200
+        if img.width > max_width:
+            ratio = max_width / img.width
+            img.width = max_width
+            img.height = int(img.height * ratio)
+
+        # Sisipkan gambar langsung di baris saat ini
+        img_anchor = f'{col}{row}'
+        ws.add_image(img, img_anchor)
+
+        total_rows = 5  
+
+        if caption:
+            ws[f'{col}{row + 4}'] = f"Keterangan: {caption}"
+            total_rows += 1
+
+        logging.info(f"Gambar berhasil ditambahkan di {img_anchor}")
+        return total_rows
+
+    except Exception as e:
+        logging.error(f"[Gagal Menambahkan Gambar] {e}")
+        ws[f'{col}{row}'] = "[Gambar gagal dimuat]"
+        return 2
+
+
+
 # Function to convert XML to Excel
 def convert_xml_to_excel(xml_file_path: str):
     try:
@@ -46,6 +144,7 @@ def convert_xml_to_excel(xml_file_path: str):
         # Initialize Excel workbook
         wb = Workbook()
         ws = wb.active
+        ws.title = "DCC"
         row = 1
 
         ns = {  # XML namespaces
@@ -342,10 +441,8 @@ def convert_xml_to_excel(xml_file_path: str):
             method_desc_elements = method.findall('dcc:description/dcc:content', ns)
             method_desc = ', '.join([gt(method_desc_element) for method_desc_element in method_desc_elements if method_desc_element.text])
 
-            # Extract norm (standard) for the method
             norm = gt(method.find('dcc:norm', ns))
 
-            # Write method details to Excel
             ws.cell(row=row, column=1, value=f"Metode {i}").font = Font(bold=True, size=12)
             row += 2
             ws.cell(row=row, column=1, value="Nama")
@@ -364,22 +461,36 @@ def convert_xml_to_excel(xml_file_path: str):
             ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
             ws.cell(row=row, column=5, value="-")
             row += 2
-            ws.cell(row=row, column=1, value="Gambar")
-            ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
             
-            ## Check if the method has an image and write the visual data
-            #if method.has_image and method.image:
-                # Only include image visual data, excluding file name, mimeType, base64
-             #   ws.cell(row=row + 2, column=1, value="Image: Present")
-              #  row += 4  # Skip the next 4 rows since the image is present
-            #else:
-             #   # If no image is present, mark as no image
-              ## row += 4
+            # GAMBAR
+            description_elem = method.find('dcc:description', ns)
+            file_elem = description_elem.find('dcc:file', ns) if description_elem is not None else None
 
-            #ws.cell(row=row, column=1, value="Keterangan gambar")
-            #ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
-            #s.cell(row=row, column=5, value="-")
-            #row += 2
+            if file_elem is not None:
+                mime_type = gt(file_elem.find('dcc:mimeType', ns))
+                caption = gt(file_elem.find('dcc:caption', ns))
+                data_base64_elem = file_elem.find('dcc:dataBase64', ns)
+                ws.cell(row=row, column=1, value="Gambar")
+                ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
+                row += 1
+
+                if data_base64_elem is not None and data_base64_elem.text:
+                    base64_str = data_base64_elem.text
+
+                    try:
+                        row_used = add_image_to_worksheet(ws, base64_str, mime_type, caption, row, 'E')
+                        row += row_used + 5 
+                    except Exception as e:
+                        logging.error(f"[ERROR] Gagal menambahkan gambar di metode kalibrasi: {e}")
+                        ws.cell(row=row, column=5, value="[Gambar gagal dimuat]")
+                        row += 2
+                else:
+                    ws.cell(row=row, column=5, value="[Base64 kosong]")
+                    row += 2
+            else:
+                ws.cell(row=row, column=5, value="[Tidak ada gambar]")
+                row += 2
+
 
         # Standar atau Alat Pengukuran
         equipments = root.findall('.//dcc:measuringEquipments/dcc:measuringEquipment', ns)
@@ -573,8 +684,6 @@ def convert_xml_to_excel(xml_file_path: str):
             row += 1
 
 
-
-
         # Pernyataan
         statements = root.findall('.//dcc:statements/dcc:statement', ns)
         ws.cell(row=row, column=1, value="Pernyataan").font = Font(bold=True, size=14)
@@ -582,6 +691,8 @@ def convert_xml_to_excel(xml_file_path: str):
 
         # Iterate over each statement in the 'statements' list
         for i, pernyataan in enumerate(statements, start=1):
+            declaration = pernyataan.find('dcc:declaration', ns)
+            
             # Extract all available language content for the statement
             statement_elements = pernyataan.findall('dcc:declaration/dcc:content', ns)
             statement_text = ', '.join([gt(statement_element) for statement_element in statement_elements if statement_element.text])
@@ -598,11 +709,38 @@ def convert_xml_to_excel(xml_file_path: str):
             ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
             ws.cell(row=row, column=5, value="-")
             row += 2
-            # Write the Gambar
-            ws.cell(row=row, column=1, value="Gambar")
-            ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
-            ws.cell(row=row+2, column=1, value="-")  # Placeholder for the image (visual representation)
-            row += 4
+            
+            # Gambar
+            file_elem = declaration.find('dcc:file', ns) if declaration is not None else None
+
+            if file_elem is not None:
+                mime_type = gt(file_elem.find('dcc:mimeType', ns))
+                caption = gt(file_elem.find('dcc:caption', ns))
+                data_base64_elem = file_elem.find('dcc:dataBase64', ns)
+
+                ws.cell(row=row, column=1, value="Gambar")
+                ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
+                row += 1
+
+                if data_base64_elem is not None and data_base64_elem.text:
+                    base64_str = data_base64_elem.text
+                    try:
+                        row_used = add_image_to_worksheet(ws, base64_str, mime_type, caption, row, 'E')
+                        row += row_used + 5
+                    except Exception as e:
+                        logging.error(f"[ERROR] Gagal menambahkan gambar di pernyataan: {e}")
+                        ws.cell(row=row, column=5, value="[Gambar gagal dimuat]")
+                        row += 2
+                else:
+                    ws.cell(row=row, column=5, value="[Base64 kosong]")
+                    row += 2
+            else:
+                ws.cell(row=row, column=5, value="[Tidak ada gambar]")
+                row += 2
+                
+                
+                
+                
 
         # Save the Excel file
         excel_filename = os.path.basename(xml_file_path) + ".xlsx"
