@@ -631,7 +631,6 @@ def convert_xml_to_excel(xml_file_path: str):
 
         results = root.findall('.//dcc:results/dcc:result', ns)
 
-        # Iterate over each result
         for hasil in results:
             quantities = hasil.findall('dcc:data/dcc:list/dcc:quantity', ns)
             quantity_names = []
@@ -644,54 +643,50 @@ def convert_xml_to_excel(xml_file_path: str):
             all_quantity_data = []
             max_rows = 0
 
-            # Process each quantity (e.g., minimum, maximum, etc.)
             for q in quantities:
                 hybrid = q.find('si:hybrid', ns)
                 quantity_data = []
 
                 if hybrid is not None:
                     real_lists = hybrid.findall('si:realListXMLList', ns)
-                    for rl in real_lists:
-                        value_elem = rl.find('si:valueXMLList', ns)
-                        unit_elem = rl.find('si:unitXMLList', ns)
-
-                        values = value_elem.text.strip().split() if value_elem is not None else []
-                        units = unit_elem.text.strip().split() if unit_elem is not None else []
-
-                        # Handle the case where there's only one unit for all values
-                        if len(units) == 1:
-                            unit = units[0]
-                            quantity_data.append([(v, convert_unit(unit)) for v in values])
-                        else:
-                            quantity_data.append([(v, convert_unit(unit)) for v, unit in zip(values, units)])
-
                 else:
                     real_lists = q.findall('si:realListXMLList', ns)
-                    for rl in real_lists:
-                        value_elem = rl.find('si:valueXMLList', ns)
-                        unit_elem = rl.find('si:unitXMLList', ns)
 
-                        values = value_elem.text.strip().split() if value_elem is not None else []
-                        units = unit_elem.text.strip().split() if unit_elem is not None else []
+                for rl in real_lists:
+                    value_elem = rl.find('si:valueXMLList', ns)
+                    unit_elem = rl.find('si:unitXMLList', ns)
 
-                        # Handle the case where there's only one unit for all values
-                        if len(units) == 1:
-                            unit = units[0]
-                            quantity_data.append([(v, convert_unit(unit)) for v in values])
-                        else:
-                            quantity_data.append([(v, convert_unit(unit)) for v, unit in zip(values, units)])
+                    values = value_elem.text.strip().split() if value_elem is not None else []
+                    units = unit_elem.text.strip().split() if unit_elem is not None else []
+
+                    if len(units) == 1:
+                        unit = units[0]
+                        quantity_data.append([(v, convert_unit(unit)) for v in values])
+                    else:
+                        quantity_data.append([(v, convert_unit(unit)) for v, unit in zip(values, units)])
 
                 all_quantity_data.append(quantity_data)
                 if quantity_data:
                     max_rows = max(max_rows, len(quantity_data[0]))
 
-            total_columns = sum(len(q_data) * 2 for q_data in all_quantity_data)
+            # Ambil uncertainty dari salah satu quantity
+            uncertainty_values = []
+            for q in quantities:
+                mu_elem = q.find('.//si:valueExpandedMUXMLList', ns)
+                if mu_elem is not None and mu_elem.text:
+                    uncertainty_values = mu_elem.text.strip().split()
+                    break  # pakai hanya satu uncertainty list
+
+            # Nama tabel
             title_elem = hasil.find('dcc:name/dcc:content[@lang="en"]', ns)
             if title_elem is None:
                 title_elem = hasil.find('dcc:name/dcc:content', ns)
             title = gt(title_elem) if title_elem is not None else "No Title"
 
-            # Write the title and create merged cells for the table header
+            # Hitung total kolom termasuk uncertainty (2 kolom extra)
+            total_columns = sum(len(q_data) * 2 for q_data in all_quantity_data) + (2 if uncertainty_values else 0)
+
+            # Judul tabel
             ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=total_columns)
             table_name = ws.cell(row=row, column=1, value=title)
             table_name.font = Font(bold=True)
@@ -701,7 +696,7 @@ def convert_xml_to_excel(xml_file_path: str):
             col = 1
             header_range = []
 
-            # Writing header for the quantities
+            # Header untuk kolom quantity
             for q_name, q_data in zip(quantity_names, all_quantity_data):
                 span = len(q_data)
                 header_cell = ws.cell(row=row, column=col, value=q_name)
@@ -710,31 +705,80 @@ def convert_xml_to_excel(xml_file_path: str):
                 header_range.append((col, col + span * 2 - 1))
                 col += span * 2
 
+            # Header untuk uncertainty
+            if uncertainty_values:
+                ws.cell(row=row, column=col, value="Ketidakpastian / Uncertainty").font = Font(bold=True)
+                ws.merge_cells(start_row=row, start_column=col, end_row=row, end_column=col + 1)
+                header_range.append((col, col + 1))
+                col += 2
+
             for start_col, end_col in header_range:
-                if start_col > end_col:  
+                if start_col > end_col:
                     start_col, end_col = end_col, start_col
                 ws.merge_cells(start_row=row, start_column=start_col, end_row=row, end_column=end_col)
 
             apply_borders(ws, row, row, 1, total_columns)
             row += 1
 
+            # Data baris per baris
             for i in range(max_rows):
                 col = 1
+                last_unit = ""  # untuk digunakan di kolom uncertainty
                 for q_data in all_quantity_data:
                     for pair_set in q_data:
                         if i < len(pair_set):
                             val, unit = pair_set[i]
-                            # Write the value and unit to Excel
-                            ws.cell(row=row, column=col, value=round(float(val), 5) if val else "")
+                            last_unit = unit
+                            ws.cell(row=row, column=col, value=round(float(val), 5))
                             ws.cell(row=row, column=col + 1, value=unit)
                         col += 2
+
+                # Isi kolom uncertainty
+                if i < len(uncertainty_values):
+                    ws.cell(row=row, column=col, value=round(float(uncertainty_values[i]), 5))
+                    ws.cell(row=row, column=col + 1, value=last_unit)
                 row += 1
 
             apply_borders(ws, row - max_rows, row - 1, 1, total_columns)
             row += 1
 
+            #Informasi Ketidakpastian
+            coverage_factor = coverage_prob = distribution = None
+            for q in quantities:
+                coverage_factor_elem = q.find('.//si:coverageFactorXMLList', ns)
+                coverage_prob_elem = q.find('.//si:coverageProbabilityXMLList', ns)
+                distribution_elem = q.find('.//si:distributionXMLList', ns)
 
-        # Pernyataan
+                if coverage_factor_elem is not None and coverage_factor_elem.text:
+                    coverage_factor = coverage_factor_elem.text.strip()
+                if coverage_prob_elem is not None and coverage_prob_elem.text:
+                    coverage_prob = coverage_prob_elem.text.strip()
+                if distribution_elem is not None and distribution_elem.text:
+                    distribution = distribution_elem.text.strip()
+
+                # Gunakan yang pertama ditemukan
+                if coverage_factor or coverage_prob or distribution:
+                    break
+
+            # Tulis ke worksheet jika ada
+            if coverage_factor:
+                ws.cell(row=row, column=1, value="Faktor Cakupan")
+                ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
+                ws.cell(row=row, column=5, value=coverage_factor)
+                row += 1
+            if coverage_prob:
+                ws.cell(row=row, column=1, value="Probabilitas Cakupan")
+                ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
+                ws.cell(row=row, column=5, value=coverage_prob)
+                row += 1
+            if distribution:
+                ws.cell(row=row, column=1, value="Distribusi")
+                ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal='center')
+                ws.cell(row=row, column=5, value=distribution)
+                row += 1
+            row += 3
+
+        #STATEMENT/PERNYATAAN
         statements = root.findall('.//dcc:statements/dcc:statement', ns)
         ws.cell(row=row, column=1, value="Pernyataan").font = Font(bold=True, size=14)
         row += 2
@@ -812,9 +856,33 @@ def convert_xml_to_excel(xml_file_path: str):
             else:
                 ws.cell(row=row, column=5, value="[Tidak ada gambar]")
                 row += 2
+        row += 3
                 
                 
-                
+        #COMMENT
+        comment_elem = root.find('.//dcc:comment', ns)
+        if comment_elem is not None:
+            ws.cell(row=row, column=1, value="Komentar").font = Font(bold=True, size=14)
+            row += 2
+
+            # Nama komentar
+            name_elem = comment_elem.find('dcc:name/dcc:content', ns)
+            comment_name = gt(name_elem) if name_elem is not None else "-"
+
+            ws.cell(row=row, column=1, value="Nama")
+            ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal="center")
+            ws.cell(row=row, column=5, value=comment_name)
+            row += 2
+
+            # Deskripsi komentar (multi bahasa)
+            desc_elems = comment_elem.findall('dcc:description/dcc:content', ns)
+            desc_texts = [gt(de) for de in desc_elems if de is not None and de.text]
+
+            ws.cell(row=row, column=1, value="Deskripsi")
+            ws.cell(row=row, column=4, value=":").alignment = Alignment(horizontal="center")
+            ws.cell(row=row, column=5, value=', '.join(desc_texts) if desc_texts else "-")
+            row += 3  # Jarak ke bagian setelahnya
+
                 
 
         # Save the Excel file
