@@ -49,115 +49,106 @@ export default function Register({ formData }: { formData: any }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Fungsi untuk menangani login
-  const onSubmit = async (data: {
-    username: string;
-    email: string;
-    password: string;
-  }) => {
+  const onSubmit = async (data: { username: string; email: string; password: string }) => {
     try {
-      const response = await axios.post("http://127.0.0.1:8000/register", {
-        email: data.email,
-        password: data.password,
-        full_name: data.username,
-      });
-      const loginResponse = await axios.post(
+      const response = await axios.post(
         "http://127.0.0.1:8000/token",
-        `username=${data.email}&password=${data.password}`,
+        `username=${data.username}&email=${data.email}&password=${data.password}`,
         {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
         }
       );
-
-      localStorage.setItem("access_token", loginResponse.data.access_token);
+      localStorage.setItem("access_token", response.data.access_token);
       window.location.href = "/";
-    } catch (error: any) {
-      if (error.response && error.response.data && error.response.data.detail) {
-        setErrorMessage(error.response.data.detail);
-      } else {
-        setErrorMessage(t("register_fail"));
-      }
+    } catch (error) {
+      setErrorMessage(t("register_fail"));
     }
   };
 
   return (
     <FormProvider {...form}>
-      <div className="flex min-h-screen">
-        <div className="w-1/2 flex items-center justify-center pt-20">
-          <div className="w-[350px] p-6 space-y-12">
-            <div className="text-center font-semibold leading-tight tracking-tight text-indigo-950 text-2xl">
-              {t("register_account")}
-            </div>
-
-            <div className="space-y-4">
-              <div id="username">
-                <FormLabel>{t("nama")}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="username"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+      <div className="flex flex-col gap-1">
+        <Card className="overflow-hidden p-0">
+          <CardContent className="grid p-0 md:grid-cols-2">
+            <form className="p-6 md:p-8">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col items-center text-center">
+                  <h1 className="text-2xl font-bold">{t("welcome")}</h1>
+                  <p className="text-muted-foreground text-balance">
+                    {t("register_account")}
+                  </p>
+                </div>
+                <div id="username" className="grid gap-1">
+                  <FormLabel>{t("nama")}</FormLabel>
+                  <FormField
+                      control={form.control}
+                      name="username"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormControl>
+                          <Input {...field} required />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                </div>
+                <div id="email">
+                  <FormLabel>{t("email")}</FormLabel>
+                  <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormControl>
+                          <Input {...field} type="email" required />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                </div>
+                <div id="password">
+                  <FormLabel>{t("password")}</FormLabel>
+                  <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormControl>
+                          <Input {...field} type="password" required />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                </div>
+                <div className="text-center">
+                  {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
+                  <Link href="/">
+                    <Button variant="green" onClick={form.handleSubmit(onSubmit)}>
+                      {t("register")}
+                    </Button>
+                  </Link>
+                </div>
+                <div className="text-center text-sm">
+                  {t("to_login")}{" "}
+                  <a href="/" className="underline underline-offset-4 text-sky-500 hover:text-sky-600">
+                    {t("login")}
+                  </a>
+                </div>
               </div>
-              <div id="email">
-                <FormLabel>{t("email")}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div id="password">
-                <FormLabel>{t("password")}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} type="password" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              {errorMessage && (
-                <p className="text-red-600">
-                  <small>{errorMessage}</small>
-                </p>
-              )}
+            </form>
+            <div className="bg-muted relative hidden md:block">
+              <img
+                src="/image/biologi.jpg"
+                alt="Image"
+                className="absolute inset-0 h-full w-full object-cover grayscale"
+              />
+              <div className="absolute inset-0 bg-red-500 opacity-50"></div>
             </div>
-
-            <div className="flex justify-center pt-2">
-              <Link href="/">
-                <Button variant="green" onClick={form.handleSubmit(onSubmit)}>
-                  {t("register")}
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        <div className="w-1/2 h-screen relative">
-          <div
-            className="absolute inset-0 bg-cover bg-center filter grayscale"
-            style={{ backgroundImage: "url('/image/biologi.jpeg')" }}
-          ></div>
-          <div className="absolute inset-0 bg-red-200 bg-opacity-80 pointer-events-none"></div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </FormProvider>
   );
