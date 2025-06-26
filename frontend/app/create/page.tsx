@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Stepper from "@/components/ui/stepper";
 import AdministrativeForm from "@/components/administrative-form";
 import MeasurementForm from "@/components/measurement-form";
@@ -216,20 +216,20 @@ export default function CreateDCC() {
   });
 
   // Kasih warning saat user mencoba meninggalkan halaman (agar isi formulir tidak hilang)
-  // useEffect(() => {
-  //   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-  //     event.preventDefault();
-  //     event.returnValue = "";
-  //   };
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
 
-  //   if (formData) {
-  //     window.addEventListener("beforeunload", handleBeforeUnload);
-  //   }
+    if (formData) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
 
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, [formData]);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [formData]);
 
   const formatDate = (date: Date | string | null): string | null => {
     if (!date) return null;

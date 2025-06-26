@@ -1783,10 +1783,10 @@ export default function MeasurementForm({
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="suhu">
+                                <SelectItem value="Suhu">
                                   {t("suhu")}
                                 </SelectItem>
-                                <SelectItem value="lembap">
+                                <SelectItem value="Lembap">
                                   {t("lembap")}
                                 </SelectItem>
                                 <SelectItem value="other">

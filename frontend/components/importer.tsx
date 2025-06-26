@@ -15,6 +15,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { File } from "lucide-react";
 import axios from "axios";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const FormSchema = z.object({
   pdf: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
@@ -144,17 +145,13 @@ export default function Importer({
                 }}
               />
 
-              <button
+              <Button
                 type="submit"
                 disabled={isProcessing}
-                className={`px-4 py-2 rounded w-full ${
-                  isProcessing
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-500 hover:bg-blue-600 text-white"
-                }`}
+                variant="green"
               >
-                {isProcessing ? "Memproses..." : "Konversi ke Excel dan Submit"}
-              </button>
+                {isProcessing ? t("processing") : t("convert")}
+              </Button>
 
               {isProcessing && (
                 <div className="mt-4 p-3 bg-blue-50 rounded-md">

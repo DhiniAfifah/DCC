@@ -4,22 +4,23 @@ type Language = "id" | "en";
 
 const translations: Record<string, { id: string; en: string }> = {
   // Login
-  welcome: { id: "Selamat datang di <b>DCC</b>", en: "Welcome to <b>DCC</b>" },
+  welcome_back: { id: "Selamat datang kembali!", en: "Welcome back!" },
   log_in: { id: "Masuk ke akun Anda", en: "Log in to your account" },
   email: { id: "Surel", en: "E-mail" },
   password: { id: "Kata sandi", en: "Password" },
   login: { id: "Masuk", en: "Log in" },
   login_fail: { id: "Gagal masuk, silakan periksa kredensial Anda.", 
                 en: "Login failed, please check your credentials." },
-
-  to_register: { id: "Belum punya akun? Daftar di sini.", en: "Don't have an account? Register here." },
+  to_register: { id: "Belum punya akun?", en: "Don't have an account?" },
 
   // Register
+  welcome: { id: "Selamat datang!", en: "Welcome!" },
   register_account: { id: "Daftar akun baru", en: "Register a new account" },
   register: { id: "Daftar", en: "Register" },
   register_fail: { id: "Gagal mendaftar, silakan coba lagi.", en: "Registration failed, please try again." },
+  to_login: { id: "Sudah punya akun?", en: "Have an account?" },
 
-  logout: { id: "Keluar", en: "Log out" },
+  logout: { id: "Keluar", en: "Logout" },
 
   // Menu
   generator: {
@@ -258,7 +259,9 @@ const translations: Record<string, { id: string; en: string }> = {
   upload_file: { id: "Unggah file", en: "Upload file" },
 
   // Importer
-  pdf: { id: "Unggah file PDF", en: "Upload PDF file" },
+  pdf_to_excel: { id: "Unggah file PDF", en: "Upload PDF file" },
+  processing: {id: "Memproses...", en: "Processing..."},
+  convert: {id: "Kirim dan Konversi ke Excel", en: "Submit and Convert to Excel"},
 
   // === D-SI ===
 

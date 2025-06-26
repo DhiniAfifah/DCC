@@ -1,15 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { useLanguage } from "@/context/LanguageContext";
 import { z } from "zod";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import axios from "axios";
 import {
   FormControl,
   FormField,
@@ -17,11 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/context/LanguageContext";
 import Link from "next/link";
-import axios from "axios";
 
 export const FormSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -50,107 +44,91 @@ export default function Login({ formData }: { formData: any }) {
   // Fungsi untuk menangani login
   const onSubmit = async (data: { email: string; password: string }) => {
     try {
-      const formData = new URLSearchParams();
-      formData.append("username", data.email);
-      formData.append("password", data.password);
-
       const response = await axios.post(
         "http://127.0.0.1:8000/token",
-        formData,
+        `email=${data.email}&password=${data.password}`,
         {
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
         }
       );
-
       localStorage.setItem("access_token", response.data.access_token);
       window.location.href = "/main";
-    } catch (error: any) {
-      if (error.response && error.response.data && error.response.data.detail) {
-        setErrorMessage(error.response.data.detail);
-      } else {
-        setErrorMessage(t("login_fail"));
-      }
+    } catch (error) {
+      setErrorMessage(t("login_fail"));
     }
   };
-
+  
   return (
     <FormProvider {...form}>
-      <div className="flex min-h-screen">
-        <div className="w-1/2 h-screen relative pt-10">
-          <div
-            className="absolute inset-0 bg-cover bg-center filter grayscale"
-            style={{ backgroundImage: "url('/image/panjang.jpg')" }}
-          ></div>
-          <div className="absolute inset-0 bg-red-200 bg-opacity-80 pointer-events-none"></div>
-          <div className="relative z-10 flex items-center justify-center h-full">
-            <h1 className="text-2xl md:text-4xl lg:text-5xl text-black p-10 text-center">
-              <span dangerouslySetInnerHTML={{ __html: t("welcome") }} />
-            </h1>
-          </div>
-        </div>
-
-        <div className="w-1/2 flex items-center justify-center pt-16">
-          <div className="w-[350px] p-6 space-y-12">
-            <div className="text-center font-semibold leading-tight tracking-tight text-indigo-950 text-2xl">
-              {t("log_in")}
+      <div className="flex flex-col gap-6">
+        <Card className="overflow-hidden p-0">
+          <CardContent className="grid p-0 md:grid-cols-2">
+            <form className="p-6 md:p-8">
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col items-center text-center">
+                  <h1 className="text-2xl font-bold">{t("welcome_back")}</h1>
+                  <p className="text-muted-foreground text-balance">
+                    {t("log_in")}
+                  </p>
+                </div>
+                <div id="email" className="grid gap-1">
+                  <FormLabel>{t("email")}</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input 
+                            {...field} type="email" required
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div id="password" className="grid gap-1">
+                  <FormLabel>{t("password")}</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input {...field} type="password"  />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="text-center">
+                  {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
+                  <Link href="/">
+                    <Button variant="green" onClick={form.handleSubmit(onSubmit)}>
+                      {t("login")}
+                    </Button>
+                  </Link>
+                </div>
+                <div className="text-center text-sm">
+                  {t("to_register")}{" "}
+                  <a href="/register" className="underline underline-offset-4 text-sky-500 hover:text-sky-600">
+                    {t("register")}
+                  </a>
+                </div>
+              </div>
+            </form>
+            <div className="bg-muted relative hidden md:block">
+              <img
+                src="/image/panjang.jpg"
+                alt="Image"
+                className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              />
+              <div className="absolute inset-0 bg-red-500 opacity-50"></div>
             </div>
-
-            <div className="space-y-4">
-              <div id="email">
-                <FormLabel>{t("email")}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div id="password">
-                <FormLabel>{t("password")}</FormLabel>
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input {...field} type="password" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              {errorMessage && (
-                <p className="text-red-600">
-                  <small>{errorMessage}</small>
-                </p>
-              )}
-            </div>
-            <div>
-              <div className="flex justify-center pt-2">
-                <Link href="/">
-                  <Button variant="green" onClick={form.handleSubmit(onSubmit)}>
-                    {t("login")}
-                  </Button>
-                </Link>
-              </div>
-
-              <div className="flex justify-center pt-2">
-                <Link href="/register">
-                  <small className="text-sky-500">{t("to_register")}</small>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </FormProvider>
   );
