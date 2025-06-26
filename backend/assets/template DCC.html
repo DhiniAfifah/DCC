@@ -1,789 +1,845 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <style>
-      @page first {
-        margin-right: 60px;
-        margin-top: 40px;
-        @bottom-center {
-          content: element(footer);
-        }
-      }
-      #title .label {
-        font-size: 14.5px;
-        margin-bottom: 3px;
-        margin-top: 1px;
-      }
-      #title .value {
-        font-family: Arial, sans-serif;
-        font-size: 13px;
-      }
-      .title {
-        margin: 0;
-        font-size: 14.7px;
-      }
-      .subtitle {
-        margin-top: 1px;
-        margin-bottom: 8px;
-        font-size: 12px;
-        font-style: italic;
-      }
-      #fields .row {
-        display: flex;
-        margin-bottom: 2px;
-      }
-      #fields .left {
-        width: 205px;
-        flex-shrink: 0;
-      }
-      .left-indent {
-        padding-left: 35px;
-        width: 170px; /* .left width - padding-left */
-      }
-      #fields .label {
-        font-size: 14.6px;
-      }
-      #fields .sub-label {
-        font-style: italic;
-        font-size: x-small;
-        margin-top: 3px;
-        margin-bottom: 2px;
-      }
-      #fields .colon {
-        width: 18px;
-        flex-shrink: 0;
-        /* margin-top: 1.5px; */
-      }
-      #fields .value {
-        font-family: Arial, sans-serif;
-        max-width: 100%;
-        font-size: 13px;
-      }
-      @page second {
-        margin-left: 85px;
-        margin-right: 100px;
-      }
-      header .label {
-        margin: 0;
-        font-size: 14.5px;
-      }
-      header .sublabel {
-        font-size: 13.5px;
-      }
-      header .value {
-        font-family: Arial, sans-serif;
-        font-size: 11.6px;
-        margin-left: 4.9px;
-      }
-      .page-number {
-        display: grid;
-        grid-template-columns: 55px 30px 25px 30px 55px;
-        font-size: 14.5px;
-      }
-      #second-page-body .row {
-        display: flex;
-        justify-content: start;
-        margin-bottom: 3px;
-      }
-      #second-page-body .left {
-        width: 250px;
-        display: flex;
-      }
-      #second-page-body .label {
-        margin: 0;
-        font-size: 14px;
-      }
-      #second-page-body .sublabel {
-        margin: 0;
-        font-style: italic;
-        font-size: 12px;
-        margin-top: 1.5px;
-      }
-      #second-page-body .value {
-        margin: 0;
-        font-size: 14.2px;
-      }
-      #kondisi .left {
-        width: 295px;
-      }
-      #kondisi .value {
-        margin-left: 20px;
-      }
-      #catatan .indo {
-        font-size: 12.87px;
-        line-height: 15px;
-      }
-      #catatan .eng {
-        font-size: 10.5px;
-        font-style: italic;
-        margin-top: 1px;
-      }
-      #credits .row {
-        margin-bottom: 2px;
-      }
-      #credits .left {
-        width: 165px;
-      }
-      #credits .label {
-        display: flex;
-        font-size: 12.6px;
-      }
-      #credits .sublabel {
-        margin: 0;
-        font-style: italic;
-        font-size: 12px;
-        margin-top: 0.5px;
-      }
-      #credits .colon {
-        width: 8px;
-        font-size: 12.6px;
-      }
-      #credits .value {
-        font-size: 12.6px;
-        margin-bottom: 2px;
-      }
-      #credits .right {
-        font-size: 12.6px;
-      }
-      #right .labels {
-        display: flex;
-        margin-top: 3px;
-        margin-bottom: 4px;
-      }
-    </style>
-  </head>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            @page first { 
+                margin-right: 60px; 
+                margin-top: 40px; 
+                @bottom-center {
+                    content: element(footer);
+                }
+            }
+            #title .label {
+                font-size: 14.5px;
+                margin-bottom: 3px;
+                margin-top: 1px;
+            }
+            #title .value {
+                font-family: Arial, sans-serif; 
+                font-size: 13px;
+            }
+            #fields .title {
+                margin: 0;
+                font-size: 14.7px;
+            }
+            #fields .subtitle {
+                margin-top: 1px;
+                margin-bottom: 8px;
+                font-size: 12px;
+                font-style: italic;
+            }
+            #fields .row {
+                display: flex;
+                margin-bottom: 2px;
+            }
+            #fields .left {
+                width: 205px;
+                flex-shrink: 0;
+            }
+            .left-indent {
+                padding-left: 35px;
+                width: 170px; /* .left width - padding-left */
+            }
+            #fields .label {
+                font-size: 14.6px;
+            }
+            #fields .sub-label {
+                font-style: italic;
+                font-size: x-small;
+                margin-top: 3px;
+                margin-bottom: 2px;
+            }
+            #fields .colon {
+                width: 18px;
+                flex-shrink: 0;
+                /* margin-top: 1.5px; */
+            }
+            #fields .value {
+                font-family: Arial, sans-serif;
+                max-width: 100%;
+                font-size: 13px;
+            }
+            @page second { 
+                margin-left: 85px;
+                margin-right: 100px;
+            }
+            header .label {
+                margin: 0; 
+                font-size: 14.5px;
+            }
+            header .sublabel {
+                font-size: 13.5px;
+            }
+            header .value {
+                font-family: Arial, sans-serif;
+                font-size: 11.6px;
+                margin-left: 4.9px;
+            }
+            .page-number {
+                display: grid; 
+                grid-template-columns: 55px 30px 25px 30px 55px; 
+                font-size: 14.5px;
+            }
+            #second-page-body .row {
+                display: flex; 
+                justify-content: start;
+                margin-bottom: 3px;
+            }
+            #second-page-body .left {
+                width: 250px;
+                display: flex;
+            }
+            #second-page-body .label {
+                margin: 0;
+                font-size: 14px;
+            }
+            #second-page-body .sublabel {
+                margin: 0;
+                font-style: italic;
+                font-size: 12px;
+                margin-top: 1.5px;
+            }
+            #second-page-body .value {
+                margin: 0;
+                font-size: 14.2px;
+            }
+            #second-page-body .title {
+                font-size: 14px; 
+                margin: 0;
+            }
+            #second-page-body .subtitle {
+                font-size: 12px;
+                margin: 0;
+            }
+            #kondisi .left {
+                width: 295px;
+            }
+            #kondisi .value {
+                margin-left: 20px;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            th {
+                border-top: 3px solid black;
+                border-bottom: 3px solid black;
+                text-align: center;
+            }
+            td {
+                font-family: 'Courier New', monospace;
+                font-size: 12px;
+            }
+            .number {
+                text-align: right;
+            }
+            #catatan .indo {
+                font-size: 12.87px;
+                line-height: 15px;
+            }
+            #catatan .eng {
+                font-size: 10.5px;
+                font-style: italic;
+                margin-top: 1px;
+            }
+            #credits .row {
+                margin-bottom: 2px;
+            }
+            #credits .left {
+                width: 165px;
+            }
+            #credits .label {
+                display: flex; 
+                font-size: 12.6px;
+            }
+            #credits .sublabel {
+                margin: 0;
+                font-style: italic;
+                font-size: 12px;
+                margin-top: 0.5px;
+            }
+            #credits .colon {
+                width: 8px; 
+                font-size: 12.6px;
+            }
+            #credits .value {
+                font-size: 12.6px;
+                margin-bottom: 2px;
+            }
+            #credits .right {
+                font-size: 12.6px;
+            }
+            #right .labels {
+                display: flex;
+                margin-top: 3px;
+                margin-bottom: 4px;
+            }
+        </style>
+    </head>
 
-  <body>
-    <div
-      id="first-page"
-      style="
-        page: first;
-        font-family: Candara, sans-serif;
-        page-break-before: always;
-      "
-    >
-      <header
-        style="
-          font-family: Arial, sans-serif;
-          display: flex;
-          justify-content: space-between;
-        "
-      >
-        <div id="BSN" style="line-height: 1.1">
-          <img
-            src="assets/pics/logo BSN.png"
-            alt="logo BSN"
-            style="width: 243px"
-          />
-          <div style="color: #211569; font-weight: bold">
-            <p style="margin: 0; font-size: 13.2px">
-              Laboratorium Standar Nasional Satuan Ukuran
-            </p>
-            <p style="margin: 0; font-size: 11.9px; font-style: italic">
-              Laboratory of National Measurement Standards
-            </p>
-          </div>
-        </div>
-        <div id="KAN">
-          <img
-            src="assets/pics/logo KAN.png"
-            alt="logo KAN"
-            style="width: 110px"
-          />
-          <p style="margin: 0; padding: 0; font-size: 8px; text-align: center">
-            <b>LK-070-IDN</b>
-          </p>
-        </div>
-      </header>
-
-      <div id="title" style="text-align: center">
-        <h1 style="margin-top: 30px; margin-bottom: 5px; font-size: 29.5px">
-          Sertifikat Kalibrasi
-        </h1>
-        <h3 style="margin: 0; margin-bottom: 1px">
-          <i>Calibration Certificate</i>
-        </h3>
-        <p class="label">
-          Certificate number: <span class="value">{{ admin.certificate }}</span>
-        </p>
-        <p class="label">
-          Order number: <span class="value">{{ admin.order }}</span>
-        </p>
-      </div>
-
-      <div id="fields">
-        <div
-          id="Deskripsi Objek yang Dikalibrasi/Diukur"
-          style="margin-top: 10px"
-        >
-          <!-- jangan lupa append -->
-          <h4 class="title">Deskripsi Objek yang Dikalibrasi/Diukur</h4>
-          <h5 class="subtitle">
-            Description of object being calibrated or measured
-          </h5>
-
-          {% for obj in objects %} {% if objects|length > 1 %}
-          <h6 style="font-size: 13px; margin: 0; margin-bottom: 3px">
-            Objek {{ loop.index }}
-          </h6>
-          {% endif %}
-
-          <div style="margin-bottom: 5px; page-break-inside: avoid">
-            <div id="Jenis alat atau objek" class="row">
-              <div class="left">
-                <div class="label">Jenis alat atau objek</div>
-                <div class="sub-label">Type of instrument or object</div>
-              </div>
-              <div class="colon">:</div>
-              <div class="value">
-                {% if obj.jenis.id is defined %} {{ obj.jenis.id }} {% elif
-                obj.jenis.en is defined %} {{ obj.jenis.en }} {% else %} {{
-                obj.jenis | dictsort | rejectattr('0', 'equalto', 'id') |
-                map(attribute='1') | list | first }} {% endif %}
-              </div>
-            </div>
-
-            <div id="Merek/pembuat dan tipe" class="row">
-              <div class="left">
-                <div class="label">Merek/pembuat dan tipe</div>
-                <div class="sub-label">Brand/manufacturer and type</div>
-              </div>
-              <div class="colon">:</div>
-              <div class="value">{{ obj.merek }} {{ obj.tipe }}</div>
-            </div>
-
-            <div id="Identifikasi alat">
-              <div class="label">Identifikasi alat</div>
-              <div class="sub-label">Instrument identification</div>
-            </div>
-
-            <div id="Nomor seri" class="row">
-              <div class="left-indent">
-                <div class="label">Nomor seri</div>
-                <div class="sub-label">Serial number</div>
-              </div>
-              <div class="colon">:</div>
-              <div class="value">{{ obj.seri_item }}</div>
-            </div>
-
-            <div id="Identifikasi lain" class="row">
-              <div class="left-indent">
-                <div class="label">Identifikasi lain</div>
-                <div class="sub-label">Other identification</div>
-              </div>
-              <div class="colon">:</div>
-              <div class="value">
-                {% if obj.id_lain is mapping %} {% if obj.id_lain.id is defined
-                %} {{ obj.id_lain.id }} {% elif obj.id_lain.en is defined %} {{
-                obj.id_lain.en }} {% else %} {{ obj.id_lain | dictsort |
-                rejectattr('0', 'equalto', 'id') | map(attribute='1') | list |
-                first }} {% endif %} {% else %} {{ obj.id_lain }} {% endif %}
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-
-        <div
-          id="Identitas Pemilik"
-          style="margin-top: 25px; page-break-inside: avoid"
-        >
-          <h4 class="title">Identitas Pemilik</h4>
-          <h5 class="subtitle">Owner's identification</h5>
-
-          <div id="Nama" class="row">
-            <div class="left">
-              <div class="label">Nama</div>
-              <div class="sub-label">Designation</div>
-            </div>
-            <div class="colon">:</div>
-            <div class="value">{{ owner.nama_cust }}</div>
-          </div>
-
-          <div id="Alamat" class="row">
-            <div class="left">
-              <div class="label">Alamat</div>
-              <div class="sub-label">Address</div>
-            </div>
-            <div class="colon">:</div>
-            <div class="value">
-              {{ owner.jalan_cust }} {{ owner.no_jalan_cust }}, {{
-              owner.kota_cust }}, {{ owner.state_cust }} {{ owner.pos_cust }},
-              {{ owner.negara_cust }}
-            </div>
-          </div>
-        </div>
-
-        <div id="Pengesahan" style="margin-top: 10px; page-break-inside: avoid">
-          <h4 class="title">Pengesahan</h4>
-          <h5 class="subtitle">Authorization</h5>
-
-          <div id="Pejabat yang mengesahkan" class="row">
-            <div class="left">
-              <div class="label">Pejabat yang mengesahkan</div>
-              <div class="sub-label">Authorizing officer</div>
-            </div>
-            <div class="colon">:</div>
-            <div class="value">{{ direktur.peran }}</div>
-          </div>
-
-          <div id="Nama" class="row">
-            <div class="left">
-              <div class="label">Nama</div>
-              <div class="sub-label">Name</div>
-            </div>
-            <div class="colon">:</div>
-            <div class="value">
-              <div>{{ direktur.nama_resp }}</div>
-              <div style="margin-top: 3px">NIP {{ direktur.nip }}</div>
-            </div>
-          </div>
-          <div id="Tanggal pengesahan" class="row">
-            <div class="left">
-              <div class="label">Tanggal pengesahan</div>
-              <div class="sub-label">Date of issue (dd/mm/yyyy)</div>
-            </div>
-            <div class="colon">:</div>
-            <div class="value">{{ Measurement_TimeLine.tgl_pengesahan }}</div>
-          </div>
-        </div>
-
-        <div id="Jumlah halaman (termasuk halaman ini)" class="row">
-          <div class="left" style="width: 268px">
-            <div class="label">Jumlah halaman (termasuk halaman ini)</div>
-            <div class="sub-label">
-              Total number of pages including this one
-            </div>
-          </div>
-          <div class="colon">:</div>
-          <div class="value">{{ total_pages }}</div>
-        </div>
-      </div>
-
-      <div
-        id="validation"
-        style="font-size: 12px; text-align: justify; line-height: 1.2"
-      >
-        <div
-          id="signature"
-          style="padding-left: 104px; page-break-inside: avoid"
-        >
-          <div>
-            Dokumen ini disahkan secara elektronik sesuai peraturan yang berlaku
-            dengan sertifikat dari Balai Sertifikasi Elektronik (BsrE) dan tidak
-            memerlukan tanda tangan atau cap. Dokumen asli dapat diperoleh
-            dengan memindai kode QR di samping ini.
-          </div>
-          <div style="font-style: italic">
-            This document is digitally signed. No signature or seal is required.
-            The original document can be obtained by scanning the QR code on the
-            left.
-          </div>
-        </div>
-
-        <div
-          id="accreditation"
-          style="margin-top: 5px; page-break-inside: avoid"
-        >
-          <div>
-            Kalibrasi atau pengukuran yang dilaporkan dalam sertifikat ini
-            tercakup dalam lingkup akreditasi menurut SNI ISO/IEC 17025 oleh
-            Komite Akreditasi Nasional, kecuali dinyatakan dalam badan
-            sertifikat.
-          </div>
-          <div style="font-style: italic">
-            The calibration or measurement reported in the certificate is
-            covered in the accredication scope according to SNI ISO/IEC 17025 by
-            the National Accredication Committee of Indonesia, unless marked
-            otherwise in the body of certificate.
-          </div>
-        </div>
-      </div>
-
-      <div
-        id="footer"
-        style="
-          position: running(footer);
-          text-align: center;
-          font-size: 10.5px;
-          line-height: 1.2;
-          width: 100%;
-          margin-bottom: 80px;
-        "
-      >
-        <hr style="width: 100%" />
-        <div>
-          Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi
-          Nasional (SNSU-BSN)
-        </div>
-        <div>
-          <i
-            >Laboratory of National Measurement Standards, Nasional
-            Standardization Agency of Indonesia</i
-          >
-        </div>
-        <div>
-          Kompleks Puspiptek, Gedung 420, Setu, Tangerang Selatan, Banten 15314,
-          Indonesia
-        </div>
-        <div>
-          Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833,
-          Web www.bsn.go.id, Email nmi@bsn.go.id
-        </div>
-      </div>
-    </div>
-
-    <div
-      id="second-page"
-      style="page: second; font-family: 'Times New Roman', Times, serif"
-    >
-      <header
-        style="
-          font-family: Candara, sans-serif;
-          display: flex;
-          justify-content: space-between;
-        "
-      >
-        <div id="BSN">
-          <img
-            src="assets/pics/logo BSN.png"
-            alt="logo BSN"
-            style="width: 220px"
-          />
-        </div>
-        <div id="id" style="display: flex; flex-direction: column; gap: 3px">
-          <p class="label">
-            No. Sertifikat / <i class="sublabel">Cert. Number</i>:<span
-              class="value"
-              >{{ admin.certificate }}</span
-            >
-          </p>
-          <p class="label">
-            No. Order / <i class="sublabel">Order Number</i>:<span class="value"
-              >{{ admin.order }}</span
-            >
-          </p>
-          <div class="page-number">
-            <div>Halaman</div>
-            <div style="text-align: center"></div>
-            <div>dari</div>
-            <div style="text-align: center"></div>
-            <div>halaman</div>
-          </div>
-          <div
-            class="page-number"
-            style="font-size: 11.5px; font-style: italic"
-          >
-            <div>Page</div>
-            <div style="text-align: center"></div>
-            <div>of</div>
-            <div style="text-align: center"></div>
-            <div>pages</div>
-          </div>
-        </div>
-      </header>
-
-      <div id="second-page-body" style="margin-left: 45px; margin-top: 37px">
-        <div id="administration">
-          {% for obj in objects %} {% if objects|length > 1 %}
-          <h6 style="font-size: 14px; margin: 0; margin-bottom: 2px">
-            Alat {{ loop.index }}
-          </h6>
-          {% endif %}
-
-          <div style="margin-bottom: 10px">
-            <div id="Nama Alat" class="row">
-              <div class="left">
-                <p class="label">Nama Alat/</p>
-                <p class="sublabel">Instrument Name</p>
-              </div>
-              <div class="value">
-                : {% if obj.jenis.id is defined %} {{ obj.jenis.id }} {% elif
-                obj.jenis.en is defined %} {{ obj.jenis.en }} {% else %} {{
-                obj.jenis | dictsort | rejectattr('0', 'equalto', 'id') |
-                map(attribute='1') | list | first }} {% endif %}
-              </div>
-            </div>
-            <div id="Pembuat" class="row">
-              <div class="left">
-                <p class="label">Pembuat/</p>
-                <p class="sublabel">Manufacturer</p>
-              </div>
-              <p class="value">: {{ obj.merek }}</p>
-            </div>
-            <div id="Model" class="row">
-              <div class="left">
-                <p class="label">Model/</p>
-                <p class="sublabel">Model</p>
-              </div>
-              <p class="value">: {{ obj.tipe }}</p>
-            </div>
-            <div id="No. Seri" class="row">
-              <div class="left">
-                <p class="label">No. Seri/</p>
-                <p class="sublabel">Serial Number</p>
-              </div>
-              <p class="value">: {{ obj.seri_item }}</p>
-            </div>
-          </div>
-          {% endfor %}
-
-          <div id="Tanggal Kalibrasi" class="row">
-            <div class="left">
-              <p class="label">Tanggal Kalibrasi/</p>
-              <p class="sublabel">Calibration Date</p>
-            </div>
-            <p class="value">
-              : {{ Measurement_TimeLine.tgl_mulai }} - {{
-              Measurement_TimeLine.tgl_akhir }}
-            </p>
-          </div>
-          <div id="Tempat Kalibrasi" class="row">
-            <div class="left">
-              <p class="label">Tempat Kalibrasi/</p>
-              <p class="sublabel">Calibration Place</p>
-            </div>
-            <p class="value">: {{ admin.tempat }}</p>
-          </div>
-        </div>
-
-        <h4 style="text-align: center; font-size: 14px">
-          <u>Hasil Kalibrasi/<i>Calibration Result</i></u>
-        </h4>
-
-        <div id="kondisi">
-          <h4 style="font-size: 14px; margin: 0; margin-bottom: 3px">
-            Kondisi Ruangan/<i style="font-size: 12px"
-              >Environmental Condition</i
-            >
-          </h4>
-
-          {% for cond in conditions %}
-          <div class="row">
-            <div class="left">{{ cond.jenis_kondisi }}</div>
-            {% if cond.tengah_unit == cond.rentang_unit %}
-            <p class="value" style="margin-left: 20px">
-              : ({{ cond.tengah }} ± {{ cond.rentang }}){{ cond.tengah_unit }}
-            </p>
-            {% else %}
-            <p class="value" style="margin-left: 20px">
-              : {{ cond.tengah }} {{ cond.tengah_unit }} ± {{ cond.rentang }} {{
-              cond.rentang_unit }}
-            </p>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-
-        <div id="tabel" style="margin-top: 35px">tabel</div>
-
-        <div id="catatan" style="margin-top: 20px">
-          <h4 style="font-size: 14px; margin: 0; margin-bottom: 3px">
-            Catatan/<i style="font-size: 12px">Notes</i>
-          </h4>
-
-          <div id="method">
-            <div class="indo">
-              Hasil kalibrasi ini diperoleh berdasarkan prosedur kalibrasi {%
-              for met in methods %} {% if met.method_name.id %} {% set name =
-              met.method_name.id %} {% elif met.method_name.en %} {% set name =
-              met.method_name.en %} {% else %} {% set name = met.method_name |
-              dictsort | map(attribute='1') | list | first %} {% endif %} {% set
-              desc = '' %} {% if met.method_desc.id and met.method_desc.id |
-              trim != '' %} {% set desc = ' ' + met.method_desc.id %} {% elif
-              met.method_desc.en and met.method_desc.en | trim != '' %} {% set
-              desc = ' ' + met.method_desc.en %} {% else %} {% set values =
-              met.method_desc | dictsort | map(attribute='1') |
-              reject('equalto', '') | list %} {% if values %} {% set desc = ' '
-              + values[0] %} {% endif %} {% endif %} {% if loop.last and not
-              loop.first %} dan {{ name }}{{ desc }} {% elif not loop.last %} {{
-              name }}{{ desc }}, {% else %} {{ name }}{{ desc }} {% endif %} {%
-              endfor %} dengan menggunakan instrumen standar yang tertelusur ke
-              SI melalui SNSU-BSN.
-
-              <span class="indo">/</span>
-              <span class="eng">
-                The calibration result was acquired based on the procedure of {%
-                for met in methods %} {% if met.method_name.en %} {% set name =
-                met.method_name.en %} {% else %} {% set values = met.method_name
-                | dictsort | rejectattr('0', 'equalto', 'id') |
-                map(attribute='1') | list %} {% set name = values[0] %} {% endif
-                %} {% set desc = '' %} {% if met.method_desc.en and
-                met.method_desc.en | trim != '' %} {% set desc = ' ' +
-                met.method_desc.en %} {% else %} {% set values = met.method_desc
-                | dictsort | map(attribute='1') | reject('equalto', '') | list
-                %} {% if values %} {% set desc = ' ' + values[0] %} {% endif %}
-                {% endif %} {% if loop.last and not loop.first %} and {{ name
-                }}{{ desc }} {% elif not loop.last %} {{ name }}{{ desc }}, {%
-                else %} {{ name }}{{ desc }} {% endif %} {% endfor %} using the
-                standard instrument that is traceable to SI through SNSU-BSN.
-              </span>
-            </div>
-            {% for met in methods %}
-            <div id="formula" style="text-align: center">
-              {% if met.formula_image is defined %}
-              <img
-                src="{{ met.formula_image }}"
-                alt="rumus"
-                style="height: 25px"
-              />
-              {% endif %}
-            </div>
-            <div id="image" style="text-align: center">
-              {% if met.image %}
-              <img src="{{ met.image }}" alt="gambar" style="width: 300px" />
-              {% endif %}
-            </div>
-            {% endfor %}
-          </div>
-
-          <div id="equipment">
-            <div class="indo">
-              Alat standar yang digunakan adalah {% for equ in equipments %} {#
-              Nama alat #} {% if equ.nama_alat.id %} {% set nama =
-              equ.nama_alat.id %} {% elif equ.nama_alat.en %} {% set nama =
-              equ.nama_alat.en %} {% else %} {% set values = equ.nama_alat |
-              dictsort | map(attribute='1') | list %} {% set nama = values[0] %}
-              {% endif %} {# Manufaktur #} {% if equ.manuf_model.id %} {% set
-              manuf = equ.manuf_model.id %} {% else %} {% set values =
-              equ.manuf_model | dictsort | map(attribute='1') | list %} {% set
-              manuf = values[0] %} {% endif %} {# Model #} {% if equ.model.id %}
-              {% set model = equ.model.id %} {% else %} {% set values =
-              equ.model | dictsort | map(attribute='1') | list %} {% set model =
-              values[0] %} {% endif %} {# Nomor seri #} {% set seri =
-              equ.seri_measuring %} {# Tampilkan dengan koma / "dan" / titik #}
-              {% if loop.last and not loop.first %} dan {{ nama }} {{ manuf }}
-              {{ model }} ({{ seri }}). {% elif not loop.last %} {{ nama }} {{
-              manuf }} {{ model }} ({{ seri }}), {% else %} {{ nama }} {{ manuf
-              }} {{ model }} ({{ seri }}) {% endif %} {% endfor %}
-              <span class="indo">/</span>
-              <span class="eng">
-                The standard instruments used were {% for equ in equipments %}
-                {% if equ.nama_alat.en %} {% set nama = equ.nama_alat.en %} {%
-                else %} {% set values = equ.nama_alat | dictsort |
-                map(attribute='1') | list %} {% set nama = values[0] %} {% endif
-                %} {% if equ.manuf_model.en %} {% set manuf = equ.manuf_model.en
-                %} {% else %} {% set values = equ.manuf_model | dictsort |
-                map(attribute='1') | list %} {% set manuf = values[0] %} {%
-                endif %} {% if equ.model.en %} {% set model = equ.model.en %} {%
-                else %} {% set values = equ.model | dictsort |
-                map(attribute='1') | list %} {% set model = values[0] %} {%
-                endif %} {% set seri = equ.seri_measuring %} {% if loop.last and
-                not loop.first %} and {{ nama }} {{ manuf }} {{ model }} ({{
-                seri }}). {% elif not loop.last %} {{ nama }} {{ manuf }} {{
-                model }} ({{ seri }}), {% else %} {{ nama }} {{ manuf }} {{
-                model }} ({{ seri }}) {% endif %} {% endfor %}
-              </span>
-            </div>
-          </div>
-
-          <div id="uncertainty">
-            <div class="indo">
-              Ketidakpastian pengukuran dihitung dengan tingkat kepercayaan
-              tidak kurang dari {{ uncertainty.probability }} dan faktor cakupan
-              k = {{ uncertainty.factor }}.
-              <span class="indo">/</span>
-              <span class="eng">
-                The uncertainty of measurement was calculated with the
-                confidence level not less than {{ uncertainty.probability }} and
-                coverage factor of k = {{ uncertainty.factor }}.
-              </span>
-            </div>
-          </div>
-
-          <div id="statement">
-            {% for stat in statements %}
-
-            <div class="indo">
-              {% if stat.value.id %} {{ stat.value.id }} {% set alt_values =
-              stat.value | dictsort | rejectattr('0', 'equalto', 'id') | list %}
-              {% if alt_values | length > 0 %}
-              <span class="indo">/</span>
-              <span class="eng">
-                {% if stat.value.en %} {{ stat.value.en }} {% else %} {{
-                stat.value | dictsort | rejectattr('0', 'equalto', 'id') |
-                map(attribute='1') | list | first }} {% endif %}
-              </span>
-              {% endif %} {% elif stat.value.en %} {{ stat.value.en }} {% set
-              alt_values = stat.value | dictsort | rejectattr('0', 'equalto',
-              'en') | list %} {% if alt_values | length > 0 %}
-              <span class="indo">/</span>
-              <span class="eng">
-                {{ stat.value | dictsort | rejectattr('0', 'equalto', 'en') |
-                map(attribute='1') | list | first }}
-              </span>
-              {% endif %} {% else %} {% set values = stat.value | dictsort |
-              map(attribute='1') | list %} {{ values[0] }} {% if values | length
-              > 1 %}
-              <span class="indo">/</span>
-              <span class="eng">{{ values[1] }}</span>
-              {% endif %} {% endif %}
-            </div>
-            <div id="formula" style="text-align: center">
-              {% if stat.formula_image is defined %}
-              <img
-                src="{{ stat.formula_image }}"
-                alt="rumus"
-                style="height: 25px"
-              />
-              {% endif %}
-            </div>
-            <div id="image" style="text-align: center">
-              {% if stat.image %}
-              <img src="{{ stat.image }}" alt="gambar" style="width: 300px" />
-              {% endif %}
-            </div>
-            {% endfor %}
-          </div>
-        </div>
-
-        <div id="credits" style="margin-top: 30px">
-          <div id="pelaksana" class="row">
-            <div class="left">
-              <p class="label">Dikalibrasi oleh/</p>
-              <p class="sublabel">Calibrated by</p>
-            </div>
-            <div class="right" id="right">
-              <div style="display: flex">
-                <div class="colon">:</div>
-                <p class="value">
-                  {{ pelaksana | map(attribute='nama_resp') | join(' & ') }}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div id="pemeriksa" class="row">
-            <div class="left">
-              <p class="label">Diperiksa oleh/</p>
-              <p class="sublabel">Checked by</p>
-            </div>
-            <div class="right" id="right">
-              <div style="display: flex">
-                <div class="colon">:</div>
-                <div>
-                  <p class="value">
-                    {{ penyelia | map(attribute='nama_resp') | join(' & ') }}
-                  </p>
-                  <div class="labels">
-                    <p class="label">(Penyelia/</p>
-                    <p class="sublabel">Supervisor)</p>
-                  </div>
+    <body>
+        <div id="first-page" style="page: first; font-family: Candara, sans-serif; page-break-before: always;">
+            <header style="font-family: Arial, sans-serif; display: flex; justify-content: space-between;">
+                <div id="BSN" style="line-height: 1.1;">
+                    <img src="logo BSN.png" alt="logo BSN" style="width: 243px;">
+                    <div style="color: #211569; font-weight: bold;">
+                        <p style="margin: 0; font-size: 13.2px;">Laboratorium Standar Nasional Satuan Ukuran</p>
+                        <p style="margin: 0; font-size: 11.9px; font-style: italic;">Laboratory of National Measurement Standards</p>
+                    </div>
                 </div>
-              </div>
-              <div style="display: flex">
-                <div class="colon">:</div>
-                <div>
-                  <p class="value">{{ kepala.nama_resp }}</p>
-                  <div class="labels">
-                    <p class="label">({{ kepala.peran }})</p>
-                  </div>
+                <div id="KAN">
+                    <img src="logo KAN.png" alt="logo KAN" style="width: 110px;">
+                    <p style="margin: 0; padding: 0; font-size: 8px; text-align: center;"><b>LK-070-IDN</b></p>
                 </div>
-              </div>
+            </header>
+
+            <div id="title" style="text-align: center;">
+                <h1 style="margin-top: 30px; margin-bottom: 5px; font-size: 29.5px;">Sertifikat Kalibrasi</h1>
+                <h3 style="margin: 0; margin-bottom: 1px;"><i>Calibration Certificate</i></h3>
+                <p class="label">Certificate number: <span class="value">{{ admin.certificate }}</span></p>
+                <p class="label">Order number: <span class="value">{{ admin.order }}</span></p>
             </div>
-          </div>
+            
+            <div id="fields">
+                <div id="Deskripsi Objek yang Dikalibrasi/Diukur" style="margin-top: 10px;"> <!-- jangan lupa append -->
+                    <h4 class="title">Deskripsi Objek yang Dikalibrasi/Diukur</h4>
+                    <h5 class="subtitle">Description of object being calibrated or measured</h5>
+
+                    {% for obj in objects %}
+                        {% if objects|length > 1 %}
+                            <h6 style="font-size: 13px; margin: 0; margin-bottom: 3px;">Objek {{ loop.index }}</h6>
+                        {% endif %}
+                        
+                        <div style="margin-bottom: 5px; page-break-inside: avoid;">
+                            <div id="Jenis alat atau objek" class="row">
+                                <div class="left">
+                                    <div class="label">Jenis alat atau objek</div>
+                                    <div class="sub-label">Type of instrument or object</div>
+                                </div>
+                                <div class="colon">:</div>
+                                <div class="value">
+                                    {% if obj.jenis.id is defined %}
+                                        {{ obj.jenis.id }}
+                                    {% elif obj.jenis.en is defined %}
+                                        {{ obj.jenis.en }}
+                                    {% else %}
+                                        {{ obj.jenis | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div id="Merek/pembuat dan tipe" class="row">
+                                <div class="left">
+                                    <div class="label">Merek/pembuat dan tipe</div>
+                                    <div class="sub-label">Brand/manufacturer and type</div>
+                                </div>
+                                <div class="colon">:</div>
+                                <div class="value">{{ obj.merek }} {{ obj.tipe }}</div>
+                            </div>
+
+                            <div id="Identifikasi alat">
+                                <div class="label">Identifikasi alat</div>
+                                <div class="sub-label">Instrument identification</div>
+                            </div>
+
+                            <div id="Nomor seri" class="row">
+                                <div class="left-indent">
+                                    <div class="label">Nomor seri</div>
+                                    <div class="sub-label">Serial number</div>
+                                </div>
+                                <div class="colon">:</div>
+                                <div class="value">{{ obj.seri_item }}</div>
+                            </div>
+
+                            <div id="Identifikasi lain" class="row">
+                                <div class="left-indent">
+                                    <div class="label">Identifikasi lain</div>
+                                    <div class="sub-label">Other identification</div>
+                                </div>
+                                <div class="colon">:</div>
+                                <div class="value">
+                                    {% if obj.id_lain is mapping %}
+                                        {% if obj.id_lain.id is defined %}
+                                            {{ obj.id_lain.id }}
+                                        {% elif obj.id_lain.en is defined %}
+                                            {{ obj.id_lain.en }}
+                                        {% else %}
+                                            {{ obj.id_lain | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
+                                        {% endif %}
+                                    {% else %}
+                                        {{ obj.id_lain }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div id="Identitas Pemilik" style="margin-top: 25px; page-break-inside: avoid;">
+                    <h4 class="title">Identitas Pemilik</h4>
+                    <h5 class="subtitle">Owner's identification</h5>
+
+                    <div id="Nama" class="row">
+                        <div class="left">
+                            <div class="label">Nama</div>
+                            <div class="sub-label">Designation</div>
+                        </div>
+                        <div class="colon">:</div>
+                        <div class="value">{{ owner.nama_cust }}</div>
+                    </div>
+
+                    <div id="Alamat" class="row">
+                        <div class="left">
+                            <div class="label">Alamat</div>
+                            <div class="sub-label">Address</div>
+                        </div>
+                        <div class="colon">:</div>
+                        <div class="value">
+                            {{ owner.jalan_cust }} {{ owner.no_jalan_cust }}, {{ owner.kota_cust }}, {{ owner.state_cust }} {{ owner.pos_cust }}, {{ owner.negara_cust }}
+                        </div>
+                    </div>
+                </div>
+
+                <div id="Pengesahan" style="margin-top: 10px; page-break-inside: avoid;">
+                    <h4 class="title">Pengesahan</h4>
+                    <h5 class="subtitle">Authorization</h5>
+
+                    <div id="Pejabat yang mengesahkan" class="row">
+                        <div class="left">
+                            <div class="label">Pejabat yang mengesahkan</div>
+                            <div class="sub-label">Authorizing officer</div>
+                        </div>
+                        <div class="colon">:</div>
+                        <div class="value">{{ direktur.peran }}</div>
+                    </div>
+
+                    <div id="Nama" class="row">
+                        <div class="left">
+                            <div class="label">Nama</div>
+                            <div class="sub-label">Name</div>
+                        </div>
+                        <div class="colon">:</div>
+                        <div class="value">
+                            <div>{{ direktur.nama_resp }}</div>
+                            <div style="margin-top: 3px;">NIP {{ direktur.nip }}</div>
+                        </div>
+                    </div>
+                    <div id="Tanggal pengesahan" class="row">
+                        <div class="left">
+                            <div class="label">Tanggal pengesahan</div>
+                            <div class="sub-label">Date of issue (dd/mm/yyyy)</div>
+                        </div>
+                        <div class="colon">:</div>
+                        <div class="value">{{ Measurement_TimeLine.tgl_pengesahan }}</div>
+                    </div>
+                </div>
+
+                <div id="Jumlah halaman (termasuk halaman ini)" class="row">
+                    <div class="left" style="width: 268px;">
+                        <div class="label">Jumlah halaman (termasuk halaman ini)</div>
+                        <div class="sub-label">Total number of pages including this one</div>
+                    </div>
+                    <div class="colon">:</div>
+                    <div class="value"></div>
+                </div>
+            </div>
+
+            <div id="validation" style="font-size: 12px; text-align: justify; line-height: 1.2;">
+                <div id="signature" style="padding-left: 104px; page-break-inside: avoid;">
+                    <div>
+                        Dokumen ini disahkan secara elektronik sesuai peraturan yang berlaku dengan sertifikat dari Balai Sertifikasi Elektronik 
+                        (BsrE) dan tidak memerlukan tanda tangan atau cap. Dokumen asli dapat diperoleh dengan memindai kode QR di samping ini.
+                    </div>
+                    <div style="font-style: italic;">
+                        This document is digitally signed. No signature or seal is required. The original document can be obtained by scanning 
+                        the QR code on the left.
+                    </div>
+                </div>
+
+                <div id="accreditation" style="margin-top: 5px; page-break-inside: avoid;">
+                    <div>
+                        Kalibrasi atau pengukuran yang dilaporkan dalam sertifikat ini tercakup dalam lingkup akreditasi menurut SNI ISO/IEC 
+                        17025 oleh Komite Akreditasi Nasional, kecuali dinyatakan dalam badan sertifikat.
+                    </div>
+                    <div style="font-style: italic;">
+                        The calibration or measurement reported in the certificate is covered in the accredication scope according to SNI ISO/IEC 
+                        17025 by the National Accredication Committee of Indonesia, unless marked otherwise in the body of certificate.
+                    </div>
+                </div>
+            </div>
+
+            <div id="footer" style="position: running(footer); text-align: center; font-size: 10.5px; line-height: 1.2; width: 100%; margin-bottom: 80px;">
+                <hr style="width: 100%;">
+                <div>Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)</div>
+                <div><i>Laboratory of National Measurement Standards, Nasional Standardization Agency of Indonesia</i></div>
+                <div>Kompleks Puspiptek, Gedung 420, Setu, Tangerang Selatan, Banten 15314, Indonesia</div>
+                <div>Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833, Web www.bsn.go.id, Email nmi@bsn.go.id</div>
+            </div>
         </div>
-      </div>
-    </div>
-  </body>
+
+        <div id="second-page" style="page: second; font-family: 'Times New Roman', Times, serif;">
+            <header style="font-family: Candara, sans-serif; display: flex; justify-content: space-between;">
+                <div id="BSN">
+                    <img src="logo BSN.png" alt="logo BSN" style="width: 220px;">
+                </div>
+                <div id="id" style="display: flex; flex-direction: column; gap: 3px;">
+                    <p class="label">No. Sertifikat / <i class="sublabel">Cert. Number</i>:<span class="value">{{ admin.certificate }}</span></p>
+                    <p class="label">No. Order / <i class="sublabel">Order Number</i>:<span class="value">{{ admin.order }}</span></p>
+                    <div class="page-number">
+                        <div>Halaman</div>  <div style="text-align: center;"></div>    <div>dari</div> <div style="text-align: center;"></div>    <div>halaman</div>
+                    </div>
+                    <div class="page-number" style="font-size: 11.5px; font-style: italic;">
+                        <div>Page</div>  <div style="text-align: center;"></div>    <div>of</div> <div style="text-align: center;"></div>    <div>pages</div>
+                    </div>
+                </div>
+            </header>
+            
+            <div id="second-page-body" style="margin-left: 45px; margin-top: 37px;">
+                <div id="administration">
+                    {% for obj in objects %}
+                        {% if objects|length > 1 %}
+                            <h6 style="font-size: 14px; margin: 0; margin-bottom: 2px;">Alat {{ loop.index }}</h6>
+                        {% endif %}
+
+                        <div style="margin-bottom: 10px;">
+                            <div id="Nama Alat" class="row">
+                                <div class="left">
+                                    <p class="label">Nama Alat/</p>
+                                    <p class="sublabel">Instrument Name</p>
+                                </div>
+                                <div class="value">
+                                    : 
+                                    {% if obj.jenis.id is defined %}
+                                        {{ obj.jenis.id }}
+                                    {% elif obj.jenis.en is defined %}
+                                        {{ obj.jenis.en }}
+                                    {% else %}
+                                        {{ obj.jenis | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div id="Pembuat" class="row">
+                                <div class="left">
+                                    <p class="label">Pembuat/</p>
+                                    <p class="sublabel">Manufacturer</p>
+                                </div>
+                                <p class="value">: {{ obj.merek }}</p>
+                            </div>
+                            <div id="Model" class="row">
+                                <div class="left">
+                                    <p class="label">Model/</p>
+                                    <p class="sublabel">Model</p>
+                                </div>
+                                <p class="value">: {{ obj.tipe }}</p>
+                            </div>
+                            <div id="No. Seri" class="row">
+                                <div class="left">
+                                    <p class="label">No. Seri/</p>
+                                    <p class="sublabel">Serial Number</p>
+                                </div>
+                                <p class="value">: {{ obj.seri_item }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <div id="Tanggal Kalibrasi" class="row">
+                        <div class="left">
+                            <p class="label">Tanggal Kalibrasi/</p>
+                            <p class="sublabel">Calibration Date</p>
+                        </div>
+                        <p class="value">: {{ Measurement_TimeLine.tgl_mulai }} - {{ Measurement_TimeLine.tgl_akhir }}</p>
+                    </div>
+                    <div id="Tempat Kalibrasi" class="row">
+                        <div class="left">
+                            <p class="label">Tempat Kalibrasi/</p>
+                            <p class="sublabel">Calibration Place</p>
+                        </div>
+                        <p class="value">: {{ admin.tempat }}</p>
+                    </div>
+                </div>
+
+                <h4 style="text-align: center; font-size: 14px;"><u>Hasil Kalibrasi/<i>Calibration Result</i></u></h4>
+
+                <div id="kondisi">
+                    <h4 class="title" style="margin-bottom: 3px;">Kondisi Ruangan/<i class="subtitle">Environmental Condition</i></h4>
+                    
+                    {% for cond in conditions %}
+                        <div class="row">
+                            <div class="left">
+                                {{ cond.jenis_kondisi }}
+                            </div>
+                            {% if cond.tengah_unit == cond.rentang_unit %}
+                                <p class="value" style="margin-left: 20px;">: ({{ cond.tengah }} ± {{ cond.rentang }}){{ cond.tengah_unit | safe }}</p>
+                            {% else %}
+                                <p class="value" style="margin-left: 20px;">: {{ cond.tengah }} {{ cond.tengah_unit | safe }} ± {{ cond.rentang }} {{ cond.rentang_unit | safe }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div id="tabel" style="margin-top: 35px;">
+                    {% for res in results %}
+                        <table>
+                            <div style="font-size: 14px; font-weight: bold;">
+                                {% if res.parameters.id %}
+                                    {{ res.parameters.id }}
+                                    {% set alt_values = res.parameters | dictsort | rejectattr('0', 'equalto', 'id') | list %}
+                                    {% if alt_values | length > 0 %}
+                                        /
+                                        <i style="font-size: 12px;">
+                                            {% if res.parameters.en %}
+                                                {{ res.parameters.en }}
+                                            {% else %}
+                                                {{ res.parameters | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
+                                            {% endif %}
+                                        </i>
+                                    {% endif %}
+                                {% elif res.parameters.en %}
+                                    {{ res.parameters.en }}
+                                    {% set alt_values = res.parameters | dictsort | rejectattr('0', 'equalto', 'en') | list %}
+                                    {% if alt_values | length > 0 %}
+                                        /
+                                        <i style="font-size: 12px;">
+                                            {{ res.parameters | dictsort | rejectattr('0', 'equalto', 'en') | map(attribute='1') | list | first }}
+                                        </i>
+                                    {% endif %}
+                                {% else %}
+                                    {% set values = res.parameters | dictsort | map(attribute='1') | list %}
+                                    {{ values[0] }}
+                                    {% if values | length > 1 %}
+                                        /
+                                        <i style="font-size: 12px;">{{ values[1] }}</i>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+
+                            <tr>
+                                {% for col in res.columns %}
+                                    <th colspan="{{ col.subcolumn | length * 2 }}">
+                                        {% if col.name.id %}
+                                            <h4 class="title">{{ col.name.id }}</h4>
+                                            {% set alt_values = col.name | dictsort | rejectattr('0', 'equalto', 'id') | list %}
+                                            {% if alt_values | length > 0 %}
+                                                <i class="subtitle">
+                                                    {% if col.name.en %}
+                                                        {{ col.name.en }}
+                                                    {% else %}
+                                                        {{ col.name | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
+                                                    {% endif %}
+                                                </i>
+                                            {% endif %}
+                                        {% elif col.name.en %}
+                                            <h4 class="title">{{ col.name.en }}</h4>
+                                            {% set alt_values = col.name | dictsort | rejectattr('0', 'equalto', 'en') | list %}
+                                            {% if alt_values | length > 0 %}
+                                                <i class="subtitle">
+                                                    {{ col.name | dictsort | rejectattr('0', 'equalto', 'en') | map(attribute='1') | list | first }}
+                                                </i>
+                                            {% endif %}
+                                        {% else %}
+                                            {% set values = col.name | dictsort | map(attribute='1') | list %}
+                                            <h4 class="title">{{ values[0] }}</h4>
+                                            {% if values | length > 1 %}
+                                                <i class="subtitle">{{ values[1] }}</i>
+                                            {% endif %}
+                                        {% endif %}
+                                    </th>
+                                {% endfor %}
+
+                                <th colspan="2">
+                                    <h4 class="title">Ketidakpastian</h4>
+                                    <i class="subtitle">Uncertainty</i>
+                                </th>
+                            </tr>
+
+                            {% set subcols = res.columns | map(attribute='subcolumn') | list %}
+                            {% set rows = range(subcols[0] | length) %}
+
+                            {% for i in range(res.columns[0].subcolumn[0].value | length) %}
+                                <tr>
+                                    {% for col in res.columns %}
+                                        {% for sub in col.subcolumn %}
+                                            <td class="number">{{ sub.value[i] }}</td>
+                                            <td>{{ sub.unit[i] }}</td>
+                                        {% endfor %}
+                                    {% endfor %}
+                                    {% if res.uncertainty['value'] is defined and res.uncertainty['value'][i] is defined %}
+                                        <td class="number">{{ res.uncertainty.value[i] }}</td>
+                                        <td>{{ res.uncertainty.unit[i] }}</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    {% endfor %}
+                </div>
+
+                <div id="catatan" style="margin-top: 20px;">
+                    <h4 class="title" style="margin-bottom: 3px;">Catatan/<i class="subtitle">Notes</i></h4>
+                    
+                    <div id="method">
+                        <div class="indo">
+                            Hasil kalibrasi ini diperoleh berdasarkan prosedur kalibrasi
+                            {% for met in methods %}
+                                {% if met.method_name.id %}
+                                    {% set name = met.method_name.id %}
+                                {% elif met.method_name.en %}
+                                    {% set name = met.method_name.en %}
+                                {% else %}
+                                    {% set name = met.method_name | dictsort | map(attribute='1') | list | first %}
+                                {% endif %}
+
+                                {% set desc = '' %}
+                                {% if met.method_desc.id and met.method_desc.id | trim != '' %}
+                                    {% set desc = ' ' + met.method_desc.id %}
+                                {% elif met.method_desc.en and met.method_desc.en | trim != '' %}
+                                    {% set desc = ' ' + met.method_desc.en %}
+                                {% else %}
+                                    {% set values = met.method_desc | dictsort | map(attribute='1') | reject('equalto', '') | list %}
+                                    {% if values %}
+                                        {% set desc = ' ' + values[0] %}
+                                    {% endif %}
+                                {% endif %}
+
+                                {% if loop.last and not loop.first %}
+                                    dan {{ name }}{{ desc }}
+                                {% elif not loop.last %}
+                                    {{ name }}{{ desc }},
+                                {% else %}
+                                    {{ name }}{{ desc }}
+                                {% endif %}
+                            {% endfor %}
+                            dengan menggunakan instrumen standar yang tertelusur ke SI melalui SNSU-BSN.
+
+                            <span class="indo">/</span>
+                            <span class="eng">
+                                The calibration result was acquired based on the procedure of
+                                {% for met in methods %}
+                                    {% if met.method_name.en %}
+                                        {% set name = met.method_name.en %}
+                                    {% else %}
+                                        {% set values = met.method_name | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list %}
+                                        {% set name = values[0] %}
+                                    {% endif %}
+
+                                    {% set desc = '' %}
+                                    {% if met.method_desc.en and met.method_desc.en | trim != '' %}
+                                        {% set desc = ' ' + met.method_desc.en %}
+                                    {% else %}
+                                        {% set values = met.method_desc | dictsort | map(attribute='1') | reject('equalto', '') | list %}
+                                        {% if values %}
+                                            {% set desc = ' ' + values[0] %}
+                                        {% endif %}
+                                    {% endif %}
+
+                                    {% if loop.last and not loop.first %}
+                                        and {{ name }}{{ desc }}
+                                    {% elif not loop.last %}
+                                        {{ name }}{{ desc }},
+                                    {% else %}
+                                        {{ name }}{{ desc }}
+                                    {% endif %}
+                                {% endfor %}
+                                using the standard instrument that is traceable to SI through SNSU-BSN.
+                            </span>
+                        </div>
+                        {% for met in methods %}
+                            <div id="formula" style="text-align: center;">
+                                {% if met.formula_image is defined %}
+                                    <img src="{{ met.formula_image }}" alt="rumus" style="height: 25px;">
+                                {% endif %}
+                            </div>
+                            <div id="image" style="text-align: center;">
+                                {% if met.image %}
+                                    <img src="{{ met.image }}" alt="gambar" style="width: 300px;">
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div id="equipment">
+                        <div class="indo">
+                            Alat standar yang digunakan adalah
+                            {% for equ in equipments %}
+                                {# Nama alat #}
+                                {% if equ.nama_alat.id %}
+                                    {% set nama = equ.nama_alat.id %}
+                                {% elif equ.nama_alat.en %}
+                                    {% set nama = equ.nama_alat.en %}
+                                {% else %}
+                                    {% set values = equ.nama_alat | dictsort | map(attribute='1') | list %}
+                                    {% set nama = values[0] %}
+                                {% endif %}
+
+                                {# Manufaktur #}
+                                {% if equ.manuf_model.id %}
+                                    {% set manuf = equ.manuf_model.id %}
+                                {% else %}
+                                    {% set values = equ.manuf_model | dictsort | map(attribute='1') | list %}
+                                    {% set manuf = values[0] %}
+                                {% endif %}
+
+                                {# Model #}
+                                {% if equ.model.id %}
+                                    {% set model = equ.model.id %}
+                                {% else %}
+                                    {% set values = equ.model | dictsort | map(attribute='1') | list %}
+                                    {% set model = values[0] %}
+                                {% endif %}
+
+                                {# Nomor seri #}
+                                {% set seri = equ.seri_measuring %}
+
+                                {# Tampilkan dengan koma / "dan" / titik #}
+                                {% if loop.last and not loop.first %}
+                                    dan {{ nama }} {{ manuf }} {{ model }} ({{ seri }}).
+                                {% elif not loop.last %}
+                                    {{ nama }} {{ manuf }} {{ model }} ({{ seri }}),
+                                {% else %}
+                                    {{ nama }} {{ manuf }} {{ model }} ({{ seri }})
+                                {% endif %}
+                            {% endfor %}
+                            <span class="indo">/</span>
+                            <span class="eng">
+                                The standard instruments used were
+                                {% for equ in equipments %}
+                                    {% if equ.nama_alat.en %}
+                                        {% set nama = equ.nama_alat.en %}
+                                    {% else %}
+                                        {% set values = equ.nama_alat | dictsort | map(attribute='1') | list %}
+                                        {% set nama = values[0] %}
+                                    {% endif %}
+
+                                    {% if equ.manuf_model.en %}
+                                        {% set manuf = equ.manuf_model.en %}
+                                    {% else %}
+                                        {% set values = equ.manuf_model | dictsort | map(attribute='1') | list %}
+                                        {% set manuf = values[0] %}
+                                    {% endif %}
+
+                                    {% if equ.model.en %}
+                                        {% set model = equ.model.en %}
+                                    {% else %}
+                                        {% set values = equ.model | dictsort | map(attribute='1') | list %}
+                                        {% set model = values[0] %}
+                                    {% endif %}
+
+                                    {% set seri = equ.seri_measuring %}
+
+                                    {% if loop.last and not loop.first %}
+                                        and {{ nama }} {{ manuf }} {{ model }} ({{ seri }}).
+                                    {% elif not loop.last %}
+                                        {{ nama }} {{ manuf }} {{ model }} ({{ seri }}),
+                                    {% else %}
+                                        {{ nama }} {{ manuf }} {{ model }} ({{ seri }})
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="uncertainty">
+                        {% set first_res = results[0] %}
+                        <div class="indo">
+                            Ketidakpastian pengukuran dihitung dengan tingkat kepercayaan tidak kurang dari {{ first_res.uncertainty.probability }} dan faktor cakupan k = {{ first_res.uncertainty.factor }}.
+                            <span class="indo">/</span>
+                            <span class="eng">
+                                The uncertainty of measurement was calculated with the confidence level not less than {{ first_res.uncertainty.probability }} and coverage factor of k = {{ first_res.uncertainty.factor }}.
+                            </span>
+                        </div>
+                    </div>
+
+                    <div id="statement">
+                        {% for stat in statements %}
+                            <div class="indo">
+                                {% if stat.value.id %}
+                                    {{ stat.value.id }}
+                                    {% set alt_values = stat.value | dictsort | rejectattr('0', 'equalto', 'id') | list %}
+                                    {% if alt_values | length > 0 %}
+                                        <span class="indo">/</span>
+                                        <span class="eng">
+                                            {% if stat.value.en %}
+                                                {{ stat.value.en }}
+                                            {% else %}
+                                                {{ stat.value | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
+                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                {% elif stat.value.en %}
+                                    {{ stat.value.en }}
+                                    {% set alt_values = stat.value | dictsort | rejectattr('0', 'equalto', 'en') | list %}
+                                    {% if alt_values | length > 0 %}
+                                        <span class="indo">/</span>
+                                        <span class="eng">
+                                            {{ stat.value | dictsort | rejectattr('0', 'equalto', 'en') | map(attribute='1') | list | first }}
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    {% set values = stat.value | dictsort | map(attribute='1') | list %}
+                                    {{ values[0] }}
+                                    {% if values | length > 1 %}
+                                        <span class="indo">/</span>
+                                        <span class="eng">{{ values[1] }}</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <div id="formula" style="text-align: center;">
+                                {% if stat.formula_image is defined %}
+                                    <img src="{{ stat.formula_image }}" alt="rumus" style="height: 25px;">
+                                {% endif %}
+                            </div>
+                            <div id="image" style="text-align: center;">
+                                {% if stat.image %}
+                                    <img src="{{ stat.image }}" alt="gambar" style="width: 300px;">
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div id="credits" style="margin-top: 30px;">
+                    <div id="pelaksana" class="row">
+                        <div class="left">
+                            <p class="label">Dikalibrasi oleh/</p>
+                            <p class="sublabel">Calibrated by</p>
+                        </div>
+                        <div class="right" id="right">
+                            <div style="display: flex;">
+                                <div class="colon">:</div>
+                                <p class="value">{{ pelaksana | map(attribute='nama_resp') | join(' & ') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="pemeriksa" class="row">
+                        <div class="left">
+                            <p class="label">Diperiksa oleh/</p>
+                            <p class="sublabel">Checked by</p>
+                        </div>
+                        <div class="right" id="right">
+                            <div style="display: flex;">
+                                <div class="colon">:</div>
+                                <div>
+                                    <p class="value">{{ penyelia | map(attribute='nama_resp') | join(' & ') }}</p>
+                                    <div class="labels">
+                                        <p class="label">(Penyelia/</p>
+                                        <p class="sublabel">Supervisor)</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex;">
+                                <div class="colon">:</div>
+                                <div>
+                                    <p class="value">{{ kepala.nama_resp }}</p>
+                                    <div class="labels">
+                                        <p class="label">({{ kepala.peran }})</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>
