@@ -3,10 +3,7 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   FormControl,
   FormField,
@@ -45,18 +42,28 @@ export default function Register({ formData }: { formData: any }) {
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fungsi untuk menangani login
-  const onSubmit = async (data: { username: string; email: string; password: string }) => {
+  const onSubmit = async (data: {
+    username: string;
+    email: string;
+    password: string;
+  }) => {
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/token",
-        `username=${data.username}&email=${data.email}&password=${data.password}`,
+        "http://127.0.0.1:8000/register",
         {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          email: data.email,
+          password: data.password,
+          full_name: data.username,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
         }
       );
-      localStorage.setItem("access_token", response.data.access_token);
-      window.location.href = "/";
+
+      // Clear any cached data and redirect to login
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
     } catch (error) {
       setErrorMessage(t("register_fail"));
     }
@@ -78,59 +85,69 @@ export default function Register({ formData }: { formData: any }) {
                 <div id="username" className="grid gap-1">
                   <FormLabel>{t("nama")}</FormLabel>
                   <FormField
-                      control={form.control}
-                      name="username"
-                      render={({ field }) => (
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
                       <FormItem>
-                          <FormControl>
+                        <FormControl>
                           <Input {...field} required />
-                          </FormControl>
-                          <FormMessage />
+                        </FormControl>
+                        <FormMessage />
                       </FormItem>
-                      )}
+                    )}
                   />
                 </div>
                 <div id="email">
                   <FormLabel>{t("email")}</FormLabel>
                   <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
                       <FormItem>
-                          <FormControl>
+                        <FormControl>
                           <Input {...field} type="email" required />
-                          </FormControl>
-                          <FormMessage />
+                        </FormControl>
+                        <FormMessage />
                       </FormItem>
-                      )}
+                    )}
                   />
                 </div>
                 <div id="password">
                   <FormLabel>{t("password")}</FormLabel>
                   <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
                       <FormItem>
-                          <FormControl>
+                        <FormControl>
                           <Input {...field} type="password" required />
-                          </FormControl>
-                          <FormMessage />
+                        </FormControl>
+                        <FormMessage />
                       </FormItem>
-                      )}
+                    )}
                   />
                 </div>
                 <div className="text-center">
-                  {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
+                  {errorMessage && (
+                    <p className="text-red-600">
+                      <small>{errorMessage}</small>
+                    </p>
+                  )}
                   <Link href="/">
-                    <Button variant="green" onClick={form.handleSubmit(onSubmit)}>
+                    <Button
+                      variant="green"
+                      onClick={form.handleSubmit(onSubmit)}
+                    >
                       {t("register")}
                     </Button>
                   </Link>
                 </div>
                 <div className="text-center text-sm">
                   {t("to_login")}{" "}
-                  <a href="/" className="underline underline-offset-4 text-sky-500 hover:text-sky-600">
+                  <a
+                    href="/"
+                    className="underline underline-offset-4 text-sky-500 hover:text-sky-600"
+                  >
                     {t("login")}
                   </a>
                 </div>

@@ -204,8 +204,10 @@ class PDFGenerator:
                 'methods': self._extract_methods(root) or [],
                 'equipments': self._extract_equipments(root) or [],
                 'conditions': self._extract_conditions(root) or [],
-                'uncertainty': self._extract_uncertainty(root) or {
-                    'probability': '', 'factor': ''
+                'results': self._extract_results(root) or [],
+                'uncertainty': { 
+                    'probability': '', 
+                    'factor': ''
                 },
                 'statements': self._extract_statements(root) or [],
                 'direktur': responsible_persons.get('direktur', {}),

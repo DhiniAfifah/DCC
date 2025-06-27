@@ -1,7 +1,7 @@
 "use client";
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/context/LanguageContext";
 import { z } from "zod";
 import { useState, useEffect } from "react";
@@ -41,23 +41,31 @@ export default function Login({ formData }: { formData: any }) {
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Fungsi untuk menangani login
   const onSubmit = async (data: { email: string; password: string }) => {
     try {
+      const formData = new URLSearchParams();
+      formData.append("username", data.email);
+      formData.append("password", data.password);
+
       const response = await axios.post(
         "http://127.0.0.1:8000/token",
-        `email=${data.email}&password=${data.password}`,
+        formData.toString(),
         {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          withCredentials: true,
         }
       );
+
       localStorage.setItem("access_token", response.data.access_token);
+
       window.location.href = "/main";
     } catch (error) {
       setErrorMessage(t("login_fail"));
     }
   };
-  
+
   return (
     <FormProvider {...form}>
       <div className="flex flex-col gap-6">
@@ -79,9 +87,7 @@ export default function Login({ formData }: { formData: any }) {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input 
-                            {...field} type="email" required
-                          />
+                          <Input {...field} type="email" required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -96,7 +102,7 @@ export default function Login({ formData }: { formData: any }) {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input {...field} type="password"  />
+                          <Input {...field} type="password" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -104,16 +110,26 @@ export default function Login({ formData }: { formData: any }) {
                   />
                 </div>
                 <div className="text-center">
-                  {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
+                  {errorMessage && (
+                    <p className="text-red-600">
+                      <small>{errorMessage}</small>
+                    </p>
+                  )}
                   <Link href="/">
-                    <Button variant="green" onClick={form.handleSubmit(onSubmit)}>
+                    <Button
+                      variant="green"
+                      onClick={form.handleSubmit(onSubmit)}
+                    >
                       {t("login")}
                     </Button>
                   </Link>
                 </div>
                 <div className="text-center text-sm">
                   {t("to_register")}{" "}
-                  <a href="/register" className="underline underline-offset-4 text-sky-500 hover:text-sky-600">
+                  <a
+                    href="/register"
+                    className="underline underline-offset-4 text-sky-500 hover:text-sky-600"
+                  >
                     {t("register")}
                   </a>
                 </div>

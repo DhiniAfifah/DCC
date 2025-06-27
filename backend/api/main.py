@@ -158,7 +158,40 @@ async def login_for_access_token(
         data={"sub": auth_user.email},
         expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    # Buat response dengan cookie
+    response = JSONResponse(
+        content={"access_token": access_token, "token_type": "bearer"}
+    )
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        max_age=60*60*24*7,  # 7 hari
+        httponly=True,
+        secure=True,  
+        samesite="Lax"
+    )
+    
+    return response
+
+{
+  "compilerOptions": {
+    "types": ["jwt-decode"]
+  }
+}
+
+#LOGOUT
+@app.post("/logout")
+async def logout():
+    # Buat response yang menghapus cookie
+    response = JSONResponse(content={"message": "Logged out successfully"})
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        httponly=True,
+        samesite="Lax"
+    )
+    return response
 
 # Endpoint untuk mendapatkan user saat ini
 @app.get("/users/me/", response_model=schemas.User)
