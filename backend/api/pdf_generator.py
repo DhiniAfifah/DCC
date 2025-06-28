@@ -194,6 +194,18 @@ class PDFGenerator:
             responsible_persons = self._extract_responsible_persons(root) or {
                 'pelaksana': [], 'penyelia': [], 'kepala': {}, 'direktur': {}
             }
+
+            raw_results = self._extract_results(root)
+
+            # Pastikan 'results' adalah list of dicts
+            if isinstance(raw_results, list):
+                results = raw_results
+            elif isinstance(raw_results, dict):
+                results = [raw_results]
+            else:
+                results = [{
+                    'parameters': {}, 'columns': [], 'uncertainty': {}
+                }]
             
             data = {
                 'admin': self._extract_admin_data(root) or {},
@@ -204,9 +216,7 @@ class PDFGenerator:
                 'methods': self._extract_methods(root) or [],
                 'equipments': self._extract_equipments(root) or [],
                 'conditions': self._extract_conditions(root) or [],
-                'uncertainty': self._extract_uncertainty(root) or {
-                    'probability': '', 'factor': ''
-                },
+                'results': results,
                 'statements': self._extract_statements(root) or [],
                 'direktur': responsible_persons.get('direktur', {}),
                 'kepala': responsible_persons.get('kepala', {}),
