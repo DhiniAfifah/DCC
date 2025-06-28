@@ -29,6 +29,7 @@ from .converter import convert_xml_to_excel
 from .pdf_generator import PDFGenerator
 from .models import DCC
 from starlette.background import BackgroundTask
+from starlette.middleware.base import BaseHTTPMiddleware
 from pikepdf import Pdf, Name, String
 import tempfile
 import matplotlib.pyplot as plt
@@ -67,6 +68,18 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
 )
+
+# Authentication Middleware
+class AuthenticationMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        protected_paths = ["/main", "/create-dcc", "/upload-pdf", "/upload-excel", "/upload-image", "/upload-file"]
+        if any(request.url.path.startswith(path) for path in protected_paths):
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                return JSONResponse(status_code=401, content={"detail": "Authentication required"})
+        return await call_next(request)
+
+app.add_middleware(AuthenticationMiddleware)
 
 # Directory to store uploaded files
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -167,6 +180,20 @@ async def read_users_me(
 ):
     return current_user
 
+@app.get("/main")
+async def get_main_page(
+    current_user: schemas.User = Depends(get_current_user)
+):
+    """
+    Protected main page endpoint - requires authentication
+    """
+    return {
+        "message": "Welcome to the main page", 
+        "user": {
+            "email": current_user.email,
+            "full_name": current_user.full_name
+        }
+    }
 
 # CREATE DCC
 @app.post("/create-dcc/")

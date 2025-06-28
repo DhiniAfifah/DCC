@@ -4,10 +4,16 @@ import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
 import { useLanguage } from '@/context/LanguageContext';
-import { Switch } from "@/components/ui/switch"
+import { Switch } from "@/components/ui/switch";
+import { removeAuthToken } from '@/utils/auth';
 
 const Navbar = () => {
   const { t } = useLanguage();
+
+  const handleLogout = () => {
+    removeAuthToken();
+    window.location.href = '/';
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md shadow-black/20 z-50">
@@ -25,7 +31,12 @@ const Navbar = () => {
             </Link>
           </div>
           <div className="flex space-x-4">
-            <NavLink href="/">{t("logout")}</NavLink>
+            <button 
+              onClick={handleLogout}
+              className="px-5 py-1.5 rounded-[50px] text-lg font-bold font-poopins transition duration-150 ease-in-out text-indigo-950 hover:text-indigo-800"
+            >
+              {t("logout")}
+            </button>
             <NavLink href="/about">{t("about")}</NavLink>            
             <LanguageSwitch />
           </div>

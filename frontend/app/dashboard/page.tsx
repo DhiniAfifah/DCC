@@ -1,5 +1,6 @@
 import { columns, Certificate } from "./columns"
 import { DataTable } from "./data-table"
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 async function getData(): Promise<Certificate[]> {
   // Fetch data from your API here.
@@ -21,7 +22,7 @@ async function getData(): Promise<Certificate[]> {
   ]
 }
 
-export default async function Dashboard() {
+async function Dashboard() {
   const data = await getData()
 
   return (
@@ -29,4 +30,12 @@ export default async function Dashboard() {
       <DataTable columns={columns} data={data} />
     </div>
   )
+}
+
+export default function ProtectedDashboardPage() {
+  return (
+    <ProtectedRoute>
+      <Dashboard />
+    </ProtectedRoute>
+  );
 }

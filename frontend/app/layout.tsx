@@ -3,6 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import type React from "react";
 import { LanguageProvider } from '@/context/LanguageContext';
+import AxiosSetup from '@/components/AxiosSetup';
 
 export const metadata: Metadata = {
   title: "BSN DCC",
@@ -13,11 +14,12 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+}) {  
   return (
     <html lang="en">
       <body>
         <LanguageProvider>
+          <AxiosSetup />
           <Navbar />
           {children}
         </LanguageProvider>

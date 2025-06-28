@@ -9,6 +9,7 @@ import Comment from "@/components/comment";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Helper type guard untuk cek apakah value adalah File
 const isFile = (value: any): value is File => {
@@ -20,7 +21,7 @@ const isFile = (value: any): value is File => {
   );
 };
 
-export default function CreateDCC() {
+function CreateDCC() {
   const { t } = useLanguage();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -508,5 +509,13 @@ export default function CreateDCC() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ProtectedCreateDCCPage() {
+  return (
+    <ProtectedRoute>
+      <CreateDCC />
+    </ProtectedRoute>
   );
 }

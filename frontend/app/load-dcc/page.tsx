@@ -3,8 +3,9 @@
 import Importer from "@/components/importer";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
-export default function LoadDCC() {
+function LoadDCC() {
   const { t } = useLanguage();
 
   const [formData, setFormData] = useState({
@@ -39,5 +40,13 @@ export default function LoadDCC() {
         <Importer formData={formData} onSubmit={handleFormSubmit} />
       </div>
     </div>
+  );
+}
+
+export default function ProtectedLoadPage() {
+  return (
+    <ProtectedRoute>
+      <LoadDCC />
+    </ProtectedRoute>
   );
 }
