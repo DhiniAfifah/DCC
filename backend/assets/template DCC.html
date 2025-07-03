@@ -3,6 +3,14 @@
     <head>
         <meta charset="UTF-8">
         <style>
+            @page {
+                @bottom-center {
+                content: counter(page);
+                }
+            }
+            .page-current::before {
+                content: counter(page);
+            }
             @page first { 
                 margin-right: 60px; 
                 margin-top: 40px; 
@@ -76,10 +84,26 @@
                 font-size: 11.6px;
                 margin-left: 4.9px;
             }
-            .page-number {
+            #page-number .indo {
                 display: grid; 
                 grid-template-columns: 55px 30px 25px 30px 55px; 
                 font-size: 14.5px;
+            }
+            #page-number .value-indo {
+                text-align: center;
+                font-family: Arial, sans-serif;
+                font-size: 14.5px;
+            }
+            #page-number .eng {
+                display: grid;
+                grid-template-columns: 55px 30px 25px 30px 55px;
+                font-size: 11.5px; 
+                font-style: italic;
+            }
+            #page-number .value-eng {
+                text-align: center;
+                font-family: Arial, sans-serif;
+                font-size: 11.5px;
             }
             #second-page-body .row {
                 display: flex; 
@@ -387,11 +411,20 @@
                 <div id="id" style="display: flex; flex-direction: column; gap: 3px;">
                     <p class="label">No. Sertifikat / <i class="sublabel">Cert. Number</i>:<span class="value">{{ admin.certificate }}</span></p>
                     <p class="label">No. Order / <i class="sublabel">Order Number</i>:<span class="value">{{ admin.order }}</span></p>
-                    <div class="page-number">
-                        <div>Halaman</div>  <div style="text-align: center;"></div>    <div>dari</div> <div style="text-align: center;"></div>    <div>halaman</div>
+                    <div id="page-number">
+                    <div class="indo">
+                        <div>Halaman</div>
+                        <div class="value-indo"><span class="page-current"></span></div>
+                        <div>dari</div>
+                        <div class="value-indo">{{ total_pages }}</div>
+                        <div>halaman</div>
                     </div>
-                    <div class="page-number" style="font-size: 11.5px; font-style: italic;">
-                        <div>Page</div>  <div style="text-align: center;"></div>    <div>of</div> <div style="text-align: center;"></div>    <div>pages</div>
+                    <div class="eng">
+                        <div>Page</div>
+                        <div class="value-eng""><span class="page-current"></span></div>
+                        <div>of</div>
+                        <div class="value-eng">{{ total_pages }}</div>
+                        <div>pages</div>
                     </div>
                 </div>
             </header>
@@ -647,7 +680,7 @@
                         {% for met in methods %}
                             <div id="formula" style="text-align: center;">
                                 {% if met.formula_image is defined %}
-                                    <img src="{{ met.formula_image }}" alt="rumus" style="height: 25px;">
+                                    <img src="{{ met.formula_image }}" alt="rumus" style="height: 30px;">
                                 {% endif %}
                             </div>
                             <div id="image" style="text-align: center;">
@@ -786,7 +819,7 @@
                             </div>
                             <div id="formula" style="text-align: center;">
                                 {% if stat.formula_image is defined %}
-                                    <img src="{{ stat.formula_image }}" alt="rumus" style="height: 25px;">
+                                    <img src="{{ stat.formula_image }}" alt="rumus" style="height: 30px;">
                                 {% endif %}
                             </div>
                             <div id="image" style="text-align: center;">
