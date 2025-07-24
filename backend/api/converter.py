@@ -656,8 +656,8 @@ def convert_xml_to_excel(xml_file_path: str):
                     value_elem = rl.find('si:valueXMLList', ns)
                     unit_elem = rl.find('si:unitXMLList', ns)
 
-                    values = value_elem.text.strip().split() if value_elem is not None else []
-                    units = unit_elem.text.strip().split() if unit_elem is not None else []
+                    values = value_elem.text.strip().split() if value_elem is not None and value_elem.text else []
+                    units = unit_elem.text.strip().split() if unit_elem is not None and unit_elem.text else []
 
                     if len(units) == 1:
                         unit = units[0]

@@ -139,13 +139,19 @@ def parse_token(token, power_sign=1):
             if base in base_units:
                 unit_str = prefixes[p] + base_units[base]
                 # format exponent: integer tanpa titik, desimal tetap
-                exp_formatted = int(exp) if exp.is_integer() else exp
+                if isinstance(exp, float) and exp.is_integer():
+                    exp_formatted = int(exp)
+                else:
+                    exp_formatted = exp
                 return unit_str + (f"\\tothe{{{exp_formatted}}}" if exp != 1 else "")
 
     # Base unit saja
     if unit_part in base_units:
         unit_str = base_units[unit_part]
-        exp_formatted = int(exp) if exp.is_integer() else exp
+        if isinstance(exp, float) and exp.is_integer():
+            exp_formatted = int(exp)
+        else:
+            exp_formatted = exp
         return unit_str + (f"\\tothe{{{exp_formatted}}}" if exp != 1 else "")
 
     return token

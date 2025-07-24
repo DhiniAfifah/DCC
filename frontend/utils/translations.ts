@@ -188,7 +188,7 @@ const translations: Record<string, { id: string; en: string }> = {
   },
   basic_nominalValue: {
     id: "Titik ukur atau nilai nominal",
-    en: "Mesurement point or nominal value",
+    en: "Measurement point or nominal value",
   },
   basic_referenceValue: {
     id: "Nilai acuan yang digunakan untuk membandingkan dengan nilai-nilai lain dari jenis yang sama",

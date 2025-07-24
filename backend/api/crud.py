@@ -195,7 +195,7 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
                         numbers.append("")
                         units.append("")
                 
-                if has_data:
+                
                     extracted_data.append((numbers, units))
             
             # Ambil konfigurasi dari results_data

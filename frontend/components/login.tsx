@@ -114,7 +114,10 @@ export default function Login({ formData }: { formData: any }) {
                 <div className="text-center">
                   {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
                   <Link href="/main">
-                    <Button variant="green" onClick={form.handleSubmit(onSubmit)}>
+                    <Button 
+                      variant="green" 
+                      // onClick={form.handleSubmit(onSubmit)}
+                    >
                       {t("login")}
                     </Button>
                   </Link>

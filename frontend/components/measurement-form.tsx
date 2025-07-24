@@ -375,24 +375,25 @@ const Columns = ({
         <Card key={columnField.id} id="kolom" className="border shadow">
           <CardHeader></CardHeader>
           <CardContent className="grid gap-4 pb-4 relative">
-            <div id="header">
-              <p className="text-sm text-muted-foreground">
-                {t("kolom")} {columnIndex + 1}
-              </p>
-              <p className="text-sm text-red-600">{t("kolom_desc")}</p>
-            </div>
+            <div className="flex justify-between items-start">
+              <div id="header">
+                <p className="text-sm text-muted-foreground">
+                  {t("kolom")} {columnIndex + 1}
+                </p>
+                <p className="text-sm text-red-600">{t("kolom_desc")}</p>
+              </div>
 
-            {columnFields.length > 1 && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                className="absolute top-0 right-0"
-                onClick={() => handleRemoveColumn(columnIndex)}
-              >
-                <X />
-              </Button>
-            )}
+              {columnFields.length > 1 && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => handleRemoveColumn(columnIndex)}
+                >
+                  <X />
+                </Button>
+              )}
+            </div>
 
             <div id="nama">
               <FormLabel variant="mandatory">{t("label")}</FormLabel>

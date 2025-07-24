@@ -113,7 +113,7 @@ export default function CreateDCC() {
     methods: [
       {
         method_name: {},
-        method_desc: "",
+        method_desc: {},
         norm: "",
         refType: "",
         has_formula: false,
@@ -123,6 +123,7 @@ export default function CreateDCC() {
         },
         has_image: false,
         image: {
+          //gambar: "",
           caption: "",
           fileName: "",
           mimeType: "",
@@ -132,9 +133,9 @@ export default function CreateDCC() {
     ],
     equipments: [
       {
-        nama_alat: "",
-        manuf_model: "",
-        model: "",
+        nama_alat: {},
+        manuf_model: {},
+        model: {},
         seri_measuring: "",
         refType: "",
       },
@@ -142,14 +143,14 @@ export default function CreateDCC() {
     conditions: [
       {
         jenis_kondisi: "",
-        desc: "",
+        desc: {},
         tengah: "",
         rentang: "",
         rentang_unit: {
-          prefix: "",
+          prefix: "", //
           prefix_pdf: "",
-          unit: "",
-          unit_pdf: "",
+          unit: "", //xml only
+          unit_pdf: "", //
           eksponen: "",
           eksponen_pdf: "",
         },
@@ -167,24 +168,25 @@ export default function CreateDCC() {
     excel: "",
     results: [
       {
-        parameters: "", // This should be a string or an object for multilingual support
+        parameters: {},
         columns: [
           {
-            kolom: "", // Multilingual string for column name
-            refType: "", // Reference type for the column
+            kolom: {},
+            refType: "",
             real_list: "1",
           },
         ],
         uncertainty: {
-          factor: "2", // Numeric factor
-          probability: "0.95", // Probability value
-          distribution: "", // Distribution type (e.g., "normal", "uniform", etc.)
+          factor: "2",
+          probability: "0.95",
+          distribution: "",
+          real_list: "1",
         },
       },
     ],
     statements: [
       {
-        values: "",
+        values: {},
         refType: "",
         has_formula: false,
         formula: {
@@ -202,7 +204,7 @@ export default function CreateDCC() {
     ],
     comment: {
       title: "",
-      desc: "",
+      desc: {},
       has_file: false,
       files: [
         {
