@@ -23,6 +23,9 @@ const isFile = (value: any): value is File => {
 export default function CreateDCC() {
   const { t } = useLanguage();
 
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
   const [currentStep, setCurrentStep] = useState(0);
   const steps = [
     t("administrasi"),
@@ -439,14 +442,16 @@ export default function CreateDCC() {
       // Handle PDF response
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${modifiedFormData.administrative_data.sertifikat}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      // const a = document.createElement("a");
+      // a.href = url;
+      // a.download = `${modifiedFormData.administrative_data.sertifikat}.pdf`;
+      // document.body.appendChild(a);
+      // a.click();
+      // a.remove();
+      // alert("DCC created and downloaded successfully!");
 
-      alert("DCC created and downloaded successfully!");
+      setPdfBlobUrl(url);
+      setIsSubmitted(true);
     } catch (error: unknown) {
       console.error("Error submitting form:", error);
       if (error instanceof Error) {
@@ -500,9 +505,21 @@ export default function CreateDCC() {
         </Button>
 
         {currentStep === steps.length - 1 ? (
-          <Button onClick={handleSubmit} variant="green">
-            {t("submit")}
-          </Button>
+          <div className="flex flex-col items-center gap-4">
+            <Button onClick={handleSubmit} variant="green">
+              {t("submit")}
+            </Button>
+
+            {isSubmitted && pdfBlobUrl && (
+              <a
+                href={pdfBlobUrl}
+                download={`${formData.administrative_data.sertifikat}.pdf`}
+                className="bg-sky-500 hover:bg-sky-600 text-white py-2 px-4 rounded shadow"
+              >
+                {t("download")}
+              </a>
+            )}
+          </div>
         ) : (
           <Button onClick={nextStep} variant="blue">
             <ArrowRight />

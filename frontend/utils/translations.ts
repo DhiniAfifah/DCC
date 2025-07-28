@@ -260,8 +260,18 @@ const translations: Record<string, { id: string; en: string }> = {
 
   // Importer
   pdf_to_excel: { id: "Unggah file PDF", en: "Upload PDF file" },
+  submit_convert: {id: "Kirim dan Konversi ke Excel", en: "Submit and Convert to Excel"},
   processing: {id: "Memproses...", en: "Processing..."},
-  convert: {id: "Kirim dan Konversi ke Excel", en: "Submit and Convert to Excel"},
+  extract: {id: "Mengekstrak XML dari PDF...", en: "Extracting XML from PDF..."},
+  converting: {id: "Mengonversi ke Excel...", en: "Converting to Excel..."},
+  uploading: {id: "Mengunggah file", en: "Uploading file"},
+  completed: {id: "selesai", en: "completed"},
+  convert_success: {
+    id: "Konversi berhasil! File siap untuk diunduh...",
+    en: "Conversion successful! File is ready to be downloaded...",
+  },
+
+  download: { id: "Unduh", en: "Download" },
 
   // === D-SI ===
 

@@ -31,6 +31,9 @@ export default function Importer({
   const { t } = useLanguage();
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [progressMessage, setProgressMessage] = useState<string>("");
+  const [progressPercent, setProgressPercent] = useState<number>(0);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [downloadFileName, setDownloadFileName] = useState<string>("hasil-konversi.xlsx");
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
@@ -47,13 +50,16 @@ export default function Importer({
     }
 
     setIsProcessing(true);
-    setProgressMessage("Mengekstrak XML dari PDF...");
+    setProgressMessage(t("extract"));
+    setProgressPercent(10);
+    setDownloadUrl(null); // Reset previous download
 
     const formData = new FormData();
     formData.append("pdf_file", file);
 
     try {
-      setProgressMessage("Mengonversi ke Excel...");
+      setProgressMessage(t("converting"));
+      setProgressPercent(25);
 
       const response = await axios.post(
         "http://127.0.0.1:8000/upload-pdf/",
@@ -67,19 +73,19 @@ export default function Importer({
             const percentCompleted = Math.round(
               (progressEvent.loaded * 100) / (progressEvent.total || 1)
             );
-            setProgressMessage(`Mengunggah file: ${percentCompleted}% selesai`);
+            setProgressMessage(`${t("uploading")}: ${percentCompleted}% ${t("completed")}`);
+            setProgressPercent(percentCompleted);
           },
         }
       );
 
-      // Buat URL untuk file blob
+      if (downloadUrl) {
+        window.URL.revokeObjectURL(downloadUrl);
+      }
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
+      setDownloadUrl(url);
 
-      // Buat elemen <a> untuk memicu download
-      const link = document.createElement("a");
-      link.href = url;
-
-      // Dapatkan nama file dari header atau buat default
       const contentDisposition = response.headers["content-disposition"];
       let fileName = "hasil-konversi.xlsx";
 
@@ -89,26 +95,19 @@ export default function Importer({
           fileName = fileNameMatch[1];
         }
       }
+      setDownloadFileName(fileName);
 
-      link.setAttribute("download", fileName);
-      document.body.appendChild(link);
-      link.click();
+      setProgressMessage(t("convert_success"));
+      setProgressPercent(100);
 
-      // Bersihkan
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      setProgressMessage("Konversi berhasil! File sedang diunduh...");
-
-      // Panggil fungsi onSubmit untuk menandai submit selesai
       onSubmit(data);
-
       setTimeout(() => setIsProcessing(false), 2000);
     } catch (error: any) {
       console.error("Error processing file", error);
       setProgressMessage(
         `Error: ${error.response?.data?.detail || error.message}`
       );
+      setProgressPercent(0);
       setIsProcessing(false);
     }
   };
@@ -150,22 +149,30 @@ export default function Importer({
                 disabled={isProcessing}
                 variant="green"
               >
-                {isProcessing ? t("processing") : t("convert")}
+                {isProcessing ? t("processing") : t("submit_convert")}
               </Button>
 
               {isProcessing && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-md">
-                  <p className="text-blue-700">{progressMessage}</p>
+                <div className="mt-4 p-3 bg-sky-50 rounded-md">
+                  <p className="text-sky-700">{progressMessage}</p>
                   <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
                     <div
-                      className="bg-blue-600 h-2.5 rounded-full"
-                      style={{
-                        width: progressMessage.includes("%")
-                          ? progressMessage.match(/\d+%/)![0]
-                          : "50%",
-                      }}
+                      className="bg-sky-600 h-2.5 rounded-full transition-all duration-300"
+                      style={{ width: `${progressPercent}%` }}
                     ></div>
                   </div>
+                </div>
+              )}
+
+              {downloadUrl && (
+                <div className="">
+                  <a
+                    href={downloadUrl}
+                    download={downloadFileName}
+                    className="inline-block bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
+                  >
+                    {t("download")}
+                  </a>
                 </div>
               )}
             </CardContent>
