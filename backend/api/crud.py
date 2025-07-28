@@ -157,6 +157,8 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
         
         table_data = {}
         
+        # logging.info(f"results_data: {results_data}")
+
         # Proses setiap tabel yang terdeteksi
         for idx, (first_row, last_row) in enumerate(tables):
             if idx >= len(results_data):
@@ -191,12 +193,10 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
                         unit = ws.Cells(row, col + 1).Value
                         unit = unit.replace(".", "") if isinstance(unit, str) else ""
                         units.append(d_si(unit))
-                    else:
-                        numbers.append("")
-                        units.append("")
                 
-                
-                    extracted_data.append((numbers, units))
+                    # Hanya tambahkan kolom yang memiliki data numerik
+                    if has_data:
+                        extracted_data.append((numbers, units))
             
             # Ambil konfigurasi dari results_data
             result_config = results_data[idx]
@@ -804,6 +804,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             comment=comment_data,
             results=json.dumps(results_data),
         )
+        # logging.info(f"results_data: {dcc.results}")
 
         #logging.info(f"Saving DCC: {dcc.sertifikat} to the database")
         logging.info(f"Saving DCC: {dcc.administrative_data.sertifikat} to the database")
@@ -831,6 +832,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         
         # Gunakan excel_file_path yang sudah didapatkan
         table_data = read_excel_tables(str(excel_file_path), dcc.sheet_name, dcc.results)
+        # logging.info(f"Table data extracted: {table_data}")
         
         # Generate XML
         xml_content = generate_xml(dcc, table_data)
