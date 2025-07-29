@@ -258,6 +258,14 @@ const translations: Record<string, { id: string; en: string }> = {
   },
   upload_file: { id: "Unggah file", en: "Upload file" },
 
+  preparing_data: {id: "Mempersiapkan data...", en: "Preparing data..."},
+  processing_files: {id: "Memproses file...", en: "Processing files..."},
+  generating_dcc: {id: "Menghasilkan DCC...", en: "Generating DCC..."},
+  finalizing: {id: "Menyelesaikan PDF...", en: "Finalizing PDF..."},
+  dcc_created_successfully: {
+    id: "DCC berhasil dibuat! Silakan unduh.", en: "DCC created successfully! Please download.",
+  },
+
   // Importer
   pdf_to_excel: { id: "Unggah file PDF", en: "Upload PDF file" },
   submit_convert: {id: "Kirim dan Konversi ke Excel", en: "Submit and Convert to Excel"},

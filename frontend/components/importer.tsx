@@ -165,14 +165,12 @@ export default function Importer({
               )}
 
               {downloadUrl && (
-                <div className="">
-                  <a
-                    href={downloadUrl}
-                    download={downloadFileName}
-                    className="inline-block bg-sky-500 text-white px-4 py-2 rounded hover:bg-sky-600"
-                  >
-                    {t("download")}
-                  </a>
+                <div>
+                  <Button asChild variant="blue">
+                    <a href={downloadUrl} download={downloadFileName}>
+                      {t("download")}
+                    </a>
+                  </Button>
                 </div>
               )}
             </CardContent>

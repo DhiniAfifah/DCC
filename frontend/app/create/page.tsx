@@ -25,6 +25,11 @@ export default function CreateDCC() {
 
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  
+  // Progress tracking states
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [progressMessage, setProgressMessage] = useState<string>("");
+  const [progressPercent, setProgressPercent] = useState<number>(0);
 
   const [currentStep, setCurrentStep] = useState(0);
   const steps = [
@@ -297,18 +302,10 @@ export default function CreateDCC() {
   };
 
   const handleSubmit = async () => {
-    // // Validasi results
-    // const isValid = formData.results.every((result) => {
-    //   return (
-    //     Array.isArray(result.parameters) &&
-    //     result.parameters.every((param) => typeof param === "string")
-    //   );
-    // });
-
-    // if (!isValid) {
-    //   alert("Parameters harus berupa array yang berisi string.");
-    //   return;
-    // }
+    // Start processing
+    setIsProcessing(true);
+    setProgressMessage(t("preparing_data"));
+    setProgressPercent(10);
 
     // Create FormData object for multipart/form-data submission
     const submitFormData = new FormData();
@@ -380,6 +377,9 @@ export default function CreateDCC() {
       excel: fileName,
     };
 
+    setProgressMessage(t("processing_files"));
+    setProgressPercent(30);
+
     // Prepare FormData for file uploads
     formData.methods.forEach((method, index) => {
       if (
@@ -423,6 +423,9 @@ export default function CreateDCC() {
 
     console.log("Data yang dikirim ke backend:", modifiedFormData);
 
+    setProgressMessage(t("generating_dcc") );
+    setProgressPercent(50);
+
     try {
       const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
         method: "POST",
@@ -432,6 +435,8 @@ export default function CreateDCC() {
         body: JSON.stringify(modifiedFormData),
       });
 
+      setProgressPercent(75);
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
@@ -439,21 +444,31 @@ export default function CreateDCC() {
         );
       }
 
+      setProgressMessage(t("finalizing"));
+      setProgressPercent(90);
+
       // Handle PDF response
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      // const a = document.createElement("a");
-      // a.href = url;
-      // a.download = `${modifiedFormData.administrative_data.sertifikat}.pdf`;
-      // document.body.appendChild(a);
-      // a.click();
-      // a.remove();
-      // alert("DCC created and downloaded successfully!");
-
       setPdfBlobUrl(url);
       setIsSubmitted(true);
+
+      setProgressMessage(t("dcc_created_successfully"));
+      setProgressPercent(100);
+
+      // Hide progress after a delay
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 2000);
+
     } catch (error: unknown) {
       console.error("Error submitting form:", error);
+      setProgressMessage(
+        `Error: ${error instanceof Error ? error.message : "An unknown error occurred"}`
+      );
+      setProgressPercent(0);
+      setIsProcessing(false);
+      
       if (error instanceof Error) {
         alert(`Failed to create DCC. Error: ${error.message}`);
       } else {
@@ -477,6 +492,7 @@ export default function CreateDCC() {
           * {t("asterisk")}
         </p>
       )}
+      
       <div className="space-y-10">
         {currentStep === 0 && (
           <AdministrativeForm
@@ -499,29 +515,52 @@ export default function CreateDCC() {
         )}
       </div>
 
+      {/* Progress Bar */}
+      {isProcessing && (
+        <div className="max-w-4xl mx-auto px-4 mt-8">
+          <div className="p-4 bg-sky-50 rounded-md border border-sky-200">
+            <p className="text-sky-700 font-medium mb-2">{progressMessage}</p>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className="bg-sky-600 h-3 rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${progressPercent}%` }}
+              ></div>
+            </div>
+            <p className="text-sm text-sky-600 mt-1">{progressPercent}% {t("completed") || "completed"}</p>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between max-w-4xl mx-auto px-4 mt-8">
-        <Button variant="blue" onClick={prevStep} disabled={currentStep === 0}>
+        <Button variant="blue" onClick={prevStep} disabled={currentStep === 0 || isProcessing}>
           <ArrowLeft />
         </Button>
 
         {currentStep === steps.length - 1 ? (
           <div className="flex flex-col items-center gap-4">
-            <Button onClick={handleSubmit} variant="green">
-              {t("submit")}
+            <Button 
+              onClick={handleSubmit} 
+              variant="green"
+              disabled={isProcessing}
+            >
+              {isProcessing ? (t("processing")) : t("submit")}
             </Button>
 
-            {isSubmitted && pdfBlobUrl && (
-              <a
-                href={pdfBlobUrl}
-                download={`${formData.administrative_data.sertifikat}.pdf`}
-                className="bg-sky-500 hover:bg-sky-600 text-white py-2 px-4 rounded shadow"
-              >
-                {t("download")}
-              </a>
+            {isSubmitted && pdfBlobUrl && !isProcessing && (
+              <div>
+                <Button asChild variant="blue">
+                  <a 
+                    href={pdfBlobUrl}
+                    download={`${formData.administrative_data.sertifikat}.pdf`}
+                  >
+                    {t("download")}
+                  </a>
+                </Button>
+              </div>
             )}
           </div>
         ) : (
-          <Button onClick={nextStep} variant="blue">
+          <Button onClick={nextStep} variant="blue" disabled={isProcessing}>
             <ArrowRight />
           </Button>
         )}
