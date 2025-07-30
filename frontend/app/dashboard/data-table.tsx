@@ -29,6 +29,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useState } from "react";
+import { ChevronDown } from "lucide-react"
+import { useLanguage } from "@/context/LanguageContext";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -43,6 +45,16 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  
+  const { t } = useLanguage();
+
+  const columnLabels: Record<string, string> = {
+    id: t("certificate_id"),
+    date: t("submission_date"),
+    object: t("calibrated_object"),
+    submitter: t("submitted_by"),
+  };
+  
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -64,14 +76,14 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    // onColumnFiltersChange: setColumnFilters,
+    onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     globalFilterFn,
     onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
-      // columnFilters,
+      columnFilters,
       globalFilter,
       columnVisibility,
     },
@@ -79,7 +91,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="py-4">
         {/* <Input
           placeholder="Filter objects..."
           value={(table.getColumn("object")?.getFilterValue() as string) ?? ""}
@@ -91,36 +103,8 @@ export function DataTable<TData, TValue>({
         <Input
           value={globalFilter ?? ""}
           onChange={e => table.setGlobalFilter(String(e.target.value))}
-          placeholder="Search..."
+          placeholder={`${t("search")}...`}
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter(
-                (column) => column.getCanHide()
-              )
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
       <div className="rounded-md border">
         <Table>

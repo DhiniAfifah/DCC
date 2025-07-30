@@ -41,17 +41,12 @@ from passlib.context import CryptContext
 from .database import get_db
 from .import user, schemas
 
-
-#from slowapi import Limiter
-#from slowapi.errors import RateLimitExceeded
-
 # Kunci dan algoritma untuk enkripsi token
 SECRET_KEY = "5965815bee66d2c201cabe787a432ba80e31884133cf6c4b8e50a0df54a0c880"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Set log level
-#logging.basicConfig(level=logging.DEBUG)
 logging.basicConfig(level=logging.INFO)
 
 logging.basicConfig(level=logging.DEBUG)
@@ -61,7 +56,6 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    #allow_origins=origins,
     allow_origins=["http://localhost:3000"],  
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
@@ -82,7 +76,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
 
 inspector = inspect(engine)
 tables = inspector.get_table_names()
@@ -167,7 +160,6 @@ async def read_users_me(
 ):
     return current_user
 
-
 # CREATE DCC
 @app.post("/create-dcc/")
 async def create_dcc(
@@ -251,7 +243,6 @@ async def create_dcc(
         else:
             raise HTTPException(status_code=500, detail="PDF generation failed")
             
-
     except Exception as e:
         logging.error(f"Error occurred while creating DCC: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
@@ -472,7 +463,6 @@ def generate_pdf(self, xml_path, output_path):
         return False
         
         return False
-
 
 # DOWNLOAD XML FILE 
 @app.get("/download-dcc/{dcc_id}")

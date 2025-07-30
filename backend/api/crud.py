@@ -103,7 +103,6 @@ def save_image_and_get_base64(upload_file):
         logging.error(f"Error in save_image_and_get_base64: {str(e)}")
         return '', ''
 
-
 # Memproses data Excel dan mengembalikan hasil terstruktur untuk XML
 def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> dict:
     """Membaca tabel dari file Excel dengan struktur sesuai kebutuhan XML"""
@@ -156,8 +155,6 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
             tables.append((first_row, last_row))
         
         table_data = {}
-        
-        # logging.info(f"results_data: {results_data}")
 
         # Proses setiap tabel yang terdeteksi
         for idx, (first_row, last_row) in enumerate(tables):
@@ -219,7 +216,6 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
         if excel:
             excel.Quit()
         pythoncom.CoUninitialize()
-
 
 def clean_text(value):
     """Membersihkan teks dengan menghilangkan spasi di awal/akhir dan mengonversi None ke string kosong"""
@@ -666,7 +662,6 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             "tgl_akhir": dcc.Measurement_TimeLine.tgl_akhir,
             "tgl_pengesahan": dcc.Measurement_TimeLine.tgl_pengesahan
         }
-
         
         administrative_data_dict = {
             "country_code": dcc.administrative_data.country_code,  # Country of Calibration
@@ -804,9 +799,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             comment=comment_data,
             results=json.dumps(results_data),
         )
-        # logging.info(f"results_data: {dcc.results}")
 
-        #logging.info(f"Saving DCC: {dcc.sertifikat} to the database")
         logging.info(f"Saving DCC: {dcc.administrative_data.sertifikat} to the database")
         
         db.add(db_dcc)
@@ -832,7 +825,6 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         
         # Gunakan excel_file_path yang sudah didapatkan
         table_data = read_excel_tables(str(excel_file_path), dcc.sheet_name, dcc.results)
-        # logging.info(f"Table data extracted: {table_data}")
         
         # Generate XML
         xml_content = generate_xml(dcc, table_data)
@@ -869,4 +861,3 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             for doc in word.Documents:
                 doc.Close(SaveChanges=False)
             word.Quit()
-            

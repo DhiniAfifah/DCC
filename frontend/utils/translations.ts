@@ -1,5 +1,3 @@
-import { register } from "module";
-
 type Language = "id" | "en";
 
 const translations: Record<string, { id: string; en: string }> = {
@@ -327,6 +325,20 @@ const translations: Record<string, { id: string; en: string }> = {
     id: "Badan Standardisasi Nasional (BSN) merupakan lembaga nasional yang bertugas dalam bidang standardisasi di Indonesia, dengan tujuan meningkatkan kualitas dan keandalan produk serta jasa di seluruh negeri. Salah satu inisiatif utama BSN adalah pengembangan dan implementasi Sertifikat Kalibrasi Digital (<i>Digital Calibration Certificate</i>/DCC) sebagai solusi modern untuk proses sertifikasi kalibrasi. <br><br> Sertifikat Kalibrasi Digital (DCC) merupakan solusi digital canggih yang menggantikan sertifikat kalibrasi berbasis kertas dengan format elektronik yang aman, standar, dan mudah diakses. Inisiatif ini bertujuan untuk meningkatkan akurasi, keterlacakan, dan transparansi dalam pengelolaan data kalibrasi di berbagai sektor industri. <br><br> Misi kami adalah mendukung pelaku industri, laboratorium, dan regulator dengan menyediakan platform digital terpercaya yang menjamin kepatuhan terhadap standar internasional serta mempermudah pemenuhan persyaratan metrologi nasional. Melalui sistem DCC, BSN mendorong transformasi digital di bidang metrologi untuk meningkatkan efisiensi, mengurangi kesalahan, dan mendukung daya saing Indonesia di pasar global. <br><br> Di BSN, kami berkomitmen pada inovasi, jaminan kualitas, dan peningkatan berkelanjutan untuk membangun industri Indonesia yang lebih kuat, standar, dan berdaya saing secara digital.",
     en: "Badan Standardisasi Nasional (BSN) is the national standardization body of Indonesia, committed to enhancing the quality and reliability of products and services throughout the country. One of BSN’s key initiatives is the development and implementation of the Digital Calibration Certificate (DCC) system to modernize and streamline calibration certification processes. <br><br> The Digital Calibration Certificate (DCC) is an advanced digital solution designed to replace traditional paper-based calibration certificates with a secure, standardized, and easily accessible electronic format. This initiative aims to improve accuracy, traceability, and transparency in calibration data management across various industries. <br><br> Our mission is to support industry players, laboratories, and regulators by providing a reliable digital platform that ensures conformity to international standards and facilitates easier compliance with national metrology requirements. Through the DCC system, BSN promotes the adoption of digital transformation in metrology to increase efficiency, reduce errors, and support Indonesia’s competitiveness in the global market. <br><br> At BSN, we are dedicated to innovation, quality assurance, and continuous improvement to help build a stronger, standardized, and digitally empowered Indonesian industry.",
   },
+
+  // Dashboard
+  search: { id: "Cari", en: "Search" },
+  columns: { id: "Kolom", en: "Columns" },
+  certificate_id: { id: "ID Sertifikat", en: "Certificate ID" },
+  submission_date: { id: "Tanggal Pengajuan", en: "Submission Date" },
+  calibrated_object: { id: "Objek yang Dikalibrasi", en: "Calibrated Object" },
+  submitted_by: { id: "Diajukan oleh", en: "Submitted by" },
+  view: { id: "Lihat", en: "View" },
+  approve: { id: "Setujui", en: "Approve" },
+  reject: { id: "Tolak", en: "Reject" },
+  pending: { id: "Menunggu", en: "Pending" },
+  approved: { id: "Disetujui", en: "Approved" },
+  rejected: { id: "Ditolak", en: "Rejected" },
 };
 
 export const getTranslation = (key: string, language: Language = "en") => {

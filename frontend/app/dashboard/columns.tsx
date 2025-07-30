@@ -1,17 +1,18 @@
 "use client"
  
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ArrowUpDown } from "lucide-react"
+import { useLanguage } from "@/context/LanguageContext";
+import { Badge } from "@/components/ui/badge"
 
 export type Certificate = {
     id: string
@@ -24,17 +25,29 @@ export type Certificate = {
 export const columns: ColumnDef<Certificate>[] = [
   {
     accessorKey: "id",
-    header: "Certificate ID",
-  },
-  {
-    accessorKey: "date",
     header: ({ column }) => {
+      const { t } = useLanguage();
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Submission Date
+          {t("certificate_id")}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "date",
+    header: ({ column }) => {
+      const { t } = useLanguage();
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {t("submission_date")}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
@@ -53,19 +66,98 @@ export const columns: ColumnDef<Certificate>[] = [
   },
   {
     accessorKey: "object",
-    header: "Calibrated Object",
+    header: ({ column }) => {
+      const { t } = useLanguage();
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {t("calibrated_object")}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
   },
   {
     accessorKey: "submitter",
-    header: "Submitted By",
+    header: ({ column }) => {
+      const { t } = useLanguage();
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {t("submitted_by")}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: ({ column }) => {
+      const statuses = ["pending", "approved", "rejected"]
+
+      const selectedStatuses = column.getFilterValue() as string[] || []
+
+      const toggleStatus = (status: string) => {
+        const next = selectedStatuses.includes(status)
+          ? selectedStatuses.filter(s => s !== status)
+          : [...selectedStatuses, status]
+        column.setFilterValue(next.length ? next : undefined)
+      }
+
+      const { t } = useLanguage()
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost">
+              Status <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            {statuses.map(status => (
+              <DropdownMenuCheckboxItem
+                key={status}
+                checked={selectedStatuses.includes(status)}
+                onCheckedChange={() => toggleStatus(status)}
+                className="capitalize"
+              >
+                {t(`${status}`)}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    },
+    cell: ({ row }) => {
+      const { t } = useLanguage()
+
+      const status = row.getValue("status") as Certificate["status"]
+
+      const statusStyles: Record<Certificate["status"], string> = {
+        pending: "bg-sky-500 text-white",
+        approved: "bg-green-600 text-white",
+        rejected: "bg-red-600 text-white",
+      };
+
+      return (
+        <Badge className={statusStyles[status]}>
+          {t(status)}
+        </Badge>
+      );
+    },
+    enableColumnFilter: true,
+    filterFn: (row, columnId, filterValue) => {
+      return filterValue.includes(row.getValue(columnId))
+    },
   },
   {
     id: "actions",
     cell: ({ row }) => {
+      const { t } = useLanguage();
       const payment = row.original
  
       return (
@@ -81,11 +173,11 @@ export const columns: ColumnDef<Certificate>[] = [
             <DropdownMenuItem
               onClick={() => navigator.clipboard.writeText(payment.id)}
             >
-              View
+              {t("view")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Approve</DropdownMenuItem>
-            <DropdownMenuItem>Reject</DropdownMenuItem>
+            <DropdownMenuItem>{t("approve")}</DropdownMenuItem>
+            <DropdownMenuItem>{t("reject")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
