@@ -15,7 +15,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import Link from "next/link";
 
 export const FormSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -40,21 +39,74 @@ export default function Login({ formData }: { formData: any }) {
   });
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fungsi untuk menangani login
+  // Enhanced login function with better cookie handling
   const onSubmit = async (data: { email: string; password: string }) => {
+    console.log("🚀 Login attempt started for:", data.email);
+    setIsLoading(true);
+    setErrorMessage(null);
+
     try {
+      const formData = new URLSearchParams();
+      formData.append("username", data.email);
+      formData.append("password", data.password);
+      
+      console.log("📡 Sending login request...");
       const response = await axios.post(
         "http://127.0.0.1:8000/token",
-        `email=${data.email}&password=${data.password}`,
+        formData.toString(),
         {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          withCredentials: true, // This ensures cookies are included
         }
       );
-      localStorage.setItem("access_token", response.data.access_token);
-      window.location.href = "/main";
-    } catch (error) {
-      setErrorMessage(t("login_fail"));
+
+      console.log("✅ Login response received:", response.status);
+      
+      if (response.data.access_token) {
+        // Store token in localStorage
+        localStorage.setItem("access_token", response.data.access_token);
+        console.log("💾 Token stored in localStorage");
+
+        // Also manually set the cookie to ensure it's available immediately
+        const expires = new Date();
+        expires.setDate(expires.getDate() + 7); // 7 days
+        document.cookie = `access_token=${response.data.access_token}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+        console.log("🍪 Cookie set manually");
+
+        // Verify both storages
+        const storedToken = localStorage.getItem("access_token");
+        const cookieToken = document.cookie.includes("access_token=");
+        
+        console.log("✅ Token verification:");
+        console.log("  - localStorage:", storedToken ? "STORED" : "MISSING");
+        console.log("  - Cookie:", cookieToken ? "SET" : "MISSING");
+        
+        if (storedToken) {
+          console.log("🔄 Redirecting to /main...");
+          // Use router.push instead of window.location for better Next.js navigation
+          window.location.href = "/main";
+        } else {
+          throw new Error("Failed to store token");
+        }
+      } else {
+        throw new Error("No access token in response");
+      }
+
+    } catch (error: any) {
+      console.error("❌ Login error:", error);
+      console.error("📋 Error response:", error.response?.data);
+      console.error("📋 Error status:", error.response?.status);
+      
+      // Clear any potentially corrupted data
+      localStorage.removeItem("access_token");
+      document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
+      
+      setErrorMessage(error.response?.data?.detail || t("login_fail"));
+      setIsLoading(false);
     }
   };
   
@@ -71,7 +123,7 @@ export default function Login({ formData }: { formData: any }) {
               />
               <div className="absolute inset-0 bg-red-500 opacity-50"></div>
             </div>
-            <form className="p-6 md:p-8">
+            <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-6">
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-2xl font-bold">{t("welcome_back")}</h1>
@@ -87,9 +139,7 @@ export default function Login({ formData }: { formData: any }) {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input 
-                            {...field} type="email" required
-                          />
+                          <Input {...field} type="email" required disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -104,7 +154,7 @@ export default function Login({ formData }: { formData: any }) {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input {...field} type="password"  />
+                          <Input {...field} type="password" disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -112,15 +162,19 @@ export default function Login({ formData }: { formData: any }) {
                   />
                 </div>
                 <div className="text-center">
-                  {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
-                  <Link href="/main">
-                    <Button 
-                      variant="green" 
-                      // onClick={form.handleSubmit(onSubmit)}
-                    >
-                      {t("login")}
-                    </Button>
-                  </Link>
+                  {errorMessage && (
+                    <p className="text-red-600 mb-4">
+                      <small>{errorMessage}</small>
+                    </p>
+                  )}
+                  <Button 
+                    variant="green" 
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full"
+                  >
+                    {isLoading ? "Logging in..." : t("login")}
+                  </Button>
                 </div>
                 <div className="text-center text-sm">
                   {t("to_register")}{" "}

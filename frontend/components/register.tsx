@@ -44,21 +44,33 @@ export default function Register({ formData }: { formData: any }) {
   });
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fungsi untuk menangani login
+  // Fungsi untuk menangani register
   const onSubmit = async (data: { username: string; email: string; password: string }) => {
+    setIsLoading(true);
+    setErrorMessage(null);
+
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/token",
-        `username=${data.username}&email=${data.email}&password=${data.password}`,
+        "http://127.0.0.1:8000/register",
         {
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          email: data.email,
+          password: data.password,
+          full_name: data.username,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
         }
       );
-      localStorage.setItem("access_token", response.data.access_token);
-      window.location.href = "/";
+      
+      // Clear any cached data and redirect to login
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
     } catch (error) {
       setErrorMessage(t("register_fail"));
+      setIsLoading(false);
     }
   };
 
@@ -67,7 +79,7 @@ export default function Register({ formData }: { formData: any }) {
       <div className="flex flex-col gap-1">
         <Card className="overflow-hidden p-0">
           <CardContent className="grid p-0 md:grid-cols-2">
-            <form className="p-6 md:p-8">
+            <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-2xl font-bold">{t("welcome")}</h1>
@@ -83,7 +95,7 @@ export default function Register({ formData }: { formData: any }) {
                       render={({ field }) => (
                       <FormItem>
                           <FormControl>
-                          <Input {...field} required />
+                          <Input {...field} required disabled={isLoading} />
                           </FormControl>
                           <FormMessage />
                       </FormItem>
@@ -98,7 +110,7 @@ export default function Register({ formData }: { formData: any }) {
                       render={({ field }) => (
                       <FormItem>
                           <FormControl>
-                          <Input {...field} type="email" required />
+                          <Input {...field} type="email" required disabled={isLoading} />
                           </FormControl>
                           <FormMessage />
                       </FormItem>
@@ -113,7 +125,7 @@ export default function Register({ formData }: { formData: any }) {
                       render={({ field }) => (
                       <FormItem>
                           <FormControl>
-                          <Input {...field} type="password" required />
+                          <Input {...field} type="password" required disabled={isLoading} />
                           </FormControl>
                           <FormMessage />
                       </FormItem>
@@ -122,14 +134,13 @@ export default function Register({ formData }: { formData: any }) {
                 </div>
                 <div className="text-center">
                   {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
-                  <Link href="/">
-                    <Button 
-                      variant="green" 
-                      // onClick={form.handleSubmit(onSubmit)}
-                    >
-                      {t("register")}
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="green" 
+                    type="submit"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Registering..." : t("register")}
+                  </Button>
                 </div>
                 <div className="text-center text-sm">
                   {t("to_login")}{" "}
