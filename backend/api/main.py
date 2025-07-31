@@ -40,6 +40,8 @@ import traceback
 from passlib.context import CryptContext
 from .database import get_db
 from .import user, schemas
+import json
+from . import models
 
 # Kunci dan algoritma untuk enkripsi token
 SECRET_KEY = "5965815bee66d2c201cabe787a432ba80e31884133cf6c4b8e50a0df54a0c880"
@@ -169,7 +171,6 @@ async def create_dcc(
     try:
         logging.info("Received DCC JSON data")
 
-        # Process files if they exist
         for method in dcc.methods:
             if method.has_image and method.image and method.image.gambar:
                 filename = method.image.gambar
@@ -189,8 +190,6 @@ async def create_dcc(
                 else:
                     logging.warning(f"Method image file {filename} not found")
 
-
-
         for statement in dcc.statements:
             if statement.has_image and statement.image and statement.image.gambar:
                 filename = statement.image.gambar
@@ -209,8 +208,7 @@ async def create_dcc(
                         statement.image.gambar_url = file_path
                 else:
                     logging.warning(f"Statement image file {filename} not found")
-                    
-                    
+                             
         if dcc.comment and dcc.comment.files:
             for file in dcc.comment.files:
                 if file.fileName:
@@ -224,8 +222,6 @@ async def create_dcc(
                     else:
                         logging.warning(f"Comment file {file.fileName} not found")
 
-
-        # Continue with other processing
         result = crud.create_dcc(db=db, dcc=dcc)
         logging.info(f"DCC Created Successfully: {result}")
         
@@ -476,3 +472,63 @@ async def download_dcc(dcc_id: int):
     except Exception as e:
         logging.error(f"Error downloading DCC: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error downloading DCC: {str(e)}")
+
+@app.get("/api/dcc/list")
+async def get_dcc_list(
+    db: Session = Depends(get_db),
+    skip: int = 0
+):
+    """Get list of all DCC certificates for dashboard"""
+    try:
+        # Fetch all DCC records from database
+        dcc_list = db.query(models.DCC).offset(skip).all()
+        
+        # Transform to match frontend expectations
+        result = []
+        for dcc in dcc_list:
+            try:
+                # Parse JSON fields if they're stored as strings
+                administrative_data = dcc.administrative_data
+                if isinstance(administrative_data, str):
+                    administrative_data = json.loads(administrative_data)
+                    
+                measurement_timeline = dcc.Measurement_TimeLine
+                if isinstance(measurement_timeline, str):
+                    measurement_timeline = json.loads(measurement_timeline)
+                    
+                objects_description = dcc.objects_description
+                if isinstance(objects_description, str):
+                    objects_description = json.loads(objects_description)
+                    
+                responsible_persons = dcc.responsible_persons
+                if isinstance(responsible_persons, str):
+                    responsible_persons = json.loads(responsible_persons)
+                
+                result.append({
+                    "id": dcc.id,
+                    "administrative_data": administrative_data,
+                    "Measurement_TimeLine": measurement_timeline,
+                    "objects_description": objects_description,
+                    "responsible_persons": responsible_persons,
+                    "created_at": dcc.created_at.isoformat() if hasattr(dcc, 'created_at') and dcc.created_at else None,
+                    "status": getattr(dcc, 'status', 'pending')  # Default to pending if no status field
+                })
+                
+            except (json.JSONDecodeError, AttributeError) as e:
+                logging.warning(f"Error parsing DCC {dcc.id}: {e}")
+                # Still include the record with basic info
+                result.append({
+                    "id": dcc.id,
+                    "administrative_data": {"sertifikat": f"DCC-{dcc.id}"},
+                    "Measurement_TimeLine": {},
+                    "objects_description": [{"jenis": {"en": "Unknown"}}],
+                    "responsible_persons": {"pelaksana": [{"name": "Unknown"}]},
+                    "created_at": None,
+                    "status": "pending"
+                })
+        
+        return result
+        
+    except Exception as e:
+        logging.error(f"Error fetching DCC list: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch DCC list")

@@ -18,7 +18,9 @@ const translations: Record<string, { id: string; en: string }> = {
   register_fail: { id: "Gagal mendaftar, silakan coba lagi.", en: "Registration failed, please try again." },
   to_login: { id: "Sudah punya akun?", en: "Have an account?" },
 
+  // Logout
   logout: { id: "Keluar", en: "Logout" },
+  tooltip: { id: "Klik untuk keluar dari akun Anda", en: "Click to log out of your account" },
 
   // Menu
   generator: {

@@ -1,7 +1,7 @@
 "use client"
  
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown, ChevronDown } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, ChevronDown, Eye, Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useLanguage } from "@/context/LanguageContext";
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export type Certificate = {
     id: string
@@ -23,6 +24,28 @@ export type Certificate = {
 }
 
 export const columns: ColumnDef<Certificate>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "id",
     header: ({ column }) => {
@@ -158,7 +181,6 @@ export const columns: ColumnDef<Certificate>[] = [
     id: "actions",
     cell: ({ row }) => {
       const { t } = useLanguage();
-      const payment = row.original
  
       return (
         <DropdownMenu>
@@ -169,15 +191,10 @@ export const columns: ColumnDef<Certificate>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {/* <DropdownMenuLabel>Actions</DropdownMenuLabel> */}
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              {t("view")}
-            </DropdownMenuItem>
+            <DropdownMenuItem><Eye /> {t("view")}</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>{t("approve")}</DropdownMenuItem>
-            <DropdownMenuItem>{t("reject")}</DropdownMenuItem>
+            <DropdownMenuItem><Check /> {t("approve")}</DropdownMenuItem>
+            <DropdownMenuItem><X /> {t("reject")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )

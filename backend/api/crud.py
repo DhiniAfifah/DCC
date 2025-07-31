@@ -33,7 +33,6 @@ import tempfile
 from fastapi import UploadFile
 from api.pdf_generator import PDFGenerator
 
-
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
 
