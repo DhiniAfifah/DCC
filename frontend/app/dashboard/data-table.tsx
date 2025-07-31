@@ -21,18 +21,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLink,
-} from "@/components/ui/pagination"
 import { Suspense } from "react";
 import Item from "@/components/ui/item";
 
@@ -53,7 +44,7 @@ export function DataTable<TData, TValue>({
   const { t } = useLanguage();
 
   const columnLabels: Record<string, string> = {
-    id: t("certificate_id"),
+    certificateId: t("certificate_id"),
     date: t("submission_date"),
     object: t("calibrated_object"),
     submitter: t("submitted_by"),
@@ -98,8 +89,6 @@ export function DataTable<TData, TValue>({
   })
 
   const pageCount = table.getPageCount()
-  const currentPage = table.getState().pagination.pageIndex
-  const showEllipsis = pageCount > 4
 
   return (
     <div>

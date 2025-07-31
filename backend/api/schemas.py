@@ -2,8 +2,13 @@ from pydantic import BaseModel, RootModel
 from typing import List, Optional, Any, Union, Dict
 from fastapi import UploadFile
 from datetime import date
-from pydantic import BaseModel, validator  
+from pydantic import BaseModel, validator
+from enum import Enum
 
+class DCCStatus(str, Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
 
 class Language(BaseModel):
     value: str
@@ -215,6 +220,7 @@ class TokenData(BaseModel):
     scopes: list[str] = []
 
 class DCCFormCreate(BaseModel):
+    status: DCCStatus = DCCStatus.pending
     software: str  # software
     version: str  # versi
     Measurement_TimeLine: MeasurementTimeline
@@ -230,7 +236,6 @@ class DCCFormCreate(BaseModel):
     sheet_name: str
     statements: List[Statements]  # Catatan
     comment: Optional[Comment]
-    
 
 class ExcelFileResponse(BaseModel):
     excel_file_path: str

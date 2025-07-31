@@ -27,7 +27,7 @@ from openpyxl import Workbook
 from xml.etree import ElementTree as ET
 from .converter import convert_xml_to_excel
 from .pdf_generator import PDFGenerator
-from .models import DCC
+from .models import DCC, DCCStatusEnum
 from starlette.background import BackgroundTask
 from pikepdf import Pdf, Name, String
 import tempfile
@@ -42,6 +42,7 @@ from .database import get_db
 from .import user, schemas
 import json
 from . import models
+from pydantic import BaseModel
 
 # Kunci dan algoritma untuk enkripsi token
 SECRET_KEY = "5965815bee66d2c201cabe787a432ba80e31884133cf6c4b8e50a0df54a0c880"
@@ -532,3 +533,45 @@ async def get_dcc_list(
     except Exception as e:
         logging.error(f"Error fetching DCC list: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch DCC list")
+
+class StatusUpdateRequest(BaseModel):
+    status: DCCStatusEnum
+
+@app.patch("/api/dcc/{dcc_id}/status")
+async def update_dcc_status(
+    dcc_id: int,
+    status_update: StatusUpdateRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Update the status of a DCC certificate by ID
+    """
+    try:
+        # Find the DCC record by ID
+        dcc = db.query(DCC).filter(DCC.id == dcc_id).first()
+        
+        if not dcc:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"DCC with ID {dcc_id} not found"
+            )
+        
+        # Update the status
+        dcc.status = status_update.status
+        
+        # Commit the changes
+        db.commit()
+        db.refresh(dcc)
+        
+        return {
+            "message": f"DCC status updated to {status_update.status}",
+            "id": dcc.id,
+            "status": dcc.status
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update DCC status: {str(e)}"
+        )

@@ -1,12 +1,19 @@
-from sqlalchemy import Column, String, Integer, Date, Text, JSON, Boolean
+from sqlalchemy import Column, String, Integer, Date, Text, JSON, Boolean, Enum, DateTime
+import enum
+import datetime
 from .database import Base
 from sqlalchemy.orm import Mapped
 
+class DCCStatusEnum(str, enum.Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
 
 class DCC(Base):
     __tablename__ = "dcc"
 
     id = Column(Integer, primary_key=True, index=True)
+    status = Column(Enum(DCCStatusEnum), default=DCCStatusEnum.pending)
     software_name = Column(String)
     software_version = Column(String)
     Measurement_TimeLine = Column(JSON)

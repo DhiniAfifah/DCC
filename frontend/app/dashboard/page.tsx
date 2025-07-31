@@ -45,7 +45,8 @@ async function getData(): Promise<Certificate[]> {
     
     // Transform the database data to match your Certificate interface
     return dccList.map((dcc: any) => ({
-      id: dcc.administrative_data.sertifikat, // This is what you wanted - certificate number from DB
+      id: dcc.id,
+      certificateId: dcc.administrative_data.sertifikat,
       date: dcc.Measurement_TimeLine?.tgl_pengesahan || new Date().toISOString(),
       object: dcc.objects_description?.[0]?.jenis?.en || dcc.objects_description?.[0]?.jenis?.id || '-',
       submitter: dcc.responsible_persons?.pelaksana?.[0]?.nama_resp || '-',

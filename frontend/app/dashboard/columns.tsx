@@ -14,14 +14,38 @@ import {
 import { useLanguage } from "@/context/LanguageContext";
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useRouter } from "next/navigation"
 
 export type Certificate = {
-    id: string
+    id: number
+    certificateId: string
     date: string
     object: string
     submitter: string
     status: "pending" | "approved" | "rejected"
 }
+
+// Function to update certificate status
+const updateCertificateStatus = async (id: number, status: "approved" | "rejected") => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/api/dcc/${id}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update status');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating status:', error);
+    throw error;
+  }
+};
 
 export const columns: ColumnDef<Certificate>[] = [
   {
@@ -47,7 +71,7 @@ export const columns: ColumnDef<Certificate>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "id",
+    accessorKey: "certificateId",
     header: ({ column }) => {
       const { t } = useLanguage();
       return (
@@ -181,7 +205,31 @@ export const columns: ColumnDef<Certificate>[] = [
     id: "actions",
     cell: ({ row }) => {
       const { t } = useLanguage();
+      const router = useRouter();
+      const certificate = row.original;
  
+      const handleStatusChange = async (newStatus: "approved" | "rejected") => {
+        try {
+          await updateCertificateStatus(certificate.id, newStatus);
+          
+          // // Show success toast
+          // toast({
+          //   title: "Success",
+          //   description: `Certificate ${newStatus} successfully`,
+          // });
+          
+          // Refresh the page to show updated data
+          router.refresh();
+        } catch (error) {
+          // // Show error toast
+          // toast({
+          //   title: "Error",
+          //   description: `Failed to ${newStatus} certificate`,
+          //   variant: "destructive",
+          // });
+        }
+      };
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -191,10 +239,25 @@ export const columns: ColumnDef<Certificate>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem><Eye /> {t("view")}</DropdownMenuItem>
+            <DropdownMenuItem>
+              <Eye className="mr-2 h-4 w-4" /> 
+              {t("view")}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem><Check /> {t("approve")}</DropdownMenuItem>
-            <DropdownMenuItem><X /> {t("reject")}</DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => handleStatusChange("approved")}
+              disabled={certificate.status === "approved"}
+            >
+              <Check className="mr-2 h-4 w-4" /> 
+              {t("approve")}
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => handleStatusChange("rejected")}
+              disabled={certificate.status === "rejected"}
+            >
+              <X className="mr-2 h-4 w-4" /> 
+              {t("reject")}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
