@@ -5,8 +5,9 @@ import Link from "next/link";
 import type React from "react";
 import { useLanguage } from '@/context/LanguageContext';
 import { Switch } from "@/components/ui/switch";
-import { logout } from "@/utils/auth";
+import { logout, isDirector, isAuthenticated } from "@/utils/auth";
 import { Menu } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -16,6 +17,42 @@ import {
 
 const Navbar = () => {
   const { t } = useLanguage();
+  const [userIsDirector, setUserIsDirector] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Check user role on component mount and when auth state changes
+  useEffect(() => {
+    const checkUserRole = () => {
+      const authenticated = isAuthenticated();
+      setIsLoggedIn(authenticated);
+      
+      if (authenticated) {
+        const directorStatus = isDirector();
+        setUserIsDirector(directorStatus);
+        console.log("🔍 Navbar: User is director:", directorStatus);
+      } else {
+        setUserIsDirector(false);
+      }
+    };
+
+    // Initial check
+    checkUserRole();
+
+    // Set up interval to check auth status periodically
+    const interval = setInterval(checkUserRole, 5000); // Check every 5 seconds
+
+    // Listen for storage changes (in case user logs in/out in another tab)
+    const handleStorageChange = () => {
+      checkUserRole();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -45,14 +82,28 @@ const Navbar = () => {
           </Link>
           
           {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-4 items-center">
-            <button
-              onClick={handleLogout}
-              className="px-5 py-1.5 rounded-[50px] text-lg font-bold font-poopins transition duration-150 ease-in-out text-indigo-950 hover:text-indigo-800"
-            >
-              {t("logout")}
-            </button>
+          <div className="hidden md:flex space-x-4 items-center">            
+            {isLoggedIn && (
+              <button
+                onClick={handleLogout}
+                className="px-5 py-1.5 rounded-[50px] text-lg font-bold font-poopins transition duration-150 ease-in-out text-indigo-950 hover:text-indigo-800"
+              >
+                {t("logout")}
+              </button>
+            )}
+            {!isLoggedIn && (
+              <NavLink href="/">{t("login")}</NavLink>
+            )}
+            
+            {/* Dashboard button - only visible for directors */}
+            {isLoggedIn && userIsDirector && (
+              <NavLink href="/dashboard" isDashboard={true}>
+                Dashboard
+              </NavLink>
+            )}
+            
             <NavLink href="/about">{t("about")}</NavLink>
+            
             <LanguageSwitch />
           </div>
 
@@ -64,10 +115,23 @@ const Navbar = () => {
                   <Menu className="w-6 h-6 text-indigo-950" />
                 </button>
               </DropdownMenuTrigger>
+
               <DropdownMenuContent align="end" className="w-40">
+                {isLoggedIn && userIsDirector && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard">Dashboard</Link>
+                  </DropdownMenuItem>
+                )}
+                {!isLoggedIn && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/">{t("login")}</Link>
+                  </DropdownMenuItem>
+                )}
+
                 <DropdownMenuItem asChild>
                   <Link href="/about">{t("about")}</Link>
                 </DropdownMenuItem>
+
                 <DropdownMenuItem onClick={handleLogout}>
                   {t("logout")}
                 </DropdownMenuItem>
@@ -86,10 +150,12 @@ const NavLink = ({
   href,
   children,
   isContact = false,
+  isDashboard = false,
 }: {
   href: string;
   children: React.ReactNode;
   isContact?: boolean;
+  isDashboard?: boolean;
 }) => {
   return (
     <Link

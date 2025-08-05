@@ -41,7 +41,8 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     db_user = models.User(
         email=user.email,
         hashed_password=hashed_password,
-        full_name=user.full_name
+        full_name=user.full_name,
+        role=user.role
     )
     
     # Simpan ke database
@@ -93,3 +94,15 @@ def get_user_by_id(db: Session, user_id: int) -> models.User | None:
         User object jika ditemukan, None jika tidak
     """
     return db.query(models.User).filter(models.User.id == user_id).first()
+
+def is_director(user: models.User) -> bool:
+    """
+    Check if user has director role
+    
+    Args:
+        user: User object
+    
+    Returns:
+        True if user is director, False otherwise
+    """
+    return user.role == models.UserRole.director

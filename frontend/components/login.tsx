@@ -65,6 +65,7 @@ export default function Login({ formData }: { formData: any }) {
       );
 
       console.log("✅ Login response received:", response.status);
+      console.log("📋 Response data:", response.data);
       
       if (response.data.access_token) {
         // Store token in localStorage
@@ -86,9 +87,27 @@ export default function Login({ formData }: { formData: any }) {
         console.log("  - Cookie:", cookieToken ? "SET" : "MISSING");
         
         if (storedToken) {
-          console.log("🔄 Redirecting to /main...");
-          // Use router.push instead of window.location for better Next.js navigation
-          window.location.href = "/main";
+          // Get role-based redirect URL from response or determine from user role
+          const redirectUrl = response.data.redirect_url;
+          const userRole = response.data.user_role;
+          
+          // Determine target URL based on role
+          let targetUrl = "/main"; // default for regular users
+          
+          if (redirectUrl) {
+            targetUrl = redirectUrl;
+            console.log("🎯 Using redirect URL from backend:", targetUrl);
+          } else if (userRole === "director") {
+            targetUrl = "/dashboard";
+            console.log("🎯 Director role detected, redirecting to dashboard");
+          } else {
+            console.log("🎯 Regular user, redirecting to main");
+          }
+          
+          console.log(`🔄 Redirecting ${userRole || 'user'} to ${targetUrl}...`);
+          
+          // Use window.location.href for immediate redirect
+          window.location.href = targetUrl;
         } else {
           throw new Error("Failed to store token");
         }
@@ -104,8 +123,17 @@ export default function Login({ formData }: { formData: any }) {
       // Clear any potentially corrupted data
       localStorage.removeItem("access_token");
       document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
+
+      let errorMsg = t("login_fail");
+      if (error.response?.status === 401) {
+        errorMsg = "Invalid email or password";
+      } else if (error.response?.status === 403) {
+        errorMsg = "Access denied";
+      } else if (error.response?.data?.detail) {
+        errorMsg = error.response.data.detail;
+      }
       
-      setErrorMessage(error.response?.data?.detail || t("login_fail"));
+      setErrorMessage(errorMsg);
       setIsLoading(false);
     }
   };

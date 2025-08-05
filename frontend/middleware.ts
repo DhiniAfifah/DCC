@@ -26,9 +26,14 @@ export function middleware(request: NextRequest) {
   }
   
   const protectedRoutes = ["/main", "/dashboard", "/create", "/load-dcc"];
+  const directorOnlyRoutes = ["/dashboard"];
   const publicRoutes = ["/", "/register"];
 
   const isProtectedRoute = protectedRoutes.some(route => 
+    request.nextUrl.pathname.startsWith(route)
+  );
+
+  const isDirectorOnlyRoute = directorOnlyRoutes.some(route => 
     request.nextUrl.pathname.startsWith(route)
   );
   

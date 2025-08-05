@@ -44,6 +44,7 @@ from . import user as user_module, schemas
 import json
 from . import models
 from pydantic import BaseModel
+from .models import DCC, DCCStatusEnum, UserRole
 
 # Kunci dan algoritma untuk enkripsi token
 SECRET_KEY = "5965815bee66d2c201cabe787a432ba80e31884133cf6c4b8e50a0df54a0c880"
@@ -132,6 +133,20 @@ async def get_current_user(
         raise credentials_exception
     return current_user
 
+# Dependency to ensure current user is a director
+async def get_current_director(
+    current_user: schemas.User = Depends(get_current_user)
+):
+    """
+    Dependency that ensures the current user has director role
+    """
+    if current_user.role != UserRole.director:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Director role required."
+        )
+    return current_user
+
 # Endpoint Register
 @app.post("/register", response_model=schemas.User)
 def register_user(
@@ -161,19 +176,27 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    print(f"✅ Authentication successful for user: {auth_user.email}")
+    print(f"✅ Authentication successful for user: {auth_user.email} with role: {auth_user.role}")
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": auth_user.email},
+        data={"sub": auth_user.email, "role": auth_user.role.value},  # Include role in token
         expires_delta=access_token_expires
     )
     
     print(f"🔑 Token generated successfully")
     
-    # Create response with token in body
+    # Determine redirect URL based on role
+    redirect_url = "/dashboard" if auth_user.role == UserRole.director else "/main"
+    
+    # Create response with token and redirect info
     response = JSONResponse(
-        content={"access_token": access_token, "token_type": "bearer"}
+        content={
+            "access_token": access_token, 
+            "token_type": "bearer",
+            "redirect_url": redirect_url,  # Add redirect URL to response
+            "user_role": auth_user.role.value  # Add user role to response
+        }
     )
     
     # Set cookie with corrected settings for localhost
@@ -187,7 +210,7 @@ async def login_for_access_token(
         path="/"  # Explicitly set path
     )
     
-    print(f"🍪 Cookie set successfully with path=/ and httponly=False")
+    print(f"🍪 Cookie set successfully with redirect to {redirect_url}")
     
     return response
 
@@ -230,6 +253,13 @@ async def read_users_me(
 ):
     print(f"✅ /users/me/ endpoint called for user: {current_user.email}")
     return current_user
+
+@app.get("/users/me/role")
+async def get_user_role(current_user: schemas.User = Depends(get_current_user)):
+    """
+    Get current user's role
+    """
+    return {"role": current_user.role.value}
 
 # Add a simple health check endpoint
 @app.get("/health")
@@ -316,4 +346,337 @@ async def create_dcc(
             
     except Exception as e:
         logging.error(f"Error occurred while creating DCC: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+#IMPORTER
+def cleanup_file(path: str):
+    """Hapus file setelah dikirim"""
+    try:
+        os.unlink(path)
+    except Exception as e:
+        logging.warning(f"Gagal menghapus file {path}: {str(e)}")
+
+def extract_xml_from_pdf(pdf_path: str) -> str:
+    """Extract embedded XML from PDF file"""
+    try:
+        xml_content = None
+        with Pdf.open(pdf_path) as pdf:
+            root = pdf.Root
+            
+            if Name.Names in root and Name.EmbeddedFiles in root.Names:
+                embedded_files = root.Names.EmbeddedFiles
+                files = embedded_files.Names
+                
+                for i in range(0, len(files), 2):
+                    file_name = files[i]
+                    
+                    if isinstance(file_name, String):
+                        file_name = str(file_name)
+                    elif isinstance(file_name, Name):
+                        file_name = str(file_name)
+                    else:
+                        continue
+                    
+                    if file_name.lower().endswith('.xml'):
+                        file_spec = files[i+1]
+                        if Name.EF in file_spec:
+                            stream = file_spec.EF.F
+                            xml_content = stream.read_bytes()
+                            break
+
+            if not xml_content and Name.EmbeddedFiles in root:
+                embedded_files = root.EmbeddedFiles
+                for name, file_spec in embedded_files.items():
+                    # Konversi nama ke string
+                    if isinstance(name, String):
+                        name = str(name)
+                    elif isinstance(name, Name):
+                        name = str(name)
+                    else:
+                        continue
+                    
+                    if name.lower().endswith('.xml') and Name.EF in file_spec:
+                        stream = file_spec.EF.F
+                        xml_content = stream.read_bytes()
+                        break
+
+        if not xml_content:
+            raise ValueError("PDF tidak mengandung XML yang disematkan")
+
+        xml_filename = os.path.basename(pdf_path) + ".xml"
+        xml_path = os.path.join(UPLOAD_DIR, xml_filename)
+        
+        with open(xml_path, "wb") as xml_file:
+            xml_file.write(xml_content)
+            
+        return xml_path
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise RuntimeError(f"Ekstraksi XML gagal: {str(e)}")
+
+@app.post("/upload-pdf/")
+async def upload_pdf(pdf_file: UploadFile = File(...)):
+    try:
+        pdf_path = os.path.join(UPLOAD_DIR, pdf_file.filename)
+        with open(pdf_path, "wb") as buffer:
+            shutil.copyfileobj(pdf_file.file, buffer)
+
+        xml_path = extract_xml_from_pdf(pdf_path)
+        excel_path = convert_xml_to_excel(xml_path)
+        
+        return FileResponse(
+            excel_path,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename={os.path.basename(excel_path)}"
+            },
+            background=BackgroundTask(cleanup_file, excel_path)  
+        )
+
+    except Exception as e:
+        logging.exception("Error in upload_pdf")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Proses PDF gagal: {str(e)}"
+        )
+
+# EXCEL FILE 
+@app.post("/upload-excel/")
+async def upload_excel(excel: UploadFile = File(...)):
+    try:
+        file_location = os.path.join(UPLOAD_DIR, excel.filename)
+        if os.path.exists(file_location):
+            logging.warning(f"File {excel.filename} already exists, it will be overwritten.")
+        
+        # Save the uploaded Excel file
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(excel.file, buffer)
+        
+        logging.info(f"Excel file saved to {file_location}")
+        
+        # Process the uploaded Excel file to get sheet names
+        excel_file = pd.ExcelFile(file_location)
+        sheet_names = excel_file.sheet_names
+        return {"filename": excel.filename, "sheets": sheet_names}
+    
+    except Exception as e:
+        logging.error(f"File upload failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
+
+# IMAGE FILE
+@app.post("/upload-image/")
+async def upload_image(image: UploadFile = File(...)):
+    try:
+        # Generate unique filename
+        filename = image.filename
+        mime_type = image.content_type
+        file_location = os.path.join(UPLOAD_DIR, filename)
+
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+            
+        with open(file_location, "rb") as img_file:
+            image_data = img_file.read()
+            base64_str = base64.b64encode(image_data).decode('utf-8')
+            base64_str = base64_str.split(",")[-1]
+
+        return {"filename": filename, "mimeType": mime_type, "base64": base64_str, "url": f"/uploads/{filename}"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+#UPLOAD FILE
+@app.post("/upload-file/")
+async def upload_file(file: UploadFile = File(...)):
+    try:
+        # Generate unique filename
+        filename = file.filename
+        mime_type = file.content_type
+        file_location = os.path.join(UPLOAD_DIR, filename)
+        
+        with open(file_location, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        with open(file_location, "rb") as f:
+            base64_str = base64.b64encode(f.read()).decode('utf-8')
+            base64_str = base64_str.split(",")[-1] 
+        
+        return {"filename": filename, "mimeType": mime_type, "url": f"/uploads/{filename}"}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
+
+#PDF
+def generate_pdf(self, xml_path, output_path):
+    """Generate PDF dari konten XML"""
+    logger = logging.getLogger("PDF Generator")
+    
+    try:
+        # Pastikan direktori output ada
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        logger.info(f"Processing XML file: {xml_path}")
+        
+        # Baca file XML
+        with open(xml_path, 'r', encoding='utf-8') as f:
+            xml_content = f.read()
+        
+        # Ekstrak data dari XML
+        logger.info("Extracting data from XML...")
+        data = self.extract_data_from_xml(xml_content)
+        
+        # Baca template HTML
+        with open(self.template_path, 'r', encoding='utf-8') as f:
+            template_html = f.read()
+            
+        
+        # Render template
+        logger.info("Rendering HTML template...")
+        template = Template(template_html, undefined=DebugUndefined)
+        template.globals['get_text'] = self._get_text_by_lang
+        template.globals['safe_dict'] = self._safe_get_multilang_dict
+        rendered_html = template.render(**data)
+        
+        # Generate PDF
+        logger.info(f"Generating PDF to: {output_path}")
+        HTML(string=rendered_html).write_pdf(
+            output_path,
+            pdfa='PDF/A-3b',
+            metadata={
+                'title': 'Digital Calibration Certificate',
+                'author': 'SNSU-BSN',
+                'creationDate': datetime.now()
+            }
+        )
+        
+        if os.path.exists(output_path):
+            logger.info(f"PDF successfully generated: {output_path} ({os.path.getsize(output_path)} bytes)")
+            return True
+        else:
+            logger.error("PDF generation failed - no output file created")
+            return False
+            
+    except Exception as e:
+        logger.error(f"PDF generation failed: {e}")
+        logger.error(f"Full traceback: {traceback.format_exc()}")
+        return False
+        
+        return False
+
+# DOWNLOAD XML FILE 
+@app.get("/download-dcc/{dcc_id}")
+async def download_dcc(dcc_id: int):
+    try:
+        xml_file_path = f"./dcc_files/{dcc_id}_sertifikat.xml"
+        if not os.path.exists(xml_file_path):
+            raise HTTPException(status_code=404, detail="File not found")
+        return FileResponse(path=xml_file_path, media_type='application/xml', filename=f"DCC-{dcc_id}.xml")
+    
+    except Exception as e:
+        logging.error(f"Error downloading DCC: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error downloading DCC: {str(e)}")
+
+@app.get("/api/dcc/list")
+async def get_dcc_list(
+    db: Session = Depends(get_db),
+    skip: int = 0
+):
+    """Get list of all DCC certificates for dashboard"""
+    try:
+        # Fetch all DCC records from database
+        dcc_list = db.query(models.DCC).offset(skip).all()
+        
+        # Transform to match frontend expectations
+        result = []
+        for dcc in dcc_list:
+            try:
+                # Parse JSON fields if they're stored as strings
+                administrative_data = dcc.administrative_data
+                if isinstance(administrative_data, str):
+                    administrative_data = json.loads(administrative_data)
+                    
+                measurement_timeline = dcc.Measurement_TimeLine
+                if isinstance(measurement_timeline, str):
+                    measurement_timeline = json.loads(measurement_timeline)
+                    
+                objects_description = dcc.objects_description
+                if isinstance(objects_description, str):
+                    objects_description = json.loads(objects_description)
+                    
+                responsible_persons = dcc.responsible_persons
+                if isinstance(responsible_persons, str):
+                    responsible_persons = json.loads(responsible_persons)
+                
+                result.append({
+                    "id": dcc.id,
+                    "administrative_data": administrative_data,
+                    "Measurement_TimeLine": measurement_timeline,
+                    "objects_description": objects_description,
+                    "responsible_persons": responsible_persons,
+                    "created_at": dcc.created_at.isoformat() if hasattr(dcc, 'created_at') and dcc.created_at else None,
+                    "status": getattr(dcc, 'status', 'pending')  # Default to pending if no status field
+                })
+                
+            except (json.JSONDecodeError, AttributeError) as e:
+                logging.warning(f"Error parsing DCC {dcc.id}: {e}")
+                # Still include the record with basic info
+                result.append({
+                    "id": dcc.id,
+                    "administrative_data": {"sertifikat": f"DCC-{dcc.id}"},
+                    "Measurement_TimeLine": {},
+                    "objects_description": [{"jenis": {"en": "Unknown"}}],
+                    "responsible_persons": {"pelaksana": [{"name": "Unknown"}]},
+                    "created_at": None,
+                    "status": "pending"
+                })
+        
+        return result
+        
+    except Exception as e:
+        logging.error(f"Error fetching DCC list: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch DCC list")
+
+class StatusUpdateRequest(BaseModel):
+    status: DCCStatusEnum
+
+@app.patch("/api/dcc/{dcc_id}/status")
+async def update_dcc_status(
+    dcc_id: int,
+    status_update: StatusUpdateRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Update the status of a DCC certificate by ID
+    """
+    try:
+        # Find the DCC record by ID
+        dcc = db.query(DCC).filter(DCC.id == dcc_id).first()
+        
+        if not dcc:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"DCC with ID {dcc_id} not found"
+            )
+        
+        # Update the status
+        dcc.status = status_update.status
+        
+        # Commit the changes
+        db.commit()
+        db.refresh(dcc)
+        
+        return {
+            "message": f"DCC status updated to {status_update.status}",
+            "id": dcc.id,
+            "status": dcc.status
+        }
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to update DCC status: {str(e)}"
+        )
         raise HTTPException(status_code=500, detail="Internal Server Error")

@@ -1,3 +1,6 @@
+import DirectorProtectedRoute from "@/components/DirectorProtectedRoute";
+import { access } from "fs";
+
 type Language = "id" | "en";
 
 const translations: Record<string, { id: string; en: string }> = {
@@ -6,7 +9,7 @@ const translations: Record<string, { id: string; en: string }> = {
   log_in: { id: "Masuk ke akun Anda", en: "Log in to your account" },
   email: { id: "Surel", en: "E-mail" },
   password: { id: "Kata sandi", en: "Password" },
-  login: { id: "Masuk", en: "Log in" },
+  login: { id: "Masuk", en: "Login" },
   login_fail: { id: "Gagal masuk, silakan periksa kredensial Anda.", 
                 en: "Login failed, please check your credentials." },
   to_register: { id: "Belum punya akun?", en: "Don't have an account?" },
@@ -329,6 +332,14 @@ const translations: Record<string, { id: string; en: string }> = {
   },
 
   // Dashboard
+  access_denied: { id: "Akses Ditolak", en: "Access Denied" },
+  DirectorProtectedRoute: { id: "Halaman ini hanya dapat diakses oleh Direktur.", en: "This page is only accessible to Directors." },
+  back_to_main: { id: "Kembali ke Halaman Utama", en: "Back to Main Page" },
+  dashboard: { id: "Dasbor Direktur", en: "Director Dashboard" },
+  welcome_dashboard: { 
+    id: "Selamat datang di dasbor direktur. Di sini Anda dapat melihat dan mengelola semua pengajuan DCC.", 
+    en: "Welcome to the director dashboard. Here you can view and manage all DCC submissions." 
+  },
   search: { id: "Cari", en: "Search" },
   columns: { id: "Kolom", en: "Columns" },
   certificate_id: { id: "ID Sertifikat", en: "Certificate ID" },
@@ -341,6 +352,11 @@ const translations: Record<string, { id: string; en: string }> = {
   pending: { id: "Menunggu", en: "Pending" },
   approved: { id: "Disetujui", en: "Approved" },
   rejected: { id: "Ditolak", en: "Rejected" },
+
+  // animate-spin
+  authentication: { id: "Memeriksa autentikasi", en: "Checking authentication"},
+  verify_director: { id: "Memverifikasi akses direktur", en: "Verifying director access" },
+  verify_session: { id: "Memverifikasi sesi", en: "Verifying session" },
 };
 
 export const getTranslation = (key: string, language: Language = "en") => {

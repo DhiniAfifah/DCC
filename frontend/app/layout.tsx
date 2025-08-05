@@ -1,4 +1,4 @@
-import Navbar from "@/components/navbar";
+import ClientNavbarWrapper from "@/components/ClientNavbarWrapper";
 import "./globals.css";
 import type { Metadata } from "next";
 import type React from "react";
@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <LanguageProvider>
-          <Navbar />
+          <ClientNavbarWrapper />
           {children}
         </LanguageProvider>
       </body>

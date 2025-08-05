@@ -10,6 +10,10 @@ class DCCStatus(str, Enum):
     approved = "approved"
     rejected = "rejected"
 
+class UserRole(str, Enum):
+    user = "user"
+    director = "director"
+
 class Language(BaseModel):
     value: str
 
@@ -199,11 +203,13 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
     full_name: Optional[str] = None
+    role: UserRole = UserRole.user
 
 class User(UserBase):
     id: int
     full_name: Optional[str] = None
     disabled: Optional[bool] = None
+    role: UserRole
 
     class Config:
         orm_mode = True

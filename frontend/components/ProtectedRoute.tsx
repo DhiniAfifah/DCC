@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getToken, verifyToken } from "@/utils/auth";
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ProtectedRoute({
   children,
@@ -11,6 +12,7 @@ export default function ProtectedRoute({
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -100,7 +102,7 @@ export default function ProtectedRoute({
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Memverifikasi sesi...</p>
+          <p className="mt-4 text-gray-600">{t("verify_session")}...</p>
         </div>
       </div>
     );

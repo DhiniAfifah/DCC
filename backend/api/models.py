@@ -9,6 +9,10 @@ class DCCStatusEnum(str, enum.Enum):
     approved = "approved"
     rejected = "rejected"
 
+class UserRole(str, enum.Enum):
+    user = "user"
+    director = "director"
+
 class DCC(Base):
     __tablename__ = "dcc"
 
@@ -46,3 +50,4 @@ class User(Base):
     hashed_password = Column(String)
     full_name = Column(String, nullable=True)
     disabled = Column(Boolean, default=False)
+    role = Column(Enum(UserRole), default=UserRole.user)

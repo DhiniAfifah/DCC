@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 interface JwtPayload {
   exp: number;
   sub: string;
+  role?: string;
 }
 
 export const verifyToken = (token: string): boolean => {
@@ -21,6 +22,26 @@ export const verifyToken = (token: string): boolean => {
     console.error("❌ Token verification failed:", error);
     return false;
   }
+};
+
+// Get user role from token
+export const getUserRole = (): string | null => {
+  const token = getToken();
+  if (!token) return null;
+
+  try {
+    const decoded = jwtDecode<JwtPayload>(token);
+    return decoded.role || "user";
+  } catch (error) {
+    console.error("❌ Failed to decode role from token:", error);
+    return null;
+  }
+};
+
+// Check if current user is director
+export const isDirector = (): boolean => {
+  const role = getUserRole();
+  return role === "director";
 };
 
 // Get token from localStorage first, then try cookies as fallback
