@@ -1,7 +1,7 @@
 "use client"
  
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown, ChevronDown, Eye, Check, X } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, ChevronDown, Download, Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -43,6 +43,43 @@ const updateCertificateStatus = async (id: number, status: "approved" | "rejecte
     return await response.json();
   } catch (error) {
     console.error('Error updating status:', error);
+    throw error;
+  }
+};
+
+const downloadDCCPDF = async (id: number, certificateId: string) => {
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/download-dcc-pdf/${id}`, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('PDF file not found');
+      }
+      throw new Error('Failed to download PDF');
+    }
+
+    // Create blob from response
+    const blob = await response.blob();
+    
+    // Create download link
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${id}_${certificateId}.pdf`;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    
+    return true;
+  } catch (error) {
+    console.error('Error downloading PDF:', error);
     throw error;
   }
 };
@@ -230,6 +267,15 @@ export const columns: ColumnDef<Certificate>[] = [
         }
       };
 
+      const handleDownloadPDF = async () => {
+        try {
+          await downloadDCCPDF(certificate.id, certificate.certificateId);
+        } catch (error) {
+          // Show error message to user
+          alert(`Failed to download PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      };
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -239,9 +285,9 @@ export const columns: ColumnDef<Certificate>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <Eye className="mr-2 h-4 w-4" /> 
-              {t("view")}
+            <DropdownMenuItem onClick={handleDownloadPDF}>
+              <Download className="mr-2 h-4 w-4" /> 
+              {t("download")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem 

@@ -1,4 +1,3 @@
 *.pyc
 /backend/api/uploads
 /backend/api/__pycache__
-/backend/dcc_files

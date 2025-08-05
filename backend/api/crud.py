@@ -37,7 +37,7 @@ from api.pdf_generator import PDFGenerator
 logging.basicConfig(level=logging.DEBUG)
 
 #path
-def get_project_paths(dcc: schemas.DCCFormCreate):
+def get_project_paths(dcc: schemas.DCCFormCreate, db_id: int = None):
     """Mengambil semua path berdasarkan struktur folder proyek"""
     try:
         backend_root = Path(__file__).parent.parent
@@ -54,7 +54,6 @@ def get_project_paths(dcc: schemas.DCCFormCreate):
         if not template_path.exists():
             raise FileNotFoundError(f"Template tidak ditemukan di: {template_path}")
             
-            
         excel_path = backend_root / "uploads" / dcc.excel
         if not excel_path.exists():
             # Try the api/uploads path
@@ -62,12 +61,17 @@ def get_project_paths(dcc: schemas.DCCFormCreate):
             if not excel_path.exists():
                 logging.warning(f"Excel file not found at either expected location: {dcc.excel}")
                 # Don't raise error here, just log the warning
+
+        if db_id is not None:
+            filename_base = f"{db_id}_{dcc.administrative_data.sertifikat}"
+        else:
+            filename_base = dcc.administrative_data.sertifikat
         
         return {
             'template': template_path,
-            'word_output': backend_root / "dcc_files" / f"{dcc.administrative_data.sertifikat}.docx",
-            'pdf_output': backend_root / "dcc_files" / f"{dcc.administrative_data.sertifikat}.pdf",
-            'xml_output': dcc_files_dir / f"{dcc.administrative_data.sertifikat}.xml", 
+            'word_output': backend_root / "dcc_files" / f"{filename_base}.docx",
+            'pdf_output': backend_root / "dcc_files" / f"{filename_base}.pdf",
+            'xml_output': dcc_files_dir / f"{filename_base}.xml", 
             'excel': excel_path
         }
         
@@ -808,7 +812,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         
         
         # semua path
-        paths = get_project_paths(dcc)
+        paths = get_project_paths(dcc, db_dcc.id)
         new_word_path = str(paths['word_output'])
         new_pdf_path = str(paths['pdf_output'])
         xml_path = str(paths['word_output'].with_suffix('.xml'))
@@ -846,9 +850,12 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         if not success:
             raise Exception("PDF generation failed")
         
+        filename_with_id = f"{db_dcc.id}_{dcc.administrative_data.sertifikat}"
+
         return {
             "pdf_path": pdf_path,
-            "certificate_name": dcc.administrative_data.sertifikat
+            "certificate_name": filename_with_id,
+            "database_id": db_dcc.id
         }
         
     finally:
