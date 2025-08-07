@@ -98,7 +98,7 @@ const Navbar = () => {
             {/* Dashboard button - only visible for directors */}
             {isLoggedIn && userIsDirector && (
               <NavLink href="/dashboard" isDashboard={true}>
-                Dashboard
+                {t("dasbor")}
               </NavLink>
             )}
             
@@ -122,18 +122,20 @@ const Navbar = () => {
                     <Link href="/dashboard">Dashboard</Link>
                   </DropdownMenuItem>
                 )}
+
                 {!isLoggedIn && (
                   <DropdownMenuItem asChild>
                     <Link href="/">{t("login")}</Link>
                   </DropdownMenuItem>
                 )}
+                {isLoggedIn && (
+                  <DropdownMenuItem onClick={handleLogout}>
+                    {t("logout")}
+                  </DropdownMenuItem>
+                )}
 
                 <DropdownMenuItem asChild>
                   <Link href="/about">{t("about")}</Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem onClick={handleLogout}>
-                  {t("logout")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

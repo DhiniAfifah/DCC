@@ -332,6 +332,7 @@ const translations: Record<string, { id: string; en: string }> = {
   },
 
   // Dashboard
+  dasbor: { id: "Dasbor", en: "Dashboard" },
   access_denied: { id: "Akses Ditolak", en: "Access Denied" },
   DirectorProtectedRoute: { id: "Halaman ini hanya dapat diakses oleh Direktur.", en: "This page is only accessible to Directors." },
   back_to_main: { id: "Kembali ke Halaman Utama", en: "Back to Main Page" },

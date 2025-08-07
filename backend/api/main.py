@@ -45,6 +45,9 @@ import json
 from . import models
 from pydantic import BaseModel
 from .models import DCC, DCCStatusEnum, UserRole
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
+import asyncio
 
 # Kunci dan algoritma untuk enkripsi token
 SECRET_KEY = "5965815bee66d2c201cabe787a432ba80e31884133cf6c4b8e50a0df54a0c880"
@@ -59,6 +62,14 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+preview_files_dir = Path(__file__).parent.parent / "preview_files"
+preview_files_dir.mkdir(exist_ok=True)
+
+app.mount("/preview_files", StaticFiles(directory=str(preview_files_dir)), name="preview_files")
+
+logging.info(f"Preview files directory mounted at: {preview_files_dir}")
+logging.info(f"Preview files directory exists: {preview_files_dir.exists()}")
+
 # Enhanced CORS configuration
 app.add_middleware(
     CORSMiddleware,
@@ -70,16 +81,37 @@ app.add_middleware(
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["*"],
+    allow_headers=[
+        "accept",
+        "accept-encoding", 
+        "authorization",
+        "content-type",
+        "dnt",
+        "origin",
+        "user-agent",
+        "x-csrftoken",
+        "x-requested-with",
+        "Access-Control-Allow-Credentials",
+        "Access-Control-Allow-Origin"
+    ],
     expose_headers=["*"]
 )
 
 @app.middleware("http")
 async def cors_handler(request: Request, call_next):
+    # Log incoming request for debugging
+    logger.info(f"🌐 Request: {request.method} {request.url}")
+    logger.info(f"🔍 Headers: {dict(request.headers)}")
+    
     if request.method == "OPTIONS":
-        # Handle preflight requests explicitly
-        response = Response()
+        # Handle preflight requests explicitly with detailed logging
+        logger.info("🎯 Handling CORS preflight request")
+        
         origin = request.headers.get("origin")
+        logger.info(f"📍 Origin: {origin}")
+        
+        # Create preflight response
+        response = Response()
         
         # Check if origin is allowed
         allowed_origins = [
@@ -93,13 +125,32 @@ async def cors_handler(request: Request, call_next):
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
-            response.headers["Access-Control-Allow-Headers"] = "*"
+            # CRITICAL: Explicitly allow authorization header (case-sensitive)
+            response.headers["Access-Control-Allow-Headers"] = "accept, accept-encoding, authorization, content-type, dnt, origin, user-agent, x-csrftoken, x-requested-with"
             response.headers["Access-Control-Max-Age"] = "86400"
+            
+            logger.info("✅ CORS preflight response headers set successfully")
+        else:
+            logger.warning(f"❌ Origin {origin} not allowed")
         
         return response
     
+    # Process regular requests
     response = await call_next(request)
+    
+    # Add CORS headers to regular responses
+    origin = request.headers.get("origin")
+    if origin in ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"]:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    
+    logger.info(f"✅ Response: {response.status_code}")
     return response
+
+# Test endpoint to verify CORS is working
+@app.get("/cors-test")
+async def cors_test():
+    return {"message": "CORS is working!", "timestamp": datetime.now().isoformat()}
 
 # Directory to store uploaded files
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -839,3 +890,217 @@ async def update_dcc_status(
             detail=f"Failed to update DCC status: {str(e)}"
         )
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+# Schedule cleanup of old preview files
+@app.on_event("startup")
+async def startup_event():
+    """Clean up old preview files on startup"""
+    try:
+        crud.cleanup_old_preview_files(max_age_hours=24)
+    except Exception as e:
+        logging.warning(f"Error during startup cleanup: {e}")
+
+# Background task to periodically clean up preview files
+async def periodic_cleanup():
+    """Periodically clean up old preview files"""
+    while True:
+        try:
+            await asyncio.sleep(3600)  # Run every hour
+            crud.cleanup_old_preview_files(max_age_hours=24)
+        except Exception as e:
+            logging.error(f"Error in periodic cleanup: {e}")
+
+# Start background cleanup task
+@app.on_event("startup")
+async def start_background_tasks():
+    asyncio.create_task(periodic_cleanup())
+
+# PREVIEW ENDPOINT
+@app.post("/generate-preview/")
+async def generate_preview(
+    dcc: schemas.DCCFormCreate = Body(...),
+):
+    """
+    Generate preview PDF and XML files from DCC data without saving to database
+    """
+    try:
+        logging.info("Received preview request")
+        
+        # Process images for preview (same as in create_dcc but for preview)
+        for method in dcc.methods:
+            if method.has_image and method.image and method.image.gambar:
+                filename = method.image.gambar
+                file_path = os.path.join(UPLOAD_DIR, filename)
+                
+                if os.path.exists(file_path):
+                    mime_type = method.image.mimeType if hasattr(method.image, 'mimeType') else ""
+                    with open(file_path, "rb") as img_file:
+                        image_data = img_file.read()
+                        base64_str = base64.b64encode(image_data).decode('utf-8')
+
+                        method.image.base64 = base64_str
+                        method.image.fileName = filename
+                        method.image.mimeType = mime_type
+
+        for statement in dcc.statements:
+            if statement.has_image and statement.image and statement.image.gambar:
+                filename = statement.image.gambar
+                file_path = os.path.join(UPLOAD_DIR, filename)
+                
+                if os.path.exists(file_path):
+                    mime_type = statement.image.mimeType if hasattr(statement.image, 'mimeType') else ""
+                    with open(file_path, "rb") as img_file:
+                        image_data = img_file.read()
+                        base64_str = base64.b64encode(image_data).decode('utf-8')
+
+                        statement.image.fileName = filename
+                        statement.image.mimeType = mime_type
+                        statement.image.base64 = base64_str
+
+        # Process comment files
+        if dcc.comment and dcc.comment.files:
+            for file in dcc.comment.files:
+                if file.fileName:
+                    file_path = os.path.join(UPLOAD_DIR, file.fileName)
+                    if os.path.exists(file_path):
+                        with open(file_path, "rb") as f:
+                            base64_str = base64.b64encode(f.read()).decode('utf-8')
+                        file.base64 = base64_str
+                        file.mimeType = mimetypes.guess_type(file.fileName)[0] or "application/octet-stream"
+
+        # Generate preview files
+        result = crud.generate_preview_files(dcc=dcc)
+        
+        logging.info(f"Preview generated successfully: {result}")
+        
+        return {
+            "message": "Preview generated successfully",
+            "pdf_url": result["pdf_url"],
+            "xml_url": result["xml_url"],
+            "preview_id": result["preview_id"]
+        }
+        
+    except Exception as e:
+        logging.error(f"Preview generation error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Preview generation failed: {str(e)}")
+
+# CLEANUP PREVIEW ENDPOINT (optional - for manual cleanup)
+@app.delete("/cleanup-preview/{preview_id}")
+async def cleanup_preview(preview_id: str):
+    """
+    Manually clean up specific preview files
+    """
+    try:
+        crud.cleanup_preview_files(preview_id)
+        return {"message": f"Preview files for {preview_id} cleaned up successfully"}
+    except Exception as e:
+        logging.error(f"Preview cleanup error: {e}")
+        raise HTTPException(status_code=500, detail=f"Preview cleanup failed: {str(e)}")
+
+# CLEANUP ALL OLD PREVIEWS ENDPOINT (optional - for manual cleanup)
+@app.post("/cleanup-old-previews/")
+async def cleanup_old_previews(max_age_hours: int = 24):
+    """
+    Manually clean up old preview files
+    """
+    try:
+        crud.cleanup_old_preview_files(max_age_hours)
+        return {"message": f"Old preview files (>{max_age_hours}h) cleaned up successfully"}
+    except Exception as e:
+        logging.error(f"Old preview cleanup error: {e}")
+        raise HTTPException(status_code=500, detail=f"Old preview cleanup failed: {str(e)}")
+
+# HEALTH CHECK FOR PREVIEW SYSTEM
+@app.get("/preview-health")
+async def preview_health_check():
+    """
+    Check if preview system is working
+    """
+    try:
+        # Check if preview directory exists
+        backend_root = Path(__file__).parent.parent
+        preview_dir = backend_root / "preview_files"
+        
+        return {
+            "status": "healthy",
+            "preview_directory_exists": preview_dir.exists(),
+            "preview_directory_path": str(preview_dir),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+    
+@app.get("/api/preview/{file_id}")
+async def serve_preview_file(file_id: str):
+    """
+    Serve preview files with proper headers and error handling
+    """
+    try:
+        # Construct file path
+        file_path = preview_files_dir / file_id
+        
+        logging.info(f"Attempting to serve preview file: {file_path}")
+        logging.info(f"File exists: {file_path.exists()}")
+        
+        if not file_path.exists():
+            logging.error(f"Preview file not found: {file_path}")
+            raise HTTPException(status_code=404, detail=f"Preview file not found: {file_id}")
+        
+        # Determine content type based on file extension
+        if file_path.suffix.lower() == '.pdf':
+            media_type = 'application/pdf'
+        elif file_path.suffix.lower() == '.xml':
+            media_type = 'application/xml'
+        else:
+            media_type = 'application/octet-stream'
+        
+        logging.info(f"Serving file with media type: {media_type}")
+        
+        return FileResponse(
+            file_path,
+            media_type=media_type,
+            headers={
+                "Content-Disposition": f"inline; filename={file_path.name}",
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error serving preview file {file_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error serving preview file: {str(e)}")
+
+# Add a debug endpoint to list preview files
+@app.get("/api/preview-debug/")
+async def debug_preview_files():
+    """Debug endpoint to check preview files"""
+    try:
+        files = []
+        if preview_files_dir.exists():
+            for file_path in preview_files_dir.glob("*"):
+                if file_path.is_file():
+                    files.append({
+                        "name": file_path.name,
+                        "size": file_path.stat().st_size,
+                        "exists": True,
+                        "full_path": str(file_path)
+                    })
+        
+        return {
+            "preview_directory": str(preview_files_dir),
+            "directory_exists": preview_files_dir.exists(),
+            "files": files,
+            "total_files": len(files)
+        }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "preview_directory": str(preview_files_dir),
+            "directory_exists": False
+        }

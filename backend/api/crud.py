@@ -32,6 +32,7 @@ import base64
 import tempfile
 from fastapi import UploadFile
 from api.pdf_generator import PDFGenerator
+import uuid
 
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
@@ -935,3 +936,276 @@ def get_all_dccs(db: Session):
     except Exception as e:
         logging.error(f"Error in get_all_dccs: {e}")
         raise e
+    
+def generate_preview_files(dcc: schemas.DCCFormCreate):
+    """
+    Generate preview PDF and XML files without saving to database
+    Returns URLs to temporary files
+    """
+    logging.info("Starting preview generation")
+    
+    try:
+        # Generate unique identifier for this preview
+        unique_id = str(uuid.uuid4())[:8]
+        
+        # Get preview file paths
+        paths = get_preview_paths(unique_id)
+        
+        logging.info(f"Preview paths created:")
+        logging.info(f"  XML: {paths['xml_output']}")
+        logging.info(f"  PDF: {paths['pdf_output']}")
+        logging.info(f"  Directory exists: {paths['preview_dir'].exists()}")
+        
+        # Get Excel file path (if exists)
+        backend_root = Path(__file__).parent.parent
+        excel_path = None
+        table_data = {}  # Initialize as empty
+        
+        if dcc.excel:
+            excel_path = backend_root / "uploads" / dcc.excel
+            if not excel_path.exists():
+                excel_path = backend_root / "api" / "uploads" / dcc.excel
+        
+        # Read Excel data only if file exists
+        if excel_path and excel_path.exists():
+            logging.info(f"Reading Excel file: {excel_path}")
+            try:
+                table_data = read_excel_tables(str(excel_path), dcc.sheet_name, dcc.results)
+                logging.info(f"Successfully read {len(table_data)} tables from Excel")
+            except Exception as e:
+                logging.error(f"Error reading Excel file: {e}")
+                table_data = {}  # Fallback to empty if error
+        else:
+            logging.info("No Excel file available - generating preview without measurement data tables")
+            # table_data remains empty - no mock data created
+        
+        # Generate XML
+        logging.info("Generating preview XML...")
+        xml_content = generate_xml(dcc, table_data)
+        
+        # Ensure parent directory exists
+        paths['xml_output'].parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(paths['xml_output'], "w", encoding="utf-8") as f:
+            f.write(xml_content)
+        logging.info(f"Preview XML generated: {paths['xml_output']}")
+        logging.info(f"XML file exists after creation: {paths['xml_output'].exists()}")
+        logging.info(f"XML file size: {paths['xml_output'].stat().st_size if paths['xml_output'].exists() else 'N/A'} bytes")
+        
+        # Generate PDF
+        logging.info("Generating preview PDF...")
+        pdf_generator = PDFGenerator()
+        
+        # Generate PDF without embedded XML for preview
+        success = pdf_generator.generate_pdf(
+            str(paths['xml_output']), 
+            str(paths['pdf_output'])
+        )
+        
+        if not success:
+            raise Exception("PDF preview generation failed")
+        
+        logging.info(f"Preview PDF generated: {paths['pdf_output']}")
+        logging.info(f"PDF file exists after creation: {paths['pdf_output'].exists()}")
+        logging.info(f"PDF file size: {paths['pdf_output'].stat().st_size if paths['pdf_output'].exists() else 'N/A'} bytes")
+        
+        # Generate URLs using the static file serving endpoint
+        base_url = "http://127.0.0.1:8000"
+        pdf_filename = f"preview_{unique_id}.pdf"
+        xml_filename = f"preview_{unique_id}.xml"
+        
+        result = {
+            "pdf_url": f"{base_url}/preview_files/{pdf_filename}",
+            "xml_url": f"{base_url}/preview_files/{xml_filename}",
+            "preview_id": unique_id
+        }
+        
+        logging.info(f"Preview URLs generated: {result}")
+        
+        # Verify files exist before returning URLs
+        if not paths['pdf_output'].exists():
+            raise Exception(f"PDF file was not created at {paths['pdf_output']}")
+        if not paths['xml_output'].exists():
+            raise Exception(f"XML file was not created at {paths['xml_output']}")
+        
+        return result
+        
+    except Exception as e:
+        logging.error(f"Preview generation error: {str(e)}")
+        logging.error(f"Stack trace:", exc_info=True)
+        raise
+
+def get_preview_paths(unique_id: str):
+    """Generate temporary paths for preview files"""
+    try:
+        # Get the correct path to backend/preview_files
+        backend_root = Path(__file__).parent.parent  # This should point to the backend directory
+        preview_dir = backend_root / "preview_files"
+        
+        # Ensure the directory exists
+        preview_dir.mkdir(parents=True, exist_ok=True)
+        
+        logging.info(f"Preview directory: {preview_dir}")
+        logging.info(f"Preview directory exists: {preview_dir.exists()}")
+        
+        # Create paths with unique identifier
+        paths = {
+            'xml_output': preview_dir / f"preview_{unique_id}.xml",
+            'pdf_output': preview_dir / f"preview_{unique_id}.pdf",
+            'preview_dir': preview_dir
+        }
+        
+        logging.info(f"Generated preview paths: {paths}")
+        return paths
+        
+    except Exception as e:
+        logging.error(f"Error creating preview paths: {str(e)}")
+        raise
+
+def generate_preview_files(dcc: schemas.DCCFormCreate):
+    """
+    Generate preview PDF and XML files without saving to database
+    Returns URLs to temporary files
+    """
+    logging.info("Starting preview generation")
+    
+    try:
+        # Generate unique identifier for this preview
+        unique_id = str(uuid.uuid4())[:8]
+        
+        # Get preview file paths
+        paths = get_preview_paths(unique_id)
+        
+        logging.info(f"Preview paths created:")
+        logging.info(f"  XML: {paths['xml_output']}")
+        logging.info(f"  PDF: {paths['pdf_output']}")
+        logging.info(f"  Directory exists: {paths['preview_dir'].exists()}")
+        
+        # Get Excel file path (if exists)
+        backend_root = Path(__file__).parent.parent
+        excel_path = None
+        
+        if dcc.excel:
+            excel_path = backend_root / "uploads" / dcc.excel
+            if not excel_path.exists():
+                excel_path = backend_root / "api" / "uploads" / dcc.excel
+                if not excel_path.exists():
+                    logging.warning(f"Excel file not found: {dcc.excel}")
+                    # Create empty table_data if Excel not found
+                    table_data = {}
+        
+        # Read Excel data if available
+        table_data = {}
+        if excel_path and excel_path.exists():
+            logging.info(f"Reading Excel file: {excel_path}")
+            table_data = read_excel_tables(str(excel_path), dcc.sheet_name, dcc.results)
+        else:
+            # Create mock table data for preview when Excel is not available
+            logging.info("Creating mock data for preview (Excel not available)")
+            for i, result in enumerate(dcc.results):
+                table_name = result.parameters.root.get('id', f'Table_{i+1}')
+                # Create mock data structure
+                mock_data = []
+                for j, col in enumerate(result.columns):
+                    real_list_count = int(col.real_list)
+                    for k in range(real_list_count):
+                        numbers = ["0", "0", "0"]  # Mock values
+                        units = ["V", "V", "V"]  # Mock units
+                        mock_data.append((numbers, units))
+                
+                table_data[table_name] = {
+                    "data": mock_data,
+                    "config": result
+                }
+        
+        # Generate XML
+        logging.info("Generating preview XML...")
+        xml_content = generate_xml(dcc, table_data)
+        
+        # Ensure parent directory exists
+        paths['xml_output'].parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(paths['xml_output'], "w", encoding="utf-8") as f:
+            f.write(xml_content)
+        logging.info(f"Preview XML generated: {paths['xml_output']}")
+        logging.info(f"XML file exists after creation: {paths['xml_output'].exists()}")
+        logging.info(f"XML file size: {paths['xml_output'].stat().st_size if paths['xml_output'].exists() else 'N/A'} bytes")
+        
+        # Generate PDF
+        logging.info("Generating preview PDF...")
+        pdf_generator = PDFGenerator()
+        
+        # Generate PDF without embedded XML for preview
+        success = pdf_generator.generate_pdf(
+            str(paths['xml_output']), 
+            str(paths['pdf_output'])
+        )
+        
+        if not success:
+            raise Exception("PDF preview generation failed")
+        
+        logging.info(f"Preview PDF generated: {paths['pdf_output']}")
+        logging.info(f"PDF file exists after creation: {paths['pdf_output'].exists()}")
+        logging.info(f"PDF file size: {paths['pdf_output'].stat().st_size if paths['pdf_output'].exists() else 'N/A'} bytes")
+        
+        # Generate URLs using the static file serving endpoint
+        base_url = "http://127.0.0.1:8000"
+        pdf_filename = f"preview_{unique_id}.pdf"
+        xml_filename = f"preview_{unique_id}.xml"
+        
+        result = {
+            "pdf_url": f"{base_url}/preview_files/{pdf_filename}",
+            "xml_url": f"{base_url}/preview_files/{xml_filename}",
+            "preview_id": unique_id
+        }
+        
+        logging.info(f"Preview URLs generated: {result}")
+        
+        # Verify files exist before returning URLs
+        if not paths['pdf_output'].exists():
+            raise Exception(f"PDF file was not created at {paths['pdf_output']}")
+        if not paths['xml_output'].exists():
+            raise Exception(f"XML file was not created at {paths['xml_output']}")
+        
+        return result
+        
+    except Exception as e:
+        logging.error(f"Preview generation error: {str(e)}")
+        logging.error(f"Stack trace:", exc_info=True)
+        raise
+
+def cleanup_preview_files(preview_id: str):
+    """Clean up temporary preview files"""
+    try:
+        paths = get_preview_paths(preview_id)
+        
+        for path in [paths['xml_output'], paths['pdf_output']]:
+            if path.exists():
+                path.unlink()
+                logging.info(f"Cleaned up preview file: {path}")
+                
+    except Exception as e:
+        logging.warning(f"Error cleaning up preview files: {e}")
+
+def cleanup_old_preview_files(max_age_hours: int = 24):
+    """Clean up preview files older than specified hours"""
+    try:
+        backend_root = Path(__file__).parent.parent
+        preview_dir = backend_root / "preview_files"
+        
+        if not preview_dir.exists():
+            return
+            
+        import time
+        current_time = time.time()
+        max_age_seconds = max_age_hours * 3600
+        
+        for file_path in preview_dir.glob("preview_*"):
+            if file_path.is_file():
+                file_age = current_time - file_path.stat().st_mtime
+                if file_age > max_age_seconds:
+                    file_path.unlink()
+                    logging.info(f"Cleaned up old preview file: {file_path}")
+                    
+    except Exception as e:
+        logging.warning(f"Error cleaning up old preview files: {e}")

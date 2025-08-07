@@ -6,6 +6,7 @@ import AdministrativeForm from "@/components/administrative-form";
 import MeasurementForm from "@/components/measurement-form";
 import Statements from "@/components/statements";
 import Comment from "@/components/comment";
+import Preview from "@/components/preview";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
@@ -24,6 +25,10 @@ export default function CreateDCC() {
   const { t } = useLanguage();
 
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
+  const [previewFiles, setPreviewFiles] = useState<{pdf: string | null, xml: string | null}>({
+    pdf: null,
+    xml: null
+  });
   const [isSubmitted, setIsSubmitted] = useState(false);
   
   // Progress tracking states
@@ -294,11 +299,208 @@ export default function CreateDCC() {
     }));
   };
 
-  const nextStep = () => {
-    if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
+  // Function to send preview data to backend
+  const generatePreview = async (dataToPreview = formData) => {
+    try {
+      setIsProcessing(true);
+      setProgressMessage("Generating preview...");
+      setProgressPercent(30);
+
+      const modifiedFormData = {
+        ...dataToPreview,
+        administrative_data: {
+          ...dataToPreview.administrative_data,
+          used_languages:
+            dataToPreview.administrative_data.used_languages
+              ?.filter((lang) => lang.value && lang.value.trim() !== "")
+              .map((lang) => lang.value) || [],
+          mandatory_languages:
+            dataToPreview.administrative_data.mandatory_languages.map(
+              (lang) => lang.value
+            ),
+        },
+        methods: dataToPreview.methods.map((method, index) => {
+          if (
+            method.has_image &&
+            method.image?.fileName &&
+            isFile(method.image.fileName)
+          ) {
+            return {
+              ...method,
+              image: {
+                ...method.image,
+                base64: method.image.fileName.name,
+                mimeType: method.image.mimeType,
+                fileName: method.image.fileName,
+              },
+            };
+          }
+          return method;
+        }),
+        statements: dataToPreview.statements.map((stmt, index) => {
+          if (
+            stmt.has_image &&
+            stmt.image?.fileName &&
+            isFile(stmt.image.fileName)
+          ) {
+            return {
+              ...stmt,
+              image: {
+                ...stmt.image,
+                base64: stmt.image.fileName.name,
+                mimeType: stmt.image.mimeType,
+                fileName: stmt.image.fileName,
+              },
+            };
+          }
+          return stmt;
+        }),
+        results: dataToPreview.results.map((result) => ({
+          parameters: result.parameters,
+          columns: result.columns.map((col) => ({
+            kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
+            real_list: Number(col.real_list) || 1,
+            refType: col.refType || "",
+          })),
+          uncertainty: result.uncertainty
+            ? {
+                factor: result.uncertainty.factor || "0",
+                probability: result.uncertainty.probability || "0",
+                distribution: result.uncertainty.distribution || "",
+              }
+            : { factor: "0", probability: "0", distribution: "" },
+        })),
+        excel: fileName,
+      };
+
+      setProgressPercent(70);
+
+      const response = await fetch("http://127.0.0.1:8000/generate-preview/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(modifiedFormData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      setPreviewFiles({
+        pdf: result.pdf_url,
+        xml: result.xml_url
+      });
+
+      setProgressPercent(100);
+      setProgressMessage("Preview generated successfully!");
+      
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 1000);
+
+    } catch (error) {
+      console.error("Error generating preview:", error);
+      setProgressMessage(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+      setProgressPercent(0);
+      setIsProcessing(false);
+    }
   };
+
+  // Generate preview when formData changes (debounced)
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      if (currentStep === 4) { // Only generate preview when on preview step
+        generatePreview();
+      }
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(debounceTimer);
+  }, [formData, currentStep]);
+
+  const nextStep = () => {
+    if (currentStep < steps.length - 1) {
+      const newStep = currentStep + 1;
+      setCurrentStep(newStep);
+      
+      // Generate preview when moving to preview step
+      if (newStep === 4) {
+        generatePreview();
+      }
+    }
+  };
+
   const prevStep = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
+  };
+
+  const modifiedFormData = {
+    ...formData,
+    administrative_data: {
+      ...formData.administrative_data,
+      used_languages:
+        formData.administrative_data.used_languages
+          ?.filter((lang) => lang.value && lang.value.trim() !== "")
+          .map((lang) => lang.value) || [],
+      mandatory_languages:
+        formData.administrative_data.mandatory_languages.map(
+          (lang) => lang.value
+        ),
+    },
+    methods: formData.methods.map((method, index) => {
+      if (
+        method.has_image &&
+        method.image?.fileName &&
+        isFile(method.image.fileName)
+      ) {
+        return {
+          ...method,
+          image: {
+            ...method.image,
+            base64: method.image.fileName.name,
+            mimeType: method.image.mimeType,
+            fileName: method.image.fileName,
+          },
+        };
+      }
+      return method;
+    }),
+    statements: formData.statements.map((stmt, index) => {
+      if (
+        stmt.has_image &&
+        stmt.image?.fileName &&
+        isFile(stmt.image.fileName)
+      ) {
+        return {
+          ...stmt,
+          image: {
+            ...stmt.image,
+            base64: stmt.image.fileName.name,
+            mimeType: stmt.image.mimeType,
+            fileName: stmt.image.fileName,
+          },
+        };
+      }
+      return stmt;
+    }),
+    results: formData.results.map((result) => ({
+      parameters: result.parameters,
+      columns: result.columns.map((col) => ({
+        kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
+        real_list: Number(col.real_list) || 1,
+        refType: col.refType || "",
+      })),
+      uncertainty: result.uncertainty
+        ? {
+            factor: result.uncertainty.factor || "0",
+            probability: result.uncertainty.probability || "0",
+            distribution: result.uncertainty.distribution || "",
+          }
+        : { factor: "0", probability: "0", distribution: "" },
+    })),
+    excel: fileName,
   };
 
   const handleSubmit = async () => {
@@ -309,73 +511,6 @@ export default function CreateDCC() {
 
     // Create FormData object for multipart/form-data submission
     const submitFormData = new FormData();
-
-    const modifiedFormData = {
-      ...formData,
-      administrative_data: {
-        ...formData.administrative_data,
-        used_languages:
-          formData.administrative_data.used_languages
-            ?.filter((lang) => lang.value && lang.value.trim() !== "")
-            .map((lang) => lang.value) || [],
-        mandatory_languages:
-          formData.administrative_data.mandatory_languages.map(
-            (lang) => lang.value
-          ),
-      },
-      methods: formData.methods.map((method, index) => {
-        if (
-          method.has_image &&
-          method.image?.fileName &&
-          isFile(method.image.fileName)
-        ) {
-          return {
-            ...method,
-            image: {
-              ...method.image,
-              base64: method.image.fileName.name,
-              mimeType: method.image.mimeType,
-              fileName: method.image.fileName,
-            },
-          };
-        }
-        return method;
-      }),
-      statements: formData.statements.map((stmt, index) => {
-        if (
-          stmt.has_image &&
-          stmt.image?.fileName &&
-          isFile(stmt.image.fileName)
-        ) {
-          return {
-            ...stmt,
-            image: {
-              ...stmt.image,
-              base64: stmt.image.fileName.name,
-              mimeType: stmt.image.mimeType,
-              fileName: stmt.image.fileName,
-            },
-          };
-        }
-        return stmt;
-      }),
-      results: formData.results.map((result) => ({
-        parameters: result.parameters,
-        columns: result.columns.map((col) => ({
-          kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
-          real_list: Number(col.real_list) || 1,
-          refType: col.refType || "",
-        })),
-        uncertainty: result.uncertainty
-          ? {
-              factor: result.uncertainty.factor || "0",
-              probability: result.uncertainty.probability || "0",
-              distribution: result.uncertainty.distribution || "",
-            }
-          : { factor: "0", probability: "0", distribution: "" },
-      })),
-      excel: fileName,
-    };
 
     setProgressMessage(t("processing_files"));
     setProgressPercent(30);
@@ -504,7 +639,7 @@ export default function CreateDCC() {
           <MeasurementForm
             formData={formData}
             updateFormData={updateFormData}
-            setFileName={setFileName} // Jangan lupa props ini ya
+            setFileName={setFileName}
           />
         )}
         {currentStep === 2 && (
@@ -512,6 +647,13 @@ export default function CreateDCC() {
         )}
         {currentStep === 3 && (
           <Comment formData={formData} updateFormData={updateFormData} />
+        )}
+        {currentStep === 4 && (
+          <Preview 
+            previewFiles={previewFiles}
+            isLoading={isProcessing}
+            onRefresh={() => generatePreview()}
+          />
         )}
       </div>
 

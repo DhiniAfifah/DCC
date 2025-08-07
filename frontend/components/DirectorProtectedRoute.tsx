@@ -42,28 +42,30 @@ export default function DirectorProtectedRoute({
         console.log("👤 DirectorProtectedRoute: User role:", userRole);
         
         if (userRole !== "director") {
-          console.log("🚫 DirectorProtectedRoute: User is not director, redirecting to /main");
-          // // Redirect regular users to main page
-          // setTimeout(() => {
-          //   window.location.href = "/main";
-          // }, 100);
+          console.log("🚫 DirectorProtectedRoute: User is not director");
           return;
         }
 
         console.log("✅ DirectorProtectedRoute: User is director, checking with server...");
         
-        // Double-check with server
+        // FIXED: Double-check with server using proper headers
         try {
+          console.log("🔐 Making request with token:", token.substring(0, 20) + "...");
+          
           const response = await fetch("http://127.0.0.1:8000/users/me/", {
             method: "GET",
             headers: {
+              // CRITICAL: Use uppercase 'Authorization' (case-sensitive)
               "Authorization": `Bearer ${token}`,
               "Content-Type": "application/json",
+              "Accept": "application/json",
             },
             credentials: "include",
+            mode: "cors", // Explicitly set CORS mode
           });
 
           console.log("📡 DirectorProtectedRoute: Server response status:", response.status);
+          console.log("📋 DirectorProtectedRoute: Response headers:", Object.fromEntries(response.headers.entries()));
 
           if (response.ok) {
             const userData = await response.json();
@@ -77,6 +79,8 @@ export default function DirectorProtectedRoute({
             }
           } else if (response.status === 401) {
             console.log("❌ DirectorProtectedRoute: Server rejected token (401)");
+            const errorText = await response.text();
+            console.log("📝 Error response:", errorText);
             throw new Error("Token rejected by server");
           } else if (response.status === 403) {
             console.log("🚫 DirectorProtectedRoute: Server denied access (403)");
@@ -87,6 +91,7 @@ export default function DirectorProtectedRoute({
             return;
           } else {
             console.log("⚠️ DirectorProtectedRoute: Server error, but token seems valid locally");
+            console.log("📝 Response text:", await response.text());
             // If server is down but token is valid and role is director, allow access
             if (isDirector()) {
               setIsAuthorized(true);
@@ -96,12 +101,20 @@ export default function DirectorProtectedRoute({
           }
         } catch (serverError) {
           console.error("🌐 DirectorProtectedRoute: Server check failed:", serverError);
-          // If server is unreachable but token is valid and role is director, allow access
-          if (isDirector()) {
-            console.log("⚠️ DirectorProtectedRoute: Server unreachable, trusting local token validation");
-            setIsAuthorized(true);
+          
+          // Check if it's a network error vs auth error
+          if (serverError instanceof TypeError && serverError.message === "Failed to fetch") {
+            console.log("🌐 Network error detected, checking local token validation");
+            // If server is unreachable but token is valid and role is director, allow access
+            if (isDirector()) {
+              console.log("⚠️ DirectorProtectedRoute: Server unreachable, trusting local token validation");
+              setIsAuthorized(true);
+            } else {
+              throw new Error("Server unreachable and not director");
+            }
           } else {
-            throw new Error("Server unreachable and not director");
+            // Re-throw other errors
+            throw serverError;
           }
         }
       } catch (error) {
@@ -132,13 +145,35 @@ export default function DirectorProtectedRoute({
     return () => clearInterval(interval);
   }, [router]);
 
+  // Test CORS endpoint
+  const testCORS = async () => {
+    try {
+      console.log("🧪 Testing CORS...");
+      const response = await fetch("http://127.0.0.1:8000/cors-test", {
+        method: "GET",
+        credentials: "include",
+        mode: "cors",
+      });
+      console.log("✅ CORS test successful:", await response.json());
+    } catch (error) {
+      console.error("❌ CORS test failed:", error);
+    }
+  };
+
   if (isLoading) {
     console.log("⏳ DirectorProtectedRoute: Showing loading screen");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
           <p className="mt-4 text-gray-600">{t("verify_director")}...</p>
+          {/* Debug button for testing CORS */}
+          <button 
+            onClick={testCORS}
+            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded text-sm"
+          >
+            Test CORS
+          </button>
         </div>
       </div>
     );
