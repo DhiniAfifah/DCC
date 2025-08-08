@@ -32,7 +32,8 @@ export default function CreateDCC() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   
   // Progress tracking states
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [isProcessingPreview, setIsProcessingPreview] = useState<boolean>(false);
+  const [isProcessingSubmission, setIsProcessingSubmission] = useState<boolean>(false);
   const [progressMessage, setProgressMessage] = useState<string>("");
   const [progressPercent, setProgressPercent] = useState<number>(0);
 
@@ -302,9 +303,9 @@ export default function CreateDCC() {
   // Function to send preview data to backend
   const generatePreview = async (dataToPreview = formData) => {
     try {
-      setIsProcessing(true);
-      setProgressMessage("Generating preview...");
-      setProgressPercent(30);
+      setIsProcessingPreview(true);
+      // setProgressMessage("Generating preview...");
+      // setProgressPercent(30);
 
       const modifiedFormData = {
         ...dataToPreview,
@@ -373,7 +374,7 @@ export default function CreateDCC() {
         excel: fileName,
       };
 
-      setProgressPercent(70);
+      // setProgressPercent(70);
 
       const response = await fetch("http://127.0.0.1:8000/generate-preview/", {
         method: "POST",
@@ -394,18 +395,18 @@ export default function CreateDCC() {
         xml: result.xml_url
       });
 
-      setProgressPercent(100);
-      setProgressMessage("Preview generated successfully!");
+      // setProgressPercent(100);
+      // setProgressMessage("Preview generated successfully!");
       
       setTimeout(() => {
-        setIsProcessing(false);
+        setIsProcessingPreview(false);
       }, 1000);
 
     } catch (error) {
       console.error("Error generating preview:", error);
-      setProgressMessage(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
-      setProgressPercent(0);
-      setIsProcessing(false);
+      // setProgressMessage(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+      // setProgressPercent(0);
+      setIsProcessingPreview(false);
     }
   };
 
@@ -505,7 +506,7 @@ export default function CreateDCC() {
 
   const handleSubmit = async () => {
     // Start processing
-    setIsProcessing(true);
+    setIsProcessingSubmission(true);
     setProgressMessage(t("preparing_data"));
     setProgressPercent(10);
 
@@ -593,7 +594,7 @@ export default function CreateDCC() {
 
       // Hide progress after a delay
       setTimeout(() => {
-        setIsProcessing(false);
+        setIsProcessingSubmission(false);
       }, 2000);
 
     } catch (error: unknown) {
@@ -602,7 +603,7 @@ export default function CreateDCC() {
         `Error: ${error instanceof Error ? error.message : "An unknown error occurred"}`
       );
       setProgressPercent(0);
-      setIsProcessing(false);
+      setIsProcessingSubmission(false);
       
       if (error instanceof Error) {
         alert(`Failed to create DCC. Error: ${error.message}`);
@@ -651,14 +652,14 @@ export default function CreateDCC() {
         {currentStep === 4 && (
           <Preview 
             previewFiles={previewFiles}
-            isLoading={isProcessing}
+            isLoading={isProcessingPreview}
             onRefresh={() => generatePreview()}
           />
         )}
       </div>
 
       {/* Progress Bar */}
-      {isProcessing && (
+      {isProcessingSubmission && (
         <div className="max-w-4xl mx-auto px-4 mt-8">
           <div className="p-4 bg-sky-50 rounded-md border border-sky-200">
             <p className="text-sky-700 font-medium mb-2">{progressMessage}</p>
@@ -674,7 +675,7 @@ export default function CreateDCC() {
       )}
 
       <div className="flex justify-between max-w-4xl mx-auto px-4 mt-8">
-        <Button variant="blue" onClick={prevStep} disabled={currentStep === 0 || isProcessing}>
+        <Button variant="blue" onClick={prevStep} disabled={currentStep === 0 || isProcessingSubmission}>
           <ArrowLeft />
         </Button>
 
@@ -683,12 +684,12 @@ export default function CreateDCC() {
             <Button 
               onClick={handleSubmit} 
               variant="green"
-              disabled={isProcessing}
+              disabled={isProcessingSubmission}
             >
-              {isProcessing ? (t("processing")) : t("submit")}
+              {isProcessingSubmission ? (t("processing")) : t("submit")}
             </Button>
 
-            {isSubmitted && pdfBlobUrl && !isProcessing && (
+            {isSubmitted && pdfBlobUrl && !isProcessingSubmission && (
               <div>
                 <Button asChild variant="blue">
                   <a 
@@ -702,7 +703,7 @@ export default function CreateDCC() {
             )}
           </div>
         ) : (
-          <Button onClick={nextStep} variant="blue" disabled={isProcessing}>
+          <Button onClick={nextStep} variant="blue" disabled={isProcessingSubmission}>
             <ArrowRight />
           </Button>
         )}

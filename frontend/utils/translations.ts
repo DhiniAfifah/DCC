@@ -269,6 +269,26 @@ const translations: Record<string, { id: string; en: string }> = {
     id: "DCC berhasil dibuat! Silakan unduh.", en: "DCC created successfully! Please download.",
   },
 
+  // Preview
+  refresh: { id: "Segarkan", en: "Refresh" },
+  generate: { id: "Menghasilkan pratinjau", en: "Generating preview" },
+  failed: { id: "Gagal memuat pratinjau PDF", en: "Failed to load PDF preview" },
+  might: { 
+    id: "File PDF mungkin masih dibuat atau terjadi kesalahan saat memuatnya.", 
+    en: "The PDF file might still be generating or there was an error loading it." 
+  },
+  try: { id: "Silakan coba lagi", en: "Please try again" },
+  tab: { id: "Lihat di Tab Baru", en: "View in New Tab" },
+  appear: { id: "Pratinjau PDF akan muncul di sini", en: "PDF preview will appear here" },
+  changes: { 
+    id: "Lakukan perubahan pada formulir untuk menghasilkan pratinjau", 
+    en: "Make changes to the form to generate preview" 
+  },
+  available: { id: "Tidak ada pratinjau XML yang tersedia", en: "No XML preview available" },
+  loading: { id: "Memuat XML...", en: "Loading XML..." },
+  xml_error: { id: "Gagal memuat XML", en: "Failed to load XML" },
+  after: { id: "XML akan muncul di sini setelah pembuatan.", en: "XML will appear here after generation." },
+
   // Importer
   pdf_to_excel: { id: "Unggah file PDF", en: "Upload PDF file" },
   submit_convert: {id: "Kirim dan Konversi ke Excel", en: "Submit and Convert to Excel"},
