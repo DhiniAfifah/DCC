@@ -9,10 +9,13 @@ import logging
 from datetime import datetime
 import traceback
 from weasyprint import HTML
-from spire.pdf import PdfDocument, PdfAttachment, FileFormat, PdfStandardsConverter
 from io import BytesIO
 from api.ds_i_utils import d_si
 from api.ds_i_utils import convert_latex_unit
+import subprocess
+import sys
+from pathlib import Path
+from pikepdf import Pdf, AttachedFileSpec
 
 # Konfigurasi logging
 logging.basicConfig(level=logging.INFO)  # or logging.ERROR if you want to suppress your own logs too
@@ -413,8 +416,7 @@ class PDFGenerator:
             })
 
         return methods
-
-    
+  
     #STATEMENT
     def _extract_statements(self, root):
         statements = []
@@ -569,7 +571,94 @@ class PDFGenerator:
                     logger.error(f"  -> Error debugging {key}: {debug_error}")
             
             raise
+    
+    def convert_pdf_to_pdfa3(selft, input_pdf_path, output_pdf_path, ghostscript_path=None):
         
+        # Auto-detect Ghostscript executable if not provided
+        if not ghostscript_path:
+            if sys.platform.startswith('win'):
+                # Common Windows locations
+                possible_paths = [
+                    r"C:\Program Files\gs\gs*\bin\gswin64c.exe",
+                    r"C:\Program Files (x86)\gs\gs*\bin\gswin32c.exe",
+                    "gswin64c.exe",  # If in PATH
+                    "gswin32c.exe"   # If in PATH
+                ]
+            else:
+                # Linux/macOS
+                possible_paths = ["gs"]
+            
+            ghostscript_path = None
+            for path in possible_paths:
+                try:
+                    if '*' in path:
+                        # Handle wildcard paths for Windows
+                        import glob
+                        matches = glob.glob(path)
+                        if matches:
+                            ghostscript_path = matches[0]
+                            break
+                    else:
+                        subprocess.run([path, "--version"], 
+                                    capture_output=True, check=True)
+                        ghostscript_path = path
+                        break
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    continue
+            
+            if not ghostscript_path:
+                raise FileNotFoundError("Ghostscript not found. Please install Ghostscript or provide the path.")
+        
+        # Validate input file
+        if not os.path.exists(input_pdf_path):
+            raise FileNotFoundError(f"Input PDF file not found: {input_pdf_path}")
+        
+        # Create output directory if it doesn't exist
+        output_dir = os.path.dirname(output_pdf_path)
+        if output_dir and not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        
+        # Ghostscript command for PDF/A-3 conversion
+        gs_command = [
+            ghostscript_path,
+            "-dPDFA=3",                    # PDF/A-3 compliance level
+            "-dBATCH",                     # Exit after processing
+            "-dNOPAUSE",                   # Don't pause between pages
+            "-dSAFER",                     # Restrict file operations
+            "-dQUIET",                     # Suppress info messages
+            "-dUseCIEColor=true",          # Use CIE color space
+            "-sColorConversionStrategy=UseDeviceIndependentColor",
+            "-sDEVICE=pdfwrite",           # Output device
+            "-dPDFACompatibilityPolicy=1", # Convert non-compliant elements
+            f"-sOutputFile={output_pdf_path}",
+            input_pdf_path
+        ]
+        
+        try:
+            # Run Ghostscript command
+            result = subprocess.run(gs_command, 
+                                capture_output=True, 
+                                text=True, 
+                                check=True)
+            
+            # Check if output file was created
+            if os.path.exists(output_pdf_path):
+                logger.info(f"Successfully converted to PDF/A-3: {output_pdf_path}")
+                return True
+            else:
+                logger.error("Conversion failed: Output file not created")
+                return False
+                
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Ghostscript error: {e}")
+            logger.error(f"Command: {' '.join(gs_command)}")
+            if e.stderr:
+                logger.error(f"Error output: {e.stderr}")
+            return False
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+            return False
+
     def generate_pdf_with_embedded_xml(self, xml_content: str, output_path: str, xml_path: str) -> bool:
         try:
             # Generate PDF sementara tanpa embedded XML
@@ -577,37 +666,21 @@ class PDFGenerator:
             if not self.generate_pdf(xml_path, temp_pdf_path):
                 return False
 
-            # Konversi ke PDF/A-3a dan tambahkan XML
-            converter = PdfStandardsConverter(temp_pdf_path)
-            converter.ToPdfA3A(output_path)
+            # Konversi ke PDF/A-3a
+            try:
+                success = self.convert_pdf_to_pdfa3(temp_pdf_path, output_path)
+                if success:
+                    logger.info("Conversion completed successfully!")
+                else:
+                    logger.error("Conversion failed!")
+            except Exception as e:
+                logger.error(f"Error: {e}")
             
             # Tambahkan attachment XML ke PDF/A
-            pdf = PdfDocument()
-            pdf.LoadFromFile(output_path)
-            
-            # Tambahkan lampiran XML
-            attachment = PdfAttachment(xml_path)
-            # 1. Set MIME type (Subtype) to application/xml
-            attachment.MimeType = "application/xml"
-            
-            # 2. Set relationship description (AFRelationship entry)
-            attachment.Description = "Digital Calibration Certificate Source Data"
-            attachment.Relationship = "Source"
-            
-            # 3. Set consistent file name
-            attachment.FileName = "dcc_data.xml"
-            
-            pdf.Attachments.Add(attachment)
-            
-            pdf.DocumentInformation.Title = "Digital Calibration Certificate"
-            pdf.DocumentInformation.Author = "SNSU-BSN"
-            pdf.DocumentInformation.Subject = "Calibration Data"
-            pdf.DocumentInformation.Keywords = "DCC, Calibration, Certificate"
-            #pdf.DocumentInformation.CreationDate = datetime.now()
-            
-            # Simpan perubahan
-            pdf.SaveToFile(output_path, FileFormat.PDF)
-            pdf.Close()
+            pdf = Pdf.open(output_path, allow_overwriting_input=True)
+            filespec = AttachedFileSpec.from_filepath(pdf, xml_path)
+            pdf.attachments["dcc_data.xml"] = filespec
+            pdf.save(output_path)
 
             return True
         except Exception as e:
