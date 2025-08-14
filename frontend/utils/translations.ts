@@ -4,6 +4,9 @@ import { access } from "fs";
 type Language = "id" | "en";
 
 const translations: Record<string, { id: string; en: string }> = {
+  // Navbar
+  home: { id: "Beranda", en: "Home" },
+
   // Login
   welcome_back: { id: "Selamat datang kembali!", en: "Welcome back!" },
   log_in: { id: "Masuk ke akun Anda", en: "Log in to your account" },
@@ -290,7 +293,7 @@ const translations: Record<string, { id: string; en: string }> = {
   after: { id: "XML akan muncul di sini setelah pembuatan.", en: "XML will appear here after generation." },
 
   // Importer
-  pdf_to_excel: { id: "Unggah file PDF", en: "Upload PDF file" },
+  pdf_to_excel: { id: "Unggah File PDF", en: "Upload PDF File" },
   submit_convert: {id: "Kirim dan Konversi ke Excel", en: "Submit and Convert to Excel"},
   processing: {id: "Memproses...", en: "Processing..."},
   extract: {id: "Mengekstrak XML dari PDF...", en: "Extracting XML from PDF..."},

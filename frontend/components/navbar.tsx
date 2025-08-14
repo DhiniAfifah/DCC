@@ -14,6 +14,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { House } from 'lucide-react';
 
 const Navbar = () => {
   const { t } = useLanguage();
@@ -82,7 +83,9 @@ const Navbar = () => {
           </Link>
           
           {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-4 items-center">            
+          <div className="hidden md:flex space-x-4 items-center">
+            <NavLink href="/main"><House /></NavLink>
+
             {isLoggedIn && (
               <button
                 onClick={handleLogout}
@@ -117,6 +120,12 @@ const Navbar = () => {
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem asChild>
+                  <Link href="/main">
+                    {t("home")}
+                  </Link>
+                </DropdownMenuItem>
+
                 {isLoggedIn && userIsDirector && (
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard">Dashboard</Link>
