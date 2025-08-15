@@ -542,13 +542,25 @@ export default function MeasurementForm({
     defaultValues: formData,
   });
 
+  const [isResetting, setIsResetting] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      form.reset(formData);
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }, [formData, form]);
+
   useEffect(() => {
     const subscription = form.watch((values) => {
-      updateFormData(values);
+      if (!form.formState.isLoading) {
+        updateFormData(values);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [form.watch]);
+  }, [form.watch, updateFormData]);
 
   // Simple debounced update to prevent infinite loops
   useEffect(() => {

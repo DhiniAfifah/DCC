@@ -177,6 +177,10 @@ export default function AdministrativeForm({
     defaultValues: formData,
   });
 
+  useEffect(() => {
+    form.reset(formData);
+  }, [formData, form]);
+
   const [selectedPlace, setPlace] = useState<string>(
     form.getValues("administrative_data.tempat") || ""
   );

@@ -50,13 +50,25 @@ export default function Comment({
     defaultValues: formData,
   });
 
+  const [isResetting, setIsResetting] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      form.reset(formData);
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }, [formData, form]);
+
   useEffect(() => {
     const subscription = form.watch((values) => {
-      updateFormData(values);
+      if (!form.formState.isLoading) {
+        updateFormData(values);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [form.watch]);
+  }, [form.watch, updateFormData]);
 
   const {
     fields: fileFields,

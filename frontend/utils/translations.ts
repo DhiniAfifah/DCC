@@ -44,6 +44,10 @@ const translations: Record<string, { id: string; en: string }> = {
   statements: { id: "Pernyataan", en: "Statements" },
   preview: { id: "Pratinjau", en: "Preview" },
 
+  template: { id: "Pilih template...", en: "Select template..." },
+  using: { id: "menggunakan", en: "using" },
+  blank: { id: "Kosong", en: "Blank" },
+
   asterisk: {
     id: "Menandakan pertanyaan wajib",
     en: "Indicates required question",
