@@ -195,9 +195,9 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
                         unit = unit.replace(".", "") if isinstance(unit, str) else ""
                         units.append(d_si(unit))
                 
-                    # Hanya tambahkan kolom yang memiliki data numerik
-                    if has_data:
-                        extracted_data.append((numbers, units))
+                # Hanya tambahkan kolom yang memiliki data numerik
+                if has_data:
+                    extracted_data.append((numbers, units))
             
             # Ambil konfigurasi dari results_data
             result_config = results_data[idx]

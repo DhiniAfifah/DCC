@@ -518,6 +518,31 @@ async def upload_pdf(pdf_file: UploadFile = File(...)):
             status_code=500, 
             detail=f"Proses PDF gagal: {str(e)}"
         )
+    
+@app.post("/upload-xml/")
+async def upload_xml(xml_file: UploadFile = File(...)):
+    try:
+        xml_path = os.path.join(UPLOAD_DIR, xml_file.filename)
+        with open(xml_path, "wb") as buffer:
+            shutil.copyfileobj(xml_file.file, buffer)
+
+        excel_path = convert_xml_to_excel(xml_path)
+        
+        return FileResponse(
+            excel_path,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f"attachment; filename={os.path.basename(excel_path)}"
+            },
+            background=BackgroundTask(cleanup_file, excel_path)  
+        )
+
+    except Exception as e:
+        logging.exception("Error in upload_xml")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Proses XML gagal: {str(e)}"
+        )
 
 # EXCEL FILE 
 @app.post("/upload-excel/")

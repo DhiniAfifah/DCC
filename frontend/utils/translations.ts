@@ -298,6 +298,7 @@ const translations: Record<string, { id: string; en: string }> = {
 
   // Importer
   pdf_to_excel: { id: "Unggah File PDF", en: "Upload PDF File" },
+  xml_to_excel: { id: "Unggah File XML", en: "Upload XML File" },
   submit_convert: {id: "Kirim dan Konversi ke Excel", en: "Submit and Convert to Excel"},
   processing: {id: "Memproses...", en: "Processing..."},
   extract: {id: "Mengekstrak XML dari PDF...", en: "Extracting XML from PDF..."},

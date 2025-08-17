@@ -1013,13 +1013,6 @@ export default function CreateDCC() {
 
   const [fileName, setFileName] = useState<string>("");
 
-  // const hari_ini = new Date();
-  // const kemarin = new Date();
-  // const selumbari  = new Date();
-  // kemarin.setDate(hari_ini.getDate() - 1);
-  // selumbari.setDate(hari_ini.getDate() - 2);
-  // const tanggal = (date: Date): string => date.toISOString().split("T")[0];
-
   // Simpan data form di state
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [formData, setFormData] = useState(blankTemplate);
@@ -1035,21 +1028,21 @@ export default function CreateDCC() {
     }
   }, [selectedTemplate]);
 
-  // // Kasih warning saat user mencoba meninggalkan halaman (agar isi formulir tidak hilang)
-  // useEffect(() => {
-  //   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-  //     event.preventDefault();
-  //     event.returnValue = "";
-  //   };
+  // Kasih warning saat user mencoba meninggalkan halaman (agar isi formulir tidak hilang)
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
 
-  //   if (formData) {
-  //     window.addEventListener("beforeunload", handleBeforeUnload);
-  //   }
+    if (formData) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
 
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, [formData]);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [formData]);
 
   const formatDate = (date: Date | string | null): string | null => {
     if (!date) return null;

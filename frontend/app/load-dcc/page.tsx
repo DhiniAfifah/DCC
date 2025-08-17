@@ -8,6 +8,7 @@ export default function LoadDCC() {
   const { t } = useLanguage();
 
   const [formData, setFormData] = useState({
+    pdf: null,
     xml: null,
   });
 

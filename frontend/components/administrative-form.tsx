@@ -7,7 +7,7 @@ import {
   Plus,
   X,
   FolderCode,
-  FileText,
+  ClipboardList,
   Package,
   UserCheck,
   FileUser,
@@ -457,7 +457,7 @@ export default function AdministrativeForm({
         <Card id="core-data">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
+              <ClipboardList className="w-5 h-5" />
               {t("data")}
             </CardTitle>
           </CardHeader>
