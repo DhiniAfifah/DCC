@@ -46,29 +46,40 @@ export default function Comment({
 }) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
-    mode: "onChange",
+    mode: "onBlur",
     defaultValues: formData,
   });
 
   const [isResetting, setIsResetting] = useState(false);
 
+  const updateFormDataCallback = useCallback((data: any) => {
+    updateFormData(data);
+  }, [updateFormData]);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      form.reset(formData);
-    }, 50);
-    
-    return () => clearTimeout(timer);
+    const currentValues = form.getValues();
+    if (JSON.stringify(currentValues) !== JSON.stringify(formData)) {
+      const timer = setTimeout(() => {
+        form.reset(formData);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
   }, [formData, form]);
 
   useEffect(() => {
     const subscription = form.watch((values) => {
       if (!form.formState.isLoading) {
-        updateFormData(values);
+        const timeoutId = setTimeout(() => {
+          updateFormDataCallback(values);
+        }, 300); // Debounce lebih lama untuk stabilitas
+
+        return () => clearTimeout(timeoutId);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [form.watch, updateFormData]);
+  }, [form, updateFormDataCallback]);
 
   const {
     fields: fileFields,

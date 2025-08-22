@@ -173,12 +173,14 @@ export default function AdministrativeForm({
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
-    mode: "onChange",
+    mode: "onBlur",
     defaultValues: formData,
   });
 
   useEffect(() => {
-    form.reset(formData);
+    if (JSON.stringify(form.getValues()) !== JSON.stringify(formData)) {
+      form.reset(formData);
+    }
   }, [formData, form]);
 
   const [selectedPlace, setPlace] = useState<string>(
@@ -187,23 +189,16 @@ export default function AdministrativeForm({
 
   // Simple debounced update to prevent infinite loops
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      const currentValues = form.getValues();
-      updateFormData(currentValues);
-    }, 100);
+    const subscription = form.watch((data) => {
+      // Gunakan debounce yang lebih stabil
+      const timeoutId = setTimeout(() => {
+        updateFormData(data);
+      }, 300); // Waktu lebih lama untuk menghindari update terlalu sering
 
-    const subscription = form.watch(() => {
-      clearTimeout(timeoutId);
-      const timeoutId2 = setTimeout(() => {
-        const currentValues = form.getValues();
-        updateFormData(currentValues);
-      }, 100);
+      return () => clearTimeout(timeoutId);
     });
 
-    return () => {
-      clearTimeout(timeoutId);
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [form, updateFormData]);
 
   const [countries, setCountries] = useState<Country[]>([]);
@@ -313,40 +308,6 @@ export default function AdministrativeForm({
     []
   );
 
-  // Memoize handlers untuk mencegah re-creation
-  const handleAppendUsed = useCallback(() => {
-    appendUsed({ value: "" });
-  }, [appendUsed]);
-
-  const handleRemoveUsed = useCallback(
-    (index: number) => {
-      removeUsed(index);
-    },
-    [removeUsed]
-  );
-
-  const handleAppendItem = useCallback(() => {
-    const currentLanguages = usedLanguages.filter(
-      (lang) => lang.value && lang.value.trim()
-    );
-
-    appendItem({
-      jenis: createMultilangObject(currentLanguages),
-      merek: "",
-      tipe: "",
-      item_issuer: "",
-      seri_item: "",
-      id_lain: createMultilangObject(currentLanguages),
-    });
-  }, [appendItem, createMultilangObject, usedLanguages]);
-
-  const handleRemoveItem = useCallback(
-    (index: number) => {
-      removeItem(index);
-    },
-    [removeItem]
-  );
-
   // Fungsi onSubmit
   const onSubmit = async (data: any) => {
     const allResponsiblePersons = [
@@ -396,9 +357,42 @@ export default function AdministrativeForm({
     }
   };
 
+  const updateFormDataCallback = useCallback((data: any) => {
+    updateFormData(data);
+  }, [updateFormData]);
+
   // Filter languages that have values for rendering
-  const validLanguages = usedLanguages.filter(
-    (lang) => lang.value && lang.value.trim()
+  const validLanguages = useMemo(() => {
+    return usedLanguages.filter((lang) => lang.value && lang.value.trim());
+  }, [usedLanguages]);
+
+  // Memoize handlers untuk mencegah re-creation
+  const handleAppendUsed = useCallback(() => {
+    appendUsed({ value: "" });
+  }, [appendUsed]);
+
+  const handleRemoveUsed = useCallback((index: number) => {
+    removeUsed(index);
+  }, [removeUsed]);
+
+  const handleAppendItem = useCallback(() => {
+    const currentLanguages = validLanguages;
+    const newItem = {
+      jenis: createMultilangObject(currentLanguages),
+      merek: "",
+      tipe: "",
+      item_issuer: "",
+      seri_item: "",
+      id_lain: createMultilangObject(currentLanguages),
+    };
+    appendItem(newItem);
+  }, [appendItem, createMultilangObject, validLanguages]);
+
+  const handleRemoveItem = useCallback(
+    (index: number) => {
+      removeItem(index);
+    },
+    [removeItem]
   );
 
   return (
@@ -1032,37 +1026,35 @@ export default function AdministrativeForm({
                     <FormLabel variant="mandatory">{t("jenis")}</FormLabel>
                     <div className="space-y-1">
                       {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">
-                          {t("pilih_bahasa")}
-                        </p>
+                        <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
                       ) : (
-                        validLanguages.map(
-                          (lang: { value: string }, langIndex: number) => (
-                            <FormField
-                              control={form.control}
-                              key={`${field.id}-jenis-${langIndex}`}
-                              name={`objects.${index}.jenis.${lang.value}`}
-                              render={({ field: jenisField }) => (
-                                <FormItem>
-                                  <div className="flex items-center gap-2">
-                                    <FormControl>
-                                      <Input
-                                        placeholder={`${t("bahasa")} ${
-                                          languages.find(
-                                            (l) => l.value === lang.value
-                                          )?.label || lang.value
-                                        }`}
-                                        {...jenisField}
-                                        value={jenisField.value || ""}
-                                      />
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )
-                        )
+                        validLanguages.map((lang: { value: string }) => (
+                          <FormField
+                            control={form.control}
+                            key={`objects-${index}-jenis-${lang.value}`} // Key yang lebih spesifik dan stabil
+                            name={`objects.${index}.jenis.${lang.value}`}
+                            render={({ field: jenisField }) => (
+                              <FormItem>
+                                <div className="flex items-center gap-2">
+                                  <FormControl>
+                                    <Input
+                                      placeholder={`${t("bahasa")} ${
+                                        languages.find((l) => l.value === lang.value)?.label || lang.value
+                                      }`}
+                                      {...jenisField}
+                                      value={jenisField.value || ""}
+                                      onChange={(e) => {
+                                        // Pastikan onChange tidak memicu re-render yang tidak perlu
+                                        jenisField.onChange(e.target.value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        ))
                       )}
                     </div>
                   </div>
@@ -1169,10 +1161,10 @@ export default function AdministrativeForm({
                             </p>
                           ) : (
                             validLanguages.map(
-                              (lang: { value: string }, langIndex: number) => (
+                              (lang: { value: string }) => (
                                 <FormField
                                   control={form.control}
-                                  key={`${field.id}-id_lain-${langIndex}`}
+                                  key={`${field.id}-id_lain-${lang.value}`}
                                   name={`objects.${index}.id_lain.${lang.value}`}
                                   render={({ field: idLainField }) => (
                                     <FormItem>

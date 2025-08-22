@@ -402,9 +402,9 @@ const Columns = ({
                   <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
                 ) : (
                   validLanguages.map(
-                    (lang: { value: string }, langIndex: number) => (
+                    (lang: { value: string }) => (
                       <FormField
-                        key={langIndex}
+                        key={lang.value}
                         control={control}
                         name={`results.${resultIndex}.columns.${columnIndex}.kolom.${lang.value}`}
                         render={({ field: columnField }) => (
@@ -539,28 +539,40 @@ export default function MeasurementForm({
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
+    mode: "onBlur",
     defaultValues: formData,
   });
 
   const [isResetting, setIsResetting] = useState(false);
 
+  const updateFormDataCallback = useCallback((data: any) => {
+    updateFormData(data);
+  }, [updateFormData]);
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      form.reset(formData);
-    }, 50);
-    
-    return () => clearTimeout(timer);
+    const currentValues = form.getValues();
+    if (JSON.stringify(currentValues) !== JSON.stringify(formData)) {
+      const timer = setTimeout(() => {
+        form.reset(formData);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
   }, [formData, form]);
 
   useEffect(() => {
     const subscription = form.watch((values) => {
       if (!form.formState.isLoading) {
-        updateFormData(values);
+        const timeoutId = setTimeout(() => {
+          updateFormDataCallback(values);
+        }, 300); // Debounce lebih lama untuk stabilitas
+
+        return () => clearTimeout(timeoutId);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [form.watch, updateFormData]);
+  }, [form, updateFormDataCallback]);
 
   // Simple debounced update to prevent infinite loops
   useEffect(() => {
@@ -1119,7 +1131,7 @@ export default function MeasurementForm({
                         </p>
                       ) : (
                         validLanguages.map(
-                          (lang: { value: string }, langIndex: number) => (
+                          (lang: { value: string }) => (
                             <FormField
                               control={form.control}
                               key={`${field.id}-method_name-${lang.value}`}
@@ -1175,10 +1187,10 @@ export default function MeasurementForm({
                       </p>
                     ) : (
                       validLanguages.map(
-                        (lang: { value: string }, langIndex: number) => (
+                        (lang: { value: string }) => (
                           <FormField
                             control={form.control}
-                            key={`${field.id}-method_desc-${langIndex}`}
+                            key={`${field.id}-method_desc-${lang.value}`}
                             name={`methods.${index}.method_desc.${lang.value}`}
                             render={({ field: methodDescField }) => (
                               <FormItem>
@@ -1568,10 +1580,10 @@ export default function MeasurementForm({
                           </p>
                         ) : (
                           validLanguages.map(
-                            (lang: { value: string }, langIndex: number) => (
+                            (lang: { value: string }) => (
                               <FormField
                                 control={form.control}
-                                key={`${field.id}-nama_alat-${langIndex}`}
+                                key={`${field.id}-nama_alat-${lang.value}`}
                                 name={`equipments.${index}.nama_alat.${lang.value}`}
                                 render={({ field: namaAlatField }) => (
                                   <FormItem>
@@ -1623,10 +1635,10 @@ export default function MeasurementForm({
                           </p>
                         ) : (
                           validLanguages.map(
-                            (lang: { value: string }, langIndex: number) => (
+                            (lang: { value: string }) => (
                               <FormField
                                 control={form.control}
-                                key={`${field.id}-manuf_model-${langIndex}`}
+                                key={`${field.id}-manuf_model-${lang.value}`}
                                 name={`equipments.${index}.manuf_model.${lang.value}`}
                                 render={({ field: manufField }) => (
                                   <FormItem>
@@ -1661,10 +1673,10 @@ export default function MeasurementForm({
                           </p>
                         ) : (
                           validLanguages.map(
-                            (lang: { value: string }, langIndex: number) => (
+                            (lang: { value: string }) => (
                               <FormField
                                 control={form.control}
-                                key={`${field.id}-model-${langIndex}`}
+                                key={`${field.id}-model-${lang.value}`}
                                 name={`equipments.${index}.model.${lang.value}`}
                                 render={({ field: modelField }) => (
                                   <FormItem>
@@ -1827,10 +1839,10 @@ export default function MeasurementForm({
                           </p>
                         ) : (
                           validLanguages.map(
-                            (lang: { value: string }, langIndex: number) => (
+                            (lang: { value: string }) => (
                               <FormField
                                 control={form.control}
-                                key={`${field.id}-desc-${langIndex}`}
+                                key={`${field.id}-desc-${lang.value}`}
                                 name={`conditions.${index}.desc.${lang.value}`}
                                 render={({ field: kondisiDescField }) => (
                                   <FormItem>
@@ -2316,7 +2328,7 @@ export default function MeasurementForm({
                         </p>
                       ) : (
                         validLanguages.map(
-                          (lang: { value: string }, langIndex: number) => (
+                          (lang: { value: string }) => (
                             <FormField
                               key={lang.value}
                               control={form.control}

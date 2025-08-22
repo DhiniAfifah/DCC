@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, X, ScrollText } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -69,30 +69,43 @@ export default function Statements({
 }) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
-    mode: "onChange",
+    mode: "onBlur", // Ubah dari "onChange" ke "onBlur" untuk stabilitas
     defaultValues: formData,
   });
 
-  const [isResetting, setIsResetting] = useState(false);
+  // Stabilkan updateFormData dengan useCallback
+  const updateFormDataCallback = useCallback((data: any) => {
+    updateFormData(data);
+  }, [updateFormData]);
 
+  // Perbaiki form.reset() - hanya reset jika benar-benar berbeda
   useEffect(() => {
-    const timer = setTimeout(() => {
-      form.reset(formData);
-    }, 50);
-    
-    return () => clearTimeout(timer);
+    const currentValues = form.getValues();
+    if (JSON.stringify(currentValues) !== JSON.stringify(formData)) {
+      const timer = setTimeout(() => {
+        form.reset(formData);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
   }, [formData, form]);
 
+  // Perbaiki form watching - gunakan debounce yang lebih stabil
   useEffect(() => {
     const subscription = form.watch((values) => {
       if (!form.formState.isLoading) {
-        updateFormData(values);
+        const timeoutId = setTimeout(() => {
+          updateFormDataCallback(values);
+        }, 300); // Debounce lebih lama untuk stabilitas
+
+        return () => clearTimeout(timeoutId);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [form.watch, updateFormData]);
+  }, [form, updateFormDataCallback]);
 
+  // Perbaiki formula watching
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (!name?.startsWith("statements.")) return;
@@ -110,26 +123,7 @@ export default function Statements({
     return () => subscription.unsubscribe();
   }, [form]);
 
-  const [latexInput, setLatexInput] = useState("");
-  const latexInputRef = useRef<HTMLInputElement>(null);
-  const insertSymbol = (
-    latex: string,
-    statementIndex: number,
-    event?: React.MouseEvent<HTMLButtonElement>
-  ) => {
-    event?.preventDefault();
-    event?.stopPropagation();
-
-    const currentFormula =
-      form.getValues(`statements.${statementIndex}.formula.mathjax`) || "";
-    const updatedFormula = currentFormula + latex;
-
-    form.setValue(
-      `statements.${statementIndex}.formula.mathjax`,
-      updatedFormula
-    );
-  };
-
+  // Perbaiki image watching
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
       if (!name?.startsWith("statements.")) return;
@@ -147,6 +141,28 @@ export default function Statements({
     return () => subscription.unsubscribe();
   }, [form]);
 
+  const [latexInput, setLatexInput] = useState("");
+  const latexInputRef = useRef<HTMLInputElement>(null);
+  
+  // Memoize insertSymbol function
+  const insertSymbol = useCallback((
+    latex: string,
+    statementIndex: number,
+    event?: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    const currentFormula =
+      form.getValues(`statements.${statementIndex}.formula.mathjax`) || "";
+    const updatedFormula = currentFormula + latex;
+
+    form.setValue(
+      `statements.${statementIndex}.formula.mathjax`,
+      updatedFormula
+    );
+  }, [form]);
+
   const {
     fields: statementFields,
     append: appendStatement,
@@ -156,9 +172,11 @@ export default function Statements({
     name: "statements",
   });
 
-  const usedLanguages: { value: string }[] =
-    form.watch("administrative_data.used_languages") || [];
+  // Perbaiki usedLanguages - gunakan formData langsung, bukan form.watch
+  const usedLanguages: { value: string }[] = 
+    formData?.administrative_data?.used_languages || [];
 
+  // Memoize createMultilangObject
   const createMultilangObject = useCallback(
     (usedLanguages: { value: string }[]): Record<string, string> => {
       const result: Record<string, string> = {};
@@ -177,6 +195,7 @@ export default function Statements({
     fetchLanguages().then(setLanguages);
   }, []);
 
+  // Memoize handlers
   const handleRemoveStatement = useCallback((index: number) => {
     removeStatement(index);
   }, [removeStatement]);
@@ -202,11 +221,13 @@ export default function Statements({
     });
   }, [appendStatement, createMultilangObject, usedLanguages]);
 
-  const validLanguages = usedLanguages.filter(
-    (lang) => lang.value && lang.value.trim()
-  );
+  // Memoize validLanguages untuk mencegah re-render berlebihan
+  const validLanguages = useMemo(() => {
+    return usedLanguages.filter((lang) => lang.value && lang.value.trim());
+  }, [usedLanguages]);
 
-  const handleFileUpload = async (
+  // Memoize handleFileUpload
+  const handleFileUpload = useCallback(async (
     event: React.ChangeEvent<HTMLInputElement>,
     isImageUpload: boolean,
     statementIndex?: number
@@ -246,7 +267,6 @@ export default function Statements({
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64String = reader.result as string;
-
           const base64WithoutPrefix = base64String.split(",")[1];
 
           if (statementIndex !== undefined) {
@@ -272,7 +292,7 @@ export default function Statements({
         alert("Image upload failed.");
       }
     }
-  };
+  }, [form]);
 
   const onSubmit = async (data: any) => {
     try {
@@ -353,10 +373,10 @@ export default function Statements({
                 {validLanguages.length === 0 ? (
                   <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
                 ) : (
-                  validLanguages.map((lang: { value: string }, langIndex: number) => (
+                  validLanguages.map((lang: { value: string }) => (
                     <FormField
                       control={form.control}
-                      key={`${field.id}-statement-${langIndex}`}
+                      key={`statements-${statementIndex}-${lang.value}`} // Key yang lebih stabil
                       name={`statements.${statementIndex}.values.${lang.value}`}
                       render={({ field: statementField }) => (
                         <FormItem>
@@ -368,6 +388,10 @@ export default function Statements({
                                 }`}
                                 {...statementField}
                                 value={statementField.value || ""}
+                                onChange={(e) => {
+                                  // Pastikan onChange tidak memicu re-render yang tidak perlu
+                                  statementField.onChange(e.target.value);
+                                }}
                               />
                             </FormControl>
                           </div>
@@ -387,7 +411,7 @@ export default function Statements({
                       <FormItem>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger className="whitespace-normal">
