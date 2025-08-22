@@ -139,11 +139,12 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
         first_row, last_row = None, None
         
         for row in range(1, max_rows + 1):
+            # Gunakan .Text untuk mendapatkan nilai yang terlihat
             filled_cells = [
-                ws.Cells(row, col).Value 
+                ws.Cells(row, col).Text.strip() if ws.Cells(row, col).Text else ""
                 for col in range(1, max_columns + 1)
             ]
-            filled_cells = [cell for cell in filled_cells if cell not in [None, ""]]
+            filled_cells = [cell for cell in filled_cells if cell != ""]
             
             if len(filled_cells) > 2:
                 if not in_table:
@@ -169,7 +170,7 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
             # Tentukan rentang kolom
             for col in range(1, max_columns + 1):
                 col_has_data = any(
-                    ws.Cells(row, col).Value not in [None, ""] 
+                    ws.Cells(row, col).Text.strip() != ""
                     for row in range(first_row, last_row + 1)
                 )
                 if col_has_data:
@@ -186,14 +187,25 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
                 has_data = False
                 
                 for row in range(first_row, last_row + 1):
-                    value = ws.Cells(row, col).Value
-                    if isinstance(value, (int, float)):
-                        numbers.append(str(value))
-                        has_data = True
-                        # Ambil satuan dari kolom sebelah
-                        unit = ws.Cells(row, col + 1).Value
-                        unit = unit.replace(".", "") if isinstance(unit, str) else ""
-                        units.append(d_si(unit))
+                    # Ambil nilai yang terlihat (formatted)
+                    display_value = ws.Cells(row, col).Text.strip()
+                    
+                    # Cek apakah bisa dikonversi ke angka
+                    if display_value and display_value != "":
+                        try:
+                            # Coba konversi ke float untuk validasi
+                            float(display_value.replace(",", "."))  # Handle comma decimal separator
+                            numbers.append(display_value)
+                            has_data = True
+                            
+                            # Ambil satuan dari kolom sebelah (juga menggunakan .Text)
+                            unit_text = ws.Cells(row, col + 1).Text.strip()
+                            unit = unit_text.replace(".", "") if unit_text else ""
+                            units.append(d_si(unit))
+                            
+                        except ValueError:
+                            # Bukan angka, skip
+                            continue
                 
                 # Hanya tambahkan kolom yang memiliki data numerik
                 if has_data:

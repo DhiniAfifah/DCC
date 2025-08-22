@@ -5,7 +5,7 @@ import type React from "react";
 import { LanguageProvider } from '@/context/LanguageContext';
 
 export const metadata: Metadata = {
-  title: "BSN DCC",
+  title: "DiCCA",
   description: "Create and manage DCCs with BSN",
 };
 
