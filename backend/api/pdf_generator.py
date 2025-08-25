@@ -188,7 +188,7 @@ class PDFGenerator:
         except:
             pass
 
-    def extract_data_from_xml(self, xml_content):
+    def extract_data_from_xml(self, xml_content, tempat_pdf):
         """Ekstrak data dari XML ke struktur Python"""
         try:
             root = ET.fromstring(xml_content)
@@ -211,7 +211,7 @@ class PDFGenerator:
                 }]
             
             data = {
-                'admin': self._extract_admin_data(root) or {},
+                'admin': self._extract_admin_data(root, tempat_pdf) or {},
                 'Measurement_TimeLine': self._extract_timeline(root) or {},
                 'objects': self._extract_objects(root) or [],
                 'responsible_persons': responsible_persons,
@@ -238,11 +238,11 @@ class PDFGenerator:
             raise
 
     #ADMIN
-    def _extract_admin_data(self, root):
+    def _extract_admin_data(self, root, tempat_pdf):
         return {
             'certificate': root.findtext('.//dcc:uniqueIdentifier', namespaces=XML_NS) or '',
             'order': root.findtext('.//dcc:identification[@refType="basic_orderNumber"]/dcc:value', namespaces=XML_NS) or '',
-            'tempat': root.findtext('.//dcc:performanceLocation', namespaces=XML_NS) or ''
+            'tempat': tempat_pdf or root.findtext('.//dcc:performanceLocation', namespaces=XML_NS)
         }
 
     # TIMELINE
@@ -659,11 +659,11 @@ class PDFGenerator:
             logger.error(f"Unexpected error: {e}")
             return False
 
-    def generate_pdf_with_embedded_xml(self, xml_content: str, output_path: str, xml_path: str) -> bool:
+    def generate_pdf_with_embedded_xml(self, xml_content: str, output_path: str, xml_path: str, tempat_pdf) -> bool:
         try:
             # Generate PDF sementara tanpa embedded XML
             temp_pdf_path = os.path.join(self.temp_dir.name, "temp.pdf")
-            if not self.generate_pdf(xml_path, temp_pdf_path):
+            if not self.generate_pdf(xml_path, temp_pdf_path, tempat_pdf):
                 return False
 
             # Konversi ke PDF/A-3a
@@ -687,7 +687,7 @@ class PDFGenerator:
             logger.error(f"PDF generation with embedded XML failed: {e}")
             return False
 
-    def generate_pdf(self, xml_path, output_path):
+    def generate_pdf(self, xml_path, output_path, tempat_pdf):
         """Generate PDF dari konten XML"""
         try:
             
@@ -702,7 +702,7 @@ class PDFGenerator:
             
             # Ekstrak data dari XML
             logger.info("Extracting data from XML...")
-            data = self.extract_data_from_xml(xml_content)
+            data = self.extract_data_from_xml(xml_content, tempat_pdf)
             
             # Perbaiki base_url ke direktori assets yang benar
             current_dir = os.path.dirname(os.path.abspath(__file__))

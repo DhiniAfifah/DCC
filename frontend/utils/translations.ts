@@ -292,7 +292,7 @@ const translations: Record<string, { id: string; en: string }> = {
     en: "Make changes to the form to generate preview" 
   },
   available: { id: "Tidak ada pratinjau XML yang tersedia", en: "No XML preview available" },
-  loading: { id: "Memuat XML...", en: "Loading XML..." },
+  loading: { id: "Memuat XML", en: "Loading XML" },
   xml_error: { id: "Gagal memuat XML", en: "Failed to load XML" },
   after: { id: "XML akan muncul di sini setelah pembuatan.", en: "XML will appear here after generation." },
 

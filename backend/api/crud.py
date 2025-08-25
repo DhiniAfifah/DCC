@@ -193,9 +193,9 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
                     # Cek apakah bisa dikonversi ke angka
                     if display_value and display_value != "":
                         try:
-                            # Coba konversi ke float untuk validasi
-                            float(display_value.replace(",", "."))  # Handle comma decimal separator
-                            numbers.append(display_value)
+                            normalized_value = display_value.replace(",", ".")
+                            float(normalized_value)
+                            numbers.append(normalized_value)
                             has_data = True
                             
                             # Ambil satuan dari kolom sebelah (juga menggunakan .Text)
@@ -857,7 +857,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         success = pdf_generator.generate_pdf_with_embedded_xml(
             xml_content,
             pdf_path,
-            xml_path
+            xml_path,
+            dcc.administrative_data.tempat_pdf
         )
         
         if not success:
@@ -1011,7 +1012,8 @@ def generate_preview_files(dcc: schemas.DCCFormCreate):
         # Generate PDF without embedded XML for preview
         success = pdf_generator.generate_pdf(
             str(paths['xml_output']), 
-            str(paths['pdf_output'])
+            str(paths['pdf_output']),
+            dcc.administrative_data.tempat_pdf
         )
         
         if not success:
@@ -1150,7 +1152,8 @@ def generate_preview_files(dcc: schemas.DCCFormCreate):
         # Generate PDF without embedded XML for preview
         success = pdf_generator.generate_pdf(
             str(paths['xml_output']), 
-            str(paths['pdf_output'])
+            str(paths['pdf_output']),
+            dcc.administrative_data.tempat_pdf
         )
         
         if not success:
