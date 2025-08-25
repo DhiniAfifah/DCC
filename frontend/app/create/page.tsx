@@ -1169,12 +1169,31 @@ export default function CreateDCC() {
         excel: fileName,
       };
 
+      const sanitizeData = (data: any) => {
+        return {
+          ...data,
+          methods: data.methods.map((m: any) => ({
+            ...m,
+            formula: m.has_formula ? m.formula : null,
+            image: m.has_image ? m.image : null,
+          })),
+          statements: data.statements.map((s: any) => ({
+            ...s,
+            formula: s.has_formula ? s.formula : null,
+            image: s.has_image ? s.image : null,
+          })),
+          comment: data.comment?.has_file
+            ? data.comment
+            : { ...data.comment, files: [] },
+        };
+      };
+
       const response = await fetch("http://127.0.0.1:8000/generate-preview/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(modifiedFormData),
+        body: JSON.stringify(sanitizeData(modifiedFormData)),
       });
 
       if (!response.ok) {
@@ -1292,6 +1311,25 @@ export default function CreateDCC() {
     excel: fileName,
   };
 
+  const sanitizeData = (data: any) => {
+    return {
+      ...data,
+      methods: data.methods.map((m: any) => ({
+        ...m,
+        formula: m.has_formula ? m.formula : null,
+        image: m.has_image ? m.image : null,
+      })),
+      statements: data.statements.map((s: any) => ({
+        ...s,
+        formula: s.has_formula ? s.formula : null,
+        image: s.has_image ? s.image : null,
+      })),
+      comment: data.comment?.has_file
+        ? data.comment
+        : { ...data.comment, files: [] },
+    };
+  };
+
   const handleSubmit = async () => {
     // Start processing
     setIsProcessingSubmission(true);
@@ -1356,7 +1394,7 @@ export default function CreateDCC() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(modifiedFormData),
+        body: JSON.stringify(sanitizeData(modifiedFormData)),
       });
 
       setProgressPercent(75);

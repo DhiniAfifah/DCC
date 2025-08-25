@@ -629,7 +629,7 @@ def generate_xml(dcc, table_data):
 
                                                             
         # COMMENT
-        if dcc.comment and dcc.comment.has_file:  
+        if dcc.comment:  
             with tag('dcc:comment'):
                 with tag('dcc:name'):
                     with tag('dcc:content'): text(clean_text(dcc.comment.title or ""))
