@@ -265,7 +265,7 @@ async def login_for_access_token(
     print(f"🔑 Token generated successfully")
     
     # Determine redirect URL based on role
-    redirect_url = "/dashboard" if auth_user.role == UserRole.director else "/main"
+    redirect_url = "/dashboard" if auth_user.role == UserRole.director else "/home"
     
     # Create response with token and redirect info
     response = JSONResponse(

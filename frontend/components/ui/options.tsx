@@ -24,7 +24,7 @@ const DccOptions = () => {
 
       <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6 w-full z-20">
         <DccOption 
-          href="/create" 
+          href="/generator" 
           icon={PlusCircle} 
           color="green"
           description={
@@ -34,7 +34,7 @@ const DccOptions = () => {
           DCC Generator
         </DccOption>
         <DccOption 
-          href="/load-dcc" 
+          href="/importer" 
           icon={FolderOpen} 
           color="blue"
           description={

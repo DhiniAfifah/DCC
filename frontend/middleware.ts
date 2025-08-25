@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
     console.log("🍪 Middleware: Valid token value:", `${cookieToken.substring(0, 20)}...`);
   }
   
-  const protectedRoutes = ["/main", "/dashboard", "/create", "/load-dcc"];
+  const protectedRoutes = ["/home", "/dashboard", "/generator", "/importer"];
   const directorOnlyRoutes = ["/dashboard"];
   const publicRoutes = ["/", "/register"];
 
@@ -64,11 +64,11 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // If accessing login/register with valid token, redirect to main
+  // If accessing login/register with valid token, redirect to home
   if (isPublicRoute && hasValidToken) {
     console.log("⚠️ Middleware: Has valid token on public route");
-    console.log("🔄 Middleware: Redirecting to main (valid token present)");
-    return NextResponse.redirect(new URL("/main", request.url));
+    console.log("🔄 Middleware: Redirecting to home (valid token present)");
+    return NextResponse.redirect(new URL("/home", request.url));
   }
 
   // If on public route with invalid token, clear the cookie and allow

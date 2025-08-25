@@ -18,9 +18,9 @@ export default function LoginPage() {
       console.log("🔑 LoginPage: Token found:", token ? "YES" : "NO");
 
       if (token && verifyToken(token)) {
-        console.log("✅ LoginPage: Valid token found, redirecting to /main");
+        console.log("✅ LoginPage: Valid token found, redirecting to /home");
         // Use window.location.href for immediate redirect
-        window.location.href = "/main";
+        window.location.href = "/home";
         return;
       } else {
         console.log("❌ LoginPage: No valid token, staying on login page");

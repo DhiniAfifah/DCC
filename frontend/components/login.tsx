@@ -92,7 +92,7 @@ export default function Login({ formData }: { formData: any }) {
           const userRole = response.data.user_role;
           
           // Determine target URL based on role
-          let targetUrl = "/main"; // default for regular users
+          let targetUrl = "/home"; // default for regular users
           
           if (redirectUrl) {
             targetUrl = redirectUrl;
@@ -101,7 +101,7 @@ export default function Login({ formData }: { formData: any }) {
             targetUrl = "/dashboard";
             console.log("🎯 Director role detected, redirecting to dashboard");
           } else {
-            console.log("🎯 Regular user, redirecting to main");
+            console.log("🎯 Regular user, redirecting to home");
           }
           
           console.log(`🔄 Redirecting ${userRole || 'user'} to ${targetUrl}...`);

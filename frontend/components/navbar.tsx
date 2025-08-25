@@ -72,7 +72,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md shadow-black/20 z-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-20 space-x-6">
-          <Link href="/main">
+          <Link href="/home">
             <Image
               src="/image/BSN.png"
               alt="BSN logo"
@@ -84,7 +84,7 @@ const Navbar = () => {
           
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-4 items-center">
-            <NavLink href="/main"><House /></NavLink>
+            <NavLink href="/home"><House /></NavLink>
 
             {isLoggedIn && (
               <button
@@ -121,7 +121,7 @@ const Navbar = () => {
 
               <DropdownMenuContent align="end" className="w-40">
                 <DropdownMenuItem asChild>
-                  <Link href="/main">
+                  <Link href="/home">
                     {t("home")}
                   </Link>
                 </DropdownMenuItem>

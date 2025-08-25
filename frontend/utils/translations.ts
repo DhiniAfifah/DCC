@@ -38,6 +38,18 @@ const translations: Record<string, { id: string; en: string }> = {
     en: "Access your Digital Calibration Certificate (DCC) and export the data to Excel. Click here.",
   },
 
+  // Generator
+  pilih_lab: { id: "Pilih laboratorium", en: "Select a laboratory" },
+  listrik: { id: "Kelistrikan", en: "Electrical" },
+  waktu: { id: "Waktu & Frekuensi", en: "Time & Frequency" },
+  fotometri_radiometri: { id: "Fotometri & Radiometri", en: "Photometry & Radiometry" },
+  kimia: { id: "Kimia", en: "Chemistry" },
+  panjang: { id: "Panjang", en: "Length" },
+  massa: { id: "Massa", en: "Mass" },
+  akustik_vibrasi: { id: "Akustik & Vibrasi", en: "Acoustics & Vibration" },
+  radiasi: { id: "Radiasi", en: "Radiation" },
+  biology: { id: "Biologi", en: "Biology" },
+
   // Stepper
   administrasi: { id: "Administrasi", en: "Administration" },
   hasil: { id: "Hasil Kalibrasi", en: " Calibration Results" },
@@ -363,7 +375,7 @@ const translations: Record<string, { id: string; en: string }> = {
   dasbor: { id: "Dasbor", en: "Dashboard" },
   access_denied: { id: "Akses Ditolak", en: "Access Denied" },
   DirectorProtectedRoute: { id: "Halaman ini hanya dapat diakses oleh Direktur.", en: "This page is only accessible to Directors." },
-  back_to_main: { id: "Kembali ke Halaman Utama", en: "Back to Main Page" },
+  back_to_home: { id: "Kembali ke Beranda", en: "Back to Home" },
   dashboard: { id: "Dasbor Direktur", en: "Director Dashboard" },
   welcome_dashboard: { 
     id: "Selamat datang di dasbor direktur. Di sini Anda dapat melihat dan mengelola semua pengajuan DCC.", 

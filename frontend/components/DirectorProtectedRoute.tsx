@@ -84,9 +84,9 @@ export default function DirectorProtectedRoute({
             throw new Error("Token rejected by server");
           } else if (response.status === 403) {
             console.log("🚫 DirectorProtectedRoute: Server denied access (403)");
-            // Redirect to main page for non-directors
+            // Redirect to home page for non-directors
             setTimeout(() => {
-              window.location.href = "/main";
+              window.location.href = "/home";
             }, 100);
             return;
           } else {
@@ -188,13 +188,13 @@ export default function DirectorProtectedRoute({
           <p className="text-gray-600 mt-2">{t("DirectorProtectedRoute")}</p>
           <Button
             onClick={() => {
-              console.log("🔄 DirectorProtectedRoute: Manual redirect to main");
-              window.location.href = "/main";
+              console.log("🔄 DirectorProtectedRoute: Manual redirect to home");
+              window.location.href = "/home";
             }}
             variant="green"
             className="mt-3"
           >
-            {t("back_to_main")}
+            {t("back_to_home")}
           </Button>
         </div>
       </div>
