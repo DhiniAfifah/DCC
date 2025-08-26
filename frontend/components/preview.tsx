@@ -9,6 +9,7 @@ import {
 import { useLanguage } from '@/context/LanguageContext';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 interface PreviewProps {
   previewFiles: {
@@ -240,18 +241,21 @@ export default function Preview({ previewFiles, isLoading, onRefresh }: PreviewP
                       {t("xml_error")}: {xmlError}
                     </div>
                   ) : xmlText ? (
-                    <SyntaxHighlighter
-                      language="xml"
-                      style={coy}
-                      customStyle={{
-                        maxHeight: '420px',
-                        overflow: 'auto',
-                        fontSize: '0.875rem',
-                        background: 'transparent',
-                      }}
-                    >
-                      {xmlText}
-                    </SyntaxHighlighter>
+                    <ScrollArea className="h-[420px] w-full pr-2">
+                      <SyntaxHighlighter
+                        language="xml"
+                        style={coy}
+                        customStyle={{
+                          fontSize: "0.875rem",
+                          background: "transparent",
+                          margin: 0,
+                          width: "max-content",
+                        }}
+                      >
+                        {xmlText}
+                      </SyntaxHighlighter>
+                      <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
                   ) : (
                     <p className="text-sm text-gray-600">{t("after")}</p>
                   )}

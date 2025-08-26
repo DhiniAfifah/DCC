@@ -520,6 +520,11 @@ const multimeterTemplate = {
           real_list: "1",
         },
         {
+          kolom: {id: 'Frekuensi', en: 'Frequency'},
+          refType: "other",
+          real_list: "1",
+        },
+        {
           kolom: {id: 'Pembacaan Alat', en: 'Instrument Reading'},
           refType: "other",
           real_list: "1",
@@ -548,6 +553,11 @@ const multimeterTemplate = {
         {
           kolom: {id: 'Titik Ukur', en: 'Measurement Point'},
           refType: "basic_nominalValue",
+          real_list: "1",
+        },
+        {
+          kolom: {id: 'Frekuensi', en: 'Frequency'},
+          refType: "other",
           real_list: "1",
         },
         {
@@ -901,6 +911,11 @@ const calibratorTemplate = {
           real_list: "1",
         },
         {
+          kolom: {id: 'Frekuensi', en: 'Frequency'},
+          refType: "other",
+          real_list: "1",
+        },
+        {
           kolom: {id: 'Pembacaan Standar', en: 'Standard Reading'},
           refType: "other",
           real_list: "1",
@@ -929,6 +944,11 @@ const calibratorTemplate = {
         {
           kolom: {id: 'Titik Ukur', en: 'Measurement Point'},
           refType: "basic_nominalValue",
+          real_list: "1",
+        },
+        {
+          kolom: {id: 'Frekuensi', en: 'Frequency'},
+          refType: "other",
           real_list: "1",
         },
         {
