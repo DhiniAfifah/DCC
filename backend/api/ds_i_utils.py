@@ -17,7 +17,8 @@ prefixes = {
     "d": "\\deci",
     "c": "\\centi",
     "m": "\\milli",
-    "μ": "\\micro",
+    "μ": "\\micro", # Greek Small Letter Mu
+    "µ": "\\micro", # Micro Sign
     "n": "\\nano",
     "p": "\\pico",
     "f": "\\femto",
