@@ -193,8 +193,14 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
                     # Cek apakah bisa dikonversi ke angka
                     if display_value and display_value != "":
                         try:
-                            normalized_value = display_value.replace(",", ".")
+                            normalized_value = (
+                                display_value
+                                .replace("\u00A0", "")  # remove non-breaking spaces
+                                .replace(" ", "")       # remove normal spaces
+                                .replace(",", ".")      # decimal separator
+                            )
                             float(normalized_value)
+                            
                             numbers.append(normalized_value)
                             has_data = True
                             
