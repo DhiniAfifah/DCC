@@ -414,9 +414,7 @@ def generate_xml(dcc, table_data):
             # Statements
             with tag('dcc:statements'):
                 for stmt in dcc.statements:
-                    
-                    ref_type_attr = stmt.refType if hasattr(stmt, 'refType') and stmt.refType else ""
-                    with tag('dcc:statement', refType=ref_type_attr):
+                    with tag('dcc:statement', **({"refType": stmt.refType} if stmt.refType != "other" else {})):
                         with tag('dcc:declaration'):
                             for lang in dcc.administrative_data.used_languages:
                                 with tag('dcc:content', lang=lang): 
@@ -457,10 +455,8 @@ def generate_xml(dcc, table_data):
                     
                 # Metode
                 with tag('dcc:usedMethods'):
-                    for method in dcc.methods:
-                        ref_type = method.refType if method.refType else "basic_calibrationMethod"
-                        
-                        with tag('dcc:usedMethod', refType=ref_type):
+                    for method in dcc.methods:                        
+                        with tag('dcc:usedMethod', **({"refType": method.refType} if method.refType != "other" else {})):
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
                                     with tag('dcc:content', lang=lang): text(clean_text(method.method_name.root.get(lang, ""))) #Multilang
@@ -494,8 +490,7 @@ def generate_xml(dcc, table_data):
                 # Measuring Equipment 
                 with tag('dcc:measuringEquipments'):
                     for equip in dcc.equipments:
-                        ref_type = equip.refType if equip.refType else "basic_measurementStandard"
-                        with tag('dcc:measuringEquipment', refType=ref_type):
+                        with tag('dcc:measuringEquipment', **({"refType": equip.refType} if equip.refType != "other" else {})):
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
                                     with tag('dcc:content', lang=lang): text(clean_text(equip.nama_alat.root.get(lang, ""))) #Multilang
@@ -586,12 +581,10 @@ def generate_xml(dcc, table_data):
                                         # Penanganan refType untuk kolom dengan measurement error
                                         if ref_type == "basic_measurementError_error":
                                             ref_type = "basic_measurementError"
-                                            is_target = True
                                         elif ref_type == "basic_measurementError_correction":
                                             ref_type = "basic_measurementError"
-                                            is_target = True
                                         
-                                        with tag('dcc:quantity', refType=ref_type):
+                                        with tag('dcc:quantity', **({"refType": ref_type} if ref_type != "other" else {})):
                                             # Nama kolom (multilingual)
                                             with tag('dcc:name'):
                                                 for lang in dcc.administrative_data.used_languages:
