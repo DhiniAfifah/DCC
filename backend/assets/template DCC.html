@@ -504,7 +504,15 @@
                     {% for cond in conditions %}
                         <div class="row">
                             <div class="left">
-                                {{ cond.jenis_kondisi }}
+                                <p class="label">{{ cond.jenis_kondisi }}</p>
+
+                                {% if cond.jenis_kondisi == 'Suhu' %}
+                                    <p class="label">/</p>
+                                    <p class="sublabel">Temperature</p>
+                                {% elif cond.jenis_kondisi == 'Kelembapan' %}
+                                    <p class="label">/</p>
+                                    <p class="sublabel">Humidity</p>
+                                {% endif %}
                             </div>
                             {% if cond.tengah_unit == cond.rentang_unit %}
                                 <p class="value" style="margin-left: 20px;">: ({{ cond.tengah }} ± {{ cond.rentang }}){{ cond.tengah_unit | safe }}</p>
@@ -621,72 +629,28 @@
                     <h4 class="title" style="margin-bottom: 3px;">Catatan/<i class="subtitle">Notes</i></h4>
                     
                     <div id="method">
-                        <div class="indo">
-                            Hasil kalibrasi ini diperoleh berdasarkan prosedur kalibrasi
-                            {% for met in methods %}
-                                {% if met.method_name.id %}
-                                    {% set name = met.method_name.id %}
-                                {% elif met.method_name.en %}
-                                    {% set name = met.method_name.en %}
-                                {% else %}
-                                    {% set name = met.method_name | dictsort | map(attribute='1') | list | first %}
-                                {% endif %}
-
-                                {% set desc = '' %}
-                                {% if met.method_desc.id and met.method_desc.id | trim != '' %}
-                                    {% set desc = ' ' + met.method_desc.id %}
-                                {% elif met.method_desc.en and met.method_desc.en | trim != '' %}
-                                    {% set desc = ' ' + met.method_desc.en %}
-                                {% else %}
-                                    {% set values = met.method_desc | dictsort | map(attribute='1') | reject('equalto', '') | list %}
-                                    {% if values %}
-                                        {% set desc = ' ' + values[0] %}
-                                    {% endif %}
-                                {% endif %}
-
-                                {% if loop.last and not loop.first %}
-                                    dan {{ name }}{{ desc }}
-                                {% elif not loop.last %}
-                                    {{ name }}{{ desc }},
-                                {% else %}
-                                    {{ name }}{{ desc }}
-                                {% endif %}
-                            {% endfor %}
-                            dengan menggunakan instrumen standar yang tertelusur ke SI melalui SNSU-BSN.
-
-                            <span class="indo">/</span>
-                            <span class="eng">
-                                The calibration result was acquired based on the procedure of
-                                {% for met in methods %}
-                                    {% if met.method_name.en %}
-                                        {% set name = met.method_name.en %}
-                                    {% else %}
-                                        {% set values = met.method_name | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list %}
-                                        {% set name = values[0] %}
-                                    {% endif %}
-
-                                    {% set desc = '' %}
-                                    {% if met.method_desc.en and met.method_desc.en | trim != '' %}
-                                        {% set desc = ' ' + met.method_desc.en %}
-                                    {% else %}
-                                        {% set values = met.method_desc | dictsort | map(attribute='1') | reject('equalto', '') | list %}
-                                        {% if values %}
-                                            {% set desc = ' ' + values[0] %}
-                                        {% endif %}
-                                    {% endif %}
-
-                                    {% if loop.last and not loop.first %}
-                                        and {{ name }}{{ desc }}
-                                    {% elif not loop.last %}
-                                        {{ name }}{{ desc }},
-                                    {% else %}
-                                        {{ name }}{{ desc }}
-                                    {% endif %}
-                                {% endfor %}
-                                using the standard instrument that is traceable to SI through SNSU-BSN.
-                            </span>
-                        </div>
                         {% for met in methods %}
+                            <div class="indo">
+                                {% if met.method_desc.id %}
+                                    {{ met.method_desc.id }}
+                                {% elif met.method_desc.en %}
+                                    {{ met.method_desc.en }}
+                                {% else %}
+                                    {% set values = met.method_desc | dictsort | map(attribute='1') | list %}
+                                    {% set method = values[0] %}
+                                    {{ method }}
+                                {% endif %}
+                                <span class="indo">/</span>
+                                <span class="eng">
+                                    {% if met.method_desc.en and met.method_desc.id %}
+                                        {{ met.method_desc.en }}
+                                    {% else %}
+                                        {% set values = equ.nama_alat | dictsort | map(attribute='1') | list %}
+                                        {% set method = values[0] %}
+                                        {{ method }}
+                                    {% endif %}
+                                </span>
+                            </div>
                             <div id="formula" style="text-align: center;">
                                 {% if met.formula_image is defined %}
                                     <img src="{{ met.formula_image }}" style="height: 30px;">
@@ -731,7 +695,7 @@
                                 {% endif %}
 
                                 {# Nomor seri #}
-                                {% set seri = equ.seri_measuring %}
+                                {% set seri = "SN. " ~ equ.seri_measuring %}
 
                                 {# Tampilkan dengan koma / "dan" / titik #}
                                 {% if loop.last and not loop.first %}
@@ -767,7 +731,7 @@
                                         {% set model = values[0] %}
                                     {% endif %}
 
-                                    {% set seri = equ.seri_measuring %}
+                                    {% set seri = "SN. " ~ equ.seri_measuring %}
 
                                     {% if loop.last and not loop.first %}
                                         and {{ nama }} {{ manuf }} {{ model }} ({{ seri }}).
@@ -777,17 +741,6 @@
                                         {{ nama }} {{ manuf }} {{ model }} ({{ seri }})
                                     {% endif %}
                                 {% endfor %}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div id="uncertainty">
-                        {% set first_res = results[0] %}
-                        <div class="indo">
-                            Ketidakpastian pengukuran dihitung dengan tingkat kepercayaan tidak kurang dari {{ first_res.uncertainty.probability }} dan faktor cakupan k = {{ first_res.uncertainty.factor }}.
-                            <span class="indo">/</span>
-                            <span class="eng">
-                                The uncertainty of measurement was calculated with the confidence level not less than {{ first_res.uncertainty.probability }} and coverage factor of k = {{ first_res.uncertainty.factor }}.
                             </span>
                         </div>
                     </div>

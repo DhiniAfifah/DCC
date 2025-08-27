@@ -351,7 +351,7 @@ export default function Statements({
               {t("statements")}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="grid gap-4">
             {statementFields.map((field, statementIndex) => (
               <div key={field.id} className="grid gap-1 border-b pb-4 relative">
                 <div className="flex items-center justify-between">

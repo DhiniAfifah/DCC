@@ -351,16 +351,16 @@ const multimeterTemplate = {
   equipments: [
     {
       nama_alat: {id: 'Multifunction Calibrator', en: 'Multifunction Calibrator'},
-      manuf_model: {id: '', en: ''},
-      model: {id: 'F.5730A', en: 'F.5730A'},
-      seri_measuring: "SN.4978506",
+      manuf_model: {id: 'Fluke', en: 'Fluke'},
+      model: {id: '5730A', en: '5730A'},
+      seri_measuring: "4978506",
       refType: "basic_measurementStandard",
     },
     {
       nama_alat: {id: 'Transconductance Amplifier', en: 'Transconductance Amplifier'},
-      manuf_model: {id: '', en: ''},
-      model: {id: 'CH.8200', en: 'CH.8200'},
-      seri_measuring: "SN.117",
+      manuf_model: {id: 'Clarke Hess', en: 'Clarke Hess'},
+      model: {id: '8200', en: '8200'},
+      seri_measuring: "117",
       refType: "basic_measurementStandard",
     },
   ],
@@ -388,7 +388,7 @@ const multimeterTemplate = {
       },
     },
     {
-      jenis_kondisi: "Lembap",
+      jenis_kondisi: "Kelembapan",
       desc: {id: '', en: ''},
       tengah: "54",
       tengah_unit: {
@@ -751,7 +751,7 @@ const calibratorTemplate = {
       nama_alat: {id: 'Reference Multimeter', en: 'Reference Multimeter'},
       manuf_model: {id: 'Fluke', en: 'Fluke'},
       model: {id: '8508A', en: '8508A'},
-      seri_measuring: "SN.941254525",
+      seri_measuring: "941254525",
       refType: "basic_measurementStandard",
     },
   ],
@@ -779,7 +779,7 @@ const calibratorTemplate = {
       },
     },
     {
-      jenis_kondisi: "Lembap",
+      jenis_kondisi: "Kelembapan",
       desc: {id: '', en: ''},
       tengah: "56",
       tengah_unit: {
