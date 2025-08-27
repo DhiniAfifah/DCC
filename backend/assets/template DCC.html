@@ -147,7 +147,10 @@
                 width: 100%;
                 margin-bottom: 10px;
             }
-            th {
+            thead { 
+                display: table-header-group; 
+            }
+            .th {
                 border-top: 3px solid black;
                 border-bottom: 3px solid black;
                 text-align: center;
@@ -515,95 +518,101 @@
                 <div id="tabel" style="margin-top: 35px;">
                     {% for res in results %}
                         <table>
-                            <div style="font-size: 14px; font-weight: bold;">
-                                {% if res.parameters.id %}
-                                    {{ res.parameters.id }}
-                                    {% set alt_values = res.parameters | dictsort | rejectattr('0', 'equalto', 'id') | list %}
-                                    {% if alt_values | length > 0 %}
-                                        /
-                                        <i style="font-size: 12px;">
-                                            {% if res.parameters.en %}
-                                                {{ res.parameters.en }}
-                                            {% else %}
-                                                {{ res.parameters | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
-                                            {% endif %}
-                                        </i>
-                                    {% endif %}
-                                {% elif res.parameters.en %}
-                                    {{ res.parameters.en }}
-                                    {% set alt_values = res.parameters | dictsort | rejectattr('0', 'equalto', 'en') | list %}
-                                    {% if alt_values | length > 0 %}
-                                        /
-                                        <i style="font-size: 12px;">
-                                            {{ res.parameters | dictsort | rejectattr('0', 'equalto', 'en') | map(attribute='1') | list | first }}
-                                        </i>
-                                    {% endif %}
-                                {% else %}
-                                    {% set values = res.parameters | dictsort | map(attribute='1') | list %}
-                                    {{ values[0] }}
-                                    {% if values | length > 1 %}
-                                        /
-                                        <i style="font-size: 12px;">{{ values[1] }}</i>
-                                    {% endif %}
-                                {% endif %}
-                            </div>
-
-                            <tr>
-                                {% for col in res.columns %}
-                                    <th colspan="{{ col.subcolumn | length * 2 }}">
-                                        {% if col.name.id %}
-                                            <h4 class="title">{{ col.name.id }}</h4>
-                                            {% set alt_values = col.name | dictsort | rejectattr('0', 'equalto', 'id') | list %}
+                            <thead>
+                                <tr>
+                                    <th colspan="{{ res.columns | length * 2 + 2 }}" style="font-size:14px;">
+                                        {% if res.parameters.id %}
+                                            {{ res.parameters.id }}
+                                            {% set alt_values = res.parameters | dictsort | rejectattr('0', 'equalto', 'id') | list %}
                                             {% if alt_values | length > 0 %}
-                                                <i class="subtitle">
-                                                    {% if col.name.en %}
-                                                        {{ col.name.en }}
+                                                /
+                                                <i style="font-size: 12px;">
+                                                    {% if res.parameters.en %}
+                                                        {{ res.parameters.en }}
                                                     {% else %}
-                                                        {{ col.name | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
+                                                        {{ res.parameters | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
                                                     {% endif %}
                                                 </i>
                                             {% endif %}
-                                        {% elif col.name.en %}
-                                            <h4 class="title">{{ col.name.en }}</h4>
-                                            {% set alt_values = col.name | dictsort | rejectattr('0', 'equalto', 'en') | list %}
+                                        {% elif res.parameters.en %}
+                                            {{ res.parameters.en }}
+                                            {% set alt_values = res.parameters | dictsort | rejectattr('0', 'equalto', 'en') | list %}
                                             {% if alt_values | length > 0 %}
-                                                <i class="subtitle">
-                                                    {{ col.name | dictsort | rejectattr('0', 'equalto', 'en') | map(attribute='1') | list | first }}
+                                                /
+                                                <i style="font-size: 12px;">
+                                                    {{ res.parameters | dictsort | rejectattr('0', 'equalto', 'en') | map(attribute='1') | list | first }}
                                                 </i>
                                             {% endif %}
                                         {% else %}
-                                            {% set values = col.name | dictsort | map(attribute='1') | list %}
-                                            <h4 class="title">{{ values[0] }}</h4>
+                                            {% set values = res.parameters | dictsort | map(attribute='1') | list %}
+                                            {{ values[0] }}
                                             {% if values | length > 1 %}
-                                                <i class="subtitle">{{ values[1] }}</i>
+                                                /
+                                                <i style="font-size: 12px;">{{ values[1] }}</i>
                                             {% endif %}
                                         {% endif %}
                                     </th>
-                                {% endfor %}
+                                </tr>
 
-                                <th colspan="2">
-                                    <h4 class="title">Ketidakpastian</h4>
-                                    <i class="subtitle">Uncertainty</i>
-                                </th>
-                            </tr>
-
-                            {% set subcols = res.columns | map(attribute='subcolumn') | list %}
-                            {% set rows = range(subcols[0] | length) %}
-
-                            {% for i in range(res.columns[0].subcolumn[0].value | length) %}
                                 <tr>
                                     {% for col in res.columns %}
-                                        {% for sub in col.subcolumn %}
-                                            <td class="number">{{ sub.value[i] }}</td>
-                                            <td>{{ sub.unit[i] }}</td>
-                                        {% endfor %}
+                                        <th colspan="{{ col.subcolumn | length * 2 }}" class="th">
+                                            {% if col.name.id %}
+                                                <h4 class="title">{{ col.name.id }}</h4>
+                                                {% set alt_values = col.name | dictsort | rejectattr('0', 'equalto', 'id') | list %}
+                                                {% if alt_values | length > 0 %}
+                                                    <i class="subtitle">
+                                                        {% if col.name.en %}
+                                                            {{ col.name.en }}
+                                                        {% else %}
+                                                            {{ col.name | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
+                                                        {% endif %}
+                                                    </i>
+                                                {% endif %}
+                                            {% elif col.name.en %}
+                                                <h4 class="title">{{ col.name.en }}</h4>
+                                                {% set alt_values = col.name | dictsort | rejectattr('0', 'equalto', 'en') | list %}
+                                                {% if alt_values | length > 0 %}
+                                                    <i class="subtitle">
+                                                        {{ col.name | dictsort | rejectattr('0', 'equalto', 'en') | map(attribute='1') | list | first }}
+                                                    </i>
+                                                {% endif %}
+                                            {% else %}
+                                                {% set values = col.name | dictsort | map(attribute='1') | list %}
+                                                <h4 class="title">{{ values[0] }}</h4>
+                                                {% if values | length > 1 %}
+                                                    <i class="subtitle">{{ values[1] }}</i>
+                                                {% endif %}
+                                            {% endif %}
+                                        </th>
                                     {% endfor %}
-                                    {% if res.uncertainty['value'] is defined and res.uncertainty['value'][i] is defined %}
-                                        <td class="number">{{ res.uncertainty.value[i] }}</td>
-                                        <td>{{ res.uncertainty.unit[i] }}</td>
-                                    {% endif %}
+
+                                    <th colspan="2" class="th">
+                                        <h4 class="title">Ketidakpastian</h4>
+                                        <i class="subtitle">Uncertainty</i>
+                                    </th>
                                 </tr>
-                            {% endfor %}
+                            </thead>
+
+                            <tbody>
+                                {% set subcols = res.columns | map(attribute='subcolumn') | list %}
+                                {% set rows = range(subcols[0] | length) %}
+
+                                {% for i in range(res.columns[0].subcolumn[0].value | length) %}
+                                    <tr>
+                                        {% for col in res.columns %}
+                                            {% for sub in col.subcolumn %}
+                                                <td class="number">{{ sub.value[i] }}</td>
+                                                <td>{{ sub.unit[i] }}</td>
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {% if res.uncertainty['value'] is defined and res.uncertainty['value'][i] is defined %}
+                                            <td class="number">{{ res.uncertainty.value[i] }}</td>
+                                            <td>{{ res.uncertainty.unit[i] }}</td>
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
                         </table>
                     {% endfor %}
                 </div>
