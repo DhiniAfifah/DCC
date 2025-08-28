@@ -74,81 +74,103 @@ const empty_field_error_message = "Input required/dibutuhkan.";
 const FormSchema = z.object({
   methods: z.array(
     z.object({
-      method_name: z.record(z.string()).optional(),
-      method_desc: z.record(z.string()).optional(),
-      norm: z.string().optional(),
+      method_name: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+        message: empty_field_error_message,
+      }),
+      method_desc: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+        message: empty_field_error_message,
+      }),
+      norm: z.string().min(1, { message: empty_field_error_message }),
       refType: z.string().min(1, { message: empty_field_error_message }),
-      has_formula: z.boolean().default(false),
-      formula: z
-        .object({
-          latex: z.string().optional(),
-          mathml: z.string().optional(),
-        })
-        .optional(),
-      has_image: z.boolean().default(false),
-      image: z
-        .object({
-          fileName: z.any().optional(),
-          caption: z.string().optional(),
-          mimeType: z.string().optional(),
-          base64: z.string().optional(),
-        })
-        .optional(),
+      has_formula: z.boolean(),
+      formula: z.object({
+        latex: z.string().optional(),
+        mathml: z.string().optional(),
+      }),
+      has_image: z.boolean(),
+      image: z.object({
+        fileName: z.any().optional(),
+        caption: z.string().optional(),
+        mimeType: z.string().optional(),
+        base64: z.string().optional(),
+      }),
     })
-  ),
+  ).min(1, { message: empty_field_error_message }),
+
   equipments: z.array(
     z.object({
-      nama_alat: z.record(z.string()).optional(),
-      manuf: z.record(z.string()).optional(),
-      model: z.record(z.string()).optional(),
+      nama_alat: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+        message: empty_field_error_message,
+      }),
+      manuf: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+        message: empty_field_error_message,
+      }),
+      model: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+        message: empty_field_error_message,
+      }),
       seri_measuring: z.string().min(1, { message: empty_field_error_message }),
       refType: z.string().min(1, { message: empty_field_error_message }),
     })
-  ),
+  ).min(1, { message: empty_field_error_message }),
+
   conditions: z.array(
     z.object({
       jenis_kondisi: z.string().min(1, { message: empty_field_error_message }),
-      desc: z.record(z.string()).optional(),
+      desc: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+        message: empty_field_error_message,
+      }),
       refType: z.string().min(1, { message: empty_field_error_message }),
       tengah: z.string().min(1, { message: empty_field_error_message }),
       tengah_unit: z.object({
-        prefix: z.string().optional(),
-        prefix_pdf: z.string().optional(),
+        prefix: z.string().min(1, { message: empty_field_error_message }),
+        prefix_pdf: z.string().min(1, { message: empty_field_error_message }),
         unit: z.string().min(1, { message: empty_field_error_message }),
         unit_pdf: z.string().min(1, { message: empty_field_error_message }),
-        eksponen: z.string().optional(),
-        eksponen_pdf: z.string().optional(),
+        eksponen: z.string().min(1, { message: empty_field_error_message }),
+        eksponen_pdf: z.string().min(1, { message: empty_field_error_message }),
       }),
       rentang: z.string().min(1, { message: empty_field_error_message }),
       rentang_unit: z.object({
-        prefix: z.string().optional(),
-        prefix_pdf: z.string().optional(),
+        prefix: z.string().min(1, { message: empty_field_error_message }),
+        prefix_pdf: z.string().min(1, { message: empty_field_error_message }),
         unit: z.string().min(1, { message: empty_field_error_message }),
         unit_pdf: z.string().min(1, { message: empty_field_error_message }),
-        eksponen: z.string().optional(),
-        eksponen_pdf: z.string().optional(),
+        eksponen: z.string().min(1, { message: empty_field_error_message }),
+        eksponen_pdf: z.string().min(1, { message: empty_field_error_message }),
       }),
     })
-  ),
-  excel: typeof window === "undefined" ? z.any() : z.instanceof(FileList),
+  ).min(1, { message: empty_field_error_message }),
+
+  excel: typeof window === "undefined"
+    ? z.any()
+    : z.instanceof(FileList, { message: empty_field_error_message })
+        .refine((files) => files && files.length > 0, {
+          message: empty_field_error_message,
+        }),
+
   sheet_name: z.string().min(1, { message: empty_field_error_message }),
+
   results: z.array(
     z.object({
-      parameters: z.record(z.string()).optional(),
+      parameters: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+        message: empty_field_error_message,
+      }),
       columns: z.array(
         z.object({
-          kolom: z.record(z.string()).optional(),
+          kolom: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+            message: empty_field_error_message,
+          }),
           refType: z.string().min(1, { message: empty_field_error_message }),
           real_list: z.string().min(1, { message: empty_field_error_message }),
         })
-      ),
+      ).min(1, { message: empty_field_error_message }),
       uncertainty: z.object({
-        factor: z.string().optional(),
-        probability: z.string().optional(),
-        distribution: z.string().optional(),
+        factor: z.string().min(1, { message: empty_field_error_message }),
+        probability: z.string().min(1, { message: empty_field_error_message }),
+        distribution: z.string().min(1, { message: empty_field_error_message }),
       }),
     })
-  ),
+  ).min(1, { message: empty_field_error_message }),
 });
 
 interface Uncertainty {
@@ -380,7 +402,7 @@ const Columns = ({
                 <p className="text-sm text-muted-foreground">
                   {t("kolom")} {columnIndex + 1}
                 </p>
-                <p className="text-sm text-red-600">{t("kolom_desc")}</p>
+                <p className="text-sm text-red-500">{t("kolom_desc")}</p>
               </div>
 
               {columnFields.length > 1 && (
@@ -396,10 +418,10 @@ const Columns = ({
             </div>
 
             <div id="nama">
-              <FormLabel variant="mandatory">{t("label")}</FormLabel>
+              <FormLabel>{t("label")}</FormLabel>
               <div className="grid gap-1">
                 {validLanguages.length === 0 ? (
-                  <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                  <p className="text-sm text-red-500">{t("pilih_bahasa")}</p>
                 ) : (
                   validLanguages.map(
                     (lang: { value: string }) => (
@@ -433,7 +455,7 @@ const Columns = ({
             </div>
 
             <div id="refType">
-              <FormLabel variant="mandatory">{t("refType")}</FormLabel>
+              <FormLabel>{t("refType")}</FormLabel>
               <FormField
                 control={control}
                 name={`results.${resultIndex}.columns.${columnIndex}.refType`}
@@ -494,7 +516,7 @@ const Columns = ({
             </div>
 
             <div id="realList">
-              <FormLabel variant="mandatory">{t("subkolom")}</FormLabel>
+              <FormLabel>{t("subkolom")}</FormLabel>
               <FormField
                 control={control}
                 name={`results.${resultIndex}.columns.${columnIndex}.real_list`}
@@ -530,10 +552,12 @@ export default function MeasurementForm({
   formData,
   updateFormData,
   setFileName,
+  onFormReady,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
   setFileName: (name: string) => void;
+  onFormReady?: (form: any) => void;
 }) {
   const { t } = useLanguage();
 
@@ -542,6 +566,10 @@ export default function MeasurementForm({
     mode: "onBlur",
     defaultValues: formData,
   });
+
+  useEffect(() => {
+    onFormReady?.(form);
+  }, []); 
 
   const [isResetting, setIsResetting] = useState(false);
 
@@ -1123,10 +1151,10 @@ export default function MeasurementForm({
                 )}
                 <div className="grid grid-row md:grid-cols-2 gap-4">
                   <div id="method_name">
-                    <FormLabel variant="mandatory">{t("nama")}</FormLabel>
+                    <FormLabel>{t("nama")}</FormLabel>
                     <div className="space-y-1">
                       {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">
+                        <p className="text-sm text-red-500">
                           {t("pilih_bahasa")}
                         </p>
                       ) : (
@@ -1182,7 +1210,7 @@ export default function MeasurementForm({
                   <FormLabel>{t("deskripsi")}</FormLabel>
                   <div className="space-y-1">
                     {validLanguages.length === 0 ? (
-                      <p className="text-sm text-red-600">
+                      <p className="text-sm text-red-500">
                         {t("pilih_bahasa")}
                       </p>
                     ) : (
@@ -1218,7 +1246,7 @@ export default function MeasurementForm({
                 </div>
 
                 <div id="refType" className="mb-3">
-                  <FormLabel variant="mandatory">{t("refType")}</FormLabel>
+                  <FormLabel>{t("refType")}</FormLabel>
                   <FormField
                     control={form.control}
                     name={`methods.${index}.refType`}
@@ -1571,10 +1599,10 @@ export default function MeasurementForm({
                 )}
                 <div className="grid grid-row md:grid-cols-2 gap-4">
                   <div id="nama_alat">
-                    <FormLabel variant="mandatory">{t("nama")}</FormLabel>
+                    <FormLabel>{t("nama")}</FormLabel>
                     <div className="space-y-1">
                       {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">
+                        <p className="text-sm text-red-500">
                           {t("pilih_bahasa")}
                         </p>
                       ) : (
@@ -1609,7 +1637,7 @@ export default function MeasurementForm({
                     </div>
                   </div>
                   <div id="seri_measuring">
-                    <FormLabel variant="mandatory">{t("seri")}</FormLabel>
+                    <FormLabel>{t("seri")}</FormLabel>
                     <FormField
                       control={form.control}
                       name={`equipments.${index}.seri_measuring`}
@@ -1629,7 +1657,7 @@ export default function MeasurementForm({
                     <FormLabel>{t("manuf")}</FormLabel>
                     <div className="space-y-1">
                       {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">
+                        <p className="text-sm text-red-500">
                           {t("pilih_bahasa")}
                         </p>
                       ) : (
@@ -1667,7 +1695,7 @@ export default function MeasurementForm({
                     <FormLabel>{t("model")}</FormLabel>
                     <div className="space-y-1">
                       {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">
+                        <p className="text-sm text-red-500">
                           {t("pilih_bahasa")}
                         </p>
                       ) : (
@@ -1703,7 +1731,7 @@ export default function MeasurementForm({
                   </div>
                 </div>
                 <div id="refType">
-                  <FormLabel variant="mandatory">{t("refType")}</FormLabel>
+                  <FormLabel>{t("refType")}</FormLabel>
                   <FormField
                     control={form.control}
                     name={`equipments.${index}.refType`}
@@ -1781,7 +1809,7 @@ export default function MeasurementForm({
                 )}
                 <div className="grid grid-row md:grid-cols-2 gap-4">
                   <div id="jenis_kondisi">
-                    <FormLabel variant="mandatory">
+                    <FormLabel>
                       {t("lingkungan")}
                     </FormLabel>
                     <FormField
@@ -1831,7 +1859,7 @@ export default function MeasurementForm({
                     <FormLabel>{t("deskripsi")}</FormLabel>
                     <div className="space-y-1">
                       {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">
+                        <p className="text-sm text-red-500">
                           {t("pilih_bahasa")}
                         </p>
                       ) : (
@@ -1869,7 +1897,7 @@ export default function MeasurementForm({
                 <div id="tengah">
                   <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="tengah_value">
-                      <FormLabel variant="mandatory">{t("tengah")}</FormLabel>
+                      <FormLabel>{t("tengah")}</FormLabel>
                       <FormField
                         control={form.control}
                         name={`conditions.${index}.tengah`}
@@ -2038,7 +2066,7 @@ export default function MeasurementForm({
                 <div id="rentang">
                   <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="rentang_value">
-                      <FormLabel variant="mandatory">
+                      <FormLabel>
                         {t("rentang")}
                       </FormLabel>
                       <FormField
@@ -2229,7 +2257,7 @@ export default function MeasurementForm({
           </CardHeader>
           <CardContent className="grid grid-row md:grid-cols-2 gap-4">
             <div id="excel_file">
-              <FormLabel variant="mandatory">{t("excel")}</FormLabel>
+              <FormLabel>{t("excel")}</FormLabel>
               <FormField
                 control={form.control}
                 name="excel"
@@ -2252,7 +2280,7 @@ export default function MeasurementForm({
               />
             </div>
             <div id="sheet">
-              <FormLabel variant="mandatory">{t("sheet")}</FormLabel>
+              <FormLabel>{t("sheet")}</FormLabel>
               <FormField
                 control={form.control}
                 name="sheet_name"
@@ -2315,10 +2343,10 @@ export default function MeasurementForm({
                 )}
 
                 <div id="parameter">
-                  <FormLabel variant="mandatory">{t("judul")}</FormLabel>
+                  <FormLabel>{t("judul")}</FormLabel>
                   <div className="space-y-1">
                     {validLanguages.length === 0 ? (
-                      <p className="text-sm text-red-600">
+                      <p className="text-sm text-red-500">
                         {t("pilih_bahasa")}
                       </p>
                     ) : (

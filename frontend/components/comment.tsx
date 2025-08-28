@@ -21,16 +21,18 @@ import { Textarea } from "@/components/ui/textarea";
 const empty_field_error_message = "Input required/dibutuhkan.";
 const FormSchema = z.object({
   comment: z.object({
-    title: z.string().optional(),
-    desc: z.record(z.string()).optional(),
-    has_file: z.boolean().default(false),
+    title: z.string().min(1, { message: empty_field_error_message }),
+    desc: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+      message: empty_field_error_message,
+    }),
+    has_file: z.boolean(),
     files: z
       .array(
         z.object({
-          file: z.any().optional(),
-          fileName: z.string().optional(),
-          mimeType: z.string().optional(),
-          base64: z.string().optional(),
+          file: z.any(),
+          fileName: z.string().min(1, { message: empty_field_error_message }),
+          mimeType: z.string().min(1, { message: empty_field_error_message }),
+          base64: z.string().min(1, { message: empty_field_error_message }),
         })
       )
       .optional(),
@@ -40,15 +42,21 @@ const FormSchema = z.object({
 export default function Comment({
   formData,
   updateFormData,
+  onFormReady,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
+  onFormReady?: (form: any) => void;
 }) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
     mode: "onBlur",
     defaultValues: formData,
   });
+
+  useEffect(() => {
+    onFormReady?.(form);
+  }, []); 
 
   const [isResetting, setIsResetting] = useState(false);
 

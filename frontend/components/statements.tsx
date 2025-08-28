@@ -38,40 +38,48 @@ const empty_field_error_message = "Input required/dibutuhkan.";
 const FormSchema = z.object({
   statements: z.array(
     z.object({
-      values: z.record(z.string()).optional(),
+      values: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+        message: empty_field_error_message,
+      }),
       refType: z.string().min(1, { message: empty_field_error_message }),
-      has_formula: z.boolean().default(false),
+      has_formula: z.boolean(),
       formula: z
         .object({
-          latex: z.string().optional(),
-          mathml: z.string().optional(),
+          latex: z.string().min(1, { message: empty_field_error_message }),
+          mathml: z.string().min(1, { message: empty_field_error_message }),
         })
         .optional(),
-      has_image: z.boolean().default(false),
+      has_image: z.boolean(),
       image: z
         .object({
-          fileName: z.any().optional(),
-          caption: z.string().optional(),
-          mimeType: z.string().optional(),
-          base64: z.string().optional(),
+          fileName: z.string().min(1, { message: empty_field_error_message }),
+          caption: z.string().min(1, { message: empty_field_error_message }),
+          mimeType: z.string().min(1, { message: empty_field_error_message }),
+          base64: z.string().min(1, { message: empty_field_error_message }),
         })
         .optional(),
     })
-  ),
+  ).min(1, { message: empty_field_error_message }),
 });
 
 export default function Statements({
   formData,
   updateFormData,
+  onFormReady,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
+  onFormReady?: (form: any) => void;
 }) {
   const form = useForm({
     resolver: zodResolver(FormSchema),
     mode: "onBlur", // Ubah dari "onChange" ke "onBlur" untuk stabilitas
     defaultValues: formData,
   });
+
+  useEffect(() => {
+    onFormReady?.(form);
+  }, []); 
 
   // Stabilkan updateFormData dengan useCallback
   const updateFormDataCallback = useCallback((data: any) => {
@@ -403,7 +411,7 @@ export default function Statements({
                 )}
 
                 <div id="refType" className="my-3">
-                  <FormLabel variant="mandatory">{t("refType")}</FormLabel>
+                  <FormLabel>{t("refType")}</FormLabel>
                   <FormField
                     control={form.control}
                     name={`statements.${statementIndex}.refType`}

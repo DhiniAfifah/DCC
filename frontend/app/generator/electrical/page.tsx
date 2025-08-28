@@ -1009,6 +1009,18 @@ const calibratorTemplate = {
 export default function CreateDCC() {
   const { t } = useLanguage();
 
+  const [formApis, setFormApis] = useState<any[]>([]);
+
+  const registerFormApi = (index: number, api: any) => {
+    setFormApis((prev) => {
+      const copy = [...prev];
+      copy[index] = api;
+      return copy;
+    });
+  };
+
+  const [formApi, setFormApi] = useState<any>(null);
+
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [previewFiles, setPreviewFiles] = useState<{pdf: string | null, xml: string | null}>({
     pdf: null,
@@ -1248,12 +1260,23 @@ export default function CreateDCC() {
     return () => clearTimeout(debounceTimer);
   }, [formData, currentStep]);
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < steps.length - 1) {
+      const currentForm = formApis[currentStep];
+      if (currentForm) {
+        const isValid = await currentForm.trigger();
+        if (!isValid) {
+          const firstError = document.querySelector("[data-invalid='true']");
+          if (firstError) {
+            firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+          return; // stop navigation if invalid
+        }
+      }
+
       const newStep = currentStep + 1;
       setCurrentStep(newStep);
-      
-      // Generate preview when moving to preview step
+
       if (newStep === 4) {
         generatePreview();
       }
@@ -1469,23 +1492,19 @@ export default function CreateDCC() {
         onStepClick={setCurrentStep}
       />
 
-      <div className="flex justify-center">
-        <Select onValueChange={setSelectedTemplate} value={selectedTemplate}>
-          <SelectTrigger className="w-[400px] mt-10 bg-white">
-            <SelectValue placeholder={t("template")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="multimeter">Digital Multimeter {t("using")} Fluke 5730A</SelectItem>
-            <SelectItem value="calibrator">Multiproduct Calibrator {t("using")} Fluke 8508A</SelectItem>
-            <SelectItem value="blank">{t("blank")}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
       {currentStep !== 4 && (
-        <p className="mt-6 text-center text-red-600 text-sm">
-          * {t("asterisk")}
-        </p>
+        <div className="flex justify-center mb-4">
+          <Select onValueChange={setSelectedTemplate} value={selectedTemplate}>
+            <SelectTrigger className="w-[400px] mt-10 bg-white">
+              <SelectValue placeholder={t("template")} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="multimeter">Digital Multimeter {t("using")} Fluke 5730A</SelectItem>
+              <SelectItem value="calibrator">Multiproduct Calibrator {t("using")} Fluke 8508A</SelectItem>
+              <SelectItem value="blank">{t("blank")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       )}
       
       <div className="space-y-10">
@@ -1493,6 +1512,7 @@ export default function CreateDCC() {
           <AdministrativeForm
             formData={formData}
             updateFormData={updateFormData}
+            onFormReady={(api) => registerFormApi(0, api)}
           />
         )}
         {currentStep === 1 && (
@@ -1500,13 +1520,22 @@ export default function CreateDCC() {
             formData={formData}
             updateFormData={updateFormData}
             setFileName={setFileName}
+            onFormReady={(api) => registerFormApi(1, api)}
           />
         )}
         {currentStep === 2 && (
-          <Statements formData={formData} updateFormData={updateFormData} />
+          <Statements 
+            formData={formData} 
+            updateFormData={updateFormData}
+            onFormReady={(api) => registerFormApi(2, api)}
+          />
         )}
         {currentStep === 3 && (
-          <Comment formData={formData} updateFormData={updateFormData} />
+          <Comment 
+            formData={formData} 
+            updateFormData={updateFormData}
+            onFormReady={(api) => registerFormApi(3, api)}
+          />
         )}
         {currentStep === 4 && (
           <Preview 

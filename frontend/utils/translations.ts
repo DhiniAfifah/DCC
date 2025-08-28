@@ -64,6 +64,7 @@ const translations: Record<string, { id: string; en: string }> = {
     id: "Menandakan pertanyaan wajib",
     en: "Indicates required question",
   },
+  
   submit: { id: "Kirim", en: "Submit" },
 
   pilih_bahasa: {id: "Tolong pilih bahasa yang digunakan.", en: "Please select the used languages."},

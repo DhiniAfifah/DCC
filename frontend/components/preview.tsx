@@ -110,19 +110,8 @@ export default function Preview({ previewFiles, isLoading, onRefresh }: PreviewP
     }).join("\n");
   };
 
-  const copyXmlToClipboard = async () => {
-    if (!xmlText) return;
-    try {
-      await navigator.clipboard.writeText(xmlText);
-      // optionally show small toast / UI feedback
-      alert("XML copied to clipboard");
-    } catch {
-      alert("Failed to copy");
-    }
-  };
-
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6 mt-4">
       <Card>
         <CardHeader className="flex items-center justify-between">
           <div className="flex gap-2 items-center">
