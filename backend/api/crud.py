@@ -50,11 +50,6 @@ def get_project_paths(dcc: schemas.DCCFormCreate, db_id: int = None):
         if not assets_dir.exists():
             raise FileNotFoundError(f"Folder assets tidak ditemukan di: {assets_dir}")
             
-        # template
-        template_path = assets_dir / "template DCC.docx"
-        if not template_path.exists():
-            raise FileNotFoundError(f"Template tidak ditemukan di: {template_path}")
-            
         excel_path = backend_root / "uploads" / dcc.excel
         if not excel_path.exists():
             # Try the api/uploads path
@@ -69,7 +64,6 @@ def get_project_paths(dcc: schemas.DCCFormCreate, db_id: int = None):
             filename_base = dcc.administrative_data.sertifikat
         
         return {
-            'template': template_path,
             'word_output': backend_root / "dcc_files" / f"{filename_base}.docx",
             'pdf_output': backend_root / "dcc_files" / f"{filename_base}.pdf",
             'xml_output': dcc_files_dir / f"{filename_base}.xml", 
