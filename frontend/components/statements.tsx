@@ -65,21 +65,27 @@ const FormSchema = z.object({
 export default function Statements({
   formData,
   updateFormData,
-  onFormReady,
+  onValidationChange,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
-  onFormReady?: (form: any) => void;
+  onValidationChange?: (isValid: boolean) => void;
 }) {
+  // Add validation check effect
+  useEffect(() => {
+    const validateForm = () => {
+      const result = FormSchema.safeParse(formData);
+      onValidationChange?.(result.success);
+    };
+
+    validateForm();
+  }, [formData, onValidationChange]);
+
   const form = useForm({
     resolver: zodResolver(FormSchema),
     mode: "onBlur", // Ubah dari "onChange" ke "onBlur" untuk stabilitas
     defaultValues: formData,
   });
-
-  useEffect(() => {
-    onFormReady?.(form);
-  }, []); 
 
   // Stabilkan updateFormData dengan useCallback
   const updateFormDataCallback = useCallback((data: any) => {

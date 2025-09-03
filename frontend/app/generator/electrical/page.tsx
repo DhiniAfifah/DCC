@@ -1009,17 +1009,283 @@ const calibratorTemplate = {
 export default function CreateDCC() {
   const { t } = useLanguage();
 
-  const [formApis, setFormApis] = useState<any[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  const registerFormApi = (index: number, api: any) => {
-    setFormApis((prev) => {
-      const copy = [...prev];
-      copy[index] = api;
-      return copy;
-    });
+  // Add validation function
+  const getValidationErrors = (): string[] => {
+    const errors: string[] = [];
+
+    const usedLanguages = formData.administrative_data.used_languages?.filter(
+      (lang: any) => lang.value && lang.value.trim()
+    ) || [];
+    
+    switch (currentStep) {
+      case 0: // Administrative Form
+        if (!formData.software?.trim()) errors.push("Software name is required");
+        if (!formData.version?.trim()) errors.push("Software version is required");
+
+        if (!formData.administrative_data.core_issuer?.trim()) errors.push("Country code is required");
+        if (!formData.administrative_data.country_code?.trim()) errors.push("Country code is required");
+        if (!formData.administrative_data.used_languages?.length) errors.push("At least one used language is required");
+        if (!formData.administrative_data.mandatory_languages?.length) errors.push("At least one mandatory language is required");
+        if (!formData.administrative_data.sertifikat?.trim()) errors.push("Certificate number is required");
+        if (!formData.administrative_data.order?.trim()) errors.push("Order number is required");
+        if (!formData.administrative_data.tempat?.trim()) errors.push("Location is required");
+        if (!formData.administrative_data.tempat_pdf?.trim()) errors.push("Location is required");
+
+        if (!formData.Measurement_TimeLine.tgl_mulai) errors.push("Start date is required");
+        if (!formData.Measurement_TimeLine.tgl_akhir) errors.push("End date is required");
+        if (!formData.Measurement_TimeLine.tgl_pengesahan) errors.push("Validation date is required");
+
+        if (!formData.objects?.length) {
+          errors.push("At least one object is required");
+        } else {
+          formData.objects.forEach((obj: any, index: number) => {
+            // Check jenis (all languages must be filled)
+            if (!obj.jenis || Object.keys(obj.jenis).length === 0) {
+              errors.push(`Object ${index + 1}: Type/Jenis is required`);
+            } else {
+              // Check that ALL used languages have values
+              usedLanguages.forEach((lang: any) => {
+                if (!obj.jenis[lang.value]?.trim()) {
+                  errors.push(`Object ${index + 1}: Type/Jenis must be filled for "${lang.value}" language`);
+                }
+              });
+            }
+            // Check other required fields
+            if (!obj.merek?.trim()) errors.push(`Object ${index + 1}: Brand/Merek is required`);
+            if (!obj.tipe?.trim()) errors.push(`Object ${index + 1}: Type/Tipe is required`);
+            if (!obj.item_issuer?.trim()) errors.push(`Object ${index + 1}: Item issuer is required`);
+            if (!obj.seri_item?.trim()) errors.push(`Object ${index + 1}: Serial number is required`);
+            // Check id_lain (all languages must be filled)
+            if (!obj.id_lain || Object.keys(obj.id_lain).length === 0) {
+              errors.push(`Object ${index + 1}: Other ID is required`);
+            } else {
+              // Check that ALL used languages have values
+              usedLanguages.forEach((lang: any) => {
+                if (!obj.id_lain[lang.value]?.trim()) {
+                  errors.push(`Object ${index + 1}: Other ID must be filled for "${lang.value}" language`);
+                }
+              });
+            }
+          });
+        }
+        
+        if (!formData.responsible_persons.pelaksana?.length) {
+          errors.push("At least one executor is required");
+        } else {
+          formData.responsible_persons.pelaksana.forEach((person: any, index: number) => {
+            if (!person.nama_resp?.trim()) errors.push(`Executor ${index + 1}: Name is required`);
+            if (!person.nip?.trim()) errors.push(`Executor ${index + 1}: NIP is required`);
+          });
+        }
+        if (!formData.responsible_persons.penyelia?.length) {
+          errors.push("At least one supervisor is required");
+        } else {
+          formData.responsible_persons.penyelia.forEach((person: any, index: number) => {
+            if (!person.nama_resp?.trim()) errors.push(`Supervisor ${index + 1}: Name is required`);
+            if (!person.nip?.trim()) errors.push(`Supervisor ${index + 1}: NIP is required`);
+          });
+        }
+        if (!formData.responsible_persons.kepala.nama_resp?.trim()) errors.push("Head of laboratory name is required");
+        if (!formData.responsible_persons.kepala.nip?.trim()) errors.push("Head of laboratory NIP is required");
+        if (!formData.responsible_persons.kepala.peran?.trim()) errors.push("Head of laboratory name is required");
+        if (!formData.responsible_persons.direktur.nama_resp?.trim()) errors.push("Director name is required");
+        if (!formData.responsible_persons.direktur.nip?.trim()) errors.push("Head of laboratory NIP is required");
+        if (!formData.responsible_persons.direktur.peran?.trim()) errors.push("Head of laboratory name is required");
+
+        if (!formData.owner.nama_cust?.trim()) errors.push("Customer name is required");
+        if (!formData.owner.jalan_cust?.trim()) errors.push("Customer street address is required");
+        if (!formData.owner.no_jalan_cust?.trim()) errors.push("Customer street number is required");
+        if (!formData.owner.kota_cust?.trim()) errors.push("Customer city is required");
+        if (!formData.owner.state_cust?.trim()) errors.push("Customer state is required");
+        if (!formData.owner.pos_cust?.trim()) errors.push("Customer postal code is required");
+        if (!formData.owner.negara_cust?.trim()) errors.push("Customer country is required");
+        break;
+
+      case 1: // Measurement Form
+        if (!formData.methods?.length) {
+          errors.push("At least one method is required");
+        } else {
+          formData.methods.forEach((method: any, index: number) => {
+            // Check method_name (all languages must be filled)
+            if (!method.method_name || Object.keys(method.method_name).length === 0) {
+              errors.push(`Method ${index + 1}: Method name is required`);
+            } else {
+              // Check that ALL used languages have values
+              usedLanguages.forEach((lang: any) => {
+                if (!method.method_name[lang.value]?.trim()) {
+                  errors.push(`Method ${index + 1}: Method name must be filled for "${lang.value}" language`);
+                }
+              });
+            }
+            // Check method_desc (all languages must be filled)
+            if (!method.method_desc || Object.keys(method.method_desc).length === 0) {
+              errors.push(`Method ${index + 1}: Method description is required`);
+            } else {
+              // Check that ALL used languages have values
+              usedLanguages.forEach((lang: any) => {
+                if (!method.method_desc[lang.value]?.trim()) {
+                  errors.push(`Method ${index + 1}: Method description must be filled for "${lang.value}" language`);
+                }
+              });
+            }
+            if (!method.norm?.trim()) errors.push(`Method ${index + 1}: Norm is required`);
+            if (!method.refType?.trim()) errors.push(`Method ${index + 1}: Reference type is required`);
+          });
+        }
+        
+        if (!formData.equipments?.length) {
+          errors.push("At least one equipment is required");
+        } else {
+          formData.equipments.forEach((equip: any, index: number) => {
+            // Check nama_alat (all languages must be filled)
+            if (!equip.nama_alat || Object.keys(equip.nama_alat).length === 0) {
+              errors.push(`Equipment ${index + 1}: Equipment name is required`);
+            } else {
+              // Check that ALL used languages have values
+              usedLanguages.forEach((lang: any) => {  
+                if (!equip.nama_alat[lang.value]?.trim()) {
+                  errors.push(`Equipment ${index + 1}: Equipment name must be filled for "${lang.value}" language`);
+                }
+              });
+            }
+            // Check manuf_model (all languages must be filled)
+            if (!equip.manuf_model || Object.keys(equip.manuf_model).length === 0) {
+              errors.push(`Equipment ${index + 1}: Manufacturer/Model is required`);
+            } else {
+              // Check that ALL used languages have values
+              usedLanguages.forEach((lang: any) => {
+                if (!equip.manuf_model[lang.value]?.trim()) {
+                  errors.push(`Equipment ${index + 1}: Manufacturer/Model must be filled for "${lang.value}" language`);
+                }
+              });
+            }
+            // Check model (all languages must be filled)
+            if (!equip.model || Object.keys(equip.model).length === 0) {
+              errors.push(`Equipment ${index + 1}: Model is required`);
+            } else {
+              // Check that ALL used languages have values
+              usedLanguages.forEach((lang: any) => {
+                if (!equip.model[lang.value]?.trim()) {
+                  errors.push(`Equipment ${index + 1}: Model must be filled for "${lang.value}" language`);
+                }
+              });
+            }
+            if (!equip.seri_measuring?.trim()) errors.push(`Equipment ${index + 1}: Serial number is required`);
+            if (!equip.refType?.trim()) errors.push(`Equipment ${index + 1}: Reference type is required`);
+          });
+        }
+
+        if (!formData.conditions?.length) {
+          errors.push("At least one condition is required");
+        } else {
+          formData.conditions.forEach((cond: any, index: number) => {
+            if (!cond.jenis_kondisi?.trim()) errors.push(`Condition ${index + 1}: Condition type is required`);
+            // Check desc (all languages must be filled)
+            if (!cond.desc || Object.keys(cond.desc).length === 0) {
+              errors.push(`Condition ${index + 1}: Description is required`);
+            } else {
+              // Check that ALL used languages have values
+              usedLanguages.forEach((lang: any) => {
+                if (!cond.desc[lang.value]?.trim()) {
+                  errors.push(`Condition ${index + 1}: Description must be filled for "${lang.value}" language`);
+                }
+              });
+            }
+            if (!cond.tengah?.trim()) errors.push(`Condition ${index + 1}: Mid value is required`);
+            if (!cond.tengah_unit?.unit?.trim()) errors.push(`Condition ${index + 1}: Mid value unit is required`);
+            if (!cond.rentang?.trim()) errors.push(`Condition ${index + 1}: Range value is required`);
+            if (!cond.rentang_unit?.unit?.trim()) errors.push(`Condition ${index + 1}: Range value unit is required`);
+          });
+        }
+
+        if (!formData.excel || formData.excel.length === 0) {
+          errors.push("Excel file is required");
+        }
+        if (!formData.sheet_name?.trim()) errors.push("Sheet name is required");
+        
+        if (!formData.results?.length) {
+          errors.push("At least one result parameter is required");
+        } else {
+          formData.results.forEach((result: any, index: number) => {
+            // Check parameters (all languages must be filled)  
+            if (!result.parameters || Object.keys(result.parameters).length === 0) {
+              errors.push(`Result ${index + 1}: Parameter is required`);
+            } else {
+              // Check that ALL used languages have values
+              usedLanguages.forEach((lang: any) => {  
+                if (!result.parameters[lang.value]?.trim()) {
+                  errors.push(`Result ${index + 1}: Parameter must be filled for "${lang.value}" language`);
+                }
+              });
+            }
+            if (!result.columns?.length) {
+              errors.push(`Result ${index + 1}: At least one column is required`);
+            } else {
+              result.columns.forEach((col: any, colIndex: number) => {
+                // Check kolom (all languages must be filled) 
+                if (!col.kolom || Object.keys(col.kolom).length === 0) {
+                  errors.push(`Result ${index + 1}, Column ${colIndex + 1}: Column name is required`);
+                } else {
+                  // Check that ALL used languages have values
+                  usedLanguages.forEach((lang: any) => {  
+                    if (!col.kolom[lang.value]?.trim()) {
+                      errors.push(`Result ${index + 1}, Column ${colIndex + 1}: Column name must be filled for "${lang.value}" language`);
+                    }
+                  });
+                }
+                if (!col.refType?.trim()) errors.push(`Result ${index + 1}, Column ${colIndex + 1}: Reference type is required`);
+                if (!col.real_list?.trim()) errors.push(`Result ${index + 1}, Column ${colIndex + 1}: Real list is required`);
+              });
+            }
+            if (!result.uncertainty?.factor?.trim()) errors.push(`Result ${index + 1}: Uncertainty factor is required`);
+            if (!result.uncertainty?.probability?.trim()) errors.push(`Result ${index + 1}: Uncertainty probability is required`);
+            if (!result.uncertainty?.distribution?.trim()) errors.push(`Result ${index + 1}: Uncertainty distribution is required`);
+          });
+        }
+        break;
+
+      case 2: // Statements
+        if (!formData.statements?.length) {
+          errors.push("At least one statement is required");
+        } else {
+          formData.statements.forEach((stmt: any, index: number) => {
+            // Check values (all languages must be filled)
+            if (!stmt.values || Object.keys(stmt.values).length === 0) {
+              errors.push(`Statement ${index + 1}: Statement text is required`);
+            } else {
+              // Check that ALL used languages have values
+              usedLanguages.forEach((lang: any) => {  
+                if (!stmt.values[lang.value]?.trim()) {
+                  errors.push(`Statement ${index + 1}: Statement text must be filled for "${lang.value}" language`);
+                }
+              });
+            }
+            if (!stmt.refType?.trim()) errors.push(`Statement ${index + 1}: Reference type is required`);
+          });
+        }
+        break;
+
+      case 3: // Comment
+        if (!formData.comment.title?.trim()) errors.push("Comment title is required");
+        if (!formData.comment.desc || Object.keys(formData.comment.desc).length === 0) {
+          errors.push("Comment description is required");
+        } else {
+          // Check that ALL used languages have values
+          usedLanguages.forEach((lang: any) => {
+            const langValue = lang.value as string;
+            const descValue = (formData.comment.desc as any)[langValue]; // Type assertion to fix the error
+            if (!descValue?.trim()) {
+              errors.push(`Comment description must be filled for "${langValue}" language`);
+            }
+          });
+        }
+        break;
+    }
+
+    return errors;
   };
-
-  const [formApi, setFormApi] = useState<any>(null);
 
   const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null);
   const [previewFiles, setPreviewFiles] = useState<{pdf: string | null, xml: string | null}>({
@@ -1260,20 +1526,17 @@ export default function CreateDCC() {
     return () => clearTimeout(debounceTimer);
   }, [formData, currentStep]);
 
-  const nextStep = async () => {
+  const nextStep = () => {
     if (currentStep < steps.length - 1) {
-      const currentForm = formApis[currentStep];
-      if (currentForm) {
-        const isValid = await currentForm.trigger();
-        if (!isValid) {
-          const firstError = document.querySelector("[data-invalid='true']");
-          if (firstError) {
-            firstError.scrollIntoView({ behavior: "smooth", block: "center" });
-          }
-          return; // stop navigation if invalid
-        }
+      // Run validation and get errors immediately
+      const errors = getValidationErrors();
+      
+      if (errors.length > 0) {
+        // Show specific validation errors immediately
+        alert(`Please fill in all required fields:\n\n${errors.join('\n')}`);
+        return;
       }
-
+      
       const newStep = currentStep + 1;
       setCurrentStep(newStep);
 
@@ -1507,12 +1770,11 @@ export default function CreateDCC() {
         </div>
       )}
       
-      <div className="space-y-10">
+      <div className="space-y-10 mt-10">
         {currentStep === 0 && (
           <AdministrativeForm
             formData={formData}
             updateFormData={updateFormData}
-            onFormReady={(api) => registerFormApi(0, api)}
           />
         )}
         {currentStep === 1 && (
@@ -1520,21 +1782,18 @@ export default function CreateDCC() {
             formData={formData}
             updateFormData={updateFormData}
             setFileName={setFileName}
-            onFormReady={(api) => registerFormApi(1, api)}
           />
         )}
         {currentStep === 2 && (
           <Statements 
             formData={formData} 
             updateFormData={updateFormData}
-            onFormReady={(api) => registerFormApi(2, api)}
           />
         )}
         {currentStep === 3 && (
           <Comment 
             formData={formData} 
             updateFormData={updateFormData}
-            onFormReady={(api) => registerFormApi(3, api)}
           />
         )}
         {currentStep === 4 && (
@@ -1591,7 +1850,11 @@ export default function CreateDCC() {
             )}
           </div>
         ) : (
-          <Button onClick={nextStep} variant="blue" disabled={isProcessingSubmission}>
+          <Button 
+            onClick={nextStep} 
+            variant="blue" 
+            disabled={isProcessingSubmission}
+          >
             <ArrowRight />
           </Button>
         )}

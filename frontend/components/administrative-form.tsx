@@ -152,7 +152,7 @@ export const FormSchema = z.object({
     kepala: z.object({
       nama_resp: z.string().min(1, { message: empty_field_error_message }),
       nip: z.string().min(1, { message: empty_field_error_message }),
-      lab: z.string().min(1, { message: empty_field_error_message }),
+      peran: z.string().min(1, { message: empty_field_error_message }),
       main_signer: z.boolean(),
       signature: z.boolean(),
       timestamp: z.boolean(),
@@ -160,7 +160,7 @@ export const FormSchema = z.object({
     direktur: z.object({
       nama_resp: z.string().min(1, { message: empty_field_error_message }),
       nip: z.string().min(1, { message: empty_field_error_message }),
-      jabatan: z.string().min(1, { message: empty_field_error_message }),
+      peran: z.string().min(1, { message: empty_field_error_message }),
       main_signer: z.boolean(),
       signature: z.boolean(),
       timestamp: z.boolean(),
@@ -180,12 +180,22 @@ export const FormSchema = z.object({
 export default function AdministrativeForm({
   formData,
   updateFormData,
-  onFormReady,
+  onValidationChange, // Add this prop
 }: {
   formData: any;
   updateFormData: (data: any) => void;
-  onFormReady?: (form: any) => void;
+  onValidationChange?: (isValid: boolean) => void; // Add this prop
 }) {
+  // Add validation check effect
+  useEffect(() => {
+    const validateForm = () => {
+      const result = FormSchema.safeParse(formData);
+      onValidationChange?.(result.success);
+    };
+
+    validateForm();
+  }, [formData, onValidationChange]);
+  
   const { t } = useLanguage();
 
   const form = useForm({
@@ -193,10 +203,6 @@ export default function AdministrativeForm({
     mode: "onBlur",
     defaultValues: formData,
   });
-
-  useEffect(() => {
-    onFormReady?.(form);
-  }, []); 
 
   useEffect(() => {
     if (JSON.stringify(form.getValues()) !== JSON.stringify(formData)) {
@@ -1421,7 +1427,7 @@ export default function AdministrativeForm({
                   <FormLabel>{t("lab")}</FormLabel>
                   <FormField
                     control={form.control}
-                    name="responsible_persons.kepala.lab"
+                    name="responsible_persons.kepala.peran"
                     render={({ field }) => (
                       <FormItem>
                         <Select
@@ -1510,7 +1516,7 @@ export default function AdministrativeForm({
                   <FormLabel>{t("jabatan")}</FormLabel>
                   <FormField
                     control={form.control}
-                    name="responsible_persons.direktur.jabatan"
+                    name="responsible_persons.direktur.peran"
                     render={({ field }) => (
                       <FormItem>
                         <Select

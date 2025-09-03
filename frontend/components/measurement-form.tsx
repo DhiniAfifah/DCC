@@ -122,21 +122,21 @@ const FormSchema = z.object({
       refType: z.string().min(1, { message: empty_field_error_message }),
       tengah: z.string().min(1, { message: empty_field_error_message }),
       tengah_unit: z.object({
-        prefix: z.string().min(1, { message: empty_field_error_message }),
-        prefix_pdf: z.string().min(1, { message: empty_field_error_message }),
+        prefix: z.string().optional(),
+        prefix_pdf: z.string().optional(),
         unit: z.string().min(1, { message: empty_field_error_message }),
         unit_pdf: z.string().min(1, { message: empty_field_error_message }),
-        eksponen: z.string().min(1, { message: empty_field_error_message }),
-        eksponen_pdf: z.string().min(1, { message: empty_field_error_message }),
+        eksponen: z.string().optional(),
+        eksponen_pdf: z.string().optional(),
       }),
       rentang: z.string().min(1, { message: empty_field_error_message }),
       rentang_unit: z.object({
-        prefix: z.string().min(1, { message: empty_field_error_message }),
-        prefix_pdf: z.string().min(1, { message: empty_field_error_message }),
+        prefix: z.string().optional(),
+        prefix_pdf: z.string().optional(),
         unit: z.string().min(1, { message: empty_field_error_message }),
         unit_pdf: z.string().min(1, { message: empty_field_error_message }),
-        eksponen: z.string().min(1, { message: empty_field_error_message }),
-        eksponen_pdf: z.string().min(1, { message: empty_field_error_message }),
+        eksponen: z.string().optional(),
+        eksponen_pdf: z.string().optional(),
       }),
     })
   ).min(1, { message: empty_field_error_message }),
@@ -552,13 +552,23 @@ export default function MeasurementForm({
   formData,
   updateFormData,
   setFileName,
-  onFormReady,
+  onValidationChange,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
   setFileName: (name: string) => void;
-  onFormReady?: (form: any) => void;
+  onValidationChange?: (isValid: boolean) => void;
 }) {
+  // Add validation check effect
+  useEffect(() => {
+    const validateForm = () => {
+      const result = FormSchema.safeParse(formData);
+      onValidationChange?.(result.success);
+    };
+
+    validateForm();
+  }, [formData, onValidationChange]);
+
   const { t } = useLanguage();
 
   const form = useForm({
@@ -566,10 +576,6 @@ export default function MeasurementForm({
     mode: "onBlur",
     defaultValues: formData,
   });
-
-  useEffect(() => {
-    onFormReady?.(form);
-  }, []); 
 
   const [isResetting, setIsResetting] = useState(false);
 
