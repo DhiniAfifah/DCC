@@ -76,106 +76,16 @@ const fetchCountries = async (): Promise<Country[]> => {
   }
 };
 
-const empty_field_error_message = "Input required/dibutuhkan.";
-
-const dateField = z.union([
-  z.date(),
-  z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: empty_field_error_message, // custom message
-  }),
-]).transform((val) => {
-  if (val instanceof Date) return val;
-  return new Date(val);
-});
-
-export const FormSchema = z.object({
-  software: z.string().min(1, { message: empty_field_error_message }),
-  version: z.string().min(1, { message: empty_field_error_message }),
-  administrative_data: z.object({
-    core_issuer: z.string().min(1, { message: empty_field_error_message }),
-    country_code: z.string().min(1, { message: empty_field_error_message }),
-    used_languages: z.array(
-      z.object({
-        value: z.string().min(1, { message: empty_field_error_message }),
-      })
-    ).min(1, { message: empty_field_error_message }),
-    mandatory_languages: z.array(
-      z.object({
-        value: z.string().min(1, { message: empty_field_error_message }),
-      })
-    ).min(1, { message: empty_field_error_message }),
-    sertifikat: z.string().min(1, { message: empty_field_error_message }),
-    order: z.string().min(1, { message: empty_field_error_message }),
-    tempat: z.string().min(1, { message: empty_field_error_message }),
-    tempat_pdf: z.string().min(1, { message: empty_field_error_message }),
-  }),
-  Measurement_TimeLine: z.object({
-    tgl_mulai: dateField,
-    tgl_akhir: dateField,
-    tgl_pengesahan: dateField,
-  }),
-  objects: z.array(
-    z.object({
-      jenis: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-        message: empty_field_error_message,
-      }),
-      merek: z.string().min(1, { message: empty_field_error_message }),
-      tipe: z.string().min(1, { message: empty_field_error_message }),
-      item_issuer: z.string().min(1, { message: empty_field_error_message }),
-      seri_item: z.string().min(1, { message: empty_field_error_message }),
-      id_lain: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-        message: empty_field_error_message,
-      }),
-    })
-  ).min(1, { message: empty_field_error_message }),
-  responsible_persons: z.object({
-    pelaksana: z.array(
-      z.object({
-        nama_resp: z.string().min(1, { message: empty_field_error_message }),
-        nip: z.string().min(1, { message: empty_field_error_message }),
-        peran: z.string().min(1, { message: empty_field_error_message }),
-        main_signer: z.boolean(),
-        signature: z.boolean(),
-        timestamp: z.boolean(),
-      })
-    ).min(1, { message: empty_field_error_message }),
-    penyelia: z.array(
-      z.object({
-        nama_resp: z.string().min(1, { message: empty_field_error_message }),
-        nip: z.string().min(1, { message: empty_field_error_message }),
-        peran: z.string().min(1, { message: empty_field_error_message }),
-        main_signer: z.boolean(),
-        signature: z.boolean(),
-        timestamp: z.boolean(),
-      })
-    ).min(1, { message: empty_field_error_message }),
-    kepala: z.object({
-      nama_resp: z.string().min(1, { message: empty_field_error_message }),
-      nip: z.string().min(1, { message: empty_field_error_message }),
-      peran: z.string().min(1, { message: empty_field_error_message }),
-      main_signer: z.boolean(),
-      signature: z.boolean(),
-      timestamp: z.boolean(),
+const dateField = (t: (key: string) => string) =>
+  z.union([
+    z.date(),
+    z.string().refine((val) => !isNaN(Date.parse(val)), {
+      message: t("input_required"), // custom message
     }),
-    direktur: z.object({
-      nama_resp: z.string().min(1, { message: empty_field_error_message }),
-      nip: z.string().min(1, { message: empty_field_error_message }),
-      peran: z.string().min(1, { message: empty_field_error_message }),
-      main_signer: z.boolean(),
-      signature: z.boolean(),
-      timestamp: z.boolean(),
-    }),
-  }),
-  owner: z.object({
-    nama_cust: z.string().min(1, { message: empty_field_error_message }),
-    jalan_cust: z.string().min(1, { message: empty_field_error_message }),
-    no_jalan_cust: z.string().min(1, { message: empty_field_error_message }),
-    kota_cust: z.string().min(1, { message: empty_field_error_message }),
-    state_cust: z.string().min(1, { message: empty_field_error_message }),
-    pos_cust: z.string().min(1, { message: empty_field_error_message }),
-    negara_cust: z.string().min(1, { message: empty_field_error_message }),
-  }),
-});
+  ]).transform((val) => {
+    if (val instanceof Date) return val;
+    return new Date(val);
+  });
 
 export default function AdministrativeForm({
   formData,
@@ -197,6 +107,99 @@ export default function AdministrativeForm({
   }, [formData, onValidationChange]);
   
   const { t } = useLanguage();
+
+  const FormSchema = useMemo(
+    () =>
+      z.object({
+        software: z.string().min(1, { message: t("input_required") }),
+        version: z.string().min(1, { message: t("input_required") }),
+        administrative_data: z.object({
+          core_issuer: z.string().min(1, { message: t("input_required") }),
+          country_code: z.string().min(1, { message: t("input_required") }),
+          used_languages: z.array(
+            z.object({
+              value: z.string().min(1, { message: t("input_required") }),
+            })
+          ).min(1, { message: t("input_required") }),
+          mandatory_languages: z.array(
+            z.object({
+              value: z.string().min(1, { message: t("input_required") }),
+            })
+          ).min(1, { message: t("input_required") }),
+          sertifikat: z.string().min(1, { message: t("input_required") }),
+          order: z.string().min(1, { message: t("input_required") }),
+          tempat: z.string().min(1, { message: t("input_required") }),
+          tempat_pdf: z.string().min(1, { message: t("input_required") }),
+        }),
+        Measurement_TimeLine: z.object({
+          tgl_mulai: dateField(t),
+          tgl_akhir: dateField(t),
+          tgl_pengesahan: dateField(t),
+        }),
+        objects: z.array(
+          z.object({
+            jenis: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+              message: t("input_required"),
+            }),
+            merek: z.string().min(1, { message: t("input_required") }),
+            tipe: z.string().min(1, { message: t("input_required") }),
+            item_issuer: z.string().min(1, { message: t("input_required") }),
+            seri_item: z.string().min(1, { message: t("input_required") }),
+            id_lain: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+              message: t("input_required"),
+            }),
+          })
+        ).min(1, { message: t("input_required") }),
+        responsible_persons: z.object({
+          pelaksana: z.array(
+            z.object({
+              nama_resp: z.string().min(1, { message: t("input_required") }),
+              nip: z.string().min(1, { message: t("input_required") }),
+              peran: z.string().min(1, { message: t("input_required") }),
+              main_signer: z.boolean(),
+              signature: z.boolean(),
+              timestamp: z.boolean(),
+            })
+          ).min(1, { message: t("input_required") }),
+          penyelia: z.array(
+            z.object({
+              nama_resp: z.string().min(1, { message: t("input_required") }),
+              nip: z.string().min(1, { message: t("input_required") }),
+              peran: z.string().min(1, { message: t("input_required") }),
+              main_signer: z.boolean(),
+              signature: z.boolean(),
+              timestamp: z.boolean(),
+            })
+          ).min(1, { message: t("input_required") }),
+          kepala: z.object({
+            nama_resp: z.string().min(1, { message: t("input_required") }),
+            nip: z.string().min(1, { message: t("input_required") }),
+            peran: z.string().min(1, { message: t("input_required") }),
+            main_signer: z.boolean(),
+            signature: z.boolean(),
+            timestamp: z.boolean(),
+          }),
+          direktur: z.object({
+            nama_resp: z.string().min(1, { message: t("input_required") }),
+            nip: z.string().min(1, { message: t("input_required") }),
+            peran: z.string().min(1, { message: t("input_required") }),
+            main_signer: z.boolean(),
+            signature: z.boolean(),
+            timestamp: z.boolean(),
+          }),
+        }),
+        owner: z.object({
+          nama_cust: z.string().min(1, { message: t("input_required") }),
+          jalan_cust: z.string().min(1, { message: t("input_required") }),
+          no_jalan_cust: z.string().min(1, { message: t("input_required") }),
+          kota_cust: z.string().min(1, { message: t("input_required") }),
+          state_cust: z.string().min(1, { message: t("input_required") }),
+          pos_cust: z.string().min(1, { message: t("input_required") }),
+          negara_cust: z.string().min(1, { message: t("input_required") }),
+        }),
+      }),
+    [t]
+  );
 
   const form = useForm({
     resolver: zodResolver(FormSchema),
@@ -573,14 +576,10 @@ export default function AdministrativeForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="laboratory">laboratory</SelectItem>
-                          <SelectItem value="customer">customer</SelectItem>
-                          <SelectItem value="laboratoryBranch">
-                            laboratoryBranch
-                          </SelectItem>
-                          <SelectItem value="customerBranch">
-                            customerBranch
-                          </SelectItem>
+                          <SelectItem value="laboratory">{t("laboratory")}</SelectItem>
+                          <SelectItem value="customer">{t("customer")}</SelectItem>
+                          <SelectItem value="laboratoryBranch">{t("laboratoryBranch")}</SelectItem>
+                          <SelectItem value="customerBranch">{t("customerBranch")}</SelectItem>
                           <SelectItem value="other">{t("other")}</SelectItem>
                         </SelectContent>
                       </Select>
@@ -820,15 +819,11 @@ export default function AdministrativeForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="manufacturer">
-                            manufacturer
-                          </SelectItem>
-                          <SelectItem value="calibrationLaboratory">
-                            calibrationLaboratory
-                          </SelectItem>
-                          <SelectItem value="customer">customer</SelectItem>
-                          <SelectItem value="owner">owner</SelectItem>
-                          <SelectItem value="other">other</SelectItem>
+                          <SelectItem value="manufacturer">{t("manufacturer")}</SelectItem>
+                          <SelectItem value="calibrationLaboratory">{t("calibrationLaboratory")}</SelectItem>
+                          <SelectItem value="customer">{t("customer")}</SelectItem>
+                          <SelectItem value="owner">{t("owner")}</SelectItem>
+                          <SelectItem value="other">{t("other")}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -1145,17 +1140,11 @@ export default function AdministrativeForm({
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="manufacturer">
-                                      manufacturer
-                                    </SelectItem>
-                                    <SelectItem value="calibrationLaboratory">
-                                      calibrationLaboratory
-                                    </SelectItem>
-                                    <SelectItem value="customer">
-                                      customer
-                                    </SelectItem>
-                                    <SelectItem value="owner">owner</SelectItem>
-                                    <SelectItem value="other">other</SelectItem>
+                                    <SelectItem value="manufacturer">{t("manufacturer")}</SelectItem>
+                                    <SelectItem value="calibrationLaboratory">{t("calibrationLaboratory")}</SelectItem>
+                                    <SelectItem value="customer">{t("customer")}</SelectItem>
+                                    <SelectItem value="owner">{t("owner")}</SelectItem>
+                                    <SelectItem value="other">{t("other")}</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -1441,34 +1430,34 @@ export default function AdministrativeForm({
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="Kepala Laboratorium SNSU Suhu">
-                              SNSU Suhu
+                              SNSU {t("suhu")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Kelistrikan">
-                              SNSU Kelistrikan
+                              SNSU {t("listrik")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Waktu & Frekuensi">
-                              SNSU Waktu & Frekuensi
+                              SNSU {t("waktu")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Fotometri & Radiometri">
-                              SNSU Fotometri & Radiometri
+                              SNSU {t("fotometri_radiometri")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Kimia">
-                              SNSU Kimia
+                              SNSU {t("kimia")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Panjang">
-                              SNSU Panjang
+                              SNSU {t("panjang")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Massa">
-                              SNSU Massa
+                              SNSU {t("massa")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Akustik & Vibrasi">
-                              SNSU Akustik & Vibrasi
+                              SNSU {t("akustik_vibrasi")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Biologi">
-                              SNSU Biologi
+                              SNSU {t("biologi")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Radiasi Ringan">
-                              SNSU Radiasi Ringan
+                              SNSU {t("radiasi_ringan")}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -1530,10 +1519,10 @@ export default function AdministrativeForm({
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="Direktur SNSU Termoelektrik dan Kimia">
-                              Direktur SNSU Termoelektrik dan Kimia
+                              {t("snsu_tk")}
                             </SelectItem>
                             <SelectItem value="Direktur SNSU Mekanika, Radiasi, dan Biologi">
-                              Direktur SNSU Mekanika, Radiasi, dan Biologi
+                              {t("snsu_mrb")}
                             </SelectItem>
                           </SelectContent>
                         </Select>

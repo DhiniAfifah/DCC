@@ -8,16 +8,21 @@ const translations: Record<string, { id: string; en: string }> = {
   welcome_back: { id: "Selamat datang kembali!", en: "Welcome back!" },
   log_in: { id: "Masuk ke akun Anda", en: "Log in to your account" },
   email: { id: "Surel", en: "E-mail" },
+  invalid_email: { id: "Alamat surel tidak valid", en: "Invalid email address" },
   password: { id: "Kata sandi", en: "Password" },
+  password_required: { id: "Kata sandi wajib diisi", en: "Password is required" },
   login: { id: "Masuk", en: "Login" },
   login_fail: { id: "Gagal masuk, silakan periksa kredensial Anda.", 
                 en: "Login failed, please check your credentials." },
+  invalid_credentials: { id: "Surel atau kata sandi tidak valid", en: "Invalid email or password" },
   to_register: { id: "Belum punya akun?", en: "Don't have an account?" },
 
   // Register
   welcome: { id: "Selamat datang!", en: "Welcome!" },
   register_account: { id: "Daftar akun baru", en: "Register a new account" },
+  name_required: { id: "Nama wajib diisi", en: "Name is required" },
   register: { id: "Daftar", en: "Register" },
+  registering: { id: "Mendaftar...", en: "Registering..." },
   register_fail: { id: "Gagal mendaftar, silakan coba lagi.", en: "Registration failed, please try again." },
   to_login: { id: "Sudah punya akun?", en: "Have an account?" },
 
@@ -45,7 +50,8 @@ const translations: Record<string, { id: string; en: string }> = {
   massa: { id: "Massa", en: "Mass" },
   akustik_vibrasi: { id: "Akustik & Vibrasi", en: "Acoustics & Vibration" },
   radiasi: { id: "Radiasi", en: "Radiation" },
-  biology: { id: "Biologi", en: "Biology" },
+  radiasi_ringan: { id: "Radiasi Ringan", en: "Light Radiation" },
+  biologi: { id: "Biologi", en: "Biology" },
 
   // Stepper
   administrasi: { id: "Administrasi", en: "Administration" },
@@ -65,6 +71,7 @@ const translations: Record<string, { id: string; en: string }> = {
   submit: { id: "Kirim", en: "Submit" },
 
   pilih_bahasa: {id: "Tolong pilih bahasa yang digunakan.", en: "Please select the used languages."},
+  input_required: {id: "Input dibutuhkan.", en: "Input required."},
 
   // === Administrative ===
   // Software
@@ -77,13 +84,18 @@ const translations: Record<string, { id: string; en: string }> = {
   negara_calib: { id: "Negara tempat kalibrasi", en: "Country of calibration" },
   cari_negara: { id: "Cari negara...", en: "Search country..." },
   tempat: { id: "Tempat kalibrasi", en: "Calibration place" },
-  other: { id: "lainnya", en: "other" },
   used: { id: "Bahasa yang digunakan", en: "Used language" },
   cari_bahasa: { id: "Cari bahasa...", en: "Search language..." },
   mandatory: { id: "Bahasa yang diwajibkan", en: "Mandatory language" },
   order: { id: "Nomor order", en: "Order number" },
   penerbit_order: { id: "Penerbit nomor order", en: "Order number issuer" },
   sertifikat: { id: "Nomor sertifikat", en: "Certificate number" },
+
+  laboratory: { id: "laboratorium", en: "laboratory" },
+  customer: { id: "pelanggan", en: "customer" },
+  laboratoryBranch: { id: "cabang laboratorium", en: "laboratoryBranch" },
+  customerBranch: { id: "cabang pelanggan", en: "customerBranch" },
+  other: { id: "lainnya", en: "other" },
 
   // Linimasa
   linimasa: { id: "Linimasa Pengukuran", en: "Measurement Timeline" },
@@ -105,6 +117,10 @@ const translations: Record<string, { id: string; en: string }> = {
   seri: { id: "Nomor seri", en: "Serial number" },
   id_lain: { id: "Identifikasi lain", en: "Other identification" },
 
+  manufacturer: { id: "pabrikan", en: "manufacturer" },
+  calibrationLaboratory: { id: "laboratorium kalibrasi", en: "calibrationLaboratory" },
+  owner: { id: "pemilik", en: "owner" },
+
   // Penanggung Jawab
   responsible: { id: "Penanggung Jawab", en: "Responsible Person" },
   pelaksana: { id: "Pelaksana Kalibrasi", en: "Calibration Officer" },
@@ -114,6 +130,8 @@ const translations: Record<string, { id: string; en: string }> = {
   lab: { id: "Laboratorium", en: "Laboratory" },
   direktur: { id: "Direktur", en: "Director" },
   jabatan: { id: "Jabatan", en: "Position" },
+  snsu_tk: { id: "Direktur SNSU Termoelektrik dan Kimia", en: "Director of SNSU Thermoelectrics and Chemistry" },
+  snsu_mrb: { id: "Direktur SNSU Mekanika, Radiasi, dan Biologi", en: "Director of SNSU Mechanics, Radiation, and Biology" },
 
   // Pemilik
   identitas: {
@@ -365,8 +383,8 @@ const translations: Record<string, { id: string; en: string }> = {
   about: { id: "Tentang", en: "About" },
   about_us: { id: "Tentang Kami", en: "About Us" },
   about_content: {
-    id: "Badan Standardisasi Nasional (BSN) merupakan lembaga nasional yang bertugas dalam bidang standardisasi di Indonesia, dengan tujuan meningkatkan kualitas dan keandalan produk serta jasa di seluruh negeri. Salah satu inisiatif utama BSN adalah pengembangan dan implementasi Sertifikat Kalibrasi Digital (<i>Digital Calibration Certificate</i>/DCC) sebagai solusi modern untuk proses sertifikasi kalibrasi. <br><br> Sertifikat Kalibrasi Digital (DCC) merupakan solusi digital canggih yang menggantikan sertifikat kalibrasi berbasis kertas dengan format elektronik yang aman, standar, dan mudah diakses. Inisiatif ini bertujuan untuk meningkatkan akurasi, keterlacakan, dan transparansi dalam pengelolaan data kalibrasi di berbagai sektor industri. <br><br> Misi kami adalah mendukung pelaku industri, laboratorium, dan regulator dengan menyediakan platform digital terpercaya yang menjamin kepatuhan terhadap standar internasional serta mempermudah pemenuhan persyaratan metrologi nasional. Melalui sistem DCC, BSN mendorong transformasi digital di bidang metrologi untuk meningkatkan efisiensi, mengurangi kesalahan, dan mendukung daya saing Indonesia di pasar global. <br><br> Di BSN, kami berkomitmen pada inovasi, jaminan kualitas, dan peningkatan berkelanjutan untuk membangun industri Indonesia yang lebih kuat, standar, dan berdaya saing secara digital.",
-    en: "Badan Standardisasi Nasional (BSN) is the national standardization body of Indonesia, committed to enhancing the quality and reliability of products and services throughout the country. One of BSN’s key initiatives is the development and implementation of the Digital Calibration Certificate (DCC) system to modernize and streamline calibration certification processes. <br><br> The Digital Calibration Certificate (DCC) is an advanced digital solution designed to replace traditional paper-based calibration certificates with a secure, standardized, and easily accessible electronic format. This initiative aims to improve accuracy, traceability, and transparency in calibration data management across various industries. <br><br> Our mission is to support industry players, laboratories, and regulators by providing a reliable digital platform that ensures conformity to international standards and facilitates easier compliance with national metrology requirements. Through the DCC system, BSN promotes the adoption of digital transformation in metrology to increase efficiency, reduce errors, and support Indonesia’s competitiveness in the global market. <br><br> At BSN, we are dedicated to innovation, quality assurance, and continuous improvement to help build a stronger, standardized, and digitally empowered Indonesian industry.",
+    id: "Digital Calibration Certificate App (DiCCA) adalah aplikasi resmi yang dikembangkan oleh Badan Standardisasi Nasional (BSN) sebagai bagian dari upaya transformasi digital di bidang metrologi. DiCCA hadir untuk menggantikan sertifikat kalibrasi berbasis kertas dengan Sertifikat Kalibrasi Digital (Digital Calibration Certificate/DCC) yang aman, terstandar, dan mudah diakses.<br><br>Melalui DiCCA, proses pengelolaan data kalibrasi menjadi lebih efisien, transparan, dan dapat ditelusuri sesuai dengan standar internasional. Aplikasi ini tidak hanya mempermudah laboratorium dan pelaku industri dalam penerbitan serta verifikasi sertifikat, tetapi juga mendukung regulator dalam memastikan keakuratan dan keterlacakan hasil kalibrasi.<br><br>Misi kami adalah menghadirkan solusi digital yang meningkatkan keandalan, akurasi, dan integritas dalam sertifikasi kalibrasi, sekaligus mendorong Indonesia menuju sistem metrologi yang modern dan berdaya saing global.<br><br>Dengan DiCCA, BSN berkomitmen untuk terus berinovasi dalam memberikan layanan berbasis digital yang mendukung pembangunan industri nasional yang lebih kuat, standar, dan terpercaya.",
+    en: "The Digital Calibration Certificate App (DiCCA) is an official application developed by the National Standardization Agency of Indonesia (BSN) as part of the digital transformation in metrology. DiCCA replaces traditional paper-based calibration certificates with a Digital Calibration Certificate (DCC) that is secure, standardized, and easily accessible.<br><br>With DiCCA, calibration data management becomes more efficient, transparent, and traceable in accordance with international standards. The application not only facilitates laboratories and industries in issuing and verifying certificates but also supports regulators in ensuring the accuracy and traceability of calibration results.<br><br>Our mission is to provide a digital solution that enhances reliability, accuracy, and integrity in calibration certification, while driving Indonesia toward a modern and globally competitive metrology system.<br><br>Through DiCCA, BSN is committed to continuous innovation in delivering digital-based services that strengthen Indonesia’s industry with greater trust, standardization, and competitiveness.",
   },
 
   // Dashboard

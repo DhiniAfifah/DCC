@@ -34,34 +34,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Language, fetchLanguages } from "@/utils/language";
 
-const empty_field_error_message = "Input required/dibutuhkan.";
-const FormSchema = z.object({
-  statements: z.array(
-    z.object({
-      values: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-        message: empty_field_error_message,
-      }),
-      refType: z.string().min(1, { message: empty_field_error_message }),
-      has_formula: z.boolean(),
-      formula: z
-        .object({
-          latex: z.string().min(1, { message: empty_field_error_message }),
-          mathml: z.string().min(1, { message: empty_field_error_message }),
-        })
-        .optional(),
-      has_image: z.boolean(),
-      image: z
-        .object({
-          fileName: z.string().min(1, { message: empty_field_error_message }),
-          caption: z.string().min(1, { message: empty_field_error_message }),
-          mimeType: z.string().min(1, { message: empty_field_error_message }),
-          base64: z.string().min(1, { message: empty_field_error_message }),
-        })
-        .optional(),
-    })
-  ).min(1, { message: empty_field_error_message }),
-});
-
 export default function Statements({
   formData,
   updateFormData,
@@ -71,6 +43,41 @@ export default function Statements({
   updateFormData: (data: any) => void;
   onValidationChange?: (isValid: boolean) => void;
 }) {
+  
+
+  const { t } = useLanguage();
+
+  const FormSchema = useMemo(
+    () =>
+      z.object({
+        statements: z.array(
+          z.object({
+            values: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+              message: t("input_required"),
+            }),
+            refType: z.string().min(1, { message: t("input_required") }),
+            has_formula: z.boolean(),
+            formula: z
+              .object({
+                latex: z.string().min(1, { message: t("input_required") }),
+                mathml: z.string().min(1, { message: t("input_required") }),
+              })
+              .optional(),
+            has_image: z.boolean(),
+            image: z
+              .object({
+                fileName: z.string().min(1, { message: t("input_required") }),
+                caption: z.string().min(1, { message: t("input_required") }),
+                mimeType: z.string().min(1, { message: t("input_required") }),
+                base64: z.string().min(1, { message: t("input_required") }),
+              })
+              .optional(),
+          })
+        ).min(1, { message: t("input_required") }),
+      }),
+    [t]
+  );
+
   // Add validation check effect
   useEffect(() => {
     const validateForm = () => {
@@ -346,8 +353,6 @@ export default function Statements({
       alert("An error occurred while submitting the form.");
     }
   };
-
-  const { t } = useLanguage();
 
   return (
     <FormProvider {...form}>

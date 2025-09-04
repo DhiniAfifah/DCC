@@ -24,7 +24,7 @@ export default function Generator() {
         { href: "/generator", icon: Weight, color: "gray", label: "massa" },
         { href: "/generator", icon: AudioWaveform, color: "lime", label: "akustik_vibrasi" },
         { href: "/generator", icon: Radiation, color: "yellow", label: "radiasi" },
-        { href: "/generator", icon: Microscope, color: "pink", label: "biology" },
+        { href: "/generator", icon: Microscope, color: "pink", label: "biologi" },
     ];
 
     return (

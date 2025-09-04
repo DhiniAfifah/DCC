@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, X, NotepadText } from "lucide-react";
 import { useFieldArray, useForm, FormProvider } from "react-hook-form";
 import { z } from "zod";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -18,27 +18,6 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Language, fetchLanguages } from "@/utils/language";
 import { Textarea } from "@/components/ui/textarea";
 
-const empty_field_error_message = "Input required/dibutuhkan.";
-const FormSchema = z.object({
-  comment: z.object({
-    title: z.string().min(1, { message: empty_field_error_message }),
-    desc: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-      message: empty_field_error_message,
-    }),
-    has_file: z.boolean(),
-    files: z
-      .array(
-        z.object({
-          file: z.any(),
-          fileName: z.string().min(1, { message: empty_field_error_message }),
-          mimeType: z.string().min(1, { message: empty_field_error_message }),
-          base64: z.string().min(1, { message: empty_field_error_message }),
-        })
-      )
-      .optional(),
-  }),
-});
-
 export default function Comment({
   formData,
   updateFormData,
@@ -48,6 +27,32 @@ export default function Comment({
   updateFormData: (data: any) => void;
   onValidationChange?: (isValid: boolean) => void;
 }) {
+  const { t } = useLanguage();
+
+  const FormSchema = useMemo(
+    () =>
+      z.object({
+        comment: z.object({
+          title: z.string().min(1, { message: t("input_required") }),
+          desc: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+            message: t("input_required"),
+          }),
+          has_file: z.boolean(),
+          files: z
+            .array(
+              z.object({
+                file: z.any(),
+                fileName: z.string().min(1, { message: t("input_required") }),
+                mimeType: z.string().min(1, { message: t("input_required") }),
+                base64: z.string().min(1, { message: t("input_required") }),
+              })
+            )
+            .optional(),
+        }),
+      }),
+    [t]
+  );
+
   // Add validation check effect
   useEffect(() => {
     const validateForm = () => {
@@ -229,8 +234,6 @@ export default function Comment({
       alert("An error occurred while submitting the form.");
     }
   };
-
-  const { t } = useLanguage();
 
   return (
     <FormProvider {...form}>

@@ -18,7 +18,7 @@ import {
   useFormContext,
   Control,
 } from "react-hook-form";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,109 +69,6 @@ declare global {
     ShowLatexResult: (latex: string, mathml: string) => void;
   }
 }
-
-const empty_field_error_message = "Input required/dibutuhkan.";
-const FormSchema = z.object({
-  methods: z.array(
-    z.object({
-      method_name: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-        message: empty_field_error_message,
-      }),
-      method_desc: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-        message: empty_field_error_message,
-      }),
-      norm: z.string().min(1, { message: empty_field_error_message }),
-      refType: z.string().min(1, { message: empty_field_error_message }),
-      has_formula: z.boolean(),
-      formula: z.object({
-        latex: z.string().optional(),
-        mathml: z.string().optional(),
-      }),
-      has_image: z.boolean(),
-      image: z.object({
-        fileName: z.any().optional(),
-        caption: z.string().optional(),
-        mimeType: z.string().optional(),
-        base64: z.string().optional(),
-      }),
-    })
-  ).min(1, { message: empty_field_error_message }),
-
-  equipments: z.array(
-    z.object({
-      nama_alat: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-        message: empty_field_error_message,
-      }),
-      manuf: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-        message: empty_field_error_message,
-      }),
-      model: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-        message: empty_field_error_message,
-      }),
-      seri_measuring: z.string().min(1, { message: empty_field_error_message }),
-      refType: z.string().min(1, { message: empty_field_error_message }),
-    })
-  ).min(1, { message: empty_field_error_message }),
-
-  conditions: z.array(
-    z.object({
-      jenis_kondisi: z.string().min(1, { message: empty_field_error_message }),
-      desc: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-        message: empty_field_error_message,
-      }),
-      refType: z.string().min(1, { message: empty_field_error_message }),
-      tengah: z.string().min(1, { message: empty_field_error_message }),
-      tengah_unit: z.object({
-        prefix: z.string().optional(),
-        prefix_pdf: z.string().optional(),
-        unit: z.string().min(1, { message: empty_field_error_message }),
-        unit_pdf: z.string().min(1, { message: empty_field_error_message }),
-        eksponen: z.string().optional(),
-        eksponen_pdf: z.string().optional(),
-      }),
-      rentang: z.string().min(1, { message: empty_field_error_message }),
-      rentang_unit: z.object({
-        prefix: z.string().optional(),
-        prefix_pdf: z.string().optional(),
-        unit: z.string().min(1, { message: empty_field_error_message }),
-        unit_pdf: z.string().min(1, { message: empty_field_error_message }),
-        eksponen: z.string().optional(),
-        eksponen_pdf: z.string().optional(),
-      }),
-    })
-  ).min(1, { message: empty_field_error_message }),
-
-  excel: typeof window === "undefined"
-    ? z.any()
-    : z.instanceof(FileList, { message: empty_field_error_message })
-        .refine((files) => files && files.length > 0, {
-          message: empty_field_error_message,
-        }),
-
-  sheet_name: z.string().min(1, { message: empty_field_error_message }),
-
-  results: z.array(
-    z.object({
-      parameters: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-        message: empty_field_error_message,
-      }),
-      columns: z.array(
-        z.object({
-          kolom: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
-            message: empty_field_error_message,
-          }),
-          refType: z.string().min(1, { message: empty_field_error_message }),
-          real_list: z.string().min(1, { message: empty_field_error_message }),
-        })
-      ).min(1, { message: empty_field_error_message }),
-      uncertainty: z.object({
-        factor: z.string().min(1, { message: empty_field_error_message }),
-        probability: z.string().min(1, { message: empty_field_error_message }),
-        distribution: z.string().min(1, { message: empty_field_error_message }),
-      }),
-    })
-  ).min(1, { message: empty_field_error_message }),
-});
 
 interface Uncertainty {
   factor: string;
@@ -571,13 +468,117 @@ export default function MeasurementForm({
 
   const { t } = useLanguage();
 
+  const FormSchema = useMemo(
+    () =>
+      z.object({
+        methods: z.array(
+          z.object({
+            method_name: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+              message: t("input_required"),
+            }),
+            method_desc: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+              message: t("input_required"),
+            }),
+            norm: z.string().min(1, { message: t("input_required") }),
+            refType: z.string().min(1, { message: t("input_required") }),
+            has_formula: z.boolean(),
+            formula: z.object({
+              latex: z.string().optional(),
+              mathml: z.string().optional(),
+            }),
+            has_image: z.boolean(),
+            image: z.object({
+              fileName: z.any().optional(),
+              caption: z.string().optional(),
+              mimeType: z.string().optional(),
+              base64: z.string().optional(),
+            }),
+          })
+        ).min(1, { message: t("input_required") }),
+
+        equipments: z.array(
+          z.object({
+            nama_alat: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+              message: t("input_required"),
+            }),
+            manuf: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+              message: t("input_required"),
+            }),
+            model: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+              message: t("input_required"),
+            }),
+            seri_measuring: z.string().min(1, { message: t("input_required") }),
+            refType: z.string().min(1, { message: t("input_required") }),
+          })
+        ).min(1, { message: t("input_required") }),
+
+        conditions: z.array(
+          z.object({
+            jenis_kondisi: z.string().min(1, { message: t("input_required") }),
+            desc: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+              message: t("input_required"),
+            }),
+            refType: z.string().min(1, { message: t("input_required") }),
+            tengah: z.string().min(1, { message: t("input_required") }),
+            tengah_unit: z.object({
+              prefix: z.string().optional(),
+              prefix_pdf: z.string().optional(),
+              unit: z.string().min(1, { message: t("input_required") }),
+              unit_pdf: z.string().min(1, { message: t("input_required") }),
+              eksponen: z.string().optional(),
+              eksponen_pdf: z.string().optional(),
+            }),
+            rentang: z.string().min(1, { message: t("input_required") }),
+            rentang_unit: z.object({
+              prefix: z.string().optional(),
+              prefix_pdf: z.string().optional(),
+              unit: z.string().min(1, { message: t("input_required") }),
+              unit_pdf: z.string().min(1, { message: t("input_required") }),
+              eksponen: z.string().optional(),
+              eksponen_pdf: z.string().optional(),
+            }),
+          })
+        ).min(1, { message: t("input_required") }),
+
+        excel: typeof window === "undefined"
+          ? z.any()
+          : z.instanceof(FileList, { message: t("input_required") })
+              .refine((files) => files && files.length > 0, {
+                message: t("input_required"),
+              }),
+
+        sheet_name: z.string().min(1, { message: t("input_required") }),
+
+        results: z.array(
+          z.object({
+            parameters: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+              message: t("input_required"),
+            }),
+            columns: z.array(
+              z.object({
+                kolom: z.record(z.string()).refine(obj => Object.keys(obj).length > 0, {
+                  message: t("input_required"),
+                }),
+                refType: z.string().min(1, { message: t("input_required") }),
+                real_list: z.string().min(1, { message: t("input_required") }),
+              })
+            ).min(1, { message: t("input_required") }),
+            uncertainty: z.object({
+              factor: z.string().min(1, { message: t("input_required") }),
+              probability: z.string().min(1, { message: t("input_required") }),
+              distribution: z.string().min(1, { message: t("input_required") }),
+            }),
+          })
+        ).min(1, { message: t("input_required") }),
+      }),
+    [t]
+  );
+
   const form = useForm({
     resolver: zodResolver(FormSchema),
     mode: "onBlur",
     defaultValues: formData,
   });
-
-  const [isResetting, setIsResetting] = useState(false);
 
   const updateFormDataCallback = useCallback((data: any) => {
     updateFormData(data);

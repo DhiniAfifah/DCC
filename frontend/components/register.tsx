@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
@@ -17,17 +17,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/context/LanguageContext";
-import Link from "next/link";
 import axios from "axios";
-
-export const FormSchema = z.object({
-  username: z.string(),
-  email: z.string().email("Invalid email address"),
-  password: z.string(),
-});
+import { Eye, EyeOff } from "lucide-react"
 
 export default function Register({ formData }: { formData: any }) {
   const { t } = useLanguage();
+
+  const FormSchema = useMemo(
+    () =>
+      z.object({
+        username: z.string().min(1, { message: t("name_required")}),
+        email: z.string().email(t("invalid_email")), 
+        password: z.string().min(1, t("password_required")),
+      }),
+    [t]
+  );
 
   const [initialFormData, setInitialFormData] = useState(
     formData || { username: "", email: "", password: "" }
@@ -45,6 +49,8 @@ export default function Register({ formData }: { formData: any }) {
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false)
 
   // Fungsi untuk menangani register
   const onSubmit = async (data: { username: string; email: string; password: string }) => {
@@ -125,7 +131,25 @@ export default function Register({ formData }: { formData: any }) {
                       render={({ field }) => (
                       <FormItem>
                           <FormControl>
-                          <Input {...field} type="password" required disabled={isLoading} />
+                            <div className="relative">
+                              <Input 
+                                {...field} 
+                                type={showPassword ? "text" : "password"} 
+                                disabled={isLoading}
+                              />
+                              <button
+                                type="button"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                                onClick={() => setShowPassword(!showPassword)}
+                                disabled={isLoading}
+                              >
+                                {showPassword ? (
+                                  <Eye className="h-4 w-4" />
+                                ) : (
+                                  <EyeOff className="h-4 w-4" />
+                                )}
+                              </button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                       </FormItem>
@@ -139,14 +163,16 @@ export default function Register({ formData }: { formData: any }) {
                     type="submit"
                     disabled={isLoading}
                   >
-                    {isLoading ? "Registering..." : t("register")}
+                    {isLoading ? t("registering") : t("register")}
                   </Button>
                 </div>
                 <div className="text-center text-sm">
                   {t("to_login")}{" "}
-                  <a href="/" className="underline underline-offset-4 text-sky-500 hover:text-sky-600">
-                    {t("login")}
-                  </a>
+                  <Button variant="link" className="p-0">
+                    <a href="/">
+                      {t("login")}
+                    </a>
+                  </Button>
                 </div>
               </div>
             </form>

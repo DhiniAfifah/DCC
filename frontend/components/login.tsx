@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useLanguage } from "@/context/LanguageContext";
 import { z } from "zod";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
 import axios from "axios";
@@ -15,14 +15,19 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
-export const FormSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string(),
-});
+import { Eye, EyeOff } from "lucide-react"
 
 export default function Login({ formData }: { formData: any }) {
   const { t } = useLanguage();
+
+  const FormSchema = useMemo(
+    () =>
+      z.object({
+        email: z.string().email(t("invalid_email")), 
+        password: z.string().min(1, t("password_required")),
+      }),
+    [t]
+  );
 
   const [initialFormData, setInitialFormData] = useState(
     formData || { email: "", password: "" }
@@ -40,6 +45,8 @@ export default function Login({ formData }: { formData: any }) {
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showPassword, setShowPassword] = useState(false)
 
   // Enhanced login function with better cookie handling
   const onSubmit = async (data: { email: string; password: string }) => {
@@ -117,8 +124,8 @@ export default function Login({ formData }: { formData: any }) {
 
     } catch (error: any) {
       console.error("❌ Login error:", error);
-      console.error("📋 Error response:", error.response?.data);
-      console.error("📋 Error status:", error.response?.status);
+      console.log("📋 Error response:", error.response?.data);
+      console.log("📋 Error status:", error.response?.status);
       
       // Clear any potentially corrupted data
       localStorage.removeItem("access_token");
@@ -126,7 +133,7 @@ export default function Login({ formData }: { formData: any }) {
 
       let errorMsg = t("login_fail");
       if (error.response?.status === 401) {
-        errorMsg = "Invalid email or password";
+        errorMsg = t("invalid_credentials");
       } else if (error.response?.status === 403) {
         errorMsg = "Access denied";
       } else if (error.response?.data?.detail) {
@@ -182,7 +189,25 @@ export default function Login({ formData }: { formData: any }) {
                     render={({ field }) => (
                       <FormItem>
                         <FormControl>
-                          <Input {...field} type="password" disabled={isLoading} />
+                          <div className="relative">
+                            <Input 
+                              {...field} 
+                              type={showPassword ? "text" : "password"} 
+                              disabled={isLoading}
+                            />
+                            <button
+                              type="button"
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                              onClick={() => setShowPassword(!showPassword)}
+                              disabled={isLoading}
+                            >
+                              {showPassword ? (
+                                <Eye className="h-4 w-4" />
+                              ) : (
+                                <EyeOff className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -199,16 +224,17 @@ export default function Login({ formData }: { formData: any }) {
                     variant="green" 
                     type="submit"
                     disabled={isLoading}
-                    className="w-full"
                   >
                     {isLoading ? "Logging in..." : t("login")}
                   </Button>
                 </div>
                 <div className="text-center text-sm">
                   {t("to_register")}{" "}
-                  <a href="/register" className="underline underline-offset-4 text-sky-500 hover:text-sky-600">
-                    {t("register")}
-                  </a>
+                  <Button variant="link" className="p-0">
+                    <a href="/register">
+                      {t("register")}
+                    </a>
+                  </Button>
                 </div>
               </div>
             </form>
