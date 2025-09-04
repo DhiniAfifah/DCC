@@ -3,6 +3,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import type React from "react";
 import { LanguageProvider } from '@/context/LanguageContext';
+import { Toaster } from "@/components/ui/sonner"
 
 export const metadata: Metadata = {
   title: "DiCCA",
@@ -19,7 +20,8 @@ export default function RootLayout({
       <body>
         <LanguageProvider>
           <ClientNavbarWrapper />
-          {children}
+          <main>{children}</main>
+          <Toaster position="top-center" richColors />
         </LanguageProvider>
       </body>
     </html>

@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { toast } from "sonner"
 
 // Helper type guard untuk cek apakah value adalah File
 const isFile = (value: any): value is File => {
@@ -637,7 +638,7 @@ const calibratorTemplate = {
     {
       jenis: {id: 'Multiproduct Calibrator', en: 'Multiproduct Calibrator'},
       merek: "Fluke",
-      tipe: "8508A",
+      tipe: "5730A",
       item_issuer: "manufacturer",
       seri_item: "",
       id_lain: {id: '', en: ''},
@@ -1021,50 +1022,53 @@ export default function CreateDCC() {
     
     switch (currentStep) {
       case 0: // Administrative Form
-        if (!formData.software?.trim()) errors.push("Software name is required");
-        if (!formData.version?.trim()) errors.push("Software version is required");
+        if (!formData.software?.trim()) errors.push(t("software_name") + t("required"));
+        if (!formData.version?.trim()) errors.push(t("software_version") + t("required"));
 
-        if (!formData.administrative_data.core_issuer?.trim()) errors.push("Country code is required");
-        if (!formData.administrative_data.country_code?.trim()) errors.push("Country code is required");
-        if (!formData.administrative_data.used_languages?.length) errors.push("At least one used language is required");
-        if (!formData.administrative_data.mandatory_languages?.length) errors.push("At least one mandatory language is required");
-        if (!formData.administrative_data.sertifikat?.trim()) errors.push("Certificate number is required");
-        if (!formData.administrative_data.order?.trim()) errors.push("Order number is required");
-        if (!formData.administrative_data.tempat?.trim()) errors.push("Location is required");
-        if (!formData.administrative_data.tempat_pdf?.trim()) errors.push("Location is required");
+        if (!formData.administrative_data.country_code?.trim()) errors.push(t("negara_calib") + t("required"));
+        if (!formData.administrative_data.tempat?.trim()) errors.push(t("tempat") + t("required"));
+        if (!formData.administrative_data.tempat_pdf?.trim()) errors.push(t("tempat") + t("required"));
+        if (!formData.administrative_data.used_languages?.some(lang => lang.value)) {
+            errors.push(t("at_least_one") + t("used") + t("required"));
+        }
+        if (!formData.administrative_data.mandatory_languages?.some(lang => lang.value)) {
+            errors.push(t("at_least_one") + t("mandatory") + t("required"));
+        }
+        if (!formData.administrative_data.order?.trim()) errors.push(t("order") + t("required"));
+        if (!formData.administrative_data.sertifikat?.trim()) errors.push(t("sertifikat") + t("required"));
 
-        if (!formData.Measurement_TimeLine.tgl_mulai) errors.push("Start date is required");
-        if (!formData.Measurement_TimeLine.tgl_akhir) errors.push("End date is required");
-        if (!formData.Measurement_TimeLine.tgl_pengesahan) errors.push("Validation date is required");
+        if (!formData.Measurement_TimeLine.tgl_mulai) errors.push(t("mulai") + t("required"));
+        if (!formData.Measurement_TimeLine.tgl_akhir) errors.push(t("akhir") + t("required"));
+        if (!formData.Measurement_TimeLine.tgl_pengesahan) errors.push(t("pengesahan") + t("required"));
 
         if (!formData.objects?.length) {
-          errors.push("At least one object is required");
+          errors.push(t("at_least_one") + t("objek") + t("required"));
         } else {
           formData.objects.forEach((obj: any, index: number) => {
             // Check jenis (all languages must be filled)
             if (!obj.jenis || Object.keys(obj.jenis).length === 0) {
-              errors.push(`Object ${index + 1}: Type/Jenis is required`);
+              errors.push(t("objek") + ` ${index + 1}: ` + t("jenis") + t("required"));
             } else {
               // Check that ALL used languages have values
               usedLanguages.forEach((lang: any) => {
                 if (!obj.jenis[lang.value]?.trim()) {
-                  errors.push(`Object ${index + 1}: Type/Jenis must be filled for "${lang.value}" language`);
+                  errors.push(t("objek") + ` ${index + 1}: ` +  t("jenis") + t("must_be_filled_for_language") + `"${lang.value}"`);
                 }
               });
             }
             // Check other required fields
-            if (!obj.merek?.trim()) errors.push(`Object ${index + 1}: Brand/Merek is required`);
-            if (!obj.tipe?.trim()) errors.push(`Object ${index + 1}: Type/Tipe is required`);
-            if (!obj.item_issuer?.trim()) errors.push(`Object ${index + 1}: Item issuer is required`);
-            if (!obj.seri_item?.trim()) errors.push(`Object ${index + 1}: Serial number is required`);
+            if (!obj.merek?.trim()) errors.push(t("objek") + ` ${index + 1}: ` + t("merek") + t("required"));
+            if (!obj.tipe?.trim()) errors.push(t("objek") + ` ${index + 1}: ` + t("tipe") + t("required"));
+            if (!obj.item_issuer?.trim()) errors.push(t("objek") + ` ${index + 1}: ` + t("identifikasi") + t("required"));
+            if (!obj.seri_item?.trim()) errors.push(t("objek") + ` ${index + 1}: ` + t("seri") + t("required"));
             // Check id_lain (all languages must be filled)
             if (!obj.id_lain || Object.keys(obj.id_lain).length === 0) {
-              errors.push(`Object ${index + 1}: Other ID is required`);
+              errors.push(t("objek") + ` ${index + 1}: ` + t("id_lain") + t("required"));
             } else {
               // Check that ALL used languages have values
               usedLanguages.forEach((lang: any) => {
                 if (!obj.id_lain[lang.value]?.trim()) {
-                  errors.push(`Object ${index + 1}: Other ID must be filled for "${lang.value}" language`);
+                  errors.push(t("objek") + ` ${index + 1}: ` +  t("id_lain") + t("must_be_filled_for_language") + `"${lang.value}"`);
                 }
               });
             }
@@ -1072,212 +1076,222 @@ export default function CreateDCC() {
         }
         
         if (!formData.responsible_persons.pelaksana?.length) {
-          errors.push("At least one executor is required");
+          errors.push(t("at_least_one") + t("pelaksana") + t("required"));
         } else {
           formData.responsible_persons.pelaksana.forEach((person: any, index: number) => {
-            if (!person.nama_resp?.trim()) errors.push(`Executor ${index + 1}: Name is required`);
-            if (!person.nip?.trim()) errors.push(`Executor ${index + 1}: NIP is required`);
+            if (!person.nama_resp?.trim()) errors.push(t("pelaksana") + ` ${index + 1}: ` + t("nama") + t("required"));
+            if (!person.nip?.trim()) errors.push(t("pelaksana") + ` ${index + 1}: ` + t("nip") + t("required"));
           });
         }
         if (!formData.responsible_persons.penyelia?.length) {
-          errors.push("At least one supervisor is required");
+          errors.push(t("at_least_one") + t("penyelia") + t("required"));
         } else {
           formData.responsible_persons.penyelia.forEach((person: any, index: number) => {
-            if (!person.nama_resp?.trim()) errors.push(`Supervisor ${index + 1}: Name is required`);
-            if (!person.nip?.trim()) errors.push(`Supervisor ${index + 1}: NIP is required`);
+            if (!person.nama_resp?.trim()) errors.push(t("penyelia") + ` ${index + 1}: ` + t("nama") + t("required"));
+            if (!person.nip?.trim()) errors.push(t("penyelia") + ` ${index + 1}: ` + t("nip") + t("required"));
           });
         }
-        if (!formData.responsible_persons.kepala.nama_resp?.trim()) errors.push("Head of laboratory name is required");
-        if (!formData.responsible_persons.kepala.nip?.trim()) errors.push("Head of laboratory NIP is required");
-        if (!formData.responsible_persons.kepala.peran?.trim()) errors.push("Head of laboratory name is required");
-        if (!formData.responsible_persons.direktur.nama_resp?.trim()) errors.push("Director name is required");
-        if (!formData.responsible_persons.direktur.nip?.trim()) errors.push("Head of laboratory NIP is required");
-        if (!formData.responsible_persons.direktur.peran?.trim()) errors.push("Head of laboratory name is required");
+        if (!formData.responsible_persons.kepala.nama_resp?.trim()) errors.push(t("nama_kepala") + t("required"));
+        if (!formData.responsible_persons.kepala.nip?.trim()) errors.push(t("nip_kepala") + t("required"));
+        if (!formData.responsible_persons.kepala.peran?.trim()) errors.push(t("lab_kepala") + t("required"));
+        if (!formData.responsible_persons.direktur.nama_resp?.trim()) errors.push(t("nama_direktur") + t("required"));
+        if (!formData.responsible_persons.direktur.nip?.trim()) errors.push(t("nip_direktur") + t("required"));
+        if (!formData.responsible_persons.direktur.peran?.trim()) errors.push(t("jabatan_direktur") + t("required"));
 
-        if (!formData.owner.nama_cust?.trim()) errors.push("Customer name is required");
-        if (!formData.owner.jalan_cust?.trim()) errors.push("Customer street address is required");
-        if (!formData.owner.no_jalan_cust?.trim()) errors.push("Customer street number is required");
-        if (!formData.owner.kota_cust?.trim()) errors.push("Customer city is required");
-        if (!formData.owner.state_cust?.trim()) errors.push("Customer state is required");
-        if (!formData.owner.pos_cust?.trim()) errors.push("Customer postal code is required");
-        if (!formData.owner.negara_cust?.trim()) errors.push("Customer country is required");
+        if (!formData.owner.nama_cust?.trim()) errors.push(t("nama_cust") + t("required"));
+        if (!formData.owner.jalan_cust?.trim()) errors.push(t("jalan_cust") + t("required"));
+        if (!formData.owner.no_jalan_cust?.trim()) errors.push(t("no_jalan_cust") + t("required"));
+        if (!formData.owner.kota_cust?.trim()) errors.push(t("kota_cust") + t("required"));
+        if (!formData.owner.state_cust?.trim()) errors.push(t("state_cust") + t("required"));
+        if (!formData.owner.pos_cust?.trim()) errors.push(t("pos_cust") + t("required"));
+        if (!formData.owner.negara_cust?.trim()) errors.push(t("negara_cust") + t("required"));
         break;
 
       case 1: // Measurement Form
         if (!formData.methods?.length) {
-          errors.push("At least one method is required");
+          errors.push(t("at_least_one") + t("metode") + t("required"));
         } else {
           formData.methods.forEach((method: any, index: number) => {
             // Check method_name (all languages must be filled)
             if (!method.method_name || Object.keys(method.method_name).length === 0) {
-              errors.push(`Method ${index + 1}: Method name is required`);
+              errors.push(t("metode") + ` ${index + 1}: ` + t("nama") + t("required"));
             } else {
               // Check that ALL used languages have values
               usedLanguages.forEach((lang: any) => {
                 if (!method.method_name[lang.value]?.trim()) {
-                  errors.push(`Method ${index + 1}: Method name must be filled for "${lang.value}" language`);
+                  errors.push(t("metode") + ` ${index + 1}: ` +  t("nama") + t("must_be_filled_for_language") + `"${lang.value}"`);
                 }
               });
             }
             // Check method_desc (all languages must be filled)
             if (!method.method_desc || Object.keys(method.method_desc).length === 0) {
-              errors.push(`Method ${index + 1}: Method description is required`);
+              errors.push(t("metode") + ` ${index + 1}: ` + t("deskripsi") + t("required"));
             } else {
               // Check that ALL used languages have values
               usedLanguages.forEach((lang: any) => {
                 if (!method.method_desc[lang.value]?.trim()) {
-                  errors.push(`Method ${index + 1}: Method description must be filled for "${lang.value}" language`);
+                  errors.push(t("metode") + ` ${index + 1}: ` +  t("deskripsi") + t("must_be_filled_for_language") + `"${lang.value}"`);
                 }
               });
             }
-            if (!method.norm?.trim()) errors.push(`Method ${index + 1}: Norm is required`);
-            if (!method.refType?.trim()) errors.push(`Method ${index + 1}: Reference type is required`);
+            if (!method.norm?.trim()) errors.push(t("metode") + ` ${index + 1}: ` + t("norm") + t("required"));
+            if (!method.refType?.trim()) errors.push(t("metode") + ` ${index + 1}: ` + t("refType") + t("required"));
+            if (method.has_image) {
+              if (!method.image?.caption?.trim()) {
+                errors.push(t("metode") + ` ${index + 1}: ` + t("caption") + t("required"));
+              }
+            }
           });
         }
         
         if (!formData.equipments?.length) {
-          errors.push("At least one equipment is required");
+          errors.push(t("at_least_one") + t("alat") + t("required"));
         } else {
           formData.equipments.forEach((equip: any, index: number) => {
             // Check nama_alat (all languages must be filled)
             if (!equip.nama_alat || Object.keys(equip.nama_alat).length === 0) {
-              errors.push(`Equipment ${index + 1}: Equipment name is required`);
+              errors.push(t("alat") + ` ${index + 1}: ` + t("nama") + t("required"));
             } else {
               // Check that ALL used languages have values
               usedLanguages.forEach((lang: any) => {  
                 if (!equip.nama_alat[lang.value]?.trim()) {
-                  errors.push(`Equipment ${index + 1}: Equipment name must be filled for "${lang.value}" language`);
+                  errors.push(t("alat") + ` ${index + 1}: ` +  t("nama") + t("must_be_filled_for_language") + `"${lang.value}"`);
                 }
               });
             }
             // Check manuf_model (all languages must be filled)
             if (!equip.manuf_model || Object.keys(equip.manuf_model).length === 0) {
-              errors.push(`Equipment ${index + 1}: Manufacturer/Model is required`);
+              errors.push(t("alat") + ` ${index + 1}: ` + t("manuf") + t("required"));
             } else {
               // Check that ALL used languages have values
               usedLanguages.forEach((lang: any) => {
                 if (!equip.manuf_model[lang.value]?.trim()) {
-                  errors.push(`Equipment ${index + 1}: Manufacturer/Model must be filled for "${lang.value}" language`);
+                  errors.push(t("alat") + ` ${index + 1}: ` +  t("manuf") + t("must_be_filled_for_language") + `"${lang.value}"`);
                 }
               });
             }
             // Check model (all languages must be filled)
             if (!equip.model || Object.keys(equip.model).length === 0) {
-              errors.push(`Equipment ${index + 1}: Model is required`);
+              errors.push(t("alat") + ` ${index + 1}: ` + t("model") + t("required"));
             } else {
               // Check that ALL used languages have values
               usedLanguages.forEach((lang: any) => {
                 if (!equip.model[lang.value]?.trim()) {
-                  errors.push(`Equipment ${index + 1}: Model must be filled for "${lang.value}" language`);
+                  errors.push(t("alat") + ` ${index + 1}: ` +  t("model") + t("must_be_filled_for_language") + `"${lang.value}"`);
                 }
               });
             }
-            if (!equip.seri_measuring?.trim()) errors.push(`Equipment ${index + 1}: Serial number is required`);
-            if (!equip.refType?.trim()) errors.push(`Equipment ${index + 1}: Reference type is required`);
+            if (!equip.seri_measuring?.trim()) errors.push(t("alat") + ` ${index + 1}: ` + t("nama") + t("required"));
+            if (!equip.refType?.trim()) errors.push(t("alat") + ` ${index + 1}: ` + t("refType") + t("required"));
           });
         }
 
         if (!formData.conditions?.length) {
-          errors.push("At least one condition is required");
+          errors.push(t("at_least_one") + t("kondisi") + t("required"));
         } else {
           formData.conditions.forEach((cond: any, index: number) => {
-            if (!cond.jenis_kondisi?.trim()) errors.push(`Condition ${index + 1}: Condition type is required`);
+            if (!cond.jenis_kondisi?.trim()) errors.push(t("kondisi") + ` ${index + 1}: ` + t("lingkungan") + t("required"));
             // Check desc (all languages must be filled)
             if (!cond.desc || Object.keys(cond.desc).length === 0) {
-              errors.push(`Condition ${index + 1}: Description is required`);
+              errors.push(t("kondisi") + ` ${index + 1}: ` + t("deskripsi") + t("required"));
             } else {
               // Check that ALL used languages have values
               usedLanguages.forEach((lang: any) => {
                 if (!cond.desc[lang.value]?.trim()) {
-                  errors.push(`Condition ${index + 1}: Description must be filled for "${lang.value}" language`);
+                  errors.push(t("kondisi") + ` ${index + 1}: ` +  t("deskripsi") + t("must_be_filled_for_language") + `"${lang.value}"`);
                 }
               });
             }
-            if (!cond.tengah?.trim()) errors.push(`Condition ${index + 1}: Mid value is required`);
-            if (!cond.tengah_unit?.unit?.trim()) errors.push(`Condition ${index + 1}: Mid value unit is required`);
-            if (!cond.rentang?.trim()) errors.push(`Condition ${index + 1}: Range value is required`);
-            if (!cond.rentang_unit?.unit?.trim()) errors.push(`Condition ${index + 1}: Range value unit is required`);
+            if (!cond.tengah?.trim()) errors.push(t("kondisi") + ` ${index + 1}: ` + t("tengah") + t("required"));
+            if (!cond.tengah_unit?.unit?.trim()) errors.push(t("kondisi") + ` ${index + 1}: ` + t("tengah_unit") + t("required"));
+            if (!cond.rentang?.trim()) errors.push(t("kondisi") + ` ${index + 1}: ` + t("rentang") + t("required"));
+            if (!cond.rentang_unit?.unit?.trim()) errors.push(t("kondisi") + ` ${index + 1}: ` + t("rentang_unit") + t("required"));
           });
         }
 
         if (!formData.excel || formData.excel.length === 0) {
-          errors.push("Excel file is required");
+          errors.push(t("excel_file") + t("required"));
         }
-        if (!formData.sheet_name?.trim()) errors.push("Sheet name is required");
+        if (!formData.sheet_name?.trim()) errors.push(t("sheet") + t("required"));
         
         if (!formData.results?.length) {
-          errors.push("At least one result parameter is required");
+          errors.push(t("at_least_one") + "parameter" + t("required"));
         } else {
           formData.results.forEach((result: any, index: number) => {
             // Check parameters (all languages must be filled)  
             if (!result.parameters || Object.keys(result.parameters).length === 0) {
-              errors.push(`Result ${index + 1}: Parameter is required`);
+              errors.push(`Parameter ${index + 1}: ` + t("judul") + t("required"));
             } else {
               // Check that ALL used languages have values
               usedLanguages.forEach((lang: any) => {  
                 if (!result.parameters[lang.value]?.trim()) {
-                  errors.push(`Result ${index + 1}: Parameter must be filled for "${lang.value}" language`);
+                  errors.push(`Parameter ${index + 1}: ` +  t("judul") + t("must_be_filled_for_language") + `"${lang.value}"`);
                 }
               });
             }
             if (!result.columns?.length) {
-              errors.push(`Result ${index + 1}: At least one column is required`);
+              errors.push(`Parameter ${index + 1}: ` + t("at_least_one") + t("kolom") + t("required"));
             } else {
               result.columns.forEach((col: any, colIndex: number) => {
                 // Check kolom (all languages must be filled) 
                 if (!col.kolom || Object.keys(col.kolom).length === 0) {
-                  errors.push(`Result ${index + 1}, Column ${colIndex + 1}: Column name is required`);
+                  errors.push(`Parameter ${index + 1}, ` + t("kolom") + `${colIndex + 1}: `+ t("kolom_name") + t("required"));
                 } else {
                   // Check that ALL used languages have values
                   usedLanguages.forEach((lang: any) => {  
                     if (!col.kolom[lang.value]?.trim()) {
-                      errors.push(`Result ${index + 1}, Column ${colIndex + 1}: Column name must be filled for "${lang.value}" language`);
+                      errors.push(`Parameter ${index + 1}, ` + t("kolom") + `${colIndex + 1}: `+ t("kolom_name") + t("must_be_filled_for_language") + `"${lang.value}"`);
                     }
                   });
                 }
-                if (!col.refType?.trim()) errors.push(`Result ${index + 1}, Column ${colIndex + 1}: Reference type is required`);
-                if (!col.real_list?.trim()) errors.push(`Result ${index + 1}, Column ${colIndex + 1}: Real list is required`);
+                if (!col.refType?.trim()) errors.push(`Parameter ${index + 1}, ` + t("kolom") + `${colIndex + 1}: `+ t("refType") + t("required"));
+                if (!col.real_list?.trim()) errors.push(`Parameter ${index + 1}, ` + t("kolom") + `${colIndex + 1}: `+ t("subkolom") + t("required"));
               });
             }
-            if (!result.uncertainty?.factor?.trim()) errors.push(`Result ${index + 1}: Uncertainty factor is required`);
-            if (!result.uncertainty?.probability?.trim()) errors.push(`Result ${index + 1}: Uncertainty probability is required`);
-            if (!result.uncertainty?.distribution?.trim()) errors.push(`Result ${index + 1}: Uncertainty distribution is required`);
+            if (!result.uncertainty?.factor?.trim()) errors.push(`Parameter ${index + 1}: ` + t("factor") + t("required"));
+            if (!result.uncertainty?.probability?.trim()) errors.push(`Parameter ${index + 1}: ` + t("probability") + t("required"));
+            if (!result.uncertainty?.distribution?.trim()) errors.push(`Parameter ${index + 1}: ` + t("distribution") + t("required"));
           });
         }
         break;
 
       case 2: // Statements
         if (!formData.statements?.length) {
-          errors.push("At least one statement is required");
+          errors.push(t("at_least_one") + t("statement") + t("required"));
         } else {
           formData.statements.forEach((stmt: any, index: number) => {
             // Check values (all languages must be filled)
             if (!stmt.values || Object.keys(stmt.values).length === 0) {
-              errors.push(`Statement ${index + 1}: Statement text is required`);
+              errors.push(t("statement") + ` ${index + 1}: ` + t("statement_text") + t("required"));
             } else {
               // Check that ALL used languages have values
               usedLanguages.forEach((lang: any) => {  
                 if (!stmt.values[lang.value]?.trim()) {
-                  errors.push(`Statement ${index + 1}: Statement text must be filled for "${lang.value}" language`);
+                  errors.push(t("statement") + ` ${index + 1}: ` +  t("statement_text") + t("must_be_filled_for_language") + `"${lang.value}"`);
                 }
               });
             }
-            if (!stmt.refType?.trim()) errors.push(`Statement ${index + 1}: Reference type is required`);
+            if (!stmt.refType?.trim()) errors.push(t("statement") + ` ${index + 1}: ` + t("refType") + t("required"));
+            if (stmt.has_image) {
+              if (!stmt.image?.caption?.trim()) {
+                errors.push(t("statement") + ` ${index + 1}: ` + t("caption") + t("required"));
+              }
+            }
           });
         }
         break;
 
       case 3: // Comment
-        if (!formData.comment.title?.trim()) errors.push("Comment title is required");
+        if (!formData.comment.title?.trim()) errors.push(t("comment_title") + t("required"));
         if (!formData.comment.desc || Object.keys(formData.comment.desc).length === 0) {
-          errors.push("Comment description is required");
+          errors.push(t("comment_desc") + t("required"));
         } else {
           // Check that ALL used languages have values
           usedLanguages.forEach((lang: any) => {
             const langValue = lang.value as string;
             const descValue = (formData.comment.desc as any)[langValue]; // Type assertion to fix the error
             if (!descValue?.trim()) {
-              errors.push(`Comment description must be filled for "${langValue}" language`);
+              errors.push(t("comment_desc") + t("must_be_filled_for_language") + `"${lang.value}"`);
             }
           });
         }
@@ -1533,7 +1547,15 @@ export default function CreateDCC() {
       
       if (errors.length > 0) {
         // Show specific validation errors immediately
-        alert(`Please fill in all required fields:\n\n${errors.join('\n')}`);
+        toast("Please fill in all required fields:", {
+          description: (
+            <ul className="list-disc pl-5">
+              {errors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          )
+        });
         return;
       }
       

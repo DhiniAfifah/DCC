@@ -1,6 +1,3 @@
-import DirectorProtectedRoute from "@/components/DirectorProtectedRoute";
-import { access } from "fs";
-
 type Language = "id" | "en";
 
 const translations: Record<string, { id: string; en: string }> = {
@@ -129,7 +126,7 @@ const translations: Record<string, { id: string; en: string }> = {
   kota: { id: "Kecamatan/kabupaten/kota", en: "Subdistrict/regency/city" },
   provinsi: { id: "Provinsi", en: "Province" },
   pos: { id: "Kode pos", en: "Postal code" },
-  negara_cust: { id: "Negara", en: "Country" },
+  negara: { id: "Negara", en: "Country" },
 
   // === Measurement ===
   // Metode
@@ -399,6 +396,40 @@ const translations: Record<string, { id: string; en: string }> = {
   authentication: { id: "Memeriksa autentikasi", en: "Checking authentication"},
   verify_director: { id: "Memverifikasi akses direktur", en: "Verifying director access" },
   verify_session: { id: "Memverifikasi sesi", en: "Verifying session" },
+
+  // Errors
+  at_least_one: { id: "Setidaknya satu ", en: "At least one " },
+  required: { id: " wajib diisi", en: " is required" },
+  must_be_filled_for_language: { id: " harus diisi untuk bahasa ", en: " must be filled for language " },
+  
+  software_name: { id: "Nama perangkat lunak", en: "Software name" },
+  software_version: { id: "Versi perangkat lunak", en: "Software version" },
+  
+  nama_kepala: { id: "Nama kepala lab", en: "Lab head's name" },
+  nip_kepala: { id: "NIP kepala lab", en: "Lab head's employee ID number" },
+  lab_kepala: { id: "Laboratorium dari kepala lab", en: "Lab head's laboratory" },
+  nama_direktur: { id: "Nama direktur", en: "Director's name" },
+  nip_direktur: { id: "NIP direktur", en: "Director's employee ID number" },
+  jabatan_direktur: { id: "Jabatan direktur", en: "Director's position" },
+
+  nama_cust: { id: "Nama pemilik", en: "Owner's name" },
+  jalan_cust: { id: "Jalan pemilik", en: "Owner's street" },
+  no_jalan_cust: { id: "Nomor jalan pemilik", en: "Owner's street number" },
+  kota_cust: { id: "Kota pemilik", en: "Owner's city" },
+  state_cust: { id: "Provinsi pemilik", en: "Owner's province" },
+  pos_cust: { id: "Kode pos pemilik", en: "Owner's postal code" },
+  negara_cust: { id: "Negara pemilik", en: "Owner's country" },
+
+  tengah_unit: { id: "Satuan nilai tengah", en: "Central value unit" },
+  rentang_unit: { id: "Satuan simpangan", en: "Deviation unit" },
+
+  excel_file: { id: "File Excel", en: "Excel file" },
+  kolom_name: { id: "Nama kolom", en: "Column name" },
+
+  statement_text: { id: "Teks pernyataan", en: "Statement text" },
+
+  comment_title: { id: "Judul catatan", en: "Comment title" },
+  comment_desc: { id: "Deskripsi catatan", en: "Comment description" },
 };
 
 export const getTranslation = (key: string, language: Language = "en") => {

@@ -1658,7 +1658,7 @@ export default function AdministrativeForm({
                       />
                     </div>
                     <div id="negara_cust">
-                      <FormLabel>{t("negara_cust")}</FormLabel>
+                      <FormLabel>{t("negara")}</FormLabel>
                       <FormField
                         control={form.control}
                         name="owner.negara_cust"
