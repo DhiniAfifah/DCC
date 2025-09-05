@@ -658,7 +658,10 @@
                             </div>
                             <div id="image" style="text-align: center;">
                                 {% if met.image %}
-                                    <img src="{{ met.image }}" alt="gambar" style="width: 300px;">
+                                    <img src="{{ met.image }}" style="width: 300px; margin-top: 5px;">
+                                    {% if met.image_caption %}
+                                        <div class="indo">{{ met.image_caption }}</div>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         {% endfor %}
@@ -786,7 +789,10 @@
                             </div>
                             <div id="image" style="text-align: center;">
                                 {% if stat.image %}
-                                    <img src="{{ stat.image }}" alt="gambar" style="width: 300px;">
+                                    <img src="{{ stat.image }}" style="width: 300px; margin-top: 5px;">
+                                    {% if stat.image_caption %}
+                                        <div class="indo">{{ stat.image_caption }}</div>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         {% endfor %}

@@ -1500,6 +1500,8 @@ export default function CreateDCC() {
         };
       };
 
+      console.log("Sending preview data:", sanitizeData(modifiedFormData));
+
       const response = await fetch("http://127.0.0.1:8000/generate-preview/", {
         method: "POST",
         headers: {

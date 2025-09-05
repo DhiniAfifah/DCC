@@ -654,6 +654,27 @@ def generate_xml(dcc, table_data):
         result = indent(doc.getvalue(), indentation='   ')
         return result
 
+def extract_captions_from_dcc(dcc: schemas.DCCFormCreate):
+    """Extract image captions that aren't stored in XML"""
+    captions = {
+        'methods': {},
+        'statements': {}
+    }
+    
+    # Extract method image captions
+    for i, method in enumerate(dcc.methods):
+        if method.has_image and method.image and method.image.caption:
+            captions['methods'][i] = method.image.caption
+            logging.info(f"Method {i} caption: {method.image.caption}")
+    
+    # Extract statement image captions  
+    for i, statement in enumerate(dcc.statements):
+        if statement.has_image and statement.image and statement.image.caption:
+            captions['statements'][i] = statement.image.caption
+            logging.info(f"Statement {i} caption: {statement.image.caption}")
+            
+    return captions
+
 #db n excel 
 def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
     logging.info("Starting DCC creation process")
@@ -786,11 +807,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                 "formula": stmt.formula.dict() if stmt.has_formula and stmt.formula else None,
                 "has_image": stmt.has_image,
                 "image": stmt.image.dict() if stmt.has_image and stmt.image else None
-            })          
+            })
 
-        # Membuat instansi model DCC dan menyimpan data ke database
-        logging.debug(f"Responsible Persons Data: {responsible_persons_data}")
-        
         db_dcc = models.DCC(
             software_name=dcc.software,
             software_version=dcc.version,
@@ -815,11 +833,11 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         db.commit()
         db.refresh(db_dcc)
         logging.info(f"DCC {dcc.administrative_data.sertifikat} saved successfully with ID {db_dcc.id}")
-        
+
+        captions = extract_captions_from_dcc(dcc)
         
         # semua path
         paths = get_project_paths(dcc, db_dcc.id)
-        new_word_path = str(paths['word_output'])
         new_pdf_path = str(paths['pdf_output'])
         xml_path = str(paths['word_output'].with_suffix('.xml'))
         
@@ -851,7 +869,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
             xml_content,
             pdf_path,
             xml_path,
-            dcc.administrative_data.tempat_pdf
+            dcc.administrative_data.tempat_pdf,
+            captions
         )
         
         if not success:
@@ -943,105 +962,6 @@ def get_all_dccs(db: Session):
         logging.error(f"Error in get_all_dccs: {e}")
         raise e
     
-def generate_preview_files(dcc: schemas.DCCFormCreate):
-    """
-    Generate preview PDF and XML files without saving to database
-    Returns URLs to temporary files
-    """
-    logging.info("Starting preview generation")
-    
-    try:
-        # Generate unique identifier for this preview
-        unique_id = str(uuid.uuid4())[:8]
-        
-        # Get preview file paths
-        paths = get_preview_paths(unique_id)
-        
-        logging.info(f"Preview paths created:")
-        logging.info(f"  XML: {paths['xml_output']}")
-        logging.info(f"  PDF: {paths['pdf_output']}")
-        logging.info(f"  Directory exists: {paths['preview_dir'].exists()}")
-        
-        # Get Excel file path (if exists)
-        backend_root = Path(__file__).parent.parent
-        excel_path = None
-        table_data = {}  # Initialize as empty
-        
-        if dcc.excel:
-            excel_path = backend_root / "uploads" / dcc.excel
-            if not excel_path.exists():
-                excel_path = backend_root / "api" / "uploads" / dcc.excel
-        
-        # Read Excel data only if file exists
-        if excel_path and excel_path.exists():
-            logging.info(f"Reading Excel file: {excel_path}")
-            try:
-                table_data = read_excel_tables(str(excel_path), dcc.sheet_name, dcc.results)
-                logging.info(f"Successfully read {len(table_data)} tables from Excel")
-            except Exception as e:
-                logging.error(f"Error reading Excel file: {e}")
-                table_data = {}  # Fallback to empty if error
-        else:
-            logging.info("No Excel file available - generating preview without measurement data tables")
-            # table_data remains empty - no mock data created
-        
-        # Generate XML
-        logging.info("Generating preview XML...")
-        xml_content = generate_xml(dcc, table_data)
-        
-        # Ensure parent directory exists
-        paths['xml_output'].parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(paths['xml_output'], "w", encoding="utf-8") as f:
-            f.write(xml_content)
-        logging.info(f"Preview XML generated: {paths['xml_output']}")
-        logging.info(f"XML file exists after creation: {paths['xml_output'].exists()}")
-        logging.info(f"XML file size: {paths['xml_output'].stat().st_size if paths['xml_output'].exists() else 'N/A'} bytes")
-        
-        # Generate PDF
-        logging.info("Generating preview PDF...")
-        pdf_generator = PDFGenerator()
-        
-        # Generate PDF without embedded XML for preview
-        success = pdf_generator.generate_pdf(
-            str(paths['xml_output']), 
-            str(paths['pdf_output']),
-            dcc.administrative_data.tempat_pdf
-        )
-        
-        if not success:
-            raise Exception("PDF preview generation failed")
-        
-        logging.info(f"Preview PDF generated: {paths['pdf_output']}")
-        logging.info(f"PDF file exists after creation: {paths['pdf_output'].exists()}")
-        logging.info(f"PDF file size: {paths['pdf_output'].stat().st_size if paths['pdf_output'].exists() else 'N/A'} bytes")
-        
-        # Generate URLs using the static file serving endpoint
-        base_url = "http://127.0.0.1:8000"
-        pdf_filename = f"preview_{unique_id}.pdf"
-        xml_filename = f"preview_{unique_id}.xml"
-        
-        result = {
-            "pdf_url": f"{base_url}/preview_files/{pdf_filename}",
-            "xml_url": f"{base_url}/preview_files/{xml_filename}",
-            "preview_id": unique_id
-        }
-        
-        logging.info(f"Preview URLs generated: {result}")
-        
-        # Verify files exist before returning URLs
-        if not paths['pdf_output'].exists():
-            raise Exception(f"PDF file was not created at {paths['pdf_output']}")
-        if not paths['xml_output'].exists():
-            raise Exception(f"XML file was not created at {paths['xml_output']}")
-        
-        return result
-        
-    except Exception as e:
-        logging.error(f"Preview generation error: {str(e)}")
-        logging.error(f"Stack trace:", exc_info=True)
-        raise
-
 def get_preview_paths(unique_id: str):
     """Generate temporary paths for preview files"""
     try:
@@ -1124,6 +1044,8 @@ def generate_preview_files(dcc: schemas.DCCFormCreate):
                     "data": mock_data,
                     "config": result
                 }
+
+        captions = extract_captions_from_dcc(dcc)
         
         # Generate XML
         logging.info("Generating preview XML...")
@@ -1146,7 +1068,8 @@ def generate_preview_files(dcc: schemas.DCCFormCreate):
         success = pdf_generator.generate_pdf(
             str(paths['xml_output']), 
             str(paths['pdf_output']),
-            dcc.administrative_data.tempat_pdf
+            dcc.administrative_data.tempat_pdf,
+            captions
         )
         
         if not success:

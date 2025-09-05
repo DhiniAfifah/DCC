@@ -188,10 +188,13 @@ class PDFGenerator:
         except:
             pass
 
-    def extract_data_from_xml(self, xml_content, tempat_pdf):
+    def extract_data_from_xml(self, xml_content, tempat_pdf, captions=None):
         """Ekstrak data dari XML ke struktur Python"""
         try:
             root = ET.fromstring(xml_content)
+
+            if captions is None:
+                captions = {'methods': {}, 'statements': {}}
             
             # Extract all data
             responsible_persons = self._extract_responsible_persons(root) or {
@@ -216,11 +219,11 @@ class PDFGenerator:
                 'objects': self._extract_objects(root) or [],
                 'responsible_persons': responsible_persons,
                 'owner': self._extract_owner(root) or {},
-                'methods': self._extract_methods(root) or [],
+                'methods': self._extract_methods(root, captions.get('methods', {})) or [],
                 'equipments': self._extract_equipments(root) or [],
                 'conditions': self._extract_conditions(root) or [],
                 'results': results,
-                'statements': self._extract_statements(root) or [],
+                'statements': self._extract_statements(root, captions.get('statements', {})) or [],
                 'direktur': responsible_persons.get('direktur', {}),
                 'kepala': responsible_persons.get('kepala', {}),
                 'penyelia': responsible_persons.get('penyelia', []),
@@ -377,10 +380,13 @@ class PDFGenerator:
         return conditions
     
     #METHOD
-    def _extract_methods(self, root):
+    def _extract_methods(self, root, method_captions=None):
         methods = []
 
-        for met in root.findall('.//dcc:measurementResults/dcc:measurementResult/dcc:usedMethods/dcc:usedMethod', namespaces=XML_NS):
+        if method_captions is None:
+            method_captions = {}
+
+        for i, met in enumerate(root.findall('.//dcc:measurementResults/dcc:measurementResult/dcc:usedMethods/dcc:usedMethod', namespaces=XML_NS)):
             method_name = self._get_multilang_text(met.find('.//dcc:name', namespaces=XML_NS))
             method_desc = self._get_multilang_text(met.find('.//dcc:description', namespaces=XML_NS))
 
@@ -395,6 +401,7 @@ class PDFGenerator:
 
             #Gambar
             image_data = None
+            image_caption = method_captions.get(i, "")
             file_elem = met.find('.//dcc:description/dcc:file', namespaces=XML_NS)
             if file_elem is not None:
                 mime_elem = file_elem.find('dcc:mimeType', namespaces=XML_NS)
@@ -412,16 +419,20 @@ class PDFGenerator:
                 'method_name': method_name if method_name else {},
                 'method_desc': method_desc if method_desc else {},
                 'formula_image': formula_image,
-                'image': image_data
+                'image': image_data,
+                'image_caption': image_caption
             })
 
         return methods
   
     #STATEMENT
-    def _extract_statements(self, root):
+    def _extract_statements(self, root, statement_captions=None):
         statements = []
 
-        for stmt in root.findall('.//dcc:statements/dcc:statement', namespaces=XML_NS):
+        if statement_captions is None:
+            statement_captions = {}
+
+        for i, stmt in enumerate(root.findall('.//dcc:statements/dcc:statement', namespaces=XML_NS)):
             declaration = stmt.find('.//dcc:declaration', namespaces=XML_NS)
 
             # multi-bahasa
@@ -438,6 +449,7 @@ class PDFGenerator:
 
             #Gambar
             image_data = None
+            image_caption = statement_captions.get(i, "")
             file_elem = declaration.find('dcc:file', namespaces=XML_NS)
             if file_elem is not None:
                 mime_elem = file_elem.find('dcc:mimeType', namespaces=XML_NS)
@@ -454,7 +466,8 @@ class PDFGenerator:
             statements.append({
                 'value': value if value else {},
                 'formula_image': formula_image,
-                'image': image_data
+                'image': image_data,
+                'image_caption': image_caption
             })
 
         return statements
@@ -659,11 +672,11 @@ class PDFGenerator:
             logger.error(f"Unexpected error: {e}")
             return False
 
-    def generate_pdf_with_embedded_xml(self, xml_content: str, output_path: str, xml_path: str, tempat_pdf) -> bool:
+    def generate_pdf_with_embedded_xml(self, xml_content: str, output_path: str, xml_path: str, tempat_pdf, captions=None) -> bool:
         try:
             # Generate PDF sementara tanpa embedded XML
             temp_pdf_path = os.path.join(self.temp_dir.name, "temp.pdf")
-            if not self.generate_pdf(xml_path, temp_pdf_path, tempat_pdf):
+            if not self.generate_pdf(xml_path, temp_pdf_path, tempat_pdf, captions):
                 return False
 
             # Konversi ke PDF/A-3a
@@ -687,7 +700,7 @@ class PDFGenerator:
             logger.error(f"PDF generation with embedded XML failed: {e}")
             return False
 
-    def generate_pdf(self, xml_path, output_path, tempat_pdf):
+    def generate_pdf(self, xml_path, output_path, tempat_pdf, captions=None):
         """Generate PDF dari konten XML"""
         try:
             
@@ -702,7 +715,7 @@ class PDFGenerator:
             
             # Ekstrak data dari XML
             logger.info("Extracting data from XML...")
-            data = self.extract_data_from_xml(xml_content, tempat_pdf)
+            data = self.extract_data_from_xml(xml_content, tempat_pdf, captions)
             
             # Perbaiki base_url ke direktori assets yang benar
             current_dir = os.path.dirname(os.path.abspath(__file__))
