@@ -1664,13 +1664,10 @@ export default function CreateDCC() {
     // Start processing
     setIsProcessingSubmission(true);
     setProgressMessage(t("preparing_data"));
-    setProgressPercent(10);
+    setProgressPercent(0);
 
     // Create FormData object for multipart/form-data submission
     const submitFormData = new FormData();
-
-    setProgressMessage(t("processing_files"));
-    setProgressPercent(30);
 
     // Prepare FormData for file uploads
     formData.methods.forEach((method, index) => {
@@ -1715,19 +1712,14 @@ export default function CreateDCC() {
 
     console.log("Data yang dikirim ke backend:", modifiedFormData);
 
-    setProgressMessage(t("generating_dcc") );
-    setProgressPercent(50);
-
     try {
-      const response = await fetch("http://127.0.0.1:8000/create-dcc/", {
+      const response = await fetch("http://127.0.0.1:8000/create-dcc-streaming/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(sanitizeData(modifiedFormData)),
       });
-
-      setProgressPercent(75);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -1736,22 +1728,67 @@ export default function CreateDCC() {
         );
       }
 
-      setProgressMessage(t("finalizing"));
-      setProgressPercent(90);
+      if (!response.body) {
+        throw new Error("Response body is null");
+      }
 
-      // Handle PDF response
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      setPdfBlobUrl(url);
-      setIsSubmitted(true);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
 
-      setProgressMessage(t("dcc_created_successfully"));
-      setProgressPercent(100);
+      try {
+        while (true) {
+          const { value, done } = await reader.read();
+          
+          if (done) break;
 
-      // Hide progress after a delay
-      setTimeout(() => {
-        setIsProcessingSubmission(false);
-      }, 2000);
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                
+                if (data.error) {
+                  throw new Error(data.error);
+                }
+
+                if (data.progress !== undefined) {
+                  setProgressPercent(data.progress);
+                }
+
+                if (data.message) {
+                  setProgressMessage(data.message);
+                }
+
+                // Handle completion
+                if (data.progress === 100 && data.download_url) {
+                  setIsSubmitted(true);
+                  
+                  // Create download URL for the PDF
+                  const downloadUrl = `http://127.0.0.1:8000${data.download_url}`;
+                  setPdfBlobUrl(downloadUrl);
+                  
+                  toast.success(t("dcc_created_successfully"), {
+                    description: `Certificate: ${data.certificate_name}`,
+                    duration: 5000
+                  });
+
+                  // Hide progress after delay
+                  setTimeout(() => {
+                    setIsProcessingSubmission(false);
+                  }, 2000);
+                }
+
+              } catch (parseError) {
+                console.error("Error parsing SSE data:", parseError);
+              }
+            }
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
 
     } catch (error: unknown) {
       console.error("Error submitting form:", error);
@@ -1761,11 +1798,10 @@ export default function CreateDCC() {
       setProgressPercent(0);
       setIsProcessingSubmission(false);
       
-      if (error instanceof Error) {
-        alert(`Failed to create DCC. Error: ${error.message}`);
-      } else {
-        alert("An unknown error occurred.");
-      }
+      toast.error("Failed to create DCC", {
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        duration: 5000
+      });
     }
   };
 
@@ -1832,15 +1868,32 @@ export default function CreateDCC() {
       {/* Progress Bar */}
       {isProcessingSubmission && (
         <div className="max-w-4xl mx-auto px-4 mt-8">
-          <div className="p-4 bg-sky-50 rounded-md border border-sky-200">
-            <p className="text-sky-700 font-medium mb-2">{progressMessage}</p>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-sky-600 h-3 rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progressPercent}%` }}
-              ></div>
+          <div className="p-6 bg-gradient-to-r from-sky-50 to-blue-50 rounded-lg border border-sky-200 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sky-800 font-semibold text-lg">{progressMessage}</p>
+              <span className="text-sky-600 font-mono text-sm">{progressPercent}%</span>
             </div>
-            <p className="text-sm text-sky-600 mt-1">{progressPercent}% {t("completed") || "completed"}</p>
+            
+            <div className="w-full bg-sky-100 rounded-full h-4 mb-2 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-sky-500 to-blue-600 h-4 rounded-full transition-all duration-500 ease-out relative"
+                style={{ width: `${progressPercent}%` }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-between text-xs text-sky-600">
+              <span>{t("processing_dcc")}</span>
+              <span>{t("please_wait")}</span>
+            </div>
+            
+            {progressPercent > 0 && progressPercent < 100 && (
+              <div className="mt-3 flex items-center text-sm text-sky-700">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-sky-600 mr-2"></div>
+                {t("do_not_close_browser")}
+              </div>
+            )}
           </div>
         </div>
       )}

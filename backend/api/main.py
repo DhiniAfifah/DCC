@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Body, status, Request, APIRouter, Response
 from sqlalchemy.orm import Session
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -48,6 +48,7 @@ from .models import DCC, DCCStatusEnum, UserRole
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import asyncio
+from typing import AsyncGenerator
 
 # Kunci dan algoritma untuk enkripsi token
 SECRET_KEY = "5965815bee66d2c201cabe787a432ba80e31884133cf6c4b8e50a0df54a0c880"
@@ -1129,3 +1130,127 @@ async def debug_preview_files():
             "preview_directory": str(preview_files_dir),
             "directory_exists": False
         }
+    
+@app.post("/create-dcc-streaming/")
+async def create_dcc_streaming(
+    dcc: schemas.DCCFormCreate = Body(...),
+    db: Session = Depends(get_db),
+):
+    # Create a queue for progress updates
+    progress_queue = asyncio.Queue()
+    
+    async def progress_generator() -> AsyncGenerator[str, None]:
+        try:
+            # Send initial progress
+            yield f"data: {json.dumps({'progress': 10, 'message': 'Starting DCC creation...'})}\n\n"
+            await asyncio.sleep(0.1)
+            
+            # Process images
+            yield f"data: {json.dumps({'progress': 20, 'message': 'Processing images and files...'})}\n\n"
+            await asyncio.sleep(0.1)
+            
+            # Process method and statement images (same as original code)
+            for method in dcc.methods:
+                if method.has_image and method.image and method.image.gambar:
+                    filename = method.image.gambar
+                    file_path = os.path.join(UPLOAD_DIR, filename)
+                    logging.info(f"Check method image file at: {file_path}, exists: {os.path.exists(file_path)}")
+
+                    if os.path.exists(file_path):
+                        mime_type = method.image.mimeType if hasattr(method.image, 'mimeType') else ""
+                        with open(file_path, "rb") as img_file:
+                            image_data = img_file.read()
+                            base64_str = base64.b64encode(image_data).decode('utf-8')
+
+                            method.image.base64 = base64_str
+                            method.image.gambar_url = file_path
+                            method.image.fileName = filename
+                            method.image.mimeType = mime_type
+            
+            for statement in dcc.statements:
+                if statement.has_image and statement.image and statement.image.gambar:
+                    filename = statement.image.gambar
+                    file_path = os.path.join(UPLOAD_DIR, filename)
+                    
+                    if os.path.exists(file_path):
+                        mime_type = statement.image.mimeType if hasattr(statement.image, 'mimeType') else ""
+                        with open(file_path, "rb") as img_file:
+                            image_data = img_file.read()
+                            base64_str = base64.b64encode(image_data).decode('utf-8')
+
+                            statement.image.fileName = filename
+                            statement.image.mimeType = mime_type
+                            statement.image.base64 = base64_str
+                            statement.image.gambar_url = file_path
+                             
+            if dcc.comment and dcc.comment.files:
+                for file in dcc.comment.files:
+                    if file.fileName:
+                        file_path = os.path.join(UPLOAD_DIR, file.fileName)
+                        if os.path.exists(file_path):
+                            with open(file_path, "rb") as f:
+                                base64_str = base64.b64encode(f.read()).decode('utf-8')
+                            file.base64 = base64_str
+                            file.mimeType = mimetypes.guess_type(file.fileName)[0] or "application/octet-stream"
+                            file.fileName = file.fileName
+            
+            # Create progress callback function that puts updates in queue
+            def progress_callback(progress, message):
+                # Put progress update in queue (non-blocking)
+                try:
+                    progress_queue.put_nowait((progress, message))
+                except asyncio.QueueFull:
+                    pass  # Skip if queue is full
+            
+            # Start the DCC creation task
+            loop = asyncio.get_event_loop()
+            
+            # Create a task for the DCC creation
+            dcc_task = loop.run_in_executor(None, crud.create_dcc, db, dcc, progress_callback)
+            
+            # Monitor for progress updates while the task runs
+            result = None
+            while not dcc_task.done():
+                try:
+                    # Wait for progress update with timeout
+                    progress, message = await asyncio.wait_for(progress_queue.get(), timeout=1.0)
+                    yield f"data: {json.dumps({'progress': progress, 'message': message})}\n\n"
+                except asyncio.TimeoutError:
+                    # No progress update received, continue waiting
+                    continue
+            
+            # Get the final result
+            result = await dcc_task
+            
+            # Process any remaining progress updates
+            while not progress_queue.empty():
+                try:
+                    progress, message = progress_queue.get_nowait()
+                    yield f"data: {json.dumps({'progress': progress, 'message': message})}\n\n"
+                except asyncio.QueueEmpty:
+                    break
+            
+            yield f"data: {json.dumps({'progress': 95, 'message': 'Finalizing...'})}\n\n"
+            await asyncio.sleep(0.1)
+            
+            # Send completion with download URL
+            if "pdf_path" in result:
+                download_url = f"/download-dcc-pdf/{result['database_id']}"
+                yield f"data: {json.dumps({'progress': 100, 'message': 'DCC created successfully!', 'download_url': download_url, 'certificate_name': result['certificate_name']})}\n\n"
+            else:
+                yield f"data: {json.dumps({'progress': 0, 'error': 'PDF generation failed'})}\n\n"
+                
+        except Exception as e:
+            logging.error(f"Error in streaming DCC creation: {e}", exc_info=True)
+            yield f"data: {json.dumps({'progress': 0, 'error': f'Internal Server Error: {str(e)}'})}\n\n"
+
+    return StreamingResponse(
+        progress_generator(),
+        media_type="text/plain",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )

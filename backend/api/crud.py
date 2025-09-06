@@ -676,7 +676,7 @@ def extract_captions_from_dcc(dcc: schemas.DCCFormCreate):
     return captions
 
 #db n excel 
-def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
+def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None):
     logging.info("Starting DCC creation process")
     
     # Inisialisasi variabel Office
@@ -685,6 +685,9 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
     wb = None
     
     try:
+        if progress_callback:
+            progress_callback(30, "Processing form data...")
+
         logging.debug("Creating DCC model instance")
         
         measurement_timeline_data = {
@@ -809,6 +812,9 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
                 "image": stmt.image.dict() if stmt.has_image and stmt.image else None
             })
 
+        if progress_callback:
+            progress_callback(40, "Saving to database...")
+
         db_dcc = models.DCC(
             software_name=dcc.software,
             software_version=dcc.version,
@@ -834,6 +840,9 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         db.refresh(db_dcc)
         logging.info(f"DCC {dcc.administrative_data.sertifikat} saved successfully with ID {db_dcc.id}")
 
+        if progress_callback:
+            progress_callback(50, "Reading Excel data...")
+
         captions = extract_captions_from_dcc(dcc)
         
         # semua path
@@ -854,12 +863,18 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         table_data = read_excel_tables(str(excel_file_path), dcc.sheet_name, dcc.results)
         
         # Generate XML
+        if progress_callback:
+            progress_callback(70, "Generating XML...")
+
         xml_content = generate_xml(dcc, table_data)
         with open(xml_path, "w", encoding="utf-8") as f:
             f.write(xml_content)
         logging.info(f"XML file generated at {xml_path}")
         
-         # Generate PDF
+        # Generate PDF
+        if progress_callback:
+            progress_callback(80, "Generating PDF...")
+        
         pdf_generator = PDFGenerator()
         pdf_path = str(paths['pdf_output'])
         # Baca konten XML untuk di-embed
@@ -875,6 +890,9 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate):
         
         if not success:
             raise Exception("PDF generation failed")
+        
+        if progress_callback:
+            progress_callback(95, "Finalizing...")
         
         filename_with_id = f"{db_dcc.id}_{dcc.administrative_data.sertifikat}"
 
