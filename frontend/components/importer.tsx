@@ -17,6 +17,7 @@ import axios from "axios";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
 
 const createFormSchema = (activeTab: string) => {
   return z.object({
@@ -235,12 +236,7 @@ export default function Importer({
                   {isProcessing && (
                     <div className="mt-4 p-3 bg-sky-50 rounded-md">
                       <p className="text-sky-700">{progressMessage}</p>
-                      <div className="mt-2 w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                          className="bg-sky-600 h-2.5 rounded-full transition-all duration-300"
-                          style={{ width: `${progressPercent}%` }}
-                        ></div>
-                      </div>
+                      <Progress value={progressPercent} />
                     </div>
                   )}
 

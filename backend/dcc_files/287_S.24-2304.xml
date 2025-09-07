@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" schemaVersion="3.3.0">
+   <dcc:administrativeData>
+      <dcc:dccSoftware>
+         <dcc:software>
+            <dcc:name>
+               <dcc:content>Notepad++ (32-bit)</dcc:content>
+            </dcc:name>
+            <dcc:release>v 8.2</dcc:release>
+         </dcc:software>
+      </dcc:dccSoftware>
+      <dcc:refTypeDefinitions>
+         <dcc:refTypeDefinition>
+            <dcc:name>
+               <dcc:content lang="de">Namensraum für Querschnitts-RefTypes</dcc:content>
+               <dcc:content lang="en">Namespace for Cross-Community RefTypes</dcc:content>
+            </dcc:name>
+            <dcc:description>
+               <dcc:content lang="de">Der Namensraum 'basic' beinhaltet allgemeine RefTypes die messgrößenübergreifend genutzt werden.</dcc:content>
+               <dcc:content lang="en">The "basic" namespace contains RefTypes common for multiple communities.</dcc:content>
+            </dcc:description>
+            <dcc:namespace>basic</dcc:namespace>
+            <dcc:link>https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=2</dcc:link>
+         </dcc:refTypeDefinition>
+         <dcc:refTypeDefinition>
+            <dcc:name>
+               <dcc:content lang="de">Namensraum für mathematische RefTypes</dcc:content>
+               <dcc:content lang="en">Namespace for mathematical RefTypes</dcc:content>
+            </dcc:name>
+            <dcc:description>
+               <dcc:content lang="de">Der Namensraum 'math' beinhaltet RefTypes mathematischer Operationen.</dcc:content>
+               <dcc:content lang="en">The "math" namespace contains RefTypes for mathematical operations.</dcc:content>
+            </dcc:description>
+            <dcc:namespace>math</dcc:namespace>
+            <dcc:link>https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=292</dcc:link>
+         </dcc:refTypeDefinition>
+      </dcc:refTypeDefinitions>
+      <dcc:coreData>
+         <dcc:countryCodeISO3166_1>ID</dcc:countryCodeISO3166_1>
+         <dcc:usedLangCodeISO639_1>id</dcc:usedLangCodeISO639_1>
+         <dcc:usedLangCodeISO639_1>en</dcc:usedLangCodeISO639_1>
+         <dcc:mandatoryLangCodeISO639_1>id</dcc:mandatoryLangCodeISO639_1>
+         <dcc:uniqueIdentifier>S.24-2304</dcc:uniqueIdentifier>
+         <dcc:identifications>
+            <dcc:identification refType="basic_orderNumber">
+               <dcc:issuer>calibrationLaboratory</dcc:issuer>
+               <dcc:value>I-24-12-009</dcc:value>
+               <dcc:name>
+                  <dcc:content>Nomor Order</dcc:content>
+               </dcc:name>
+            </dcc:identification>
+         </dcc:identifications>
+         <dcc:beginPerformanceDate>2025-09-05</dcc:beginPerformanceDate>
+         <dcc:endPerformanceDate>2025-09-06</dcc:endPerformanceDate>
+         <dcc:performanceLocation>laboratoryBranch</dcc:performanceLocation>
+         <dcc:issueDate>2025-09-07</dcc:issueDate>
+      </dcc:coreData>
+      <dcc:items>
+         <dcc:item>
+            <dcc:name>
+               <dcc:content lang="id">Multimeter Digital</dcc:content>
+               <dcc:content lang="en">Digital Multimeter</dcc:content>
+            </dcc:name>
+            <dcc:manufacturer>
+               <dcc:name>
+                  <dcc:content>Fluke</dcc:content>
+               </dcc:name>
+            </dcc:manufacturer>
+            <dcc:model>8508A</dcc:model>
+            <dcc:identifications>
+               <dcc:identification refType="basic_serialNumber">
+                  <dcc:issuer>manufacturer</dcc:issuer>
+                  <dcc:value>941254407</dcc:value>
+                  <dcc:name>
+                     <dcc:content lang="id">-</dcc:content>
+                     <dcc:content lang="en">-</dcc:content>
+                  </dcc:name>
+               </dcc:identification>
+            </dcc:identifications>
+         </dcc:item>
+      </dcc:items>
+      <dcc:calibrationLaboratory>
+         <dcc:calibrationLaboratoryCode>LK-070-IDN</dcc:calibrationLaboratoryCode>
+         <dcc:contact>
+            <dcc:name>
+               <dcc:content>Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)</dcc:content>
+            </dcc:name>
+            <dcc:eMail>nmi@bsn.go.id</dcc:eMail>
+            <dcc:phone>Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833</dcc:phone>
+            <dcc:link>www.bsn.go.id</dcc:link>
+            <dcc:location>
+               <dcc:city>Tangerang Selatan</dcc:city>
+               <dcc:countryCode>ID</dcc:countryCode>
+               <dcc:postCode>15314</dcc:postCode>
+               <dcc:state>Banten</dcc:state>
+               <dcc:street>KST BJ Habibie Setu</dcc:street>
+               <dcc:streetNo>Gedung 420</dcc:streetNo>
+            </dcc:location>
+         </dcc:contact>
+      </dcc:calibrationLaboratory>
+      <dcc:respPersons>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>A</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>1</dcc:content>
+            </dcc:description>
+            <dcc:role>Pelaksana Kalibrasi</dcc:role>
+            <dcc:mainSigner>0</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>0</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>0</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>B</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>2</dcc:content>
+            </dcc:description>
+            <dcc:role>Penyelia Kalibrasi</dcc:role>
+            <dcc:mainSigner>0</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>0</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>0</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>C</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>3</dcc:content>
+            </dcc:description>
+            <dcc:role>Kepala Laboratorium SNSU Kelistrikan</dcc:role>
+            <dcc:mainSigner>0</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>0</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>0</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>D</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>4</dcc:content>
+            </dcc:description>
+            <dcc:role>Direktur SNSU Termoelektrik dan Kimia</dcc:role>
+            <dcc:mainSigner>1</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>1</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>1</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+      </dcc:respPersons>
+      <dcc:customer>
+         <dcc:name>
+            <dcc:content>SNSU BSN</dcc:content>
+         </dcc:name>
+         <dcc:location>
+            <dcc:city>Tangerang Selatan</dcc:city>
+            <dcc:countryCode>ID</dcc:countryCode>
+            <dcc:postCode>15314</dcc:postCode>
+            <dcc:state>Banten</dcc:state>
+            <dcc:street>KST BJ Habibie Setu</dcc:street>
+            <dcc:streetNo>Gedung 420</dcc:streetNo>
+         </dcc:location>
+      </dcc:customer>
+      <dcc:statements>
+         <dcc:statement refType="basic_conformity">
+            <dcc:declaration>
+               <dcc:content lang="id">Resistansi diukur pada arus uji 100mA.</dcc:content>
+               <dcc:content lang="en">Resistance measured at test current 100mA.</dcc:content>
+            </dcc:declaration>
+         </dcc:statement>
+      </dcc:statements>
+   </dcc:administrativeData>
+   <dcc:measurementResults>
+      <dcc:measurementResult>
+         <dcc:name>
+            <dcc:content>Hasil Kalibrasi / Calibration Results</dcc:content>
+         </dcc:name>
+         <dcc:usedMethods>
+            <dcc:usedMethod refType="basic_methodMeasurementUncertainty">
+               <dcc:name>
+                  <dcc:content lang="id">I.ME.1.03</dcc:content>
+                  <dcc:content lang="en">I.ME.1.03</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">untuk tegangan DC</dcc:content>
+                  <dcc:content lang="en">for DC voltage</dcc:content>
+               </dcc:description>
+               <dcc:norm>-</dcc:norm>
+            </dcc:usedMethod>
+         </dcc:usedMethods>
+         <dcc:measuringEquipments>
+            <dcc:measuringEquipment refType="basic_measurementStandard">
+               <dcc:name>
+                  <dcc:content lang="id">Alat Pengukur LCR</dcc:content>
+                  <dcc:content lang="en">LCR Meter</dcc:content>
+               </dcc:name>
+               <dcc:manufacturer>
+                  <dcc:name>
+                     <dcc:content lang="id">7600</dcc:content>
+                     <dcc:content lang="en">7600</dcc:content>
+                  </dcc:name>
+               </dcc:manufacturer>
+               <dcc:identifications>
+                  <dcc:identification refType="basic_serialNumber">
+                     <dcc:issuer>manufacturer</dcc:issuer>
+                     <dcc:value>SN.7352889</dcc:value>
+                     <dcc:name>
+                        <dcc:content lang="id">Quadtech</dcc:content>
+                        <dcc:content lang="en">Quadtech</dcc:content>
+                     </dcc:name>
+                  </dcc:identification>
+               </dcc:identifications>
+            </dcc:measuringEquipment>
+         </dcc:measuringEquipments>
+         <dcc:influenceConditions>
+            <dcc:influenceCondition>
+               <dcc:name>
+                  <dcc:content>Suhu</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">suhu</dcc:content>
+                  <dcc:content lang="en">temperature</dcc:content>
+               </dcc:description>
+               <dcc:data>
+                  <dcc:quantity refType="math_minimum">
+                     <dcc:name>
+                        <dcc:content>nilai minimum</dcc:content>
+                     </dcc:name>
+                     <si:real>
+                        <si:value>0.0</si:value>
+                        <si:unit>\degreecelsius</si:unit>
+                     </si:real>
+                  </dcc:quantity>
+                  <dcc:quantity refType="math_maximum">
+                     <dcc:name>
+                        <dcc:content>nilai maksimum</dcc:content>
+                     </dcc:name>
+                     <si:real>
+                        <si:value>2.0</si:value>
+                        <si:unit>\degreecelsius</si:unit>
+                     </si:real>
+                  </dcc:quantity>
+               </dcc:data>
+            </dcc:influenceCondition>
+         </dcc:influenceConditions>
+         <dcc:results>
+            <dcc:result>
+               <dcc:name>
+                  <dcc:content lang="id">Resistansi DC</dcc:content>
+                  <dcc:content lang="en">DC Resistance</dcc:content>
+               </dcc:name>
+               <dcc:data>
+                  <dcc:list>
+                     <dcc:quantity refType="basic_nominalValue">
+                        <dcc:name>
+                           <dcc:content lang="id">Arus Uji Nominal</dcc:content>
+                           <dcc:content lang="en">Nominal Test Current</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>3 -3 15 -15 27 -27 30 -30</si:valueXMLList>
+                           <si:unitXMLList>\ampere \ampere \ampere \ampere \ampere \ampere \ampere \ampere</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_measurementError">
+                        <dcc:name>
+                           <dcc:content lang="id">Resistansi Terukur</dcc:content>
+                           <dcc:content lang="en">Measured Resistance</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>1.00268 0.99685 0.99981 0.99965 0.99975 0.99963 0.99967 0.99955</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1}</si:unitXMLList>
+                           <si:measurementUncertaintyUnivariateXMLList>
+                              <si:expandedMUXMLList>
+                                 <si:valueExpandedMUXMLList>0.00086 0.00086 0.00064 0.00064 0.00062 0.00062 0.00062 0.00062</si:valueExpandedMUXMLList>
+                                 <si:coverageFactorXMLList>2</si:coverageFactorXMLList>
+                                 <si:coverageProbabilityXMLList>0.95</si:coverageProbabilityXMLList>
+                                 <si:distributionXMLList>normal</si:distributionXMLList>
+                              </si:expandedMUXMLList>
+                           </si:measurementUncertaintyUnivariateXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                  </dcc:list>
+               </dcc:data>
+            </dcc:result>
+            <dcc:result>
+               <dcc:name>
+                  <dcc:content lang="id">Resistansi AC</dcc:content>
+                  <dcc:content lang="en">AC Resistance</dcc:content>
+               </dcc:name>
+               <dcc:data>
+                  <dcc:list>
+                     <dcc:quantity refType="basic_nominalValue">
+                        <dcc:name>
+                           <dcc:content lang="id">Arus Uji Nominal</dcc:content>
+                           <dcc:content lang="en">Nominal Test Current</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>3 3 3 15 15 15 20 20 20</si:valueXMLList>
+                           <si:unitXMLList>\ampere \ampere \ampere \ampere \ampere \ampere \ampere \ampere \ampere</si:unitXMLList>
+                        </si:realListXMLList>
+                        <si:realListXMLList>
+                           <si:valueXMLList>20 50 1 20 50 1 20 50 1</si:valueXMLList>
+                           <si:unitXMLList>\hertz \hertz \kilo\hertz \hertz \hertz \kilo\hertz \hertz \hertz \kilo\hertz</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_measurementError">
+                        <dcc:name>
+                           <dcc:content lang="id">Resistansi Terukur</dcc:content>
+                           <dcc:content lang="en">Measured Resistance</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>1.0028 1.0018 1.0034 1.0056 1.0056 1.0063 1.0038 1.0037 1.0045</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1} \milli\volt\ampere\tothe{-1}</si:unitXMLList>
+                           <si:measurementUncertaintyUnivariateXMLList>
+                              <si:expandedMUXMLList>
+                                 <si:valueExpandedMUXMLList>0.0028 0.0028 0.0028 0.0023 0.0020 0.0020 0.0018 0.0017 0.0017</si:valueExpandedMUXMLList>
+                                 <si:coverageFactorXMLList>2</si:coverageFactorXMLList>
+                                 <si:coverageProbabilityXMLList>0.95</si:coverageProbabilityXMLList>
+                                 <si:distributionXMLList>normal</si:distributionXMLList>
+                              </si:expandedMUXMLList>
+                           </si:measurementUncertaintyUnivariateXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                  </dcc:list>
+               </dcc:data>
+            </dcc:result>
+         </dcc:results>
+      </dcc:measurementResult>
+   </dcc:measurementResults>
+   <dcc:comment>
+      <dcc:name>
+         <dcc:content>komentar</dcc:content>
+      </dcc:name>
+      <dcc:description>
+         <dcc:content lang="id">deskripsi</dcc:content>
+         <dcc:content lang="en">description</dcc:content>
+      </dcc:description>
+   </dcc:comment>
+</dcc:digitalCalibrationCertificate>

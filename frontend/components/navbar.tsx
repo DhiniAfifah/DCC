@@ -77,7 +77,6 @@ const Navbar = () => {
             alt="BSN logo"
             width={250}
             height={50}
-            className="cursor-pointer"
           />
           
           {/* Desktop Menu */}

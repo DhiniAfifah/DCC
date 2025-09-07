@@ -1,21 +1,17 @@
 import logging
-from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Body, status, Request, APIRouter, Response
+from fastapi import FastAPI, Depends, HTTPException, File, Header, UploadFile, Body, status, Request, Response
 from sqlalchemy.orm import Session
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from passlib.context import CryptContext
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from fastapi.responses import JSONResponse
-from openpyxl.styles import Font, Alignment
 import api.crud as crud
 import api.schemas as schemas
 import api.database as database
 import os
 import shutil
 import logging
-import xml.etree.ElementTree as ET
 import shutil
 import pandas as pd
 import base64
@@ -23,23 +19,16 @@ import mimetypes
 import jwt
 from sqlalchemy import inspect
 from api.database import engine
-from openpyxl import Workbook
-from xml.etree import ElementTree as ET
 from .converter import convert_xml_to_excel
-from .pdf_generator import PDFGenerator
 from .models import DCC, DCCStatusEnum
 from starlette.background import BackgroundTask
 from pikepdf import Pdf, Name, String
-import tempfile
-import matplotlib.pyplot as plt
 from jinja2 import Template, DebugUndefined
 from weasyprint import HTML
 import logging
 from datetime import datetime
 import traceback
-from passlib.context import CryptContext
 from .database import get_db
-# Fix the import - import user module with alias to avoid naming conflicts
 from . import user as user_module, schemas
 import json
 from . import models
@@ -49,6 +38,40 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import asyncio
 from typing import AsyncGenerator
+
+def get_language_from_request(request: Request) -> str:
+    """Extract language preference from request headers"""
+    accept_language = request.headers.get('accept-language', 'en')
+    if 'id' in accept_language.lower() or 'indonesia' in accept_language.lower():
+        return 'id'
+    return 'en'
+
+def get_streaming_message(key: str, lang: str = 'en') -> str:
+    """Get localized streaming progress messages"""
+    messages = {
+        'starting': {
+            'en': 'Starting DCC creation...',
+            'id': 'Memulai pembuatan DCC...'
+        },
+        'processing_images': {
+            'en': 'Processing images and files...',
+            'id': 'Memproses gambar dan file...'
+        },
+        'finalizing_stream': {
+            'en': 'Finalizing...',
+            'id': 'Menyelesaikan...'
+        },
+        'success': {
+            'en': 'DCC created successfully!',
+            'id': 'DCC berhasil dibuat!'
+        },
+        'failed': {
+            'en': 'DCC generation failed',
+            'id': 'Pembuatan DCC gagal'
+        }
+    }
+    
+    return messages.get(key, {}).get(lang, messages.get(key, {}).get('en', key))
 
 # Kunci dan algoritma untuk enkripsi token
 SECRET_KEY = "5965815bee66d2c201cabe787a432ba80e31884133cf6c4b8e50a0df54a0c880"
@@ -1133,20 +1156,23 @@ async def debug_preview_files():
     
 @app.post("/create-dcc-streaming/")
 async def create_dcc_streaming(
+    request: Request,
     dcc: schemas.DCCFormCreate = Body(...),
     db: Session = Depends(get_db),
 ):
+    language = get_language_from_request(request)
+    
     # Create a queue for progress updates
     progress_queue = asyncio.Queue()
     
     async def progress_generator() -> AsyncGenerator[str, None]:
         try:
             # Send initial progress
-            yield f"data: {json.dumps({'progress': 10, 'message': 'Starting DCC creation...'})}\n\n"
+            yield f"data: {json.dumps({'progress': 10, 'message': get_streaming_message('starting', language)})}\n\n"
             await asyncio.sleep(0.1)
             
             # Process images
-            yield f"data: {json.dumps({'progress': 20, 'message': 'Processing images and files...'})}\n\n"
+            yield f"data: {json.dumps({'progress': 20, 'message': get_streaming_message('processing_images', language)})}\n\n"
             await asyncio.sleep(0.1)
             
             # Process method and statement images (same as original code)
@@ -1195,18 +1221,19 @@ async def create_dcc_streaming(
                             file.fileName = file.fileName
             
             # Create progress callback function that puts updates in queue
-            def progress_callback(progress, message):
-                # Put progress update in queue (non-blocking)
+            def progress_callback(progress, message_key):
+                # Get localized message based on key and language
+                localized_message = crud.get_progress_message(message_key, language)
                 try:
-                    progress_queue.put_nowait((progress, message))
+                    progress_queue.put_nowait((progress, localized_message))
                 except asyncio.QueueFull:
-                    pass  # Skip if queue is full
+                    pass
             
             # Start the DCC creation task
             loop = asyncio.get_event_loop()
             
             # Create a task for the DCC creation
-            dcc_task = loop.run_in_executor(None, crud.create_dcc, db, dcc, progress_callback)
+            dcc_task = loop.run_in_executor(None, crud.create_dcc, db, dcc, progress_callback, language)
             
             # Monitor for progress updates while the task runs
             result = None
@@ -1230,15 +1257,15 @@ async def create_dcc_streaming(
                 except asyncio.QueueEmpty:
                     break
             
-            yield f"data: {json.dumps({'progress': 95, 'message': 'Finalizing...'})}\n\n"
+            yield f"data: {json.dumps({'progress': 95, 'message': get_streaming_message('finalizing_stream', language)})}\n\n"
             await asyncio.sleep(0.1)
             
             # Send completion with download URL
             if "pdf_path" in result:
                 download_url = f"/download-dcc-pdf/{result['database_id']}"
-                yield f"data: {json.dumps({'progress': 100, 'message': 'DCC created successfully!', 'download_url': download_url, 'certificate_name': result['certificate_name']})}\n\n"
+                yield f"data: {json.dumps({'progress': 100, 'message': get_streaming_message('success', language), 'download_url': download_url, 'certificate_name': result['certificate_name']})}\n\n"
             else:
-                yield f"data: {json.dumps({'progress': 0, 'error': 'PDF generation failed'})}\n\n"
+                yield f"data: {json.dumps({'progress': 0, 'error': get_streaming_message('failed', language)})}\n\n"
                 
         except Exception as e:
             logging.error(f"Error in streaming DCC creation: {e}", exc_info=True)

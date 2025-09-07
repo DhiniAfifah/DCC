@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getToken, verifyToken } from "@/utils/auth";
 import { useLanguage } from '@/context/LanguageContext';
+import { Button } from "@/components/ui/button";
 
 export default function ProtectedRoute({
   children,
@@ -113,19 +114,18 @@ export default function ProtectedRoute({
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800">Akses Ditolak</h1>
-          <p className="text-gray-600 mt-2">
-            Anda tidak memiliki izin untuk mengakses halaman ini.
-          </p>
-          <button
+          <h1 className="text-2xl font-bold text-gray-800">{t("access_denied")}</h1>
+          <p className="text-gray-600 mt-2">{t("permission")}</p>
+          <Button
             onClick={() => {
               console.log("🔄 ProtectedRoute: Manual redirect to login");
               window.location.href = "/";
             }}
-            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+            className="mt-4 px-4 py-2"
+            variant="blue"
           >
-            Kembali ke Login
-          </button>
+            {t("back_to_login")}
+          </Button>
         </div>
       </div>
     );

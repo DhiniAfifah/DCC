@@ -4,6 +4,10 @@ const translations: Record<string, { id: string; en: string }> = {
   // Navbar
   home: { id: "Beranda", en: "Home" },
 
+  // ProtectedRoute
+  permission: { id: "Anda tidak memiliki izin untuk mengakses halaman ini.", en: "You do not have permission to access this page." },
+  back_to_login: { id: "Kembali ke Login", en: "Back to Login" },
+
   // Login
   welcome_back: { id: "Selamat datang kembali!", en: "Welcome back!" },
   log_in: { id: "Masuk ke akun Anda", en: "Log in to your account" },
@@ -295,15 +299,7 @@ const translations: Record<string, { id: string; en: string }> = {
     en: "This comment includes files and/or images",
   },
   upload_file: { id: "Unggah file", en: "Upload file" },
-
-  preparing_data: {id: "Mempersiapkan data...", en: "Preparing data..."},
-  processing_files: {id: "Memproses file...", en: "Processing files..."},
-  generating_dcc: {id: "Menghasilkan DCC...", en: "Generating DCC..."},
-  finalizing: {id: "Menyelesaikan PDF...", en: "Finalizing PDF..."},
-  dcc_created_successfully: {
-    id: "DCC berhasil dibuat! Silakan unduh.", en: "DCC created successfully! Please download.",
-  },
-
+  
   // Preview
   refresh: { id: "Segarkan", en: "Refresh" },
   generate: { id: "Menghasilkan pratinjau", en: "Generating preview" },
@@ -323,6 +319,13 @@ const translations: Record<string, { id: string; en: string }> = {
   loading: { id: "Memuat XML", en: "Loading XML" },
   xml_error: { id: "Gagal memuat XML", en: "Failed to load XML" },
   after: { id: "XML akan muncul di sini setelah pembuatan.", en: "XML will appear here after generation." },
+
+  // Progress Bar
+  preparing: {id: "Mempersiapkan data...", en: "Preparing data..."},
+  please_wait: {id: "Mohon tunggu...", en: "Please wait..."},
+  dcc_created_successfully: {
+    id: "DCC berhasil dibuat! Silakan unduh.", en: "DCC created successfully! Please download.",
+  },
 
   // Importer
   pdf_to_excel: { id: "Unggah File PDF", en: "Upload PDF File" },

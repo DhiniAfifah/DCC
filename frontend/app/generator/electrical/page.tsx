@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
+import { Progress } from "@/components/ui/progress"
 
 // Helper type guard untuk cek apakah value adalah File
 const isFile = (value: any): value is File => {
@@ -1008,7 +1009,7 @@ const calibratorTemplate = {
 }
 
 export default function CreateDCC() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
@@ -1549,7 +1550,7 @@ export default function CreateDCC() {
       
       if (errors.length > 0) {
         // Show specific validation errors immediately
-        toast("Please fill in all required fields:", {
+        toast.error("Please fill in all required fields:", {
           description: (
             <ul className="list-disc pl-5">
               {errors.map((error, index) => (
@@ -1663,7 +1664,7 @@ export default function CreateDCC() {
   const handleSubmit = async () => {
     // Start processing
     setIsProcessingSubmission(true);
-    setProgressMessage(t("preparing_data"));
+    setProgressMessage(t("preparing"));
     setProgressPercent(0);
 
     // Create FormData object for multipart/form-data submission
@@ -1717,6 +1718,7 @@ export default function CreateDCC() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept-Language": language === 'id' ? 'id-ID,id;q=0.9' : 'en-US,en;q=0.9',
         },
         body: JSON.stringify(sanitizeData(modifiedFormData)),
       });
@@ -1868,32 +1870,22 @@ export default function CreateDCC() {
       {/* Progress Bar */}
       {isProcessingSubmission && (
         <div className="max-w-4xl mx-auto px-4 mt-8">
-          <div className="p-6 bg-gradient-to-r from-sky-50 to-blue-50 rounded-lg border border-sky-200 shadow-sm">
+          <div className="p-6 bg-sky-50 rounded-lg border border-sky-200 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sky-800 font-semibold text-lg">{progressMessage}</p>
               <span className="text-sky-600 font-mono text-sm">{progressPercent}%</span>
             </div>
-            
-            <div className="w-full bg-sky-100 rounded-full h-4 mb-2 overflow-hidden">
-              <div
-                className="bg-gradient-to-r from-sky-500 to-blue-600 h-4 rounded-full transition-all duration-500 ease-out relative"
-                style={{ width: `${progressPercent}%` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
-              </div>
-            </div>
+
+            <Progress value={progressPercent} />
             
             <div className="flex items-center justify-between text-xs text-sky-600">
-              <span>{t("processing_dcc")}</span>
+              {progressPercent > 0 && progressPercent < 100 && (
+                <div className="mt-3 flex items-center text-sm text-sky-700">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-sky-600 mr-2"></div>
+                </div>
+              )}
               <span>{t("please_wait")}</span>
             </div>
-            
-            {progressPercent > 0 && progressPercent < 100 && (
-              <div className="mt-3 flex items-center text-sm text-sky-700">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-sky-600 mr-2"></div>
-                {t("do_not_close_browser")}
-              </div>
-            )}
           </div>
         </div>
       )}

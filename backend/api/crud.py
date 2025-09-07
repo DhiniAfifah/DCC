@@ -34,6 +34,37 @@ from fastapi import UploadFile
 from api.pdf_generator import PDFGenerator
 import uuid
 
+def get_progress_message(key: str, lang: str = 'en') -> str:
+    """Get localized progress messages"""
+    messages = {
+        'processing_form': {
+            'en': 'Processing form data...',
+            'id': 'Memproses data formulir...'
+        },
+        'saving': {
+            'en': 'Saving to database...',
+            'id': 'Menyimpan ke database...'
+        },
+        'reading': {
+            'en': 'Reading Excel data...',
+            'id': 'Membaca data Excel...'
+        },
+        'generating_xml': {
+            'en': 'Generating XML file...',
+            'id': 'Membuat file XML...'
+        },
+        'generating_pdf': {
+            'en': 'Generating PDF file...',
+            'id': 'Membuat file PDF...'
+        },
+        'finalizing': {
+            'en': 'Finalizing...',
+            'id': 'Menyelesaikan...'
+        }
+    }
+    
+    return messages.get(key, {}).get(lang, messages.get(key, {}).get('en', key))
+
 # Set log level
 logging.basicConfig(level=logging.DEBUG)
 
@@ -676,7 +707,7 @@ def extract_captions_from_dcc(dcc: schemas.DCCFormCreate):
     return captions
 
 #db n excel 
-def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None):
+def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, language='en'):
     logging.info("Starting DCC creation process")
     
     # Inisialisasi variabel Office
@@ -686,7 +717,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None):
     
     try:
         if progress_callback:
-            progress_callback(30, "Processing form data...")
+            progress_callback(30, get_progress_message("processing_form", language))
 
         logging.debug("Creating DCC model instance")
         
@@ -813,7 +844,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None):
             })
 
         if progress_callback:
-            progress_callback(40, "Saving to database...")
+            progress_callback(40, get_progress_message("saving", language))
 
         db_dcc = models.DCC(
             software_name=dcc.software,
@@ -841,7 +872,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None):
         logging.info(f"DCC {dcc.administrative_data.sertifikat} saved successfully with ID {db_dcc.id}")
 
         if progress_callback:
-            progress_callback(50, "Reading Excel data...")
+            progress_callback(50, get_progress_message("reading", language))
 
         captions = extract_captions_from_dcc(dcc)
         
@@ -864,7 +895,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None):
         
         # Generate XML
         if progress_callback:
-            progress_callback(70, "Generating XML...")
+            progress_callback(70, get_progress_message("generating_xml", language))
 
         xml_content = generate_xml(dcc, table_data)
         with open(xml_path, "w", encoding="utf-8") as f:
@@ -873,7 +904,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None):
         
         # Generate PDF
         if progress_callback:
-            progress_callback(80, "Generating PDF...")
+            progress_callback(80, get_progress_message("generating_pdf", language))
         
         pdf_generator = PDFGenerator()
         pdf_path = str(paths['pdf_output'])
@@ -892,7 +923,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None):
             raise Exception("PDF generation failed")
         
         if progress_callback:
-            progress_callback(95, "Finalizing...")
+            progress_callback(95, get_progress_message("finalizing", language))
         
         filename_with_id = f"{db_dcc.id}_{dcc.administrative_data.sertifikat}"
 
