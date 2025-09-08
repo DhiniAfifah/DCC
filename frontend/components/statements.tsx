@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Language, fetchLanguages } from "@/utils/language";
+import { toast } from "sonner"
 
 export default function Statements({
   formData,
@@ -261,13 +262,13 @@ export default function Statements({
         isImageUpload &&
         !["image/jpeg", "image/png", "image/jpg"].includes(file.type)
       ) {
-        alert("Please upload a valid image (JPEG/PNG/JPG).");
+        toast.error("Please upload a valid image (JPEG/PNG/JPG).");
         return;
       }
 
       // Validasi ukuran file (5MB)
       if (file.size > 5_000_000) {
-        alert("File size should be less than 5MB.");
+        toast.error("File size should be less than 5MB.");
         return;
       }
 
@@ -305,12 +306,12 @@ export default function Statements({
             );
           }
 
-          alert("Image uploaded successfully.");
+          toast.success("Image uploaded successfully!");
         };
         reader.readAsDataURL(file);
       } catch (error) {
         console.error("Error uploading image:", error);
-        alert("Image upload failed.");
+        toast.error("Image upload failed.");
       }
     }
   }, [form]);
@@ -341,16 +342,16 @@ export default function Statements({
       if (!response.ok) {
         const errorResult = await response.json();
         console.error("Error response from server:", errorResult);
-        alert(`Failed to create DCC: ${errorResult.detail}`);
+        toast.error(`Failed to create DCC: ${errorResult.detail}`);
         return;
       }
 
       const result = await response.json();
       console.log("DCC Created:", result);
-      alert(`DCC Created! Download: ${result.download_link}`);
+      toast.success(`DCC Created! Download: ${result.download_link}`);
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("An error occurred while submitting the form.");
+      toast.error("An error occurred while submitting the form.");
     }
   };
 

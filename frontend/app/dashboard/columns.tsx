@@ -15,6 +15,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export type Certificate = {
     id: number
@@ -272,7 +273,7 @@ export const columns: ColumnDef<Certificate>[] = [
           await downloadDCCPDF(certificate.id, certificate.certificateId);
         } catch (error) {
           // Show error message to user
-          alert(`Failed to download PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          toast.error(`Failed to download PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       };
 

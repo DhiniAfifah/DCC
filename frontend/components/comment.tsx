@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useLanguage } from "@/context/LanguageContext";
 import { Language, fetchLanguages } from "@/utils/language";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 export default function Comment({
   formData,
@@ -184,12 +185,12 @@ export default function Comment({
             );
           }
 
-          alert("File uploaded successfully.");
+          toast.success("File uploaded successfully!");
         };
         reader.readAsDataURL(file);
       } catch (error) {
         console.error("Error uploading file:", error);
-        alert("File upload failed.");
+        toast.error("File upload failed.");
       }
     }
   };
@@ -222,16 +223,16 @@ export default function Comment({
       if (!response.ok) {
         const errorResult = await response.json();
         console.error("Error response from server:", errorResult);
-        alert(`Failed to create DCC: ${errorResult.detail}`);
+        toast.error(`Failed to create DCC: ${errorResult.detail}`);
         return;
       }
 
       const result = await response.json();
       console.log("DCC Created:", result);
-      alert(`DCC Created! Download: ${result.download_link}`);
+      toast.success(`DCC Created! Download: ${result.download_link}`);
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("An error occurred while submitting the form.");
+      toast.error("An error occurred while submitting the form.");
     }
   };
 

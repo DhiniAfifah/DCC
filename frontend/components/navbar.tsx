@@ -72,12 +72,16 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md shadow-black/20 z-50">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-20 space-x-6">
-          <Image
-            src="/image/BSN.png"
-            alt="BSN logo"
-            width={250}
-            height={50}
-          />
+          <div className="flex-shrink-0 w-32 md:w-48 lg:w-64">
+            <Image
+              src="/image/BSN.png"
+              alt="BSN logo"
+              width={250}
+              height={50}
+              className="h-auto w-full object-contain"
+              priority
+            />
+          </div>
           
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-4 items-center">

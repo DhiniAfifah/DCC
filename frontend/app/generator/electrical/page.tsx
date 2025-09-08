@@ -1818,7 +1818,7 @@ export default function CreateDCC() {
       />
 
       {currentStep !== 4 && (
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-4 px-10">
           <Select onValueChange={setSelectedTemplate} value={selectedTemplate}>
             <SelectTrigger className="w-[400px] mt-10 bg-white">
               <SelectValue placeholder={t("template")} />
@@ -1873,17 +1873,20 @@ export default function CreateDCC() {
           <div className="p-6 bg-sky-50 rounded-lg border border-sky-200 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sky-800 font-semibold text-lg">{progressMessage}</p>
-              <span className="text-sky-600 font-mono text-sm">{progressPercent}%</span>
+              <span className="text-sky-600 text-sm">{progressPercent}%</span>
             </div>
 
             <Progress value={progressPercent} />
             
             <div className="flex items-center justify-between text-xs text-sky-600">
-              {progressPercent > 0 && progressPercent < 100 && (
-                <div className="mt-3 flex items-center text-sm text-sky-700">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-sky-600 mr-2"></div>
-                </div>
-              )}
+              <div>
+                {progressPercent > 0 && progressPercent < 100 && (
+                  <div className="mt-3 flex items-center text-sm text-sky-700">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-sky-600 mr-2"></div>
+                  </div>
+                )}
+              </div>
+              
               <span>{t("please_wait")}</span>
             </div>
           </div>

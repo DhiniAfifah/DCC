@@ -63,6 +63,7 @@ import {
 } from "@/components/ui/popover";
 import { Language, fetchLanguages } from "@/utils/language";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 declare global {
   interface Window {
@@ -738,11 +739,11 @@ export default function MeasurementForm({
       // Handle image file upload
       if (isImageUpload) {
         if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
-          alert("Please upload a valid image (JPEG/PNG/JPG).");
+          toast.error("Please upload a valid image (JPEG/PNG/JPG).");
           return;
         }
         if (file.size > 5000000) {
-          alert("File size should be less than 5MB.");
+          toast.error("File size should be less than 5MB.");
           return;
         }
 
@@ -785,10 +786,10 @@ export default function MeasurementForm({
             reader.readAsDataURL(file); // Convert file to base64
           }
 
-          alert("Image uploaded successfully.");
+          toast.success("Image uploaded successfully!");
         } catch (error) {
           console.error("Error uploading image:", error);
-          alert("Image upload failed.");
+          toast.error("Image upload failed.");
         }
       } else if (file.name.endsWith(".xls") || file.name.endsWith(".xlsx")) {
         const formData = new FormData();
@@ -808,13 +809,15 @@ export default function MeasurementForm({
           setFileName(result.filename);
           setSheets(result.sheets || []);
 
-          alert(`Excel file uploaded successfully: ${result.filename}`);
+          toast.success("Excel file uploaded successfully!", {
+            description: `${result.filename}`
+          } );
         } catch (error) {
           console.error("Error uploading file:", error);
-          alert("File upload failed.");
+          toast.error("File upload failed.");
         }
       } else {
-        alert("Please upload a valid file (Excel or Image).");
+        toast.error("Please upload a valid file (Excel or Image).");
       }
     }
   };
@@ -1106,16 +1109,16 @@ export default function MeasurementForm({
       if (!response.ok) {
         const errorResult = await response.json();
         console.error("Error response from server:", errorResult);
-        alert(`Failed to create DCC: ${errorResult.detail}`);
+        toast.error(`Failed to create DCC: ${errorResult.detail}`);
         return;
       }
 
       const result = await response.json();
       console.log("DCC Created:", result);
-      alert(`DCC Created! Download: ${result.download_link}`);
+      toast.success(`DCC Created! Download: ${result.download_link}`);
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("An error occurred while submitting the form.");
+      toast.error("An error occurred while submitting the form.");
     }
   };
 
