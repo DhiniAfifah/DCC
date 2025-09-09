@@ -564,10 +564,15 @@ export default function AdministrativeForm({
                           if (value === "laboratory") {
                             form.setValue(
                               "administrative_data.tempat_pdf",
-                              "Laboratorium SNSU-BSN"
+                              "Laboratorium SNSU-BSN",
+                              { shouldDirty: false, shouldTouch: false } // Prevent unnecessary validation
                             );
                           } else {
-                            form.setValue("administrative_data.tempat_pdf", "");
+                            form.setValue(
+                              "administrative_data.tempat_pdf", 
+                              "",
+                              { shouldDirty: false, shouldTouch: false }
+                            );
                           }
                         }}
                       >
@@ -585,18 +590,22 @@ export default function AdministrativeForm({
                         </SelectContent>
                       </Select>
 
-                      {/* Display input only when 'other' is selected */}
+                      {/* Display input only when other than 'laboratory' is selected */}
                       {selectedPlace && selectedPlace !== "laboratory" && (
-                        <Input
-                          value={form.getValues(
-                            "administrative_data.tempat_pdf"
-                          )} // Bind input value to form state
-                          onChange={(e) => {
-                            form.setValue(
-                              "administrative_data.tempat_pdf",
-                              e.target.value
-                            ); // Update form value on input change
-                          }}
+                        <FormField
+                          control={form.control}
+                          name="administrative_data.tempat_pdf"
+                          render={({ field: tempat_pdfField }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input
+                                  {...tempat_pdfField}
+                                  // Remove the manual value binding that was causing issues
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                       )}
                       <FormMessage />
