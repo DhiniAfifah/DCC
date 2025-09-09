@@ -227,13 +227,13 @@ const multimeterTemplate = {
     sertifikat: "",
     order: "",
     tempat: "laboratory",
-    tempat_pdf: "",
+    tempat_pdf: "Laboratorium SNSU-BSN",
   },
   objects: [
     {
       jenis: {id: 'Digital Multimeter', en: 'Digital Multimeter'},
       merek: "Fluke",
-      tipe: "5730A",
+      tipe: "8508A",
       item_issuer: "manufacturer",
       seri_item: "",
       id_lain: {id: '', en: ''},
@@ -633,7 +633,7 @@ const calibratorTemplate = {
     sertifikat: "",
     order: "",
     tempat: "laboratory",
-    tempat_pdf: "",
+    tempat_pdf: "Laboratorium SNSU-BSN",
   },
   objects: [
     {
