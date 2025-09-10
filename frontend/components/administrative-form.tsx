@@ -1132,9 +1132,7 @@ export default function AdministrativeForm({
                     <CardContent className="grid gap-6">
                       <div className="grid grid-row md:grid-cols-2 gap-4">
                         <div id="item_issuer">
-                          <FormLabel>
-                            {t("penerbit_seri")}
-                          </FormLabel>
+                          <FormLabel>{t("penerbit_seri")}</FormLabel>
                           <FormField
                             control={form.control}
                             name={`objects.${index}.item_issuer`}
@@ -1142,7 +1140,7 @@ export default function AdministrativeForm({
                               <FormItem>
                                 <Select
                                   onValueChange={field.onChange}
-                                  defaultValue={field.value}
+                                  value={field.value}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
@@ -1431,7 +1429,7 @@ export default function AdministrativeForm({
                       <FormItem>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -1440,34 +1438,34 @@ export default function AdministrativeForm({
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="Kepala Laboratorium SNSU Suhu">
-                              SNSU {t("suhu")}
+                              {t("snsu")} {t("suhu")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Kelistrikan">
-                              SNSU {t("listrik")}
+                              {t("snsu")} {t("listrik")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Waktu & Frekuensi">
-                              SNSU {t("waktu")}
+                              {t("snsu")} {t("waktu")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Fotometri & Radiometri">
-                              SNSU {t("fotometri_radiometri")}
+                              {t("snsu")} {t("fotometri_radiometri")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Kimia">
-                              SNSU {t("kimia")}
+                              {t("snsu")} {t("kimia")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Panjang">
-                              SNSU {t("panjang")}
+                              {t("snsu")} {t("panjang")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Massa">
-                              SNSU {t("massa")}
+                              {t("snsu")} {t("massa")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Akustik & Vibrasi">
-                              SNSU {t("akustik_vibrasi")}
+                              {t("snsu")} {t("akustik_vibrasi")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Biologi">
-                              SNSU {t("biologi")}
+                              {t("snsu")} {t("biologi")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Radiasi Ringan">
-                              SNSU {t("radiasi_ringan")}
+                              {t("snsu")} {t("radiasi")}
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -1520,7 +1518,7 @@ export default function AdministrativeForm({
                       <FormItem>
                         <Select
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                         >
                           <FormControl>
                             <SelectTrigger>

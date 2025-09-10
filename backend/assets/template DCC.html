@@ -92,7 +92,8 @@
             #page-number .value-indo {
                 text-align: center;
                 font-family: Arial, sans-serif;
-                font-size: 14.5px;
+                font-size: 12px;
+                margin: 0;
             }
             #page-number .eng {
                 display: grid;
@@ -103,7 +104,7 @@
             #page-number .value-eng {
                 text-align: center;
                 font-family: Arial, sans-serif;
-                font-size: 11.5px;
+                font-size: 9.5px;
             }
             #second-page-body .row {
                 display: flex; 
@@ -161,6 +162,7 @@
             }
             .number {
                 text-align: right;
+                font-weight: bold;
             }
             #catatan .indo {
                 font-size: 12.87px;
@@ -171,37 +173,46 @@
                 font-style: italic;
                 margin-top: 1px;
             }
-            #credits .row {
+            #responsible .row {
                 margin-bottom: 2px;
             }
-            #credits .left {
+            #responsible .left {
                 width: 165px;
             }
-            #credits .label {
+            #responsible .label {
                 display: flex; 
                 font-size: 12.6px;
             }
-            #credits .sublabel {
+            #responsible .sublabel {
                 margin: 0;
                 font-style: italic;
                 font-size: 12px;
                 margin-top: 0.5px;
             }
-            #credits .colon {
+            #responsible .colon {
                 width: 8px; 
                 font-size: 12.6px;
             }
-            #credits .value {
+            #responsible .value {
                 font-size: 12.6px;
                 margin-bottom: 2px;
             }
-            #credits .right {
+            #responsible .right {
                 font-size: 12.6px;
             }
-            #right .labels {
-                display: flex;
+            #labels {
                 margin-top: 3px;
                 margin-bottom: 4px;
+            }
+            #labels .label {
+                margin: 0;
+                font-size: 12.6px;
+            }
+            #labels .sublabel {
+                margin: 0;
+                font-style: italic;
+                font-size: 12px;
+                margin-top: 1.5px;
             }
         </style>
     </head>
@@ -339,7 +350,19 @@
                             <div class="sub-label">Authorizing officer</div>
                         </div>
                         <div class="colon">:</div>
-                        <div class="value">{{ direktur.peran }}</div>
+                        <div class="value">
+                            {{ direktur.peran }}
+
+                            {% if 'Kimia' in direktur.peran %}
+                                <div style="margin-top: 3px; font-style: italic; font-size: 10.5px;">
+                                    (Director of National Measurement Standards for Thermoelectricity and Chemistry)
+                                </div>
+                            {% elif 'Biologi' in direktur.peran %}
+                                <div style="margin-top: 3px; font-style: italic; font-size: 10.5px;">
+                                    (Director of National Measurement Standards for Mechanics, Radiation, and Biology)
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <div id="Nama" class="row">
@@ -496,7 +519,11 @@
                     </div>
                 </div>
 
-                <h4 style="text-align: center; font-size: 14px;"><u>Hasil Kalibrasi/<i>Calibration Result</i></u></h4>
+                <h4 style="text-align: center; font-size: 14px;">
+                    <u>
+                        Hasil Kalibrasi/<i style="font-size: 12px;">Calibration Result</i>
+                    </u>
+                </h4>
 
                 <div id="kondisi">
                     <h4 class="title" style="margin-bottom: 3px;">Kondisi Ruangan/<i class="subtitle">Environmental Condition</i></h4>
@@ -514,10 +541,17 @@
                                     <p class="sublabel">Humidity</p>
                                 {% endif %}
                             </div>
+
+                            {% set min_value = cond.min_value | float | int %}
+                            {% set max_value = cond.max_value | float | int %}
+
+                            {% set tengah = (min_value + max_value) / 2 %}
+                            {% set rentang = tengah - min_value %}
+
                             {% if cond.tengah_unit == cond.rentang_unit %}
-                                <p class="value" style="margin-left: 20px;">: ({{ cond.tengah }} ± {{ cond.rentang }}){{ cond.tengah_unit | safe }}</p>
+                                <p class="value" style="margin-left: 20px;">: ({{ tengah }} ± {{ rentang }}) {{ cond.tengah_unit | safe }}</p>
                             {% else %}
-                                <p class="value" style="margin-left: 20px;">: {{ cond.tengah }} {{ cond.tengah_unit | safe }} ± {{ cond.rentang }} {{ cond.rentang_unit | safe }}</p>
+                                <p class="value" style="margin-left: 20px;">: {{ tengah }} {{ cond.tengah_unit | safe }} ± {{ rentang }} {{ cond.rentang_unit | safe }}</p>
                             {% endif %}
                         </div>
                     {% endfor %}
@@ -526,8 +560,8 @@
                 <div id="tabel" style="margin-top: 35px;">
                     {% for res in results %}
                         <table>
-                            <thead>
-                                <tr>
+                            <thead id="judul">
+                                <tr id="judul-tabel">
                                     <th colspan="{{ res.columns | length * 2 + 2 }}" style="font-size:14px;">
                                         {% if res.parameters.id %}
                                             {{ res.parameters.id }}
@@ -562,7 +596,7 @@
                                     </th>
                                 </tr>
 
-                                <tr>
+                                <tr id="judul-kolom">
                                     {% for col in res.columns %}
                                         <th colspan="{{ col.subcolumn | length * 2 }}" class="th">
                                             {% if col.name.id %}
@@ -602,7 +636,7 @@
                                 </tr>
                             </thead>
 
-                            <tbody>
+                            <tbody id="isi">
                                 {% set subcols = res.columns | map(attribute='subcolumn') | list %}
                                 {% set rows = range(subcols[0] | length) %}
 
@@ -641,7 +675,7 @@
                                     {{ method }}
                                 {% endif %}
                                 <span class="indo">/</span>
-                                <span class="eng">
+                                <div class="eng">
                                     {% if met.method_desc.en and met.method_desc.id %}
                                         {{ met.method_desc.en }}
                                     {% else %}
@@ -649,7 +683,7 @@
                                         {% set method = values[0] %}
                                         {{ method }}
                                     {% endif %}
-                                </span>
+                                </div>
                             </div>
                             <div id="formula" style="text-align: center;">
                                 {% if met.formula_image is defined %}
@@ -710,7 +744,7 @@
                                 {% endif %}
                             {% endfor %}
                             <span class="indo">/</span>
-                            <span class="eng">
+                            <div class="eng">
                                 The standard instruments used were
                                 {% for equ in equipments %}
                                     {% if equ.nama_alat.en %}
@@ -744,7 +778,7 @@
                                         {{ nama }} {{ manuf }} {{ model }} ({{ seri }})
                                     {% endif %}
                                 {% endfor %}
-                            </span>
+                            </div>
                         </div>
                     </div>
 
@@ -756,29 +790,29 @@
                                     {% set alt_values = stat.value | dictsort | rejectattr('0', 'equalto', 'id') | list %}
                                     {% if alt_values | length > 0 %}
                                         <span class="indo">/</span>
-                                        <span class="eng">
+                                        <div class="eng">
                                             {% if stat.value.en %}
                                                 {{ stat.value.en }}
                                             {% else %}
                                                 {{ stat.value | dictsort | rejectattr('0', 'equalto', 'id') | map(attribute='1') | list | first }}
                                             {% endif %}
-                                        </span>
+                                        </div>
                                     {% endif %}
                                 {% elif stat.value.en %}
                                     {{ stat.value.en }}
                                     {% set alt_values = stat.value | dictsort | rejectattr('0', 'equalto', 'en') | list %}
                                     {% if alt_values | length > 0 %}
                                         <span class="indo">/</span>
-                                        <span class="eng">
+                                        <div class="eng">
                                             {{ stat.value | dictsort | rejectattr('0', 'equalto', 'en') | map(attribute='1') | list | first }}
-                                        </span>
+                                        </div>
                                     {% endif %}
                                 {% else %}
                                     {% set values = stat.value | dictsort | map(attribute='1') | list %}
                                     {{ values[0] }}
                                     {% if values | length > 1 %}
                                         <span class="indo">/</span>
-                                        <span class="eng">{{ values[1] }}</span>
+                                        <div class="eng">{{ values[1] }}</div>
                                     {% endif %}
                                 {% endif %}
                             </div>
@@ -799,7 +833,7 @@
                     </div>
                 </div>
 
-                <div id="credits" style="margin-top: 30px;">
+                <div id="responsible" style="margin-top: 30px;">
                     <div id="pelaksana" class="row">
                         <div class="left">
                             <p class="label">Dikalibrasi oleh/</p>
@@ -822,9 +856,10 @@
                                 <div class="colon">:</div>
                                 <div>
                                     <p class="value">{{ penyelia | map(attribute='nama_resp') | join(' & ') }}</p>
-                                    <div class="labels">
-                                        <p class="label">(Penyelia/</p>
-                                        <p class="sublabel">Supervisor)</p>
+                                    <div id="labels">
+                                        <div class="label">
+                                            (Penyelia/<span class="sublabel">Supervisor</span>)
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -832,12 +867,61 @@
                                 <div class="colon">:</div>
                                 <div>
                                     <p class="value">{{ kepala.nama_resp }}</p>
-                                    <div class="labels">
-                                        <p class="label">({{ kepala.peran }})</p>
+                                    <div id="labels">
+                                        {% if 'Suhu' in kepala.peran %}
+                                            <div class="label">
+                                                (Ka. Lab SNSU Suhu/<span class="sublabel">Head of NMS for Temperature Laboratory</span>)
+                                            </div>
+                                        {% elif 'Kelistrikan' in kepala.peran %}
+                                            <div class="label">
+                                                (Ka. Lab SNSU Kelistrikan/<span class="sublabel">Head of NMS for Electrical Laboratory</span>)
+                                            </div>
+                                        {% elif 'Waktu' in kepala.peran %}
+                                            <div class="label">
+                                                (Ka. Lab SNSU Waktu & Frekuensi/<span class="sublabel">Head of NMS for Time & Frequency Laboratory</span>)
+                                            </div>
+                                        {% elif 'Fotometri' in kepala.peran %}
+                                            <div class="label">
+                                                (Ka. Lab SNSU Fotometri & Radiometri/<span class="sublabel">Head of NMS for Photometry & Radiometry Laboratory</span>)
+                                            </div>
+                                        {% elif 'Kimia' in kepala.peran %}
+                                            <div class="label">
+                                                (Ka. Lab SNSU Kimia/<span class="sublabel">Head of NMS for Chemistry Laboratory</span>)
+                                            </div>
+                                        {% elif 'Panjang' in kepala.peran %}
+                                            <div class="label">
+                                                (Ka. Lab SNSU Panjang/<span class="sublabel">Head of NMS for Length Laboratory</span>)
+                                            </div>
+                                        {% elif 'Massa' in kepala.peran %}
+                                            <div class="label">
+                                                (Ka. Lab SNSU Massa/<span class="sublabel">Head of NMS for Mass Laboratory</span>)
+                                            </div>
+                                        {% elif 'Akustik' in kepala.peran %}
+                                            <div class="label">
+                                                (Ka. Lab SNSU Akustik & Vibrasi/<span class="sublabel">Head of NMS for Acoustics & Vibration Laboratory</span>)
+                                            </div>
+                                        {% elif 'Radiasi' in kepala.peran %}
+                                            <div class="label">
+                                                (Ka. Lab SNSU Radiasi Pengion/<span class="sublabel">Head of NMS for Ionizing Radiation Laboratory</span>)
+                                            </div>
+                                        {% elif 'Biologi' in kepala.peran %}
+                                            <div class="label">
+                                                (Ka. Lab SNSU Biologi/<span class="sublabel">Head of NMS for Biology Laboratory</span>)
+                                            </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div id="end" style="border-top: black 2px solid; text-align: center;">
+                    <div class="label">
+                        ==== 
+                        <span style="font-weight: bold;">
+                            Akhir dari Sertifikat/<span class="sublabel">End of Certificate</span>
+                        </span>
+                        ====
                     </div>
                 </div>
             </div>

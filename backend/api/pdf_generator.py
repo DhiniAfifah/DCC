@@ -362,9 +362,9 @@ class PDFGenerator:
         conditions = []
         for cond in root.findall('.//dcc:influenceConditions/dcc:influenceCondition', namespaces=XML_NS):
             jenis_kondisi = cond.findtext('.//dcc:name/dcc:content', namespaces=XML_NS) or ''
-            tengah = cond.findtext('.//dcc:quantity[@refType="math_minimum"]/si:real/si:value', namespaces=XML_NS) or ''
+            min_value = cond.findtext('.//dcc:quantity[@refType="math_minimum"]/si:real/si:value', namespaces=XML_NS) or ''
             tengah_unit = cond.findtext('.//dcc:quantity[@refType="math_minimum"]/si:real/si:unit', namespaces=XML_NS) or ''
-            rentang = cond.findtext('.//dcc:quantity[@refType="math_maximum"]/si:real/si:value', namespaces=XML_NS) or ''
+            max_value = cond.findtext('.//dcc:quantity[@refType="math_maximum"]/si:real/si:value', namespaces=XML_NS) or ''
             rentang_unit = cond.findtext('.//dcc:quantity[@refType="math_maximum"]/si:real/si:unit', namespaces=XML_NS) or ''
 
             tengah_unit = convert_latex_unit(tengah_unit)
@@ -372,9 +372,9 @@ class PDFGenerator:
 
             conditions.append({
                 'jenis_kondisi': jenis_kondisi if jenis_kondisi else {},
-                'tengah': tengah,
+                'min_value': min_value,
                 'tengah_unit': tengah_unit,
-                'rentang': rentang,
+                'max_value': max_value,
                 'rentang_unit': rentang_unit
             })
         return conditions

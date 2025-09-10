@@ -13,7 +13,9 @@ import { useLanguage } from "@/context/LanguageContext";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -236,7 +238,7 @@ const multimeterTemplate = {
       tipe: "8508A",
       item_issuer: "manufacturer",
       seri_item: "",
-      id_lain: {id: '', en: ''},
+      id_lain: {id: '-', en: '-'},
     },
   ],
   responsible_persons: {
@@ -313,7 +315,28 @@ const multimeterTemplate = {
             "I.ME.2.10 for resistance " +
             "using standard instruments that is traceable to SI through SNSU-BSN.",
       },
-      norm: "",
+      norm: "-",
+      refType: "basic_calibrationMethod",
+      has_formula: false,
+      formula: {
+        latex: "",
+        mathml: "",
+      },
+      has_image: false,
+      image: {
+        caption: "",
+        fileName: "",
+        mimeType: "",
+        base64: "",
+      },
+    },
+    {
+      method_name: {id: 'Pengkabelan untuk Pengukuran Resistansi', en: 'Wiring Setup for Resistance Measurement'},
+      method_desc: {
+        id: 'Pengukuran resistansi di bawah dan sama dengan 100 kΩ menggunakan metode 4-kawat, sedangkan pada nominal di atas 100 kΩ menggunakan metode 2-kawat.',
+        en: 'The resistance measurement below and equal to 100 kΩ uses the 4-wire method, while for nominal resistance above 100 kΩ use the 2-wire method.',
+      },
+      norm: "-",
       refType: "basic_calibrationMethod",
       has_formula: false,
       formula: {
@@ -334,7 +357,7 @@ const multimeterTemplate = {
         id: 'Ketidakpastian pengukuran dihitung  dengan tingkat kepercayaan tidak kurang dari 95% dan faktor cakupan k = 2.',
         en: 'The uncertainty of measurement was calculated with a confidence level not less than 95% and coverage factor of k = 2.',
       },
-      norm: "",
+      norm: "-",
       refType: "basic_methodMeasurementUncertainty",
       has_formula: false,
       formula: {
@@ -369,7 +392,7 @@ const multimeterTemplate = {
   conditions: [
     {
       jenis_kondisi: "Suhu",
-      desc: {id: '', en: ''},
+      desc: {id: '-', en: '-'},
       tengah: "23",
       tengah_unit: {
         prefix: "",
@@ -391,7 +414,7 @@ const multimeterTemplate = {
     },
     {
       jenis_kondisi: "Kelembapan",
-      desc: {id: '', en: ''},
+      desc: {id: '-', en: '-'},
       tengah: "54",
       tengah_unit: {
         prefix: "",
@@ -603,8 +626,8 @@ const multimeterTemplate = {
     },
   ],
   comment: {
-    title: "",
-    desc: {id: '', en: ''},
+    title: "-",
+    desc: {id: '-', en: '-'},
     has_file: false,
     files: [
       {
@@ -642,7 +665,7 @@ const calibratorTemplate = {
       tipe: "5730A",
       item_issuer: "manufacturer",
       seri_item: "",
-      id_lain: {id: '', en: ''},
+      id_lain: {id: '-', en: '-'},
     },
   ],
   responsible_persons: {
@@ -711,7 +734,28 @@ const calibratorTemplate = {
             "I.ME.2.09 for resistance " +
             "using standard instruments that is traceable to SI through SNSU-BSN.",
       },
-      norm: "",
+      norm: "-",
+      refType: "basic_calibrationMethod",
+      has_formula: false,
+      formula: {
+        latex: "",
+        mathml: "",
+      },
+      has_image: false,
+      image: {
+        caption: "",
+        fileName: "",
+        mimeType: "",
+        base64: "",
+      },
+    },
+    {
+      method_name: {id: 'Pengkabelan untuk Pengukuran Resistansi', en: 'Wiring Setup for Resistance Measurement'},
+      method_desc: {
+        id: 'Pengukuran resistansi di bawah dan sama dengan 100 kΩ menggunakan metode 4-kawat, sedangkan pada nominal di atas 100 kΩ menggunakan metode 2-kawat.',
+        en: 'The resistance measurement below and equal to 100 kΩ uses the 4-wire method, while for nominal resistance above 100 kΩ use the 2-wire method.',
+      },
+      norm: "-",
       refType: "basic_calibrationMethod",
       has_formula: false,
       formula: {
@@ -732,7 +776,7 @@ const calibratorTemplate = {
         id: 'Ketidakpastian pengukuran dihitung  dengan tingkat kepercayaan tidak kurang dari 95% dan faktor cakupan k = 2.',
         en: 'The uncertainty of measurement was calculated with a confidence level not less than 95% and coverage factor of k = 2.',
       },
-      norm: "",
+      norm: "-",
       refType: "basic_methodMeasurementUncertainty",
       has_formula: false,
       formula: {
@@ -760,7 +804,7 @@ const calibratorTemplate = {
   conditions: [
     {
       jenis_kondisi: "Suhu",
-      desc: {id: '', en: ''},
+      desc: {id: '-', en: '-'},
       tengah: "23",
       tengah_unit: {
         prefix: "",
@@ -782,7 +826,7 @@ const calibratorTemplate = {
     },
     {
       jenis_kondisi: "Kelembapan",
-      desc: {id: '', en: ''},
+      desc: {id: '-', en: '-'},
       tengah: "56",
       tengah_unit: {
         prefix: "",
@@ -994,8 +1038,8 @@ const calibratorTemplate = {
     },
   ],
   comment: {
-    title: "",
-    desc: {id: '', en: ''},
+    title: "-",
+    desc: {id: '-', en: '-'},
     has_file: false,
     files: [
       {
@@ -1824,9 +1868,12 @@ export default function CreateDCC() {
               <SelectValue placeholder={t("template")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="multimeter">Digital Multimeter {t("using")} Fluke 5730A</SelectItem>
-              <SelectItem value="calibrator">Multiproduct Calibrator {t("using")} Fluke 8508A</SelectItem>
-              <SelectItem value="blank">{t("blank")}</SelectItem>
+              <SelectGroup>
+                <SelectLabel>{t("template")}</SelectLabel>
+                <SelectItem value="multimeter">Digital Multimeter {t("using")} Fluke 5730A</SelectItem>
+                <SelectItem value="calibrator">Multiproduct Calibrator {t("using")} Fluke 8508A</SelectItem>
+                <SelectItem value="blank">{t("blank")}</SelectItem>
+              </SelectGroup>
             </SelectContent>
           </Select>
         </div>

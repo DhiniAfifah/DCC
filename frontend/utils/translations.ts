@@ -53,8 +53,7 @@ const translations: Record<string, { id: string; en: string }> = {
   panjang: { id: "Panjang", en: "Length" },
   massa: { id: "Massa", en: "Mass" },
   akustik_vibrasi: { id: "Akustik & Vibrasi", en: "Acoustics & Vibration" },
-  radiasi: { id: "Radiasi", en: "Radiation" },
-  radiasi_ringan: { id: "Radiasi Ringan", en: "Light Radiation" },
+  radiasi: { id: "Radiasi Pengion", en: "Ionizing Radiation" },
   biologi: { id: "Biologi", en: "Biology" },
 
   // Stepper
@@ -133,9 +132,10 @@ const translations: Record<string, { id: string; en: string }> = {
   kepala: { id: "Kepala Laboratorium", en: "Laboratory Head" },
   lab: { id: "Laboratorium", en: "Laboratory" },
   direktur: { id: "Direktur", en: "Director" },
+  snsu: { id: "SNSU", en: "National Measurement Standards for" },
   jabatan: { id: "Jabatan", en: "Position" },
-  snsu_tk: { id: "Direktur SNSU Termoelektrik dan Kimia", en: "Director of SNSU Thermoelectrics and Chemistry" },
-  snsu_mrb: { id: "Direktur SNSU Mekanika, Radiasi, dan Biologi", en: "Director of SNSU Mechanics, Radiation, and Biology" },
+  snsu_tk: { id: "Direktur SNSU Termoelektrik dan Kimia", en: "Director of National Measurement Standards for Thermoelectricity and Chemistry" },
+  snsu_mrb: { id: "Direktur SNSU Mekanika, Radiasi, dan Biologi", en: "Director of National Measurement Standards for Mechanics, Radiation, and Biology" },
 
   // Pemilik
   identitas: {
