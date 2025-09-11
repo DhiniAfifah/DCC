@@ -250,8 +250,8 @@ const translations: Record<string, { id: string; en: string }> = {
     en: "Uncertainty Evaluation Parameters",
   },
   ketidakpastian_desc: {
-    id: "Data ketidakpastian hanya akan tampil di XML, tidak di template Word atau PDF.",
-    en: "These data will only appear in XML, not in Word or PDF templates.",
+    id: "Data ketidakpastian hanya akan tampil di XML, tidak di PDF.",
+    en: "These data will only appear in XML, not in PDF.",
   },
   factor: { id: "Faktor cakupan", en: "Coverage Factor" },
   probability: { id: "Tingkat kepercayaan", en: "Coverage probability" },

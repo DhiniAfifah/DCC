@@ -1437,11 +1437,11 @@ export default function AdministrativeForm({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Kepala Laboratorium SNSU Suhu">
-                              {t("snsu")} {t("suhu")}
-                            </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Kelistrikan">
                               {t("snsu")} {t("listrik")}
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Suhu">
+                              {t("snsu")} {t("suhu")}
                             </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Waktu & Frekuensi">
                               {t("snsu")} {t("waktu")}
@@ -1461,11 +1461,11 @@ export default function AdministrativeForm({
                             <SelectItem value="Kepala Laboratorium SNSU Akustik & Vibrasi">
                               {t("snsu")} {t("akustik_vibrasi")}
                             </SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Biologi">
-                              {t("snsu")} {t("biologi")}
-                            </SelectItem>
                             <SelectItem value="Kepala Laboratorium SNSU Radiasi Ringan">
                               {t("snsu")} {t("radiasi")}
+                            </SelectItem>
+                            <SelectItem value="Kepala Laboratorium SNSU Biologi">
+                              {t("snsu")} {t("biologi")}
                             </SelectItem>
                           </SelectContent>
                         </Select>

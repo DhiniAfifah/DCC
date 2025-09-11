@@ -31,7 +31,7 @@ export default function Generator() {
         <div className="pt-20 min-h-screen flex flex-col justify-center">
             <div className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-green-100"></div>
 
-            <h1 className="text-2xl font-semibold text-center mb-8">
+            <h1 className="text-2xl font-semibold text-center mb-8 mt-8 lg:mt-0">
                 {t("pilih_lab")}
             </h1>
 

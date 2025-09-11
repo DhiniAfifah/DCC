@@ -64,6 +64,12 @@ import {
 import { Language, fetchLanguages } from "@/utils/language";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 declare global {
   interface Window {
@@ -142,7 +148,7 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
           {t("ketidakpastian_desc")}
         </p>
       </CardHeader>
-      <CardContent className="grid gap-4">
+      <CardContent className="grid grid-row md:grid-cols-3 gap-2">
         <div id="factor" className="grid gap-1">
           <FormLabel>{t("factor")}</FormLabel>
           <FormField
@@ -293,8 +299,7 @@ const Columns = ({
     <div id="columns" className="grid grid-row md:grid-cols-2 gap-4">
       {columnFields.map((columnField, columnIndex) => (
         <Card key={columnField.id} id="kolom" className="border shadow">
-          <CardHeader></CardHeader>
-          <CardContent className="grid gap-4 pb-4 relative">
+          <CardContent className="grid gap-4 py-4 relative">
             <div className="flex justify-between items-start">
               <div id="header">
                 <p className="text-sm text-muted-foreground">
@@ -317,117 +322,121 @@ const Columns = ({
 
             <div id="nama">
               <FormLabel>{t("label")}</FormLabel>
-              <div className="grid gap-1">
+              <div>
                 {validLanguages.length === 0 ? (
                   <p className="text-sm text-red-500">{t("pilih_bahasa")}</p>
                 ) : (
-                  validLanguages.map(
-                    (lang: { value: string }) => (
-                      <FormField
-                        key={lang.value}
-                        control={control}
-                        name={`results.${resultIndex}.columns.${columnIndex}.kolom.${lang.value}`}
-                        render={({ field: columnField }) => (
-                          <>
-                            <FormItem>
-                              <FormControl>
-                                <Input
-                                  placeholder={`${t("bahasa")} ${
-                                    languages.find(
-                                      (l) => l.value === lang.value
-                                    )?.label || lang.value
-                                  }`}
-                                  {...columnField}
-                                  value={columnField.value || ""}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          </>
-                        )}
-                      />
-                    )
-                  )
+                  <div className="grid grid-row grid-cols-2 gap-1">
+                    {validLanguages.map(
+                      (lang: { value: string }) => (
+                        <FormField
+                          key={lang.value}
+                          control={control}
+                          name={`results.${resultIndex}.columns.${columnIndex}.kolom.${lang.value}`}
+                          render={({ field: columnField }) => (
+                            <>
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    placeholder={`${t("bahasa")} ${
+                                      languages.find(
+                                        (l) => l.value === lang.value
+                                      )?.label || lang.value
+                                    }`}
+                                    {...columnField}
+                                    value={columnField.value || ""}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            </>
+                          )}
+                        />
+                      )
+                    )}
+                  </div>
                 )}
               </div>
             </div>
+            
+            <div className="grid grid-row md:grid-cols-2 gap-1">
+              <div id="refType">
+                <FormLabel>{t("refType")}</FormLabel>
+                <FormField
+                  control={control}
+                  name={`results.${resultIndex}.columns.${columnIndex}.refType`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="whitespace-normal">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem
+                            value="basic_measuredValue"
+                            className="whitespace-normal break-words max-w-xs"
+                          >
+                            {t("basic_measuredValue")}
+                          </SelectItem>
+                          <SelectItem
+                            value="basic_nominalValue"
+                            className="whitespace-normal break-words max-w-xs"
+                          >
+                            {t("basic_nominalValue")}
+                          </SelectItem>
+                          <SelectItem
+                            value="basic_referenceValue"
+                            className="whitespace-normal break-words max-w-xs"
+                          >
+                            {t("basic_referenceValue")}
+                          </SelectItem>
+                          <SelectItem
+                            value="basic_measurementError_error"
+                            className="whitespace-normal break-words max-w-xs"
+                          >
+                            {t("basic_measurementError_error")}
+                          </SelectItem>
+                          <SelectItem
+                            value="basic_measurementError_correction"
+                            className="whitespace-normal break-words max-w-xs"
+                          >
+                            {t("basic_measurementError_correction")}
+                          </SelectItem>
+                          <SelectItem
+                            value="other"
+                            className="whitespace-normal break-words max-w-xs"
+                          >
+                            {t("other")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-            <div id="refType">
-              <FormLabel>{t("refType")}</FormLabel>
-              <FormField
-                control={control}
-                name={`results.${resultIndex}.columns.${columnIndex}.refType`}
-                render={({ field }) => (
-                  <FormItem>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+              <div id="realList">
+                <FormLabel>{t("subkolom")}</FormLabel>
+                <FormField
+                  control={control}
+                  name={`results.${resultIndex}.columns.${columnIndex}.real_list`}
+                  render={({ field }) => (
+                    <FormItem>
                       <FormControl>
-                        <SelectTrigger className="whitespace-normal">
-                          <SelectValue />
-                        </SelectTrigger>
+                        <Input type="number" min="1" {...field} />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem
-                          value="basic_measuredValue"
-                          className="whitespace-normal break-words max-w-xs"
-                        >
-                          {t("basic_measuredValue")}
-                        </SelectItem>
-                        <SelectItem
-                          value="basic_nominalValue"
-                          className="whitespace-normal break-words max-w-xs"
-                        >
-                          {t("basic_nominalValue")}
-                        </SelectItem>
-                        <SelectItem
-                          value="basic_referenceValue"
-                          className="whitespace-normal break-words max-w-xs"
-                        >
-                          {t("basic_referenceValue")}
-                        </SelectItem>
-                        <SelectItem
-                          value="basic_measurementError_error"
-                          className="whitespace-normal break-words max-w-xs"
-                        >
-                          {t("basic_measurementError_error")}
-                        </SelectItem>
-                        <SelectItem
-                          value="basic_measurementError_correction"
-                          className="whitespace-normal break-words max-w-xs"
-                        >
-                          {t("basic_measurementError_correction")}
-                        </SelectItem>
-                        <SelectItem
-                          value="other"
-                          className="whitespace-normal break-words max-w-xs"
-                        >
-                          {t("other")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div id="realList">
-              <FormLabel>{t("subkolom")}</FormLabel>
-              <FormField
-                control={control}
-                name={`results.${resultIndex}.columns.${columnIndex}.real_list`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input type="number" min="1" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div> 
           </CardContent>
         </Card>
       ))}
@@ -435,7 +444,7 @@ const Columns = ({
         variant="green"
         type="button"
         size="sm"
-        className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+        className="w-10 h-10 flex items-center justify-center mx-auto"
         onClick={handleAppendColumn}
       >
         <p className="text-xl">
@@ -1662,7 +1671,7 @@ export default function MeasurementForm({
                     />
                   </div>
                 </div>
-                <div className="grid grid-row md:grid-cols-2 gap-4">
+                <div className="grid grid-row grid-cols-2 gap-4">
                   <div id="manuf_model">
                     <FormLabel>{t("manuf")}</FormLabel>
                     <div className="space-y-1">
@@ -2331,84 +2340,93 @@ export default function MeasurementForm({
           </CardHeader>
 
           <CardContent className="grid gap-4">
-            {resultFields.map((resultField, resultIndex) => (
-              <div
-                key={resultField.id}
-                className="grid gap-4 border-b pb-4 relative"
-              >
-                <p className="text-sm text-muted-foreground">
-                  Parameter {resultIndex + 1}
-                </p>
-
-                {resultFields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-0 right-0"
-                    onClick={() => handleRemoveResult(resultIndex)}
-                  >
-                    <X />
-                  </Button>
-                )}
-
-                <div id="parameter">
-                  <FormLabel>{t("judul")}</FormLabel>
-                  <div className="space-y-1">
-                    {validLanguages.length === 0 ? (
-                      <p className="text-sm text-red-500">
-                        {t("pilih_bahasa")}
-                      </p>
-                    ) : (
-                      validLanguages.map(
-                        (lang: { value: string }) => (
-                          <FormField
-                            key={lang.value}
-                            control={form.control}
-                            name={`results.${resultIndex}.parameters.${lang.value}`}
-                            render={({ field: parameterField }) => (
-                              <>
-                                <FormItem>
-                                  <FormControl>
-                                    <Input
-                                      placeholder={`${t("bahasa")} ${
-                                        languages.find(
-                                          (l) => l.value === lang.value
-                                        )?.label || lang.value
-                                      }`}
-                                      {...parameterField}
-                                      value={
-                                        typeof parameterField.value ===
-                                        "string"
-                                          ? parameterField.value
-                                          : ""
-                                      }
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              </>
-                            )}
-                          />
-                        )
-                      )
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+              defaultValue="0"
+            >
+              {resultFields.map((resultField, resultIndex) => (
+                <AccordionItem 
+                  value={resultIndex.toString()}
+                  key={resultField.id}
+                  className="relative"
+                >
+                  <AccordionTrigger>Parameter {resultIndex + 1}</AccordionTrigger>
+                  <AccordionContent className="grid gap-4 pb-4">
+                    {resultFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0 mt-2"
+                        onClick={() => handleRemoveResult(resultIndex)}
+                      >
+                        <X />
+                      </Button>
                     )}
-                  </div>
-                </div>
 
-                <Columns
-                  resultIndex={resultIndex}
-                  usedLanguages={usedLanguages}
-                  createMultilangObject={createMultilangObject}
-                  validLanguages={validLanguages}
-                />
-                <UncertaintyCard
-                  resultIndex={resultIndex}
-                  control={form.control}
-                  t={t}
-                />
-              </div>
-            ))}
+                    <div id="parameter">
+                      <FormLabel>{t("judul")}</FormLabel>
+                      <div className="grid grid-row grid-cols-2 gap-2">
+                        {validLanguages.length === 0 ? (
+                          <p className="text-sm text-red-500">
+                            {t("pilih_bahasa")}
+                          </p>
+                        ) : (
+                          validLanguages.map(
+                            (lang: { value: string }) => (
+                              <FormField
+                                key={lang.value}
+                                control={form.control}
+                                name={`results.${resultIndex}.parameters.${lang.value}`}
+                                render={({ field: parameterField }) => (
+                                  <>
+                                    <FormItem>
+                                      <FormControl>
+                                        <Input
+                                          placeholder={`${t("bahasa")} ${
+                                            languages.find(
+                                              (l) => l.value === lang.value
+                                            )?.label || lang.value
+                                          }`}
+                                          {...parameterField}
+                                          value={
+                                            typeof parameterField.value ===
+                                            "string"
+                                              ? parameterField.value
+                                              : ""
+                                          }
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  </>
+                                )}
+                              />
+                            )
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    <Columns
+                      resultIndex={resultIndex}
+                      usedLanguages={usedLanguages}
+                      createMultilangObject={createMultilangObject}
+                      validLanguages={validLanguages}
+                    />
+                    <UncertaintyCard
+                      resultIndex={resultIndex}
+                      control={form.control}
+                      t={t}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+
+            
             <Button
               variant="green"
               type="button"
