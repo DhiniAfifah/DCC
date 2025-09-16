@@ -8,7 +8,6 @@ from weasyprint import HTML
 import logging
 from datetime import datetime
 import traceback
-from weasyprint import HTML
 from io import BytesIO
 from api.ds_i_utils import d_si
 from api.ds_i_utils import convert_latex_unit
@@ -158,7 +157,6 @@ class PDFGenerator:
                 
         return debug_info
 
-    #FUNGSI MULTI LANG
     def _get_multilang_text(self, element):
         """Ekstrak teks multi-bahasa dari elemen XML"""
         if element is None:
@@ -181,6 +179,50 @@ class PDFGenerator:
             texts['id'] = element.text.strip()
             
         return texts
+    
+    def restore_correction_data(self, results, corrections):
+        """Restore correction labels and flip signs back for PDF display"""
+        if not corrections:
+            return results
+        
+        for result_idx, result in enumerate(results):
+            if result_idx in corrections:
+                correction_cols = corrections[result_idx]
+                
+                for col_idx, column in enumerate(result.get('columns', [])):
+                    if col_idx in correction_cols:
+                        correction_info = correction_cols[col_idx]
+                        
+                        # Restore the original column name (Correction instead of Error)
+                        if correction_info.get('is_correction'):
+                            original_kolom = correction_info.get('kolom', {})
+                            for lang, text in original_kolom.items():
+                                if column.get('name', {}).get(lang) == "Error":
+                                    column['name'][lang] = text
+                        
+                        # Flip the signs back in subcolumn data
+                        for subcolumn in column.get('subcolumn', []):
+                            if 'value' in subcolumn and subcolumn['value']:
+                                # Flip signs back by calling invert_number_str again
+                                subcolumn['value'] = [
+                                    self.invert_number_str(val) for val in subcolumn['value']
+                                ]
+        
+        return results
+
+    def invert_number_str(self, n: str) -> str:
+        """Invert sign of a numeric string while preserving format."""
+        n = n.strip()
+        if not n:
+            return n
+        
+        # Handle explicit + sign
+        if n.startswith("+"):
+            return "-" + n[1:]
+        elif n.startswith("-"):
+            return n[1:]  # remove the minus → makes it positive
+        else:
+            return "-" + n  # add minus if positive
 
     def __del__(self):
         try:
@@ -188,7 +230,7 @@ class PDFGenerator:
         except:
             pass
 
-    def extract_data_from_xml(self, xml_content, tempat_pdf, captions=None):
+    def extract_data_from_xml(self, xml_content, tempat_pdf, captions=None, corrections=None):
         """Ekstrak data dari XML ke struktur Python"""
         try:
             root = ET.fromstring(xml_content)
@@ -212,6 +254,9 @@ class PDFGenerator:
                 results = [{
                     'parameters': {}, 'columns': [], 'uncertainty': {}
                 }]
+
+            if corrections:
+                results = self.restore_correction_data(results, corrections)
             
             data = {
                 'admin': self._extract_admin_data(root, tempat_pdf) or {},
@@ -240,7 +285,6 @@ class PDFGenerator:
             logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
-    #ADMIN
     def _extract_admin_data(self, root, tempat_pdf):
         return {
             'certificate': root.findtext('.//dcc:uniqueIdentifier', namespaces=XML_NS) or '',
@@ -248,7 +292,6 @@ class PDFGenerator:
             'tempat': tempat_pdf or root.findtext('.//dcc:performanceLocation', namespaces=XML_NS)
         }
 
-    # TIMELINE
     def _extract_timeline(self, root): 
         # Deteksi bahasa utama dari salah satu tag
         lang_elem = root.find('.//dcc:declaration/dcc:content', namespaces=XML_NS)
@@ -264,7 +307,6 @@ class PDFGenerator:
             'tgl_pengesahan': format_tanggal_by_lang(pengesahan, lang)
         }
     
-    #OBJECT
     def _extract_objects(self, root):
         objects = []
         for obj in root.findall('.//dcc:items/dcc:item', namespaces=XML_NS):
@@ -287,7 +329,6 @@ class PDFGenerator:
             })
         return objects
 
-    #RESPONSIBLE PERSONS
     def _extract_responsible_persons(self, root):
         roles = {
             'pelaksana': [],
@@ -315,7 +356,6 @@ class PDFGenerator:
 
         return roles
 
-    #OWNER
     def _extract_owner(self, root):
         owner_elem = root.find('.//dcc:customer/dcc:location', namespaces=XML_NS)
         if owner_elem is None:
@@ -339,7 +379,6 @@ class PDFGenerator:
             'negara_cust': root.findtext('.//dcc:customer/dcc:countryCode', namespaces=XML_NS) or ''
         }
     
-    #EQUIPMENT
     def _extract_equipments(self, root):
         equipments = []
         for eq in root.findall('.//dcc:measurementResults/dcc:measurementResult/dcc:measuringEquipments/dcc:measuringEquipment', namespaces=XML_NS):
@@ -357,7 +396,6 @@ class PDFGenerator:
             })
         return equipments
     
-    #CONDITIONS
     def _extract_conditions(self, root):
         conditions = []
         for cond in root.findall('.//dcc:influenceConditions/dcc:influenceCondition', namespaces=XML_NS):
@@ -379,7 +417,6 @@ class PDFGenerator:
             })
         return conditions
     
-    #METHOD
     def _extract_methods(self, root, method_captions=None):
         methods = []
 
@@ -425,7 +462,6 @@ class PDFGenerator:
 
         return methods
   
-    #STATEMENT
     def _extract_statements(self, root, statement_captions=None):
         statements = []
 
@@ -472,7 +508,6 @@ class PDFGenerator:
 
         return statements
 
-    #RESULTS
     def _extract_results(self, root):
         results = []
     
@@ -672,11 +707,11 @@ class PDFGenerator:
             logger.error(f"Unexpected error: {e}")
             return False
 
-    def generate_pdf_with_embedded_xml(self, xml_content: str, output_path: str, xml_path: str, tempat_pdf, captions=None) -> bool:
+    def generate_pdf_with_embedded_xml(self, xml_content: str, output_path: str, xml_path: str, tempat_pdf, captions=None, corrections=None) -> bool:
         try:
             # Generate PDF sementara tanpa embedded XML
             temp_pdf_path = os.path.join(self.temp_dir.name, "temp.pdf")
-            if not self.generate_pdf(xml_path, temp_pdf_path, tempat_pdf, captions):
+            if not self.generate_pdf(xml_path, temp_pdf_path, tempat_pdf, captions, corrections):
                 return False
 
             # Konversi ke PDF/A-3a
@@ -700,7 +735,7 @@ class PDFGenerator:
             logger.error(f"PDF generation with embedded XML failed: {e}")
             return False
 
-    def generate_pdf(self, xml_path, output_path, tempat_pdf, captions=None):
+    def generate_pdf(self, xml_path, output_path, tempat_pdf, captions=None, corrections=None):
         """Generate PDF dari konten XML"""
         try:
             
@@ -715,7 +750,7 @@ class PDFGenerator:
             
             # Ekstrak data dari XML
             logger.info("Extracting data from XML...")
-            data = self.extract_data_from_xml(xml_content, tempat_pdf, captions)
+            data = self.extract_data_from_xml(xml_content, tempat_pdf, captions, corrections)
             
             # Perbaiki base_url ke direktori assets yang benar
             current_dir = os.path.dirname(os.path.abspath(__file__))

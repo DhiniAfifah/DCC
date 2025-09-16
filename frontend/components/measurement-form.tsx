@@ -224,12 +224,8 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="segiempat">
-                          {t("segiempat")}
-                        </SelectItem>
-                        <SelectItem value="segitiga">
-                          {t("segitiga")}
-                        </SelectItem>
+                        <SelectItem value="segiempat">{t("segiempat")}</SelectItem>
+                        <SelectItem value="segitiga">{t("segitiga")}</SelectItem>
                         <SelectItem value="other">{t("other")}</SelectItem>
                       </SelectContent>
                     </Select>

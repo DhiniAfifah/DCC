@@ -255,6 +255,20 @@ def clean_text(value):
         return ""
     return str(value).strip()
 
+def invert_number_str(n: str) -> str:
+    """Invert sign of a numeric string while preserving format."""
+    n = n.strip()
+    if not n:
+        return n
+    
+    # Handle explicit + sign
+    if n.startswith("+"):
+        return "-" + n[1:]
+    elif n.startswith("-"):
+        return n[1:]  # remove the minus → makes it positive
+    else:
+        return "-" + n  # add minus if positive
+
 #XML
 def generate_xml(dcc, table_data):
         #Generate XML for DCC
@@ -589,8 +603,7 @@ def generate_xml(dcc, table_data):
                             # Nama result (multilingual)
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang):
-                                        text(clean_text(config.parameters.root.get(lang, "")))
+                                    with tag('dcc:content', lang=lang): text(clean_text(config.parameters.root.get(lang, "")))
                             
                             with tag('dcc:data'):
                                 with tag('dcc:list'):
@@ -605,13 +618,19 @@ def generate_xml(dcc, table_data):
                                             ref_type = "basic_measurementError"
                                         elif ref_type == "basic_measurementError_correction":
                                             ref_type = "basic_measurementError"
+                                            is_correction = True
+                                        else:
+                                            is_correction = False
                                         
                                         with tag('dcc:quantity', **({"refType": ref_type} if ref_type != "other" else {})):
                                             # Nama kolom (multilingual)
                                             with tag('dcc:name'):
                                                 for lang in dcc.administrative_data.used_languages:
                                                     with tag('dcc:content', lang=lang):
-                                                        text(clean_text(col_config.kolom.root.get(lang, "")))
+                                                        if is_correction:
+                                                            text("Error")
+                                                        else:
+                                                            text(clean_text(col_config.kolom.root.get(lang, "")))
                                             
                                             # Proses sub-kolom
                                             for _ in range(real_list_count):
@@ -619,12 +638,13 @@ def generate_xml(dcc, table_data):
                                                     break
                                                 numbers, units = flat_columns[flat_index]
                                                 flat_index += 1
+
+                                                if is_correction:
+                                                    numbers = [invert_number_str(n) for n in numbers]
                                                 
                                                 with tag('si:realListXMLList'):
-                                                    with tag('si:valueXMLList'):
-                                                        text(" ".join(numbers).strip())
-                                                    with tag('si:unitXMLList'):
-                                                        text(" ".join(units).strip())
+                                                    with tag('si:valueXMLList'): text(" ".join(numbers).strip())
+                                                    with tag('si:unitXMLList'): text(" ".join(units).strip())
                                                     
                                                     # Tambahkan uncertainty di dalam blok yang sama
                                                     if ref_type == "basic_measurementError" and flat_index < len(flat_columns):
@@ -655,11 +675,9 @@ def generate_xml(dcc, table_data):
                     for file in dcc.comment.files:
                         with tag('dcc:file'):
                             if getattr(file, 'fileName', None):
-                                with tag('dcc:fileName'):
-                                    text(file.fileName)  
+                                with tag('dcc:fileName'): text(file.fileName)  
                             if getattr(file, 'mimeType', None):
-                                with tag('dcc:mimeType'):
-                                    text(file.mimeType) 
+                                with tag('dcc:mimeType'): text(file.mimeType) 
                             if getattr(file, 'base64', None):
                                 with tag('dcc:dataBase64'):
                                     base64_lines = file.base64.splitlines()
@@ -696,6 +714,24 @@ def extract_captions_from_dcc(dcc: schemas.DCCFormCreate):
             logging.info(f"Statement {i} caption: {statement.image.caption}")
             
     return captions
+
+def extract_corrections_from_dcc(dcc: schemas.DCCFormCreate):
+    """Extract correction information from results"""
+    corrections = {}
+    
+    # Extract correction information from results
+    for result_idx, result in enumerate(dcc.results):
+        result_corrections = {}
+        for col_idx, col in enumerate(result.columns):
+            if col.refType == "basic_measurementError_correction":
+                result_corrections[col_idx] = {
+                    'is_correction': True,
+                    'kolom': col.kolom.root  # Store the original column name
+                }
+        if result_corrections:
+            corrections[result_idx] = result_corrections
+            
+    return corrections
 
 #db n excel 
 def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, language='en'):
@@ -866,6 +902,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
             progress_callback(50, get_progress_message("reading", language))
 
         captions = extract_captions_from_dcc(dcc)
+        corrections = extract_corrections_from_dcc(dcc)
         
         # semua path
         paths = get_project_paths(dcc, db_dcc.id)
@@ -907,7 +944,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
             pdf_path,
             xml_path,
             dcc.administrative_data.tempat_pdf,
-            captions
+            captions,
+            corrections,
         )
         
         if not success:
@@ -1086,6 +1124,7 @@ def generate_preview_files(dcc: schemas.DCCFormCreate):
                 }
 
         captions = extract_captions_from_dcc(dcc)
+        corrections = extract_corrections_from_dcc(dcc)
         
         # Generate XML
         logging.info("Generating preview XML...")
@@ -1109,7 +1148,8 @@ def generate_preview_files(dcc: schemas.DCCFormCreate):
             str(paths['xml_output']), 
             str(paths['pdf_output']),
             dcc.administrative_data.tempat_pdf,
-            captions
+            captions,
+            corrections,
         )
         
         if not success:
