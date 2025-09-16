@@ -800,7 +800,7 @@ export default function MeasurementForm({
           console.error("Error uploading image:", error);
           toast.error("Image upload failed.");
         }
-      } else if (file.name.endsWith(".xls") || file.name.endsWith(".xlsx")) {
+      } else if (file.name.endsWith(".xls") || file.name.endsWith(".xlsx") || file.name.endsWith(".xlsm") || file.name.endsWith(".xlsb")) {
         const formData = new FormData();
         formData.append("excel", file);
 
@@ -1383,7 +1383,7 @@ export default function MeasurementForm({
                     </Button>
                   </div>
                 )}
-                {/* <MathJaxContext>
+                <MathJaxContext>
                   <div id="rumus" className="mt-2">
                     <FormLabel>Rumus</FormLabel>
                     <div className="grid grid-row md:grid-cols-2 gap-4">
@@ -1508,7 +1508,7 @@ export default function MeasurementForm({
                       </ScrollArea>
                     </div>
                   </div>
-                </MathJaxContext> */}
+                </MathJaxContext>
 
                 <div id="checkbox_gambar">
                   <FormField
@@ -2287,7 +2287,7 @@ export default function MeasurementForm({
                         <Input
                           type="file"
                           {...fileRefExcel}
-                          accept=".xls,.xlsx"
+                          accept=".xls, .xlsx, .xlsm, .xlsb"
                           onChange={(e) => handleFileUpload(e, false)}
                         />
                       </FormControl>

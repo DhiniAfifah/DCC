@@ -1,36 +1,21 @@
 import logging
 import json
 from pathlib import Path
-from fastapi import HTTPException
 import api.models as models
 import api.schemas as schemas
 from sqlalchemy.orm import Session
 from datetime import datetime
-from fpdf import FPDF 
 import os
 import pythoncom
-from docx import Document
-from docx2pdf import convert
-from api.schemas import ResponsiblePersons, Pelaksana, Penyelia, KepalaLaboratorium, Direktur
-from api.constants import kepala_lab_roles, direktur_roles
-import xml.etree.ElementTree as ET
 from yattag import Doc, indent
 import win32com.client as win32
-from docxtpl import DocxTemplate
-from spire.pdf.common import *
-from spire.pdf import *
-from pikepdf import Pdf, AttachedFileSpec
 from datetime import datetime
 import base64
 import tempfile
-from fastapi import UploadFile 
-from docxtpl import InlineImage
-from docx.shared import Mm
 from api.ds_i_utils import d_si
 import logging
 import base64
 import tempfile
-from fastapi import UploadFile
 from api.pdf_generator import PDFGenerator
 import uuid
 
@@ -560,7 +545,10 @@ def generate_xml(dcc, table_data):
                                     with tag('dcc:name'):
                                         with tag('dcc:content'): text('nilai minimum') 
                                     with tag('si:real'):
-                                        min_value = float(condition.tengah) - float(condition.rentang)
+                                        tengah_val = float(condition.tengah) if condition.tengah not in (None, "") else 0.0
+                                        rentang_val = float(condition.rentang) if condition.rentang not in (None, "") else 0.0
+                                        min_value = tengah_val - rentang_val
+
                                         with tag('si:value'): text(f"{min_value}") 
                                         unit_str = ""
                                         if condition.tengah_unit.prefix:
@@ -576,7 +564,10 @@ def generate_xml(dcc, table_data):
                                     with tag('dcc:name'):
                                         with tag('dcc:content'): text('nilai maksimum') 
                                     with tag('si:real'):
-                                        max_value = float(condition.tengah) + float(condition.rentang)
+                                        tengah_val = float(condition.tengah) if condition.tengah not in (None, "") else 0.0
+                                        rentang_val = float(condition.rentang) if condition.rentang not in (None, "") else 0.0
+                                        max_value = tengah_val + rentang_val
+                                        
                                         with tag('si:value'): text(f"{max_value}")  
                                         unit_str = ""
                                         if condition.rentang_unit.prefix:

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Stepper from "@/components/ui/stepper";
 import AdministrativeForm from "@/components/administrative-form";
 import MeasurementForm from "@/components/measurement-form";
@@ -1055,7 +1055,7 @@ const calibratorTemplate = {
 export default function CreateDCC() {
   const { t, language } = useLanguage();
 
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [templateChangeKey, setTemplateChangeKey] = useState(0);
 
   // Add validation function
   const getValidationErrors = (): string[] => {
@@ -1383,6 +1383,8 @@ export default function CreateDCC() {
     } else {
       setFormData(blankTemplate);
     }
+    // Increment key to signal template change
+    setTemplateChangeKey(prev => prev + 1);
   }, [selectedTemplate]);
 
   // Kasih warning saat user mencoba meninggalkan halaman (agar isi formulir tidak hilang)
@@ -1410,49 +1412,56 @@ export default function CreateDCC() {
     return localDate.toISOString().split("T")[0];
   };
 
-  const updateFormData = (data: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      ...data,
-      administrative_data: {
-        ...prev.administrative_data,
-        ...(data.administrative_data ?? {}),
-      },
-      Measurement_TimeLine: {
-        ...prev.Measurement_TimeLine,
-        ...(data.Measurement_TimeLine
-          ? {
-              tgl_mulai: data.Measurement_TimeLine.tgl_mulai
-                ? formatDate(new Date(data.Measurement_TimeLine.tgl_mulai))
-                : prev.Measurement_TimeLine.tgl_mulai,
-              tgl_akhir: data.Measurement_TimeLine.tgl_akhir
-                ? formatDate(new Date(data.Measurement_TimeLine.tgl_akhir))
-                : prev.Measurement_TimeLine.tgl_akhir,
-              tgl_pengesahan: data.Measurement_TimeLine.tgl_pengesahan
-                ? formatDate(new Date(data.Measurement_TimeLine.tgl_pengesahan))
-                : prev.Measurement_TimeLine.tgl_pengesahan,
-            }
-          : prev.Measurement_TimeLine),
-      },
-      responsible_persons: {
-        ...prev.responsible_persons,
-        ...(data.responsible_persons ?? {}),
-      },
-      objects: Array.isArray(data.objects)
-        ? data.objects.map((obj: any) => ({
-            jenis: obj.jenis || "",
-            merek: obj.merek || "",
-            tipe: obj.tipe || "",
-            item_issuer: obj.item_issuer || "",
-            seri_item: obj.seri_item || "",
-            id_lain: obj.id_lain || "",
-          }))
-        : prev.objects,
-      statements: Array.isArray(data.statements)
-        ? data.statements
-        : prev.statements,
-    }));
-  };
+  const updateFormData = useCallback((data: any) => {
+    // Prevent updates if data hasn't actually changed
+    setFormData((prev) => {
+      if (JSON.stringify(prev) === JSON.stringify({ ...prev, ...data })) {
+        return prev; // No change, return same reference
+      }
+      
+      return {
+        ...prev,
+        ...data,
+        administrative_data: {
+          ...prev.administrative_data,
+          ...(data.administrative_data ?? {}),
+        },
+        Measurement_TimeLine: {
+          ...prev.Measurement_TimeLine,
+          ...(data.Measurement_TimeLine
+            ? {
+                tgl_mulai: data.Measurement_TimeLine.tgl_mulai
+                  ? formatDate(new Date(data.Measurement_TimeLine.tgl_mulai))
+                  : prev.Measurement_TimeLine.tgl_mulai,
+                tgl_akhir: data.Measurement_TimeLine.tgl_akhir
+                  ? formatDate(new Date(data.Measurement_TimeLine.tgl_akhir))
+                  : prev.Measurement_TimeLine.tgl_akhir,
+                tgl_pengesahan: data.Measurement_TimeLine.tgl_pengesahan
+                  ? formatDate(new Date(data.Measurement_TimeLine.tgl_pengesahan))
+                  : prev.Measurement_TimeLine.tgl_pengesahan,
+              }
+            : prev.Measurement_TimeLine),
+        },
+        responsible_persons: {
+          ...prev.responsible_persons,
+          ...(data.responsible_persons ?? {}),
+        },
+        objects: Array.isArray(data.objects)
+          ? data.objects.map((obj: any) => ({
+              jenis: obj.jenis || {},
+              merek: obj.merek || "",
+              tipe: obj.tipe || "",
+              item_issuer: obj.item_issuer || "",
+              seri_item: obj.seri_item || "",
+              id_lain: obj.id_lain || {},
+            }))
+          : prev.objects,
+        statements: Array.isArray(data.statements)
+          ? data.statements
+          : prev.statements,
+      };
+    });
+  }, []); // Remove all dependencies to make it stable
 
   // Function to send preview data to backend
   const generatePreview = async (dataToPreview = formData) => {
@@ -1884,6 +1893,7 @@ export default function CreateDCC() {
           <AdministrativeForm
             formData={formData}
             updateFormData={updateFormData}
+            templateChangeKey={templateChangeKey}
           />
         )}
         {currentStep === 1 && (

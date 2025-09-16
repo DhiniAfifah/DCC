@@ -559,7 +559,7 @@ export default function Statements({
                     </Button>
                   </div>
                 )}
-                {/* <MathJaxContext>
+                <MathJaxContext>
                   <div id="rumus" className="mt-2">
                     <FormLabel>Rumus</FormLabel>
                     <div className="grid grid-row md:grid-cols-2 gap-4">
@@ -691,7 +691,7 @@ export default function Statements({
                       </ScrollArea>
                     </div>
                   </div>
-                </MathJaxContext> */}
+                </MathJaxContext>
 
                 <div id="checkbox_gambar" className="mt-3 mb-1">
                   <FormField

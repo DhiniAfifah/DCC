@@ -679,7 +679,7 @@
                                     {% if met.method_desc.en and met.method_desc.id %}
                                         {{ met.method_desc.en }}
                                     {% else %}
-                                        {% set values = equ.nama_alat | dictsort | map(attribute='1') | list %}
+                                        {% set values = met.method_desc | dictsort | map(attribute='1') | list %}
                                         {% set method = values[0] %}
                                         {{ method }}
                                     {% endif %}

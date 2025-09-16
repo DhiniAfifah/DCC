@@ -91,12 +91,17 @@ const dateField = (t: (key: string) => string) =>
 export default function AdministrativeForm({
   formData,
   updateFormData,
-  onValidationChange, // Add this prop
+  onValidationChange,
+  templateChangeKey,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
-  onValidationChange?: (isValid: boolean) => void; // Add this prop
+  onValidationChange?: (isValid: boolean) => void;
+  templateChangeKey?: number;
 }) {
+  
+  const [lastTemplateChangeKey, setLastTemplateChangeKey] = useState(templateChangeKey || 0);
+
   // Add validation check effect
   useEffect(() => {
     const validateForm = () => {
@@ -209,28 +214,47 @@ export default function AdministrativeForm({
   });
 
   useEffect(() => {
-    if (JSON.stringify(form.getValues()) !== JSON.stringify(formData)) {
-      form.reset(formData);
+    const currentFormData = form.getValues();
+    const hasTemplateChanged = templateChangeKey !== lastTemplateChangeKey;
+    
+    // Only reset if there are meaningful differences
+    if (JSON.stringify(currentFormData) !== JSON.stringify(formData)) {
+      const timeoutId = setTimeout(() => {
+        form.reset(formData, { 
+          keepDirtyValues: !hasTemplateChanged, // Don't keep dirty values if template changed
+          keepTouched: !hasTemplateChanged      // Don't keep touched state if template changed
+        });
+        
+        // Update the last template change key if it changed
+        if (hasTemplateChanged) {
+          setLastTemplateChangeKey(templateChangeKey || 0);
+        }
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [formData, form]);
+  }, [formData, templateChangeKey, lastTemplateChangeKey]);
 
   const [selectedPlace, setPlace] = useState<string>(
     form.getValues("administrative_data.tempat") || ""
   );
 
-  // Simple debounced update to prevent infinite loops
   useEffect(() => {
     const subscription = form.watch((data) => {
-      // Gunakan debounce yang lebih stabil
-      const timeoutId = setTimeout(() => {
-        updateFormData(data);
-      }, 300); // Waktu lebih lama untuk menghindari update terlalu sering
+      // Only update if there are actual changes
+      const currentData = form.getValues();
+      if (JSON.stringify(currentData) !== JSON.stringify(formData)) {
+        // Use a longer debounce and clear previous timeouts
+        const timeoutId = setTimeout(() => {
+          updateFormData(data);
+        }, 500); // Increased from 300ms to 500ms
 
-      return () => clearTimeout(timeoutId);
+        return () => clearTimeout(timeoutId);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [form, updateFormData]);
+  }, [form, formData]);
 
   const [countries, setCountries] = useState<Country[]>([]);
   useEffect(() => {
