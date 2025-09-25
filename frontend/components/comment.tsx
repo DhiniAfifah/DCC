@@ -43,9 +43,9 @@ export default function Comment({
             .array(
               z.object({
                 file: z.any(),
-                fileName: z.string().min(1, { message: t("input_required") }),
-                mimeType: z.string().min(1, { message: t("input_required") }),
-                base64: z.string().min(1, { message: t("input_required") }),
+                fileName: z.string().optional(),
+                mimeType: z.string().optional(),
+                base64: z.string().optional(),
               })
             )
             .optional(),

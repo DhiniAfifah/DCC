@@ -488,17 +488,21 @@ export default function MeasurementForm({
             norm: z.string().min(1, { message: t("input_required") }),
             refType: z.string().min(1, { message: t("input_required") }),
             has_formula: z.boolean(),
-            formula: z.object({
-              latex: z.string().optional(),
-              mathml: z.string().optional(),
-            }),
+            formula: z
+              .object({
+                latex: z.string().optional(),
+                mathml: z.string().optional(),
+              })
+              .optional(),
             has_image: z.boolean(),
-            image: z.object({
-              fileName: z.any().optional(),
-              caption: z.string().optional(),
-              mimeType: z.string().optional(),
-              base64: z.string().optional(),
-            }),
+            image: z
+              .object({
+                fileName: z.any().optional(),
+                caption: z.string().optional(),
+                mimeType: z.string().optional(),
+                base64: z.string().optional(),
+              })
+              .optional(),
           })
         ).min(1, { message: t("input_required") }),
 
@@ -647,10 +651,10 @@ export default function MeasurementForm({
     event?.stopPropagation();
 
     const currentFormula =
-      form.getValues(`methods.${methodIndex}.formula.mathjax`) || "";
+      form.getValues(`methods.${methodIndex}.formula.latex`) || "";
     const updatedFormula = currentFormula + latex;
 
-    form.setValue(`methods.${methodIndex}.formula.mathjax`, updatedFormula);
+    form.setValue(`methods.${methodIndex}.formula.latex`, updatedFormula);
   };
 
   useEffect(() => {
@@ -1318,193 +1322,162 @@ export default function MeasurementForm({
                 </div>
 
                 {form.watch(`methods.${index}.has_formula`) && (
-                  <div id="rumus" className="mb-2">
-                    <FormLabel>{t("rumus")}</FormLabel>
-                    <div className="grid grid-row md:grid-cols-2 gap-1">
-                      <FormField
-                        control={form.control}
-                        name={`methods.${index}.formula.latex`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="LaTeX" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`methods.${index}.formula.mathml`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder="MathML" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="blue"
-                      className="mt-1"
-                      onClick={() => {
-                        const latex = form.getValues(
-                          `methods.${index}.formula.latex`
-                        );
-                        const encodedLatex = encodeURIComponent(latex || "");
-
-                        const popup = window.open(
-                          `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
-                          "mathEditorPopup",
-                          "width=800,height=600"
-                        );
-
-                        // Define the callback function to receive LaTeX from the popup
-                        window.ShowLatexResult = (latex, mathml) => {
-                          form.setValue(
-                            `methods.${index}.formula.latex`,
-                            latex
-                          );
-                          form.setValue(
-                            `methods.${index}.formula.mathml`,
-                            mathml
-                          );
-                        };
-                      }}
-                    >
-                      {t("editor")}
-                    </Button>
-                  </div>
-                )}
-                <MathJaxContext>
-                  <div id="rumus" className="mt-2">
-                    <FormLabel>Rumus</FormLabel>
-                    <div className="grid grid-row md:grid-cols-2 gap-4">
-                      <div className="grid gap-4">
-                        <FormField
-                          control={form.control}
-                          name={`methods.${index}.formula.mathjax`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input
-                                  ref={latexInputRef}
-                                  value={
-                                    form.watch(
-                                      `methods.${index}.formula.mathjax`
-                                    ) ?? ""
-                                  }
-                                  onChange={(e) =>
-                                    form.setValue(
-                                      `methods.${index}.formula.mathjax`,
-                                      e.target.value
-                                    )
-                                  }
-                                  placeholder="LaTeX"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Card className="border shadow">
-                          <CardContent>
-                            <MathJax>{`$$${
-                              form.watch(`methods.${index}.formula.mathjax`) ||
-                              ""
-                            }$$`}</MathJax>
-                          </CardContent>
-                        </Card>
-                      </div>
-                      <ScrollArea className="h-40 w-full border rounded-md p-2">
-                        <div className="p-2">
-                          <div className="grid grid-row md:grid-cols-2 gap-2">
-                            {latexSymbols.map((group) => (
-                              <div key={group.category}>
-                                <Select
-                                  onValueChange={(value) =>
-                                    insertSymbol(value, index)
-                                  }
-                                >
-                                  <SelectTrigger>
-                                    <span>{group.category}</span>
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {group.symbols.map(
-                                      ({ latex, description }) => (
-                                        <SelectItem key={latex} value={latex}>
-                                          <span className="inline-flex items-center">
-                                            <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                            <span className="ml-1">
-                                              {description}
-                                            </span>
-                                          </span>
-                                        </SelectItem>
+                  <MathJaxContext>
+                    <div id="rumus" className="mt-2">
+                      <FormLabel>{t("rumus")}</FormLabel>
+                      <div className="grid grid-row md:grid-cols-2 gap-4">
+                        <div className="grid gap-1">
+                          <FormField
+                            control={form.control}
+                            name={`methods.${index}.formula.latex`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input
+                                    ref={latexInputRef}
+                                    value={
+                                      form.watch(
+                                        `methods.${index}.formula.latex`
+                                      ) ?? ""
+                                    }
+                                    onChange={(e) =>
+                                      form.setValue(
+                                        `methods.${index}.formula.latex`,
+                                        e.target.value
                                       )
-                                    )}
-                                  </SelectContent>
-                                </Select>
+                                    }
+                                    placeholder="LaTeX"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`methods.${index}.formula.mathml`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input placeholder="MathML" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <Card className="border shadow">
+                            <CardContent>
+                              <MathJax>{`$$${
+                                form.watch(`methods.${index}.formula.latex`) ||
+                                ""
+                              }$$`}</MathJax>
+                            </CardContent>
+                          </Card>
+                        </div>
+                        <div>
+                          <ScrollArea className="h-40 w-full border rounded-md p-2">
+                            <div className="p-2">
+                              <div className="grid grid-row md:grid-cols-2 gap-2">
+                                {latexSymbols.map((group) => (
+                                  <div key={group.category}>
+                                    <Select
+                                      onValueChange={(value) =>
+                                        insertSymbol(value, index)
+                                      }
+                                    >
+                                      <SelectTrigger>
+                                        <span>{group.category == "Huruf Yunani" ? t("greek") : t("arrow")}</span>
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {group.symbols.map(
+                                          ({ latex, description }) => (
+                                            <SelectItem key={latex} value={latex}>
+                                              <span className="inline-flex items-center">
+                                                <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                                <span className="ml-1">
+                                                  {description}
+                                                </span>
+                                              </span>
+                                            </SelectItem>
+                                          )
+                                        )}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                            <div className="p-2">
+                              <div className="grid grid-cols-8 gap-1">
+                                {latexOperations
+                                  .find((group) => group.category === "small")
+                                  ?.symbols.map(({ latex }) => (
+                                    <Button
+                                      variant="secondary"
+                                      key={latex}
+                                      onClick={(e) => insertSymbol(latex, index, e)}
+                                    >
+                                      <span className="text-lg">
+                                        <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                      </span>
+                                    </Button>
+                                  ))}
+                              </div>
+                              <div className="grid grid-cols-5 gap-1 mt-1">
+                                {latexOperations
+                                  .find((group) => group.category === "long")
+                                  ?.symbols.map(({ latex }) => (
+                                    <Button
+                                      variant="secondary"
+                                      key={latex}
+                                      value={latex}
+                                      onClick={(e) => insertSymbol(latex, index, e)}
+                                    >
+                                      <span>
+                                        <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                      </span>
+                                    </Button>
+                                  ))}
+                              </div>
+                            </div>
+                          </ScrollArea>
+                          <Button
+                            type="button"
+                            variant="blue"
+                            className="mt-1"
+                            onClick={() => {
+                              const latex = form.getValues(
+                                `methods.${index}.formula.latex`
+                              );
+                              const encodedLatex = encodeURIComponent(latex || "");
+
+                              const popup = window.open(
+                                `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
+                                "mathEditorPopup",
+                                "width=800,height=600"
+                              );
+
+                              // Define the callback function to receive LaTeX from the popup
+                              window.ShowLatexResult = (latex, mathml) => {
+                                form.setValue(
+                                  `methods.${index}.formula.latex`,
+                                  latex
+                                );
+                                form.setValue(
+                                  `methods.${index}.formula.mathml`,
+                                  mathml
+                                );
+                              };
+                            }}
+                          >
+                            {t("editor")}
+                          </Button>
                         </div>
-                        <div className="p-2">
-                          <div className="grid grid-cols-8 gap-1">
-                            {latexOperations
-                              .find((group) => group.category === "small")
-                              ?.symbols.map(({ latex }) => (
-                                <Button
-                                  variant="secondary"
-                                  key={latex}
-                                  onClick={(e) => insertSymbol(latex, index, e)}
-                                >
-                                  <span className="text-lg">
-                                    <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                  </span>
-                                </Button>
-                              ))}
-                          </div>
-                          <div className="grid grid-cols-5 gap-1 mt-1">
-                            {latexOperations
-                              .find((group) => group.category === "long")
-                              ?.symbols.map(({ latex }) => (
-                                <Button
-                                  variant="secondary"
-                                  key={latex}
-                                  value={latex}
-                                  onClick={(e) => insertSymbol(latex, index, e)}
-                                >
-                                  <span>
-                                    <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                  </span>
-                                </Button>
-                              ))}
-                          </div>
-                          <div className="grid grid-cols-5 gap-1 mt-1">
-                            {latexOperations
-                              .find((group) => group.category === "big")
-                              ?.symbols.map(({ latex }) => (
-                                <Button
-                                  variant="secondary"
-                                  key={latex}
-                                  value={latex}
-                                  onClick={(e) => insertSymbol(latex, index, e)}
-                                  className="h-15"
-                                >
-                                  <span>
-                                    <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                  </span>
-                                </Button>
-                              ))}
-                          </div>
-                        </div>
-                      </ScrollArea>
+                        
+                      </div>
                     </div>
-                  </div>
-                </MathJaxContext>
+                  </MathJaxContext>
+                )}
 
                 <div id="checkbox_gambar">
                   <FormField

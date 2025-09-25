@@ -64,12 +64,12 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // If accessing login/register with valid token, redirect to home
-  if (isPublicRoute && hasValidToken) {
-    console.log("⚠️ Middleware: Has valid token on public route");
-    console.log("🔄 Middleware: Redirecting to home (valid token present)");
-    return NextResponse.redirect(new URL("/home", request.url));
-  }
+  // // If accessing login/register with valid token, redirect to home
+  // if (isPublicRoute && hasValidToken) {
+  //   console.log("⚠️ Middleware: Has valid token on public route");
+  //   console.log("🔄 Middleware: Redirecting to home (valid token present)");
+  //   return NextResponse.redirect(new URL("/home", request.url));
+  // }
 
   // If on public route with invalid token, clear the cookie and allow
   if (isPublicRoute && cookieToken && !hasValidToken) {

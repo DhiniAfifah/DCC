@@ -159,12 +159,18 @@ const translations: Record<string, { id: string; en: string }> = {
     id: "Metode untuk menentukan ketidakpastian pengukuran yang tercantum dalam dokumen. Contoh: Ketidakpastian diperluas yang dilaporkan dinyatakan sebagai ketidakpastian standar yang dikalikan dengan faktor cakupan k. Faktor cakupan k=2 untuk distribusi normal berkorelasi dengan tingkat kepercayaan sekitar 95%",
     en: "Method to determine the measurement uncertainties stated in the document. Example: The reported expanded uncertainty is stated as the standard uncertainty multiplied by a coverage factor k. The coverage factor k=2 for a normal distribution corresponds to a coverage probability of approx. 95%",
   },
+
   cb_rumus_metode: {
     id: "Metode ini melibatkan ekspresi matematika atau rumus",
     en: "This method includes mathematical notation or formula",
   },
   rumus: { id: "Rumus", en: "Formula" },
+  greek: { id: "Simbol", en: "Symbols" },
+  arrow: { id: "Panah", en: "Arrows" },
+  mathml: { id: "Sinkronisasi ke MathML", en: "Sync to MathML" },
+  latex: { id: "Sinkronisasi ke LaTeX", en: "Sync to LaTeX" },
   editor: { id: "Buka editor", en: "Open editor" },
+
   cb_gambar_metode: {
     id: "Metode ini disertai gambar",
     en: "This method is accompanied by an image",
