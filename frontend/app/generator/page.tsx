@@ -16,7 +16,7 @@ export default function Generator() {
 
     const labs: Lab[] = [
         { href: "/generator/electrical", icon: Zap, color: "orange", label: "listrik" },
-        { href: "/generator", icon: Thermometer, color: "red", label: "suhu" },
+        { href: "/generator/temperature", icon: Thermometer, color: "red", label: "suhu" },
         { href: "/generator", icon: Timer, color: "indigo", label: "waktu" },
         { href: "/generator", icon: Lightbulb, color: "purple", label: "fotometri_radiometri" },
         { href: "/generator", icon: FlaskConical, color: "green", label: "kimia" },

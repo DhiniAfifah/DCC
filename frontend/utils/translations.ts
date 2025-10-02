@@ -65,6 +65,8 @@ const translations: Record<string, { id: string; en: string }> = {
   template: { id: "Pilih template...", en: "Select template..." },
   using: { id: "menggunakan", en: "using" },
   blank: { id: "Kosong", en: "Blank" },
+  pt25: { id: "Kalibrasi SPRT Pt-25", en: "SPRT Pt-25 Calibration" },
+  pt100: { id: "Kalibrasi SPRT Pt-100", en: "SPRT Pt-100 Calibration" },
 
   asterisk: {
     id: "Menandakan pertanyaan wajib",
@@ -222,6 +224,7 @@ const translations: Record<string, { id: string; en: string }> = {
   },
 
   // Hasil
+  tabel: { id: "Tabel", en: "Table" },
   judul: { id: "Judul tabel", en: "Table title" },
   bahasa: { id: "Bahasa:", en: "Language:" },
   kolom: { id: "Kolom", en: "Column" },

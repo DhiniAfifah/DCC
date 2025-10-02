@@ -1861,7 +1861,7 @@ export default function MeasurementForm({
                                 <FormItem>
                                   <div className="flex items-center gap-2">
                                     <FormControl>
-                                      <Textarea
+                                      <Input
                                         placeholder={`${t("bahasa")} ${
                                           languages.find(
                                             (l) => l.value === lang.value
@@ -2301,14 +2301,14 @@ export default function MeasurementForm({
         </Card>
 
         <Card id="hasil">
-          <CardHeader>
+          <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2">
               <Sheet className="w-5 h-5" />
               {t("hasil")}
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="grid gap-4">
+          <CardContent>
             <Accordion
               type="single"
               collapsible
@@ -2321,7 +2321,7 @@ export default function MeasurementForm({
                   key={resultField.id}
                   className="relative"
                 >
-                  <AccordionTrigger>Parameter {resultIndex + 1}</AccordionTrigger>
+                  <AccordionTrigger>{t("tabel")} {resultIndex + 1}</AccordionTrigger>
                   <AccordionContent className="grid gap-4 pb-4">
                     {resultFields.length > 1 && (
                       <Button
