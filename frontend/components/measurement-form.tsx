@@ -375,37 +375,37 @@ const Columns = ({
                         <SelectContent>
                           <SelectItem
                             value="basic_measuredValue"
-                            className="whitespace-normal break-words max-w-xs"
+                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                           >
                             {t("basic_measuredValue")}
                           </SelectItem>
                           <SelectItem
                             value="basic_nominalValue"
-                            className="whitespace-normal break-words max-w-xs"
+                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                           >
                             {t("basic_nominalValue")}
                           </SelectItem>
                           <SelectItem
                             value="basic_referenceValue"
-                            className="whitespace-normal break-words max-w-xs"
+                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                           >
                             {t("basic_referenceValue")}
                           </SelectItem>
                           <SelectItem
                             value="basic_measurementError_error"
-                            className="whitespace-normal break-words max-w-xs"
+                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                           >
                             {t("basic_measurementError_error")}
                           </SelectItem>
                           <SelectItem
                             value="basic_measurementError_correction"
-                            className="whitespace-normal break-words max-w-xs"
+                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                           >
                             {t("basic_measurementError_correction")}
                           </SelectItem>
                           <SelectItem
                             value="other"
-                            className="whitespace-normal break-words max-w-xs"
+                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                           >
                             {t("other")}
                           </SelectItem>
@@ -1283,13 +1283,13 @@ export default function MeasurementForm({
                           <SelectContent>
                             <SelectItem
                               value="basic_methodMeasurementUncertainty"
-                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                             >
                               {t("basic_methodMeasurementUncertainty")}
                             </SelectItem>
                             <SelectItem
                               value="basic_calibrationMethod"
-                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                             >
                               {t("other")}
                             </SelectItem>
@@ -1737,13 +1737,13 @@ export default function MeasurementForm({
                           <SelectContent>
                             <SelectItem
                               value="basic_measurementStandard"
-                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                             >
                               {t("basic_measurementStandard")}
                             </SelectItem>
                             <SelectItem
                               value="other" // ga ada refType
-                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                             >
                               {t("other")}
                             </SelectItem>
@@ -1892,7 +1892,13 @@ export default function MeasurementForm({
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input placeholder={t("nilai")} {...field} />
+                              <Input 
+                                type="number"
+                                min="0"
+                                step={"0.1"}
+                                placeholder={t("nilai")} 
+                                {...field} 
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

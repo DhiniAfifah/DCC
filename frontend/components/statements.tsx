@@ -441,31 +441,31 @@ export default function Statements({
                           <SelectContent>
                             <SelectItem
                               value="basic_conformity"
-                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                             >
                               {t("basic_conformity")}
                             </SelectItem>
                             <SelectItem
                               value="basic_metrologicallyTraceableToSI"
-                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                             >
                               {t("basic_metrologicallyTraceableToSI")}
                             </SelectItem>
                             <SelectItem
                               value="basic_revision"
-                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                             >
                               {t("basic_revision")}
                             </SelectItem>
                             <SelectItem
                               value="basic_isInCMC"
-                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                             >
                               {t("basic_isInCMC")}
                             </SelectItem>
                             <SelectItem
                               value="other" // ga ada refType
-                              className="whitespace-normal break-words max-w-xs md:max-w-2xl lg:max-w-3xl"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
                             >
                               {t("other")}
                             </SelectItem>

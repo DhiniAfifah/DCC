@@ -491,8 +491,8 @@ const pt25Template = {
     { // 2
       nama_alat: {id: "H2O TP Cell", en: "H2O TP Cell"},
       manuf_model: {id: "PTB", en: "PTB"},
-      model: {id: "PTB4", en: "PTB4"},
-      seri_measuring: "-",
+      model: {id: "", en: ""},
+      seri_measuring: "PTB4",
       refType: "basic_measurementStandard",
     },
     { // 3
@@ -535,7 +535,7 @@ const pt25Template = {
     { // 1
       jenis_kondisi: "Suhu",
       desc: {id: "-", en: "-"},
-      tengah: "21,4",
+      tengah: "21.4",
       tengah_unit: {
         prefix: "",
         prefix_pdf: "",
@@ -557,7 +557,7 @@ const pt25Template = {
     { // 2
       jenis_kondisi: "Kelembapan",
       desc: {id: "-", en: "-"},
-      tengah: "62,6",
+      tengah: "62.6",
       tengah_unit: {
         prefix: "",
         prefix_pdf: "",
@@ -1326,21 +1326,21 @@ export default function CreateDCC() {
     setTemplateChangeKey(prev => prev + 1);
   }, [selectedTemplate]);
 
-  // // Kasih warning saat user mencoba meninggalkan halaman (agar isi formulir tidak hilang)
-  // useEffect(() => {
-  //   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-  //     event.preventDefault();
-  //     event.returnValue = "";
-  //   };
+  // Kasih warning saat user mencoba meninggalkan halaman (agar isi formulir tidak hilang)
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
 
-  //   if (formData) {
-  //     window.addEventListener("beforeunload", handleBeforeUnload);
-  //   }
+    if (formData) {
+      window.addEventListener("beforeunload", handleBeforeUnload);
+    }
 
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, [formData]);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [formData]);
 
   const formatDate = (date: Date | string | null): string | null => {
     if (!date) return null;

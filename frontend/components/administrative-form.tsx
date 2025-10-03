@@ -217,23 +217,15 @@ export default function AdministrativeForm({
     const currentFormData = form.getValues();
     const hasTemplateChanged = templateChangeKey !== lastTemplateChangeKey;
     
-    // Only reset if there are meaningful differences
-    if (JSON.stringify(currentFormData) !== JSON.stringify(formData)) {
-      const timeoutId = setTimeout(() => {
-        form.reset(formData, { 
-          keepDirtyValues: !hasTemplateChanged, // Don't keep dirty values if template changed
-          keepTouched: !hasTemplateChanged      // Don't keep touched state if template changed
-        });
-        
-        // Update the last template change key if it changed
-        if (hasTemplateChanged) {
-          setLastTemplateChangeKey(templateChangeKey || 0);
-        }
-      }, 100);
-      
-      return () => clearTimeout(timeoutId);
+    // Only reset if template changed, not for regular updates
+    if (hasTemplateChanged) {
+      form.reset(formData, { 
+        keepDirtyValues: false,
+        keepTouched: false
+      });
+      setLastTemplateChangeKey(templateChangeKey || 0);
     }
-  }, [formData, templateChangeKey, lastTemplateChangeKey]);
+  }, [templateChangeKey, lastTemplateChangeKey]);
 
   const [selectedPlace, setPlace] = useState<string>(
     form.getValues("administrative_data.tempat") || ""
@@ -241,20 +233,27 @@ export default function AdministrativeForm({
 
   useEffect(() => {
     const subscription = form.watch((data) => {
-      // Only update if there are actual changes
-      const currentData = form.getValues();
-      if (JSON.stringify(currentData) !== JSON.stringify(formData)) {
-        // Use a longer debounce and clear previous timeouts
-        const timeoutId = setTimeout(() => {
-          updateFormData(data);
-        }, 500); // Increased from 300ms to 500ms
+      const timeoutId = setTimeout(() => {
+        updateFormData(data);
+      }, 500);
 
-        return () => clearTimeout(timeoutId);
-      }
+      return () => clearTimeout(timeoutId);
     });
 
     return () => subscription.unsubscribe();
-  }, [form, formData]);
+  }, [updateFormData]);
+
+  // Add this new useEffect after the watch subscription
+  useEffect(() => {
+    const dates = form.watch(['Measurement_TimeLine.tgl_mulai', 'Measurement_TimeLine.tgl_akhir', 'Measurement_TimeLine.tgl_pengesahan']);
+    
+    const timeoutId = setTimeout(() => {
+      const currentData = form.getValues();
+      updateFormData(currentData);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [form.watch('Measurement_TimeLine.tgl_mulai'), form.watch('Measurement_TimeLine.tgl_akhir'), form.watch('Measurement_TimeLine.tgl_pengesahan')]);
 
   const [countries, setCountries] = useState<Country[]>([]);
   useEffect(() => {
@@ -547,10 +546,10 @@ export default function AdministrativeForm({
                             />
                             <CommandList>
                               <CommandGroup>
-                                {countries.map((country) => (
+                                {countries.map((country, i) => (
                                   <CommandItem
                                     value={country.label}
-                                    key={country.value}
+                                    key={`${country.value}-${i}`}
                                     onSelect={() => {
                                       form.setValue(
                                         "administrative_data.country_code",
@@ -672,7 +671,7 @@ export default function AdministrativeForm({
                                   </Button>
                                 </FormControl>
                               </PopoverTrigger>
-                              <PopoverContent className="w-full p-0">
+                              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                                 <Command>
                                   <CommandInput
                                     placeholder={`${t("cari_bahasa")}`}
@@ -680,9 +679,9 @@ export default function AdministrativeForm({
                                   />
                                   <CommandList>
                                     <CommandGroup>
-                                      {languages.map((lang) => (
+                                      {languages.map((lang, i) => (
                                         <CommandItem
-                                          key={lang.value}
+                                          key={`${lang.value}-${i}`}
                                           onSelect={() =>
                                             form.setValue(
                                               `administrative_data.used_languages.${index}.value`,
@@ -758,7 +757,7 @@ export default function AdministrativeForm({
                                   </Button>
                                 </FormControl>
                               </PopoverTrigger>
-                              <PopoverContent className="w-full p-0">
+                              <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                                 <Command>
                                   <CommandInput
                                     placeholder={`${t("cari_bahasa")}`}
@@ -766,9 +765,9 @@ export default function AdministrativeForm({
                                   />
                                   <CommandList>
                                     <CommandGroup>
-                                      {languages.map((lang) => (
+                                      {languages.map((lang, i) => (
                                         <CommandItem
-                                          key={lang.value}
+                                          key={`${lang.value}-${i}`}
                                           onSelect={() =>
                                             form.setValue(
                                               `administrative_data.mandatory_languages.${index}.value`,
@@ -930,6 +929,10 @@ export default function AdministrativeForm({
                                     adjustedDate.getTimezoneOffset()
                                 );
                                 field.onChange(adjustedDate);
+                                // Manually trigger update without causing re-render
+                                setTimeout(() => {
+                                  updateFormData(form.getValues());
+                                }, 0);
                               }
                             }}
                             disabled={(date) =>
@@ -981,6 +984,10 @@ export default function AdministrativeForm({
                                     adjustedDate.getTimezoneOffset()
                                 );
                                 field.onChange(adjustedDate);
+                                // Manually trigger update without causing re-render
+                                setTimeout(() => {
+                                  updateFormData(form.getValues());
+                                }, 0);
                               }
                             }}
                             disabled={(date) =>
@@ -1033,6 +1040,10 @@ export default function AdministrativeForm({
                                   adjustedDate.getTimezoneOffset()
                               );
                               field.onChange(adjustedDate);
+                              // Manually trigger update without causing re-render
+                              setTimeout(() => {
+                                updateFormData(form.getValues());
+                              }, 0);
                             }
                           }}
                           disabled={(date) =>
@@ -1456,39 +1467,69 @@ export default function AdministrativeForm({
                           value={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="whitespace-normal">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Kepala Laboratorium SNSU Kelistrikan">
+                            <SelectItem 
+                              value="Kepala Laboratorium SNSU Kelistrikan"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu")} {t("listrik")}
                             </SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Suhu">
+                            <SelectItem 
+                              value="Kepala Laboratorium SNSU Suhu"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu")} {t("suhu")}
                             </SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Waktu & Frekuensi">
+                            <SelectItem 
+                              value="Kepala Laboratorium SNSU Waktu & Frekuensi"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu")} {t("waktu")}
                             </SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Fotometri & Radiometri">
+                            <SelectItem 
+                              value="Kepala Laboratorium SNSU Fotometri & Radiometri"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu")} {t("fotometri_radiometri")}
                             </SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Kimia">
+                            <SelectItem 
+                              value="Kepala Laboratorium SNSU Kimia"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu")} {t("kimia")}
                             </SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Panjang">
+                            <SelectItem 
+                              value="Kepala Laboratorium SNSU Panjang"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu")} {t("panjang")}
                             </SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Massa">
+                            <SelectItem 
+                              value="Kepala Laboratorium SNSU Massa"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu")} {t("massa")}
                             </SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Akustik & Vibrasi">
+                            <SelectItem 
+                              value="Kepala Laboratorium SNSU Akustik & Vibrasi"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu")} {t("akustik_vibrasi")}
                             </SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Radiasi Ringan">
+                            <SelectItem 
+                              value="Kepala Laboratorium SNSU Radiasi Ringan"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu")} {t("radiasi")}
                             </SelectItem>
-                            <SelectItem value="Kepala Laboratorium SNSU Biologi">
+                            <SelectItem 
+                              value="Kepala Laboratorium SNSU Biologi"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu")} {t("biologi")}
                             </SelectItem>
                           </SelectContent>
@@ -1545,15 +1586,21 @@ export default function AdministrativeForm({
                           value={field.value}
                         >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger className="whitespace-normal">
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="Direktur SNSU Termoelektrik dan Kimia">
+                            <SelectItem 
+                              value="Direktur SNSU Termoelektrik dan Kimia"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu_tk")}
                             </SelectItem>
-                            <SelectItem value="Direktur SNSU Mekanika, Radiasi, dan Biologi">
+                            <SelectItem 
+                              value="Direktur SNSU Mekanika, Radiasi, dan Biologi"
+                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                            >
                               {t("snsu_mrb")}
                             </SelectItem>
                           </SelectContent>
@@ -1714,10 +1761,10 @@ export default function AdministrativeForm({
                                   />
                                   <CommandList>
                                     <CommandGroup>
-                                      {countries.map((country) => (
+                                      {countries.map((country, i) => (
                                         <CommandItem
                                           value={country.label}
-                                          key={country.value}
+                                          key={`${country.value}-${i}`}
                                           onSelect={() => {
                                             form.setValue(
                                               "owner.negara_cust",
