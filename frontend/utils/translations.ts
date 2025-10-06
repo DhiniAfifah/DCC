@@ -175,9 +175,9 @@ const translations: Record<string, { id: string; en: string }> = {
 
   cb_gambar_metode: {
     id: "Metode ini disertai gambar",
-    en: "This method is accompanied by an image",
+    en: "This method is accompanied by a figure",
   },
-  gambar: { id: "Gambar", en: "Image" },
+  gambar: { id: "Gambar", en: "Figure" },
   upload_gambar: { id: "Unggah file gambar", en: "Upload figure file" },
   caption: { id: "Keterangan gambar", en: "Figure caption" },
 

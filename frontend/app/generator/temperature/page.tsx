@@ -106,17 +106,21 @@ const blankTemplate = {
       norm: "",
       refType: "",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
   ],
   equipments: [
@@ -177,17 +181,21 @@ const blankTemplate = {
       values: {},
       refType: "",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
   ],
   comment: {
@@ -302,17 +310,21 @@ const pt25Template = {
       norm: "ITS-90",
       refType: "basic_calibrationMethod",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 2
       method_name: {id: "Persamaan untuk Konversi Suhu", en: "Equations for Temperature Conversion"},
@@ -323,17 +335,21 @@ const pt25Template = {
       norm: "ITS-90",
       refType: "basic_calibrationMethod",
       has_formula: true,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 3
       method_name: {id: "Koefisien D dan B", en: "D and B Coefficients"},
@@ -354,17 +370,21 @@ const pt25Template = {
       norm: "ITS-90",
       refType: "basic_calibrationMethod",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 4
       method_name: {id: "Persamaan W_r", en: "W_r Equation"},
@@ -375,17 +395,21 @@ const pt25Template = {
       norm: "-",
       refType: "basic_calibrationMethod",
       has_formula: true,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 5
       method_name: {id: "Persamaan W", en: "W Equation"},
@@ -400,17 +424,21 @@ const pt25Template = {
       norm: "-",
       refType: "basic_calibrationMethod",
       has_formula: true,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 6
       method_name: {id: "Koefisien a, b, c", en: "a, b ,c Coefficients"},
@@ -423,17 +451,21 @@ const pt25Template = {
       norm: "-",
       refType: "basic_calibrationMethod",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 7
       method_name: {id: "Ketidakpastian Rambatan", en: "Propagated Uncertainty"},
@@ -446,17 +478,21 @@ const pt25Template = {
       norm: "-",
       refType: "basic_calibrationMethod",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: true,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 8
       method_name: {id: "Ketidakpastian", en: "Uncertainty"},
@@ -467,17 +503,21 @@ const pt25Template = {
       norm: "-",
       refType: "basic_methodMeasurementUncertainty",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
   ],
   equipments: [
@@ -618,17 +658,21 @@ const pt25Template = {
       },
       refType: "other",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 2
       values: {
@@ -639,17 +683,21 @@ const pt25Template = {
       },
       refType: "basic_metrologicallyTraceableToSI",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
   ],
   comment: {
@@ -770,17 +818,21 @@ const pt100Template = {
       norm: "SNSU PK.S-05:2024",
       refType: "basic_calibrationMethod",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 2
       method_name: {id: "Kondisi Kalibrasi", en: "Calibration Condition"},
@@ -791,17 +843,21 @@ const pt100Template = {
       norm: "-",
       refType: "basic_calibrationMethod",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 3
       method_name: {id: "Rumus Menghitung Suhu Terukur", en: "Formula for Determining Measured Temperature"},
@@ -818,17 +874,21 @@ const pt100Template = {
       norm: "-",
       refType: "basic_calibrationMethod",
       has_formula: true,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 4
       method_name: {id: "Ketidakpastian", en: "Uncertainty"},
@@ -839,17 +899,21 @@ const pt100Template = {
       norm: "-",
       refType: "basic_methodMeasurementUncertainty",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
   ],
   equipments: [
@@ -942,17 +1006,21 @@ const pt100Template = {
       },
       refType: "other",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
     { // 2
       values: {
@@ -963,17 +1031,21 @@ const pt100Template = {
       },
       refType: "other",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        },
+      ],
       has_image: false,
-      image: {
-        caption: "",
-        fileName: "",
-        mimeType: "",
-        base64: "",
-      },
+      image: [
+        {
+          caption: "",
+          fileName: "",
+          mimeType: "",
+          base64: "",
+        },
+      ],
     },
   ],
   comment: {
@@ -1421,37 +1493,37 @@ export default function CreateDCC() {
             ),
         },
         methods: dataToPreview.methods.map((method, index) => {
-          if (
-            method.has_image &&
-            method.image?.fileName &&
-            isFile(method.image.fileName)
-          ) {
+          if (method.has_image && Array.isArray(method.image)) {
             return {
               ...method,
-              image: {
-                ...method.image,
-                base64: method.image.fileName.name,
-                mimeType: method.image.mimeType,
-                fileName: method.image.fileName,
-              },
+              image: method.image.map(img =>
+                img?.fileName && isFile(img.fileName)
+                  ? {
+                      ...img,
+                      base64: img.fileName.name,
+                      mimeType: img.mimeType,
+                      fileName: img.fileName,
+                    }
+                  : img
+              ),
             };
           }
           return method;
         }),
         statements: dataToPreview.statements.map((stmt, index) => {
-          if (
-            stmt.has_image &&
-            stmt.image?.fileName &&
-            isFile(stmt.image.fileName)
-          ) {
+          if (stmt.has_image && Array.isArray(stmt.image)) {
             return {
               ...stmt,
-              image: {
-                ...stmt.image,
-                base64: stmt.image.fileName.name,
-                mimeType: stmt.image.mimeType,
-                fileName: stmt.image.fileName,
-              },
+              image: stmt.image.map(img =>
+                img?.fileName && isFile(img.fileName)
+                  ? {
+                      ...img,
+                      base64: img.fileName.name,
+                      mimeType: img.mimeType,
+                      fileName: img.fileName,
+                    }
+                  : img
+              ),
             };
           }
           return stmt;
@@ -1581,37 +1653,37 @@ export default function CreateDCC() {
         ),
     },
     methods: formData.methods.map((method, index) => {
-      if (
-        method.has_image &&
-        method.image?.fileName &&
-        isFile(method.image.fileName)
-      ) {
+      if (method.has_image && Array.isArray(method.image)) {
         return {
           ...method,
-          image: {
-            ...method.image,
-            base64: method.image.fileName.name,
-            mimeType: method.image.mimeType,
-            fileName: method.image.fileName,
-          },
+          image: method.image.map(img =>
+            img?.fileName && isFile(img.fileName)
+              ? {
+                  ...img,
+                  base64: img.fileName.name,
+                  mimeType: img.mimeType,
+                  fileName: img.fileName,
+                }
+              : img
+          ),
         };
       }
       return method;
     }),
     statements: formData.statements.map((stmt, index) => {
-      if (
-        stmt.has_image &&
-        stmt.image?.fileName &&
-        isFile(stmt.image.fileName)
-      ) {
+      if (stmt.has_image && Array.isArray(stmt.image)) {
         return {
           ...stmt,
-          image: {
-            ...stmt.image,
-            base64: stmt.image.fileName.name,
-            mimeType: stmt.image.mimeType,
-            fileName: stmt.image.fileName,
-          },
+          image: stmt.image.map(img =>
+            img?.fileName && isFile(img.fileName)
+              ? {
+                  ...img,
+                  base64: img.fileName.name,
+                  mimeType: img.mimeType,
+                  fileName: img.fileName,
+                }
+              : img
+          ),
         };
       }
       return stmt;
@@ -1663,41 +1735,49 @@ export default function CreateDCC() {
     const submitFormData = new FormData();
 
     // Prepare FormData for file uploads
-    formData.methods.forEach((method, index) => {
-      if (
-        method.has_image &&
-        method.image?.fileName &&
-        isFile(method.image.fileName)
-      ) {
-        const file = method.image.fileName;
-        submitFormData.append(`methods[${index}].image.gambar`, file);
-        submitFormData.append(
-          `methods[${index}].image.mimeType`,
-          method.image.mimeType
-        );
-        submitFormData.append(
-          `methods[${index}].image.fileName`,
-          method.image.fileName
-        );
+    formData.methods.forEach((method, methodIndex) => {
+      if (method.has_image && Array.isArray(method.image)) {
+        method.image.forEach((img, imgIndex) => {
+          if (img?.fileName && isFile(img.fileName)) {
+            const file = img.fileName;
+
+            submitFormData.append(
+              `methods[${methodIndex}].image[${imgIndex}].gambar`,
+              file
+            );
+            submitFormData.append(
+              `methods[${methodIndex}].image[${imgIndex}].mimeType`,
+              img.mimeType
+            );
+            submitFormData.append(
+              `methods[${methodIndex}].image[${imgIndex}].fileName`,
+              img.fileName
+            );
+          }
+        });
       }
     });
 
-    formData.statements.forEach((stmt, index) => {
-      if (
-        stmt.has_image &&
-        stmt.image?.fileName &&
-        isFile(stmt.image.fileName)
-      ) {
-        const file = stmt.image.fileName;
-        submitFormData.append(`statements[${index}].image.gambar`, file);
-        submitFormData.append(
-          `statements[${index}].image.mimeType`,
-          stmt.image.mimeType
-        );
-        submitFormData.append(
-          `statements[${index}].image.fileName`,
-          stmt.image.fileName
-        );
+    formData.statements.forEach((stmt, stmtIndex) => {
+      if (stmt.has_image && Array.isArray(stmt.image)) {
+        stmt.image.forEach((img, imgIndex) => {
+          if (img?.fileName && isFile(img.fileName)) {
+            const file = img.fileName;
+
+            submitFormData.append(
+              `statements[${stmtIndex}].image[${imgIndex}].gambar`,
+              file
+            );
+            submitFormData.append(
+              `statements[${stmtIndex}].image[${imgIndex}].mimeType`,
+              img.mimeType
+            );
+            submitFormData.append(
+              `statements[${stmtIndex}].image[${imgIndex}].fileName`,
+              img.fileName
+            );
+          }
+        });
       }
     });
 

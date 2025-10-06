@@ -2,3 +2,4 @@
 /backend/api/uploads
 /backend/api/__pycache__
 /backend/preview_files
+/.vscode

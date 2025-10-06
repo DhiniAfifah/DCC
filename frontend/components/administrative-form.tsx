@@ -652,7 +652,7 @@ export default function AdministrativeForm({
                         <FormItem className="flex flex-col">
                           <div className="flex items-center gap-2">
                             <Popover>
-                              <PopoverTrigger asChild>
+                              <PopoverTrigger asChild className="whitespace-normal">
                                 <FormControl>
                                   <Button
                                     variant="outline"

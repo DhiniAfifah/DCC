@@ -451,6 +451,510 @@ const Columns = ({
   );
 };
 
+function MethodItem({ 
+  field, 
+  index, 
+  methodFields,
+  form,
+  validLanguages,
+  languages,
+  t,
+  handleRemoveMethod,
+  insertSymbol,
+  latexInputRef,
+  handleFileUpload
+}: any) {
+  const { fields: formulaFields, append: appendFormula, remove: removeFormula } = 
+    useFieldArray({
+      control: form.control,
+      name: `methods.${index}.formula`,
+    });
+  
+  const { fields: imageFields, append: appendImage, remove: removeImage } = 
+    useFieldArray({
+      control: form.control,
+      name: `methods.${index}.image`,
+    });
+
+  const handleAppendFormula = () => {
+    appendFormula({
+      latex: "",
+      mathml: "",
+    });
+  };
+
+  const handleAppendImage = () => {
+    appendImage({
+      fileName: "",
+      caption: "",
+      base64: "",
+      mimeType: "",
+    });
+  };
+
+  const handleRemoveFormula = (index: number) => {
+    removeFormula(index);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    removeImage(index);
+  };
+
+  return (
+    <div key={field.id} className="border-b pb-4 relative">
+      <div className="grid gap-4">
+        <CardDescription>
+          {t("metode")} {index + 1}
+        </CardDescription>
+        {methodFields.length > 1 && (
+          <Button
+            type="button"
+            variant="destructive"
+            size="icon"
+            className="absolute top-0 right-0"
+            onClick={() => handleRemoveMethod(index)}
+          >
+            <X />
+          </Button>
+        )}
+        <div className="grid grid-row md:grid-cols-2 gap-4">
+          <div id="method_name">
+            <FormLabel>{t("nama")}</FormLabel>
+            <div className="space-y-1">
+              {validLanguages.length === 0 ? (
+                <p className="text-sm text-red-500">
+                  {t("pilih_bahasa")}
+                </p>
+              ) : (
+                validLanguages.map(
+                  (lang: { value: string }) => (
+                    <FormField
+                      control={form.control}
+                      key={`${field.id}-method_name-${lang.value}`}
+                      name={`methods.${index}.method_name.${lang.value}`}
+                      render={({ field: methodNameField }) => (
+                        <FormItem>
+                          <div className="flex items-center gap-2">
+                            <FormControl>
+                              <Input
+                                placeholder={`${t("bahasa")} ${
+                                  languages.find(
+                                    (l: Language) => l.value === lang.value
+                                  )?.label || lang.value
+                                }`}
+                                {...methodNameField}
+                                value={methodNameField.value || ""}
+                              />
+                            </FormControl>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )
+                )
+              )}
+            </div>
+          </div>
+
+          <div id="norm">
+            <FormLabel>{t("norm")}</FormLabel>
+            <FormField
+              control={form.control}
+              name={`methods.${index}.norm`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <div id="method_desc">
+          <FormLabel>{t("deskripsi")}</FormLabel>
+          <div className="space-y-1">
+            {validLanguages.length === 0 ? (
+              <p className="text-sm text-red-500">
+                {t("pilih_bahasa")}
+              </p>
+            ) : (
+              validLanguages.map(
+                (lang: { value: string }) => (
+                  <FormField
+                    control={form.control}
+                    key={`${field.id}-method_desc-${lang.value}`}
+                    name={`methods.${index}.method_desc.${lang.value}`}
+                    render={({ field: methodDescField }) => (
+                      <FormItem>
+                        <div className="flex items-center gap-2">
+                          <FormControl>
+                            <Textarea
+                              placeholder={`${t("bahasa")} ${
+                                languages.find(
+                                  (l: Language) => l.value === lang.value
+                                )?.label || lang.value
+                              }`}
+                              {...methodDescField}
+                              value={methodDescField.value || ""}
+                            />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )
+              )
+            )}
+          </div>
+        </div>
+
+        <div id="refType" className="mb-3">
+          <FormLabel>{t("refType")}</FormLabel>
+          <FormField
+            control={form.control}
+            name={`methods.${index}.refType`}
+            render={({ field }) => (
+              <FormItem>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger className="whitespace-normal">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem
+                      value="basic_methodMeasurementUncertainty"
+                      className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                    >
+                      {t("basic_methodMeasurementUncertainty")}
+                    </SelectItem>
+                    <SelectItem
+                      value="basic_calibrationMethod"
+                      className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                    >
+                      {t("other")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
+
+      <div id="checkbox_rumus" className="my-3">
+        <FormField
+          control={form.control}
+          name={`methods.${index}.has_formula`}
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={(checked) =>
+                    field.onChange(checked)
+                  }
+                />
+              </FormControl>
+              <FormLabel>{t("cb_rumus_statement")}</FormLabel>
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {form.watch(`methods.${index}.has_formula`) && (
+        <>
+          {formulaFields.map((field, formulaIndex) => (
+            <div id="rumus" key={field.id} className="mt-2 grid gap-1 relative">
+              <MathJaxContext>
+                <div className="flex items-center justify-between">
+                  <FormLabel className="text-muted-foreground">{t("rumus")} {formulaIndex + 1}</FormLabel>
+                  {formulaFields.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="flex items-center justify-center"
+                      onClick={() => handleRemoveFormula(formulaIndex)}
+                    >
+                      <X />
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-row md:grid-cols-2 gap-4">
+                  <div className="grid gap-1">
+                    <FormField
+                      control={form.control}
+                      name={`methods.${index}.formula.${formulaIndex}.latex`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              ref={latexInputRef}
+                              value={
+                                form.watch(
+                                  `methods.${index}.formula.${formulaIndex}.latex`
+                                ) ?? ""
+                              }
+                              onChange={(e) =>
+                                form.setValue(
+                                  `methods.${index}.formula.${formulaIndex}.latex`,
+                                  e.target.value
+                                )
+                              }
+                              placeholder="LaTeX"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`methods.${index}.formula.${formulaIndex}.mathml`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input placeholder="MathML" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Card className="border shadow">
+                      <CardContent>
+                        <MathJax>{`$$${
+                          form.watch(`methods.${index}.formula.${formulaIndex}.latex`) ||
+                          ""
+                        }$$`}</MathJax>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  <div>
+                    <ScrollArea className="h-40 w-full border rounded-md p-2">
+                      <div className="p-2">
+                        <div className="grid grid-row md:grid-cols-2 gap-2">
+                          {latexSymbols.map((group) => (
+                            <div key={group.category}>
+                              <Select
+                                onValueChange={(value) =>
+                                  insertSymbol(value, index, formulaIndex)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <span>{group.category == "Huruf Yunani" ? t("greek") : t("arrow")}</span>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {group.symbols.map(
+                                    ({ latex, description }) => (
+                                      <SelectItem key={latex} value={latex}>
+                                        <span className="inline-flex items-center">
+                                          <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                          <span className="ml-1">
+                                            {description}
+                                          </span>
+                                        </span>
+                                      </SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="p-2">
+                        <div className="grid grid-cols-8 gap-1">
+                          {latexOperations
+                            .find((group) => group.category === "small")
+                            ?.symbols.map(({ latex }) => (
+                              <Button
+                                variant="secondary"
+                                key={latex}
+                                onClick={(e) => insertSymbol(latex, index, formulaIndex, e)}
+                              >
+                                <span className="text-lg">
+                                  <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                </span>
+                              </Button>
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-5 gap-1 mt-1">
+                          {latexOperations
+                            .find((group) => group.category === "long")
+                            ?.symbols.map(({ latex }) => (
+                              <Button
+                                variant="secondary"
+                                key={latex}
+                                value={latex}
+                                onClick={(e) => insertSymbol(latex, index, formulaIndex, e)}
+                              >
+                                <span>
+                                  <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                </span>
+                              </Button>
+                            ))}
+                        </div>
+                      </div>
+                    </ScrollArea>
+                    <Button
+                      type="button"
+                      variant="blue"
+                      className="mt-1"
+                      onClick={() => {
+                        const latex = form.getValues(
+                          `methods.${index}.formula.${formulaIndex}.latex`
+                        );
+                        const encodedLatex = encodeURIComponent(latex || "");
+
+                        const popup = window.open(
+                          `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
+                          "mathEditorPopup",
+                          "width=800,height=600"
+                        );
+
+                        // Define the callback function to receive LaTeX from the popup
+                        window.ShowLatexResult = (latex, mathml) => {
+                          form.setValue(
+                            `methods.${index}.formula.${formulaIndex}.latex`,
+                            latex
+                          );
+                          form.setValue(
+                            `methods.${index}.formula.${formulaIndex}.mathml`,
+                            mathml
+                          );
+                        };
+                      }}
+                    >
+                      {t("editor")}
+                    </Button>
+                  </div>
+                </div>
+              </MathJaxContext>
+            </div>
+          ))}
+          <Button
+            variant="outline"
+            type="button"
+            size="sm"
+            className="my-2 w-10 h-10"
+            onClick={handleAppendFormula}
+          >
+            <p className="text-xl">
+              <Plus />
+            </p>
+          </Button>
+        </>
+      )}
+
+      <div id="checkbox_gambar" className="mt-3 mb-1">
+        <FormField
+          control={form.control}
+          name={`methods.${index}.has_image`}
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={(checked) =>
+                    field.onChange(checked)
+                  }
+                />
+              </FormControl>
+              <FormLabel>{t("cb_gambar_metode")}</FormLabel>
+            </FormItem>
+          )}
+        />
+      </div>
+
+      {form.watch(`methods.${index}.has_image`) && (
+        <>
+          {imageFields.map((field, imageIndex) => (
+            <div id="gambar" key={field.id} className="mt-2 relative">
+              <div className="flex items-center justify-between">
+                <p className="text-muted-foreground text-sm">{t("gambar")} {imageIndex + 1}</p>
+                {imageFields.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    className="flex items-center justify-center"
+                    onClick={() => handleRemoveImage(imageIndex)}
+                  >
+                    <X />
+                  </Button>
+                )}
+              </div>
+              <div className="grid grid-row md:grid-cols-2 gap-4">
+                <div id="upload">
+                  <FormLabel>{t("upload_gambar")}</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name={`methods.${index}.image.${imageIndex}.fileName`}
+                    render={({ field: { onChange, ref } }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            accept=".jpg, .jpeg, .png"
+                            ref={ref}
+                            onChange={(e) => {
+                              handleFileUpload(e, true, index, imageIndex);
+                              onChange(
+                                e.target.files ? e.target.files[0] : null
+                              );
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div id="caption">
+                  <FormLabel>{t("caption")}</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name={`methods.${index}.image.${imageIndex}.caption`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          <Button
+            variant="outline"
+            type="button"
+            size="sm"
+            className="mt-2 w-10 h-10"
+            onClick={handleAppendImage}
+          >
+            <p className="text-xl">
+              <Plus />
+            </p>
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function MeasurementForm({
   formData,
   updateFormData,
@@ -1153,396 +1657,20 @@ export default function MeasurementForm({
           </CardHeader>
           <CardContent className="grid gap-4">
             {methodFields.map((field, index) => (
-              <div key={field.id} className="grid gap-4 border-b pb-4 relative">
-                <CardDescription>
-                  {t("metode")} {index + 1}
-                </CardDescription>
-                {methodFields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-0 right-0"
-                    onClick={() => handleRemoveMethod(index)}
-                  >
-                    <X />
-                  </Button>
-                )}
-                <div className="grid grid-row md:grid-cols-2 gap-4">
-                  <div id="method_name">
-                    <FormLabel>{t("nama")}</FormLabel>
-                    <div className="space-y-1">
-                      {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-500">
-                          {t("pilih_bahasa")}
-                        </p>
-                      ) : (
-                        validLanguages.map(
-                          (lang: { value: string }) => (
-                            <FormField
-                              control={form.control}
-                              key={`${field.id}-method_name-${lang.value}`}
-                              name={`methods.${index}.method_name.${lang.value}`}
-                              render={({ field: methodNameField }) => (
-                                <FormItem>
-                                  <div className="flex items-center gap-2">
-                                    <FormControl>
-                                      <Input
-                                        placeholder={`${t("bahasa")} ${
-                                          languages.find(
-                                            (l) => l.value === lang.value
-                                          )?.label || lang.value
-                                        }`}
-                                        {...methodNameField}
-                                        value={methodNameField.value || ""}
-                                      />
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )
-                        )
-                      )}
-                    </div>
-                  </div>
-
-                  <div id="norm">
-                    <FormLabel>{t("norm")}</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name={`methods.${index}.norm`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <div id="method_desc">
-                  <FormLabel>{t("deskripsi")}</FormLabel>
-                  <div className="space-y-1">
-                    {validLanguages.length === 0 ? (
-                      <p className="text-sm text-red-500">
-                        {t("pilih_bahasa")}
-                      </p>
-                    ) : (
-                      validLanguages.map(
-                        (lang: { value: string }) => (
-                          <FormField
-                            control={form.control}
-                            key={`${field.id}-method_desc-${lang.value}`}
-                            name={`methods.${index}.method_desc.${lang.value}`}
-                            render={({ field: methodDescField }) => (
-                              <FormItem>
-                                <div className="flex items-center gap-2">
-                                  <FormControl>
-                                    <Textarea
-                                      placeholder={`${t("bahasa")} ${
-                                        languages.find(
-                                          (l) => l.value === lang.value
-                                        )?.label || lang.value
-                                      }`}
-                                      {...methodDescField}
-                                      value={methodDescField.value || ""}
-                                    />
-                                  </FormControl>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )
-                      )
-                    )}
-                  </div>
-                </div>
-
-                <div id="refType" className="mb-3">
-                  <FormLabel>{t("refType")}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`methods.${index}.refType`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="whitespace-normal">
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem
-                              value="basic_methodMeasurementUncertainty"
-                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                            >
-                              {t("basic_methodMeasurementUncertainty")}
-                            </SelectItem>
-                            <SelectItem
-                              value="basic_calibrationMethod"
-                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                            >
-                              {t("other")}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div id="checkbox_rumus">
-                  <FormField
-                    control={form.control}
-                    name={`methods.${index}.has_formula`}
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={(checked) =>
-                              field.onChange(checked)
-                            }
-                          />
-                        </FormControl>
-                        <FormLabel>{t("cb_rumus_metode")}</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {form.watch(`methods.${index}.has_formula`) && (
-                  <MathJaxContext>
-                    <div id="rumus" className="mt-2">
-                      <FormLabel>{t("rumus")}</FormLabel>
-                      <div className="grid grid-row md:grid-cols-2 gap-4">
-                        <div className="grid gap-1">
-                          <FormField
-                            control={form.control}
-                            name={`methods.${index}.formula.latex`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input
-                                    ref={latexInputRef}
-                                    value={
-                                      form.watch(
-                                        `methods.${index}.formula.latex`
-                                      ) ?? ""
-                                    }
-                                    onChange={(e) =>
-                                      form.setValue(
-                                        `methods.${index}.formula.latex`,
-                                        e.target.value
-                                      )
-                                    }
-                                    placeholder="LaTeX"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`methods.${index}.formula.mathml`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input placeholder="MathML" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <Card className="border shadow">
-                            <CardContent>
-                              <MathJax>{`$$${
-                                form.watch(`methods.${index}.formula.latex`) ||
-                                ""
-                              }$$`}</MathJax>
-                            </CardContent>
-                          </Card>
-                        </div>
-                        <div>
-                          <ScrollArea className="h-40 w-full border rounded-md p-2">
-                            <div className="p-2">
-                              <div className="grid grid-row md:grid-cols-2 gap-2">
-                                {latexSymbols.map((group) => (
-                                  <div key={group.category}>
-                                    <Select
-                                      onValueChange={(value) =>
-                                        insertSymbol(value, index)
-                                      }
-                                    >
-                                      <SelectTrigger>
-                                        <span>{group.category == "Huruf Yunani" ? t("greek") : t("arrow")}</span>
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {group.symbols.map(
-                                          ({ latex, description }) => (
-                                            <SelectItem key={latex} value={latex}>
-                                              <span className="inline-flex items-center">
-                                                <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                                <span className="ml-1">
-                                                  {description}
-                                                </span>
-                                              </span>
-                                            </SelectItem>
-                                          )
-                                        )}
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                            <div className="p-2">
-                              <div className="grid grid-cols-8 gap-1">
-                                {latexOperations
-                                  .find((group) => group.category === "small")
-                                  ?.symbols.map(({ latex }) => (
-                                    <Button
-                                      variant="secondary"
-                                      key={latex}
-                                      onClick={(e) => insertSymbol(latex, index, e)}
-                                    >
-                                      <span className="text-lg">
-                                        <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                      </span>
-                                    </Button>
-                                  ))}
-                              </div>
-                              <div className="grid grid-cols-5 gap-1 mt-1">
-                                {latexOperations
-                                  .find((group) => group.category === "long")
-                                  ?.symbols.map(({ latex }) => (
-                                    <Button
-                                      variant="secondary"
-                                      key={latex}
-                                      value={latex}
-                                      onClick={(e) => insertSymbol(latex, index, e)}
-                                    >
-                                      <span>
-                                        <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                      </span>
-                                    </Button>
-                                  ))}
-                              </div>
-                            </div>
-                          </ScrollArea>
-                          <Button
-                            type="button"
-                            variant="blue"
-                            className="mt-1"
-                            onClick={() => {
-                              const latex = form.getValues(
-                                `methods.${index}.formula.latex`
-                              );
-                              const encodedLatex = encodeURIComponent(latex || "");
-
-                              const popup = window.open(
-                                `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
-                                "mathEditorPopup",
-                                "width=800,height=600"
-                              );
-
-                              // Define the callback function to receive LaTeX from the popup
-                              window.ShowLatexResult = (latex, mathml) => {
-                                form.setValue(
-                                  `methods.${index}.formula.latex`,
-                                  latex
-                                );
-                                form.setValue(
-                                  `methods.${index}.formula.mathml`,
-                                  mathml
-                                );
-                              };
-                            }}
-                          >
-                            {t("editor")}
-                          </Button>
-                        </div>
-                        
-                      </div>
-                    </div>
-                  </MathJaxContext>
-                )}
-
-                <div id="checkbox_gambar">
-                  <FormField
-                    control={form.control}
-                    name={`methods.${index}.has_image`}
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={(checked) =>
-                              field.onChange(checked)
-                            }
-                          />
-                        </FormControl>
-                        <FormLabel>{t("cb_gambar_metode")}</FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {form.watch(`methods.${index}.has_image`) && (
-                  <div id="gambar">
-                    <div className="grid grid-row md:grid-cols-2 gap-4">
-                      <div id="upload">
-                        <FormLabel>{t("upload_gambar")}</FormLabel>
-                        <FormField
-                          control={form.control}
-                          name={`methods.${index}.image.fileName`}
-                          render={({ field: { onChange, ref } }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input
-                                  type="file"
-                                  accept=".jpg, .jpeg, .png"
-                                  ref={ref}
-                                  onChange={(e) =>
-                                    handleFileUpload(e, true, index)
-                                  }
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      <div id="caption">
-                        <FormLabel>{t("caption")}</FormLabel>
-                        <FormField
-                          control={form.control}
-                          name={`methods.${index}.image.caption`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <MethodItem
+                key={field.id}
+                field={field}
+                index={index}
+                methodFields={methodFields}
+                form={form}
+                validLanguages={validLanguages}
+                languages={languages}
+                t={t}
+                handleRemoveMethod={handleRemoveMethod}
+                insertSymbol={insertSymbol}
+                latexInputRef={latexInputRef}
+                handleFileUpload={handleFileUpload}
+              />
             ))}
             <Button
               variant="green"
