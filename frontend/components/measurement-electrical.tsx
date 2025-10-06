@@ -19,7 +19,7 @@ import {
   Control,
 } from "react-hook-form";
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
-import { z } from "zod";
+import { z, ZodNumberCheck } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -955,7 +955,7 @@ function MethodItem({
   );
 }
 
-export default function MeasurementForm({
+export default function Measurement({
   formData,
   updateFormData,
   setFileName,
@@ -992,20 +992,22 @@ export default function MeasurementForm({
             norm: z.string().min(1, { message: t("input_required") }),
             refType: z.string().min(1, { message: t("input_required") }),
             has_formula: z.boolean(),
-            formula: z
-              .object({
-                latex: z.string().optional(),
-                mathml: z.string().optional(),
-              })
+            formula: z.array(
+                z.object({
+                  latex: z.string().optional(),
+                  mathml: z.string().optional(),
+                })
+              )
               .optional(),
             has_image: z.boolean(),
-            image: z
-              .object({
-                fileName: z.any().optional(),
-                caption: z.string().optional(),
-                mimeType: z.string().optional(),
-                base64: z.string().optional(),
-              })
+            image: z.array(
+                z.object({
+                  fileName: z.any().optional(),
+                  caption: z.string().optional(),
+                  mimeType: z.string().optional(),
+                  base64: z.string().optional(),
+                })
+              )
               .optional(),
           })
         ).min(1, { message: t("input_required") }),
@@ -1149,16 +1151,17 @@ export default function MeasurementForm({
   const insertSymbol = (
     latex: string,
     methodIndex: number,
+    formulaIndex: number,
     event?: React.MouseEvent<HTMLButtonElement>
   ) => {
     event?.preventDefault();
     event?.stopPropagation();
 
     const currentFormula =
-      form.getValues(`methods.${methodIndex}.formula.latex`) || "";
+      form.getValues(`methods.${methodIndex}.formula.${formulaIndex}.latex`) || "";
     const updatedFormula = currentFormula + latex;
 
-    form.setValue(`methods.${methodIndex}.formula.latex`, updatedFormula);
+    form.setValue(`methods.${methodIndex}.formula.${formulaIndex}.latex`, updatedFormula);
   };
 
   useEffect(() => {
@@ -1170,7 +1173,7 @@ export default function MeasurementForm({
         const index = Number(match[1]);
         const hasFormula = value?.methods?.[index]?.has_formula;
         if (!hasFormula) {
-          form.setValue(`methods.${index}.formula`, "");
+          form.setValue(`methods.${index}.formula`, []);
         }
       }
     });
@@ -1244,7 +1247,8 @@ export default function MeasurementForm({
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
     isImageUpload: boolean, // true jika upload gambar, false jika upload Excel
-    methodIndex?: number // untuk gambar, digunakan untuk mengetahui indeks metode
+    methodIndex?: number, // untuk gambar, digunakan untuk mengetahui indeks metode
+    imageIndex?: ZodNumberCheck
   ) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
@@ -1274,12 +1278,12 @@ export default function MeasurementForm({
           // Store file information (name and mimeType) in the form
           if (methodIndex !== undefined) {
             form.setValue(
-              `methods.${methodIndex}.image.fileName`,
+              `methods.${methodIndex}.image.${imageIndex}.fileName`,
               result.filename // Store the file name after uploading
             );
 
             form.setValue(
-              `methods.${methodIndex}.image.mimeType`,
+              `methods.${methodIndex}.image.${imageIndex}.mimeType`,
               result.mimeType // Store the mimeType
             );
 
@@ -1292,7 +1296,7 @@ export default function MeasurementForm({
 
               // Store base64 image string in the form for preview
               form.setValue(
-                `methods.${methodIndex}.image.base64`,
+                `methods.${methodIndex}.image.${imageIndex}.base64`,
                 base64WithoutPrefix
               );
             };
@@ -1475,16 +1479,20 @@ export default function MeasurementForm({
       method_desc: createMultilangObject(currentLanguages),
       norm: "",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
-      image: {
-        fileName: "",
-        caption: "",
-        base64: "",
-        mimeType: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        }
+      ],
+      image: [
+        {
+          fileName: "",
+          caption: "",
+          base64: "",
+          mimeType: "",
+        }
+      ],
     });
   }, [appendMethod, createMultilangObject, usedLanguages]);
 
@@ -1591,7 +1599,7 @@ export default function MeasurementForm({
     try {
       const cleanedMethods = modifiedFormData.methods.map((method, index) => {
         if (!method.has_formula) {
-          form.setValue(`methods.${index}.formula`, "");
+          form.setValue(`methods.${index}.formula`, []);
           const { formula, ...rest } = method;
           return rest;
         }

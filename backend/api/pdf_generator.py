@@ -32,15 +32,15 @@ XML_NS = {
     'si': 'https://ptb.de/si'
 }
 
-def render_latex_base64(latex_expr: str) -> str:
-        fig = plt.figure(figsize=(0.01, 0.01), dpi=200)
-        fig.text(0.1, 0.5, f"${latex_expr}$", fontsize=14)
-        plt.axis('off')
-        buf = BytesIO()
-        fig.savefig(buf, format='png', bbox_inches='tight', dpi=200)
-        plt.close(fig)
-        encoded = base64.b64encode(buf.getvalue()).decode("utf-8")
-        return f"data:image/png;base64,{encoded}"
+def create_formula_image(latex_expr: str) -> str:
+    fig = plt.figure(figsize=(0.01, 0.01), dpi=200)
+    fig.text(0.1, 0.5, f"${latex_expr}$", fontsize=14)
+    plt.axis('off')
+    buf = BytesIO()
+    fig.savefig(buf, format='png', bbox_inches='tight', dpi=200)
+    plt.close(fig)
+    encoded = base64.b64encode(buf.getvalue()).decode("utf-8")
+    return f"data:image/png;base64,{encoded}"
 
 def format_tanggal_by_lang(tanggal_str, lang='id'):
     if not tanggal_str:
@@ -427,37 +427,52 @@ class PDFGenerator:
             method_name = self._get_multilang_text(met.find('.//dcc:name', namespaces=XML_NS))
             method_desc = self._get_multilang_text(met.find('.//dcc:description', namespaces=XML_NS))
 
+            formulas = []
+            images = []
+
             #Formula
-            formula_image = None
-            formula_elem = met.find('.//dcc:description/dcc:formula/dcc:latex', namespaces=XML_NS)
-            if formula_elem is not None and formula_elem.text:
-                try:
-                    formula_image = render_latex_base64(formula_elem.text.strip())
-                except Exception as e:
-                    logging.warning(f"[METHOD] Gagal render latex: {e}")
+            for formula in met.findall('.//dcc:description/dcc:formula', namespaces=XML_NS):
+                formula_image = None
+                formula_elem = formula.find('.//dcc:latex', namespaces=XML_NS)
+                if formula_elem is not None and formula_elem.text:
+                    try:
+                        formula_image = create_formula_image(formula_elem.text.strip())
+                    except Exception as e:
+                        logging.warning(f"[METHOD] Gagal render latex: {e}")
+
+                formulas.append({
+                    'formula_image': formula_image
+                })
 
             #Gambar
-            image_data = None
-            image_caption = method_captions.get(i, "")
-            file_elem = met.find('.//dcc:description/dcc:file', namespaces=XML_NS)
-            if file_elem is not None:
-                mime_elem = file_elem.find('dcc:mimeType', namespaces=XML_NS)
-                data_elem = file_elem.find('dcc:dataBase64', namespaces=XML_NS)
+            file_elements = met.findall('.//dcc:description/dcc:file', namespaces=XML_NS)
+            method_caption_list = method_captions.get(i, [])
+            
+            for j, file_elem in enumerate(file_elements):
+                image_data = None
+                image_caption = method_caption_list[j] if j < len(method_caption_list) else ""
+                if file_elem is not None:
+                    mime_elem = file_elem.find('dcc:mimeType', namespaces=XML_NS)
+                    data_elem = file_elem.find('dcc:dataBase64', namespaces=XML_NS)
 
-                if mime_elem is not None and data_elem is not None and data_elem.text:
-                    try:
-                        mimetype = mime_elem.text.strip()
-                        b64 = data_elem.text.strip().replace('\n', '').replace(' ', '')
-                        image_data = f"data:{mimetype};base64,{b64}"
-                    except Exception as e:
-                        logging.warning(f"[METHOD] Gagal decode gambar: {e}")
+                    if mime_elem is not None and data_elem is not None and data_elem.text:
+                        try:
+                            mimetype = mime_elem.text.strip()
+                            b64 = data_elem.text.strip().replace('\n', '').replace(' ', '')
+                            image_data = f"data:{mimetype};base64,{b64}"
+                        except Exception as e:
+                            logging.warning(f"[METHOD] Gagal decode gambar: {e}")
+
+                images.append({
+                    'image': image_data,
+                    'image_caption': image_caption
+                })
 
             methods.append({
                 'method_name': method_name if method_name else {},
                 'method_desc': method_desc if method_desc else {},
-                'formula_image': formula_image,
-                'image': image_data,
-                'image_caption': image_caption
+                'formulas': formulas,
+                'images': images
             })
 
         return methods
@@ -474,36 +489,51 @@ class PDFGenerator:
             # multi-bahasa
             value = self._get_multilang_text(declaration)
 
+            formulas = []
+            images = []
+
             #Formula
-            formula_image = None
-            formula_elem = declaration.find('.//dcc:formula/dcc:latex', namespaces=XML_NS)
-            if formula_elem is not None and formula_elem.text:
-                try:
-                    formula_image = render_latex_base64(formula_elem.text.strip())
-                except Exception as e:
-                    logging.warning(f"Gagal render rumus latex: {e}")
+            for formula in stmt.findall('.//dcc:declaration/dcc:formula', namespaces=XML_NS):
+                formula_image = None
+                formula_elem = formula.find('.//dcc:latex', namespaces=XML_NS)
+                if formula_elem is not None and formula_elem.text:
+                    try:
+                        formula_image = create_formula_image(formula_elem.text.strip())
+                    except Exception as e:
+                        logging.warning(f"[METHOD] Gagal render latex: {e}")
+
+                formulas.append({
+                    'formula_image': formula_image
+                })
 
             #Gambar
-            image_data = None
-            image_caption = statement_captions.get(i, "")
-            file_elem = declaration.find('dcc:file', namespaces=XML_NS)
-            if file_elem is not None:
-                mime_elem = file_elem.find('dcc:mimeType', namespaces=XML_NS)
-                data_elem = file_elem.find('dcc:dataBase64', namespaces=XML_NS)
+            file_elements = stmt.findall('.//dcc:declaration/dcc:file', namespaces=XML_NS)
+            statement_caption_list = statement_captions.get(i, [])
+            
+            for j, file_elem in enumerate(file_elements):
+                image_data = None
+                image_caption = statement_caption_list[j] if j < len(statement_caption_list) else ""
+                if file_elem is not None:
+                    mime_elem = file_elem.find('dcc:mimeType', namespaces=XML_NS)
+                    data_elem = file_elem.find('dcc:dataBase64', namespaces=XML_NS)
 
-                if mime_elem is not None and data_elem is not None and data_elem.text:
-                    try:
-                        mimetype = mime_elem.text.strip()
-                        b64 = data_elem.text.strip().replace('\n', '').replace(' ', '')
-                        image_data = f"data:{mimetype};base64,{b64}"
-                    except Exception as e:
-                        logging.warning(f"Gagal decode gambar pernyataan: {e}")
+                    if mime_elem is not None and data_elem is not None and data_elem.text:
+                        try:
+                            mimetype = mime_elem.text.strip()
+                            b64 = data_elem.text.strip().replace('\n', '').replace(' ', '')
+                            image_data = f"data:{mimetype};base64,{b64}"
+                        except Exception as e:
+                            logging.warning(f"[METHOD] Gagal decode gambar: {e}")
 
+                images.append({
+                    'image': image_data,
+                    'image_caption': image_caption
+                })
+            
             statements.append({
                 'value': value if value else {},
-                'formula_image': formula_image,
-                'image': image_data,
-                'image_caption': image_caption
+                'formulas': formulas,
+                'images': images
             })
 
         return statements
@@ -560,22 +590,6 @@ class PDFGenerator:
             })
     
         return results
-    
-    def create_formula_image(self, formula, prefix, index):
-        """Buat gambar PNG dari formula matematika"""
-        if not formula:
-            return None
-        
-        filename = os.path.join(self.temp_dir.name, f"{prefix}_{index}.png")
-        try:
-            fig = plt.figure(figsize=(1.5, 0.5))
-            fig.text(0.1, 0.5, f"${formula}$", fontsize=10)
-            fig.savefig(filename, dpi=300, bbox_inches='tight', pad_inches=0.05)
-            plt.close(fig)
-            return filename
-        except Exception as e:
-            logger.error(f"Error creating formula image: {e}")
-            return None
 
     def test_template_rendering(self, data):
         """Test template rendering with better error handling"""

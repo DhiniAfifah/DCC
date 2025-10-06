@@ -379,42 +379,46 @@ async def create_dcc(
         logging.info("Received DCC JSON data")
 
         for method in dcc.methods:
-            if method.has_image and method.image and method.image.gambar:
-                filename = method.image.gambar
-                file_path = os.path.join(UPLOAD_DIR, filename)
-                logging.info(f"Check method image file at: {file_path}, exists: {os.path.exists(file_path)}")
+            if method.has_image and method.image:
+                for image in method.image:
+                    if image and image.gambar:
+                        filename = image.gambar
+                        file_path = os.path.join(UPLOAD_DIR, filename)
+                        logging.info(f"Check method image file at: {file_path}, exists: {os.path.exists(file_path)}")
 
-                if os.path.exists(file_path):
-                    mime_type = method.image.mimeType if hasattr(method.image, 'mimeType') else ""
-                    with open(file_path, "rb") as img_file:
-                        image_data = img_file.read()
-                        base64_str = base64.b64encode(image_data).decode('utf-8')
+                        if os.path.exists(file_path):
+                            mime_type = image.mimeType if hasattr(image, 'mimeType') else ""
+                            with open(file_path, "rb") as img_file:
+                                image_data = img_file.read()
+                                base64_str = base64.b64encode(image_data).decode('utf-8')
 
-                        method.image.base64 = base64_str
-                        method.image.gambar_url = file_path
-                        method.image.fileName = filename
-                        method.image.mimeType = mime_type
-                else:
-                    logging.warning(f"Method image file {filename} not found")
+                                image.base64 = base64_str
+                                image.gambar_url = file_path
+                                image.fileName = filename
+                                image.mimeType = mime_type
+                        else:
+                            logging.warning(f"Method image file {filename} not found")
 
         for statement in dcc.statements:
-            if statement.has_image and statement.image and statement.image.gambar:
-                filename = statement.image.gambar
-                file_path = os.path.join(UPLOAD_DIR, filename)
-                logging.info(f"Check statement image file at: {file_path}, exists: {os.path.exists(file_path)}")
+            if statement.has_image and statement.image:
+                for image in statement.image:
+                    if image and image.gambar:
+                        filename = image.gambar
+                        file_path = os.path.join(UPLOAD_DIR, filename)
+                        logging.info(f"Check statement image file at: {file_path}, exists: {os.path.exists(file_path)}")
 
-                if os.path.exists(file_path):
-                    mime_type = statement.image.mimeType if hasattr(statement.image, 'mimeType') else ""
-                    with open(file_path, "rb") as img_file:
-                        image_data = img_file.read()
-                        base64_str = base64.b64encode(image_data).decode('utf-8')
+                        if os.path.exists(file_path):
+                            mime_type = image.mimeType if hasattr(image, 'mimeType') else ""
+                            with open(file_path, "rb") as img_file:
+                                image_data = img_file.read()
+                                base64_str = base64.b64encode(image_data).decode('utf-8')
 
-                        statement.image.fileName = filename
-                        statement.image.mimeType = mime_type
-                        statement.image.base64 = base64_str
-                        statement.image.gambar_url = file_path
-                else:
-                    logging.warning(f"Statement image file {filename} not found")
+                                image.fileName = filename
+                                image.mimeType = mime_type
+                                image.base64 = base64_str
+                                image.gambar_url = file_path
+                        else:
+                            logging.warning(f"Statement image file {filename} not found")
                              
         if dcc.comment and dcc.comment.files:
             for file in dcc.comment.files:
@@ -977,34 +981,38 @@ async def generate_preview(
         
         # Process images for preview (same as in create_dcc but for preview)
         for method in dcc.methods:
-            if method.has_image and method.image and method.image.gambar:
-                filename = method.image.gambar
-                file_path = os.path.join(UPLOAD_DIR, filename)
-                
-                if os.path.exists(file_path):
-                    mime_type = method.image.mimeType if hasattr(method.image, 'mimeType') else ""
-                    with open(file_path, "rb") as img_file:
-                        image_data = img_file.read()
-                        base64_str = base64.b64encode(image_data).decode('utf-8')
+            for image in method.image:
+                for image in method.image:
+                    if image and image.gambar:
+                        filename = image.gambar
+                        file_path = os.path.join(UPLOAD_DIR, filename)
+                        
+                        if os.path.exists(file_path):
+                            mime_type = image.mimeType if hasattr(image, 'mimeType') else ""
+                            with open(file_path, "rb") as img_file:
+                                image_data = img_file.read()
+                                base64_str = base64.b64encode(image_data).decode('utf-8')
 
-                        method.image.base64 = base64_str
-                        method.image.fileName = filename
-                        method.image.mimeType = mime_type
+                                image.base64 = base64_str
+                                image.fileName = filename
+                                image.mimeType = mime_type
 
         for statement in dcc.statements:
-            if statement.has_image and statement.image and statement.image.gambar:
-                filename = statement.image.gambar
-                file_path = os.path.join(UPLOAD_DIR, filename)
-                
-                if os.path.exists(file_path):
-                    mime_type = statement.image.mimeType if hasattr(statement.image, 'mimeType') else ""
-                    with open(file_path, "rb") as img_file:
-                        image_data = img_file.read()
-                        base64_str = base64.b64encode(image_data).decode('utf-8')
+            if statement.has_image and statement.image:
+                for image in statement.image:
+                    if image and image.gambar:
+                        filename = image.gambar
+                        file_path = os.path.join(UPLOAD_DIR, filename)
+                        
+                        if os.path.exists(file_path):
+                            mime_type = image.mimeType if hasattr(image, 'mimeType') else ""
+                            with open(file_path, "rb") as img_file:
+                                image_data = img_file.read()
+                                base64_str = base64.b64encode(image_data).decode('utf-8')
 
-                        statement.image.fileName = filename
-                        statement.image.mimeType = mime_type
-                        statement.image.base64 = base64_str
+                                image.fileName = filename
+                                image.mimeType = mime_type
+                                image.base64 = base64_str
 
         # Process comment files
         if dcc.comment and dcc.comment.files:
@@ -1177,37 +1185,42 @@ async def create_dcc_streaming(
             
             # Process method and statement images (same as original code)
             for method in dcc.methods:
-                if method.has_image and method.image and method.image.gambar:
-                    filename = method.image.gambar
-                    file_path = os.path.join(UPLOAD_DIR, filename)
-                    logging.info(f"Check method image file at: {file_path}, exists: {os.path.exists(file_path)}")
+                if method.has_image and method.image:
+                    for image in method.image:
+                        if image and image.gambar:
+                            filename = image.gambar
+                            file_path = os.path.join(UPLOAD_DIR, filename)
+                            logging.info(f"Check method image file at: {file_path}, exists: {os.path.exists(file_path)}")
 
-                    if os.path.exists(file_path):
-                        mime_type = method.image.mimeType if hasattr(method.image, 'mimeType') else ""
-                        with open(file_path, "rb") as img_file:
-                            image_data = img_file.read()
-                            base64_str = base64.b64encode(image_data).decode('utf-8')
+                            if os.path.exists(file_path):
+                                mime_type = image.mimeType if hasattr(image, 'mimeType') else ""
+                                with open(file_path, "rb") as img_file:
+                                    image_data = img_file.read()
+                                    base64_str = base64.b64encode(image_data).decode('utf-8')
 
-                            method.image.base64 = base64_str
-                            method.image.gambar_url = file_path
-                            method.image.fileName = filename
-                            method.image.mimeType = mime_type
+                                    image.base64 = base64_str
+                                    image.gambar_url = file_path
+                                    image.fileName = filename
+                                    image.mimeType = mime_type
             
             for statement in dcc.statements:
-                if statement.has_image and statement.image and statement.image.gambar:
-                    filename = statement.image.gambar
-                    file_path = os.path.join(UPLOAD_DIR, filename)
-                    
-                    if os.path.exists(file_path):
-                        mime_type = statement.image.mimeType if hasattr(statement.image, 'mimeType') else ""
-                        with open(file_path, "rb") as img_file:
-                            image_data = img_file.read()
-                            base64_str = base64.b64encode(image_data).decode('utf-8')
+                if statement.has_image and statement.image:
+                    for image in statement.image:
+                        if image and image.gambar:
+                            filename = image.gambar
+                            file_path = os.path.join(UPLOAD_DIR, filename)
+                            logging.info(f"Check statement image file at: {file_path}, exists: {os.path.exists(file_path)}")
 
-                            statement.image.fileName = filename
-                            statement.image.mimeType = mime_type
-                            statement.image.base64 = base64_str
-                            statement.image.gambar_url = file_path
+                            if os.path.exists(file_path):
+                                mime_type = image.mimeType if hasattr(image, 'mimeType') else ""
+                                with open(file_path, "rb") as img_file:
+                                    image_data = img_file.read()
+                                    base64_str = base64.b64encode(image_data).decode('utf-8')
+
+                                    image.fileName = filename
+                                    image.mimeType = mime_type
+                                    image.base64 = base64_str
+                                    image.gambar_url = file_path
                              
             if dcc.comment and dcc.comment.files:
                 for file in dcc.comment.files:

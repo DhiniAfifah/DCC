@@ -117,9 +117,9 @@ class Method(BaseModel):
     method_desc: MultilangStr
     norm: str
     has_formula: bool = False
-    formula: Optional[Formula] = None
+    formula: Optional[List[Formula]] = None
     has_image: bool = False
-    image: Optional[Image] = None
+    image: Optional[List[Image]] = None
     refType: Optional[str] = None
 
 #COMMENT
@@ -161,9 +161,9 @@ class Condition(BaseModel):
 class Statements(BaseModel):
     values: MultilangStr
     has_formula: bool = False
-    formula: Optional[Formula] = None
+    formula: Optional[List[Formula]] = None
     has_image: bool = False
-    image: Optional[Image] = None
+    image: Optional[List[Image]] = None
     refType: Optional[str] = None
 
 class AdministrativeData(BaseModel):

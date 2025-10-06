@@ -596,7 +596,7 @@ export default function Statements({
         const index = Number(match[1]);
         const hasFormula = value?.statements?.[index]?.has_formula;
         if (!hasFormula) {
-          form.setValue(`statements.${index}.formula`, "");
+          form.setValue(`statements.${index}.formula`, []);
         }
       }
     });

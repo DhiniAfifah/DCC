@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Stepper from "@/components/ui/stepper";
-import AdministrativeForm from "@/components/administrative-form";
-import MeasurementForm from "@/components/measurement-form";
+import Administrative from "@/components/administrative";
+import Measurement from "@/components/measurement-electrical";
 import Statements from "@/components/statements";
 import Comment from "@/components/comment";
 import Preview from "@/components/preview";
@@ -302,10 +302,10 @@ const pt25Template = {
       method_desc: {
         id: "Termometer Tahanan Platina Semi Standar (TTPS) Pt-100 dengan spesifikasi di atas dikalibrasi " + 
             "dengan metode titik tetap berdasarkan skala suhu internasional tahun 1990 (ITS-90) " + 
-            "pada sub-rentang W_5 (-38,8344 °C — 29,7646 °C) dan sub-rentang W7 (0.01 °C — 660.323 °C).",
+            "pada sub-rentang W_5 (-38,8344 °C — 29,7646 °C) dan sub-rentang W_7 (0.01 °C — 660.323 °C).",
         en: "The Semi Standard Platinum Resistance Thermometer (SPRT) Pt-100 with above specifications is calibrated " + 
             "by fixed point method in accordance with the International Temperature Scale of 1990 (ITS-90) " + 
-            "in the sub-range W_5 (-38,8344 °C — 29,7646 °C) and in the sub-range W7 (0.01 °C — 660.323 °C).",
+            "in the sub-range W_5 (-38,8344 °C — 29,7646 °C) and in the sub-range W_7 (0.01 °C — 660.323 °C).",
       },
       norm: "ITS-90",
       refType: "basic_calibrationMethod",
@@ -1551,13 +1551,13 @@ export default function CreateDCC() {
           ...data,
           methods: data.methods.map((m: any) => ({
             ...m,
-            formula: m.has_formula ? m.formula : null,
-            image: m.has_image ? m.image : null,
+            formula: m.has_formula && Array.isArray(m.formula) ? m.formula : [],
+            image: m.has_image && Array.isArray(m.image) ? m.image : [],
           })),
           statements: data.statements.map((s: any) => ({
             ...s,
-            formula: s.has_formula ? s.formula : null,
-            image: s.has_image ? s.image : null,
+            formula: s.has_formula && Array.isArray(s.formula) ? s.formula : [],
+            image: s.has_image && Array.isArray(s.image) ? s.image : [],
           })),
           comment: data.comment?.has_file
             ? data.comment
@@ -1916,14 +1916,14 @@ export default function CreateDCC() {
       
       <div className="space-y-10 mt-10">
         {currentStep === 0 && (
-          <AdministrativeForm
+          <Administrative
             formData={formData}
             updateFormData={updateFormData}
             templateChangeKey={templateChangeKey}
           />
         )}
         {currentStep === 1 && (
-          <MeasurementForm
+          <Measurement
             formData={formData}
             updateFormData={updateFormData}
             setFileName={setFileName}

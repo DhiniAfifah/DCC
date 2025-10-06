@@ -685,17 +685,19 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            <div id="formula" style="text-align: center;">
-                                {% if met.formula_image is defined %}
-                                    <img src="{{ met.formula_image }}" style="height: 30px;">
+                            <div id="formula" style="display: flex; flex-direction: column; align-items: center;">
+                                {% if met.formulas is defined %}
+                                    {% for formula in met.formulas %}
+                                        <img src="{{ formula.formula_image }}" style="height: 30px;">
+                                    {% endfor %}
                                 {% endif %}
                             </div>
                             <div id="image" style="text-align: center;">
-                                {% if met.image %}
-                                    <img src="{{ met.image }}" style="width: 300px; margin-top: 5px;">
-                                    {% if met.image_caption %}
-                                        <div class="indo">{{ met.image_caption }}</div>
-                                    {% endif %}
+                                {% if met.images %}
+                                    {% for image in met.images %}
+                                        <img src="{{ image.image }}" style="height: 200px; margin-top: 5px;">
+                                        <div class="indo">{{ image.image_caption }}</div>
+                                    {% endfor %}
                                 {% endif %}
                             </div>
                         {% endfor %}
@@ -816,17 +818,19 @@
                                     {% endif %}
                                 {% endif %}
                             </div>
-                            <div id="formula" style="text-align: center;">
-                                {% if stat.formula_image is defined %}
-                                    <img src="{{ stat.formula_image }}" style="height: 30px;">
+                            <div id="formula" style="display: flex; flex-direction: column; align-items: center;">
+                                {% if stat.formulas is defined %}
+                                    {% for formula in stat.formulas %}
+                                        <img src="{{ formula.formula_image }}" style="height: 30px;">
+                                    {% endfor %}
                                 {% endif %}
                             </div>
                             <div id="image" style="text-align: center;">
-                                {% if stat.image %}
-                                    <img src="{{ stat.image }}" style="width: 300px; margin-top: 5px;">
-                                    {% if stat.image_caption %}
-                                        <div class="indo">{{ stat.image_caption }}</div>
-                                    {% endif %}
+                                {% if stat.images %}
+                                    {% for image in stat.images %}
+                                        <img src="{{ image.image }}" style="height: 200px; margin-top: 5px;">
+                                        <div class="indo">{{ image.image_caption }}</div>
+                                    {% endfor %}
                                 {% endif %}
                             </div>
                         {% endfor %}

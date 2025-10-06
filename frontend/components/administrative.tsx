@@ -88,7 +88,7 @@ const dateField = (t: (key: string) => string) =>
     return new Date(val);
   });
 
-export default function AdministrativeForm({
+export default function Administrative({
   formData,
   updateFormData,
   onValidationChange,
@@ -519,7 +519,7 @@ export default function AdministrativeForm({
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
-                        <PopoverTrigger asChild>
+                        <PopoverTrigger asChild className="whitespace-normal">
                           <FormControl>
                             <Button
                               variant="outline"
@@ -738,7 +738,7 @@ export default function AdministrativeForm({
                         <FormItem className="flex flex-col">
                           <div className="flex items-center gap-2">
                             <Popover>
-                              <PopoverTrigger asChild>
+                              <PopoverTrigger asChild className="whitespace-normal">
                                 <FormControl>
                                   <Button
                                     variant="outline"
@@ -900,7 +900,7 @@ export default function AdministrativeForm({
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
-                        <PopoverTrigger asChild>
+                        <PopoverTrigger asChild className="whitespace-normal">
                           <FormControl>
                             <Button
                               variant={"outline"}
@@ -955,7 +955,7 @@ export default function AdministrativeForm({
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <Popover>
-                        <PopoverTrigger asChild>
+                        <PopoverTrigger asChild className="whitespace-normal">
                           <FormControl>
                             <Button
                               variant={"outline"}
@@ -1011,7 +1011,7 @@ export default function AdministrativeForm({
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <Popover>
-                      <PopoverTrigger asChild>
+                      <PopoverTrigger asChild className="whitespace-normal">
                         <FormControl>
                           <Button
                             variant={"outline"}
@@ -1733,7 +1733,7 @@ export default function AdministrativeForm({
                         render={({ field }) => (
                           <FormItem className="flex flex-col">
                             <Popover>
-                              <PopoverTrigger asChild>
+                              <PopoverTrigger asChild className="whitespace-normal">
                                 <FormControl>
                                   <Button
                                     variant="outline"

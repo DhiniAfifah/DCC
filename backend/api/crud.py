@@ -451,31 +451,33 @@ def generate_xml(dcc, table_data):
                                     text(clean_text(stmt.values.root.get(lang, "") or ""))
                                 
                             if stmt.has_formula and stmt.formula:
-                                with tag('dcc:formula'):
-                                    if stmt.formula.latex:
-                                        with tag('dcc:latex'):
-                                            text(stmt.formula.latex)
-                                    # if stmt.formula.mathml:
-                                    #     with tag('dcc:mathml'):
-                                    #         text(stmt.formula.mathml)
+                                for formula in stmt.formula:
+                                    with tag('dcc:formula'):
+                                        if formula.latex:
+                                            with tag('dcc:latex'):
+                                                text(formula.latex)
+                                        # if formula.mathml:
+                                        #     with tag('dcc:mathml'):
+                                        #         text(formula.mathml)
                             # bagian gambar (jika ada)
                             if stmt.has_image and stmt.image:
-                                with tag('dcc:file'):
-                                    if getattr(stmt.image, 'fileName', None):
-                                        with tag('dcc:fileName'):
-                                            text(stmt.image.fileName)
-                                    if getattr(stmt.image, 'mimeType', None):
-                                        with tag('dcc:mimeType'):
-                                            text(stmt.image.mimeType)
-                                    if getattr(stmt.image, 'base64', None):
-                                        with tag('dcc:dataBase64'):
-                                            base64_lines = stmt.image.base64.splitlines()
-                                            doc.asis('\n')
-                                            indent_spaces = 21
-                                            indent_stm = ' ' * indent_spaces
-                                            for line in base64_lines:
-                                                doc.asis(f"{indent_stm}{line}\n")
-                                            doc.asis(' ' * (indent_spaces - 3))
+                                for image in stmt.image:
+                                    with tag('dcc:file'):
+                                        if getattr(image, 'fileName', None):
+                                            with tag('dcc:fileName'):
+                                                text(image.fileName)
+                                        if getattr(image, 'mimeType', None):
+                                            with tag('dcc:mimeType'):
+                                                text(image.mimeType)
+                                        if getattr(image, 'base64', None):
+                                            with tag('dcc:dataBase64'):
+                                                base64_lines = image.base64.splitlines()
+                                                doc.asis('\n')
+                                                indent_spaces = 21
+                                                indent_stm = ' ' * indent_spaces
+                                                for line in base64_lines:
+                                                    doc.asis(f"{indent_stm}{line}\n")
+                                                doc.asis(' ' * (indent_spaces - 3))
 
         # MEASUREMENT RESULT 
         with tag('dcc:measurementResults'):
@@ -494,26 +496,29 @@ def generate_xml(dcc, table_data):
                                 for lang in dcc.administrative_data.used_languages:
                                     with tag('dcc:content', lang=lang): text(clean_text(method.method_desc.root.get(lang, ""))) #Multilang
                                 if method.has_formula and method.formula:
-                                    with tag('dcc:formula'):
-                                        with tag('dcc:latex'): text(method.formula.latex or "")
-                                        # with tag('dcc:mathml'): text(method.formula.mathml or "")
+                                    for formula in method.formula:
+                                        with tag('dcc:formula'):
+                                            if formula.latex:
+                                                with tag('dcc:latex'): text(formula.latex)
+                                            # with tag('dcc:mathml'): text(method.formula.mathml or "")
                                 if method.has_image and method.image:
-                                    with tag('dcc:file'):
-                                        if getattr(method.image, 'fileName', None):
-                                            with tag('dcc:fileName'):
-                                                text(method.image.fileName)
-                                        if getattr(method.image, 'mimeType', None):
-                                            with tag('dcc:mimeType'):
-                                                text(method.image.mimeType)         
-                                        if getattr(method.image, 'base64', None):
-                                            with tag('dcc:dataBase64'):
-                                                base64_lines = method.image.base64.splitlines()
-                                                doc.asis('\n')
-                                                indent_spaces = 24
-                                                indent_mth = ' ' * indent_spaces
-                                                for line in base64_lines:
-                                                    doc.asis(f"{indent_mth}{line}\n")
-                                                doc.asis(' ' * (indent_spaces - 4)) 
+                                    for image in method.image:
+                                        with tag('dcc:file'):
+                                            if getattr(image, 'fileName', None):
+                                                with tag('dcc:fileName'):
+                                                    text(image.fileName)
+                                            if getattr(image, 'mimeType', None):
+                                                with tag('dcc:mimeType'):
+                                                    text(image.mimeType)         
+                                            if getattr(image, 'base64', None):
+                                                with tag('dcc:dataBase64'):
+                                                    base64_lines = image.base64.splitlines()
+                                                    doc.asis('\n')
+                                                    indent_spaces = 24
+                                                    indent_mth = ' ' * indent_spaces
+                                                    for line in base64_lines:
+                                                        doc.asis(f"{indent_mth}{line}\n")
+                                                    doc.asis(' ' * (indent_spaces - 4)) 
                                                 
                             with tag('dcc:norm'): text(clean_text(method.norm))
 
@@ -703,15 +708,23 @@ def extract_captions_from_dcc(dcc: schemas.DCCFormCreate):
     
     # Extract method image captions
     for i, method in enumerate(dcc.methods):
-        if method.has_image and method.image and method.image.caption:
-            captions['methods'][i] = method.image.caption
-            logging.info(f"Method {i} caption: {method.image.caption}")
+        if method.has_image and method.image:
+            method_captions = []
+            for img in method.image:
+                if img and hasattr(img, 'caption') and img.caption:
+                    method_captions.append(img.caption)
+            if method_captions:
+                captions['methods'][i] = method_captions
     
     # Extract statement image captions  
     for i, statement in enumerate(dcc.statements):
-        if statement.has_image and statement.image and statement.image.caption:
-            captions['statements'][i] = statement.image.caption
-            logging.info(f"Statement {i} caption: {statement.image.caption}")
+        if statement.has_image and statement.image:
+            statement_captions = []
+            for img in statement.image:
+                if img and hasattr(img, 'caption') and img.caption:
+                    statement_captions.append(img.caption)
+            if statement_captions:
+                captions['statements'][i] = statement_captions
             
     return captions
 
@@ -796,11 +809,25 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
                 "method_desc": method.method_desc.root,
                 "norm": method.norm,
                 "has_formula": method.has_formula,
-                "formula": method.formula.dict() if method.has_formula and method.formula else None,
+                "formula": [],
                 "has_image": method.has_image,
-                "image": method.image.dict() if method.has_image and method.image else None,
+                "image": [],
                 "refType": method.refType
             }
+            if method.has_formula and method.formula:
+                for formula in method.formula:
+                    method_data["formula"].append({
+                        "latex": formula.latex,
+                        # "mathml": formula.mathml
+                    })
+            if method.has_image and method.image:
+                for image in method.image:
+                    method_data["image"].append({
+                        "fileName": image.fileName,
+                        "mimeType": image.mimeType,
+                        "base64": image.base64,
+                        "caption": image.caption if hasattr(image, 'caption') else None
+                    })
             methods_data.append(method_data)
             
         #Results    
@@ -861,14 +888,29 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
  
         statements_data = []
         for stmt in dcc.statements:
-            statements_data.append({
+            statement_data = {
                 "values": stmt.values.root,  
                 "refType": stmt.refType,
                 "has_formula": stmt.has_formula,
-                "formula": stmt.formula.dict() if stmt.has_formula and stmt.formula else None,
+                "formula": [],
                 "has_image": stmt.has_image,
-                "image": stmt.image.dict() if stmt.has_image and stmt.image else None
-            })
+                "image": []
+            }
+            if stmt.has_formula and stmt.formula:
+                for formula in stmt.formula:
+                    statement_data["formula"].append({
+                        "latex": formula.latex,
+                        # "mathml": formula.mathml
+                    })
+            if stmt.has_image and stmt.image:
+                for image in stmt.image:
+                    statement_data["image"].append({
+                        "fileName": image.fileName,
+                        "mimeType": image.mimeType,
+                        "base64": image.base64,
+                        "caption": image.caption if hasattr(image, 'caption') else None
+                    })
+            statements_data.append(statement_data)
 
         if progress_callback:
             progress_callback(40, get_progress_message("saving", language))
