@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Stepper from "@/components/ui/stepper";
 import Administrative from "@/components/administrative";
-import Measurement from "@/components/measurement-electrical";
+import Measurement from "@/components/measurement-temperature";
 import Statements from "@/components/statements";
 import Comment from "@/components/comment";
 import Preview from "@/components/preview";
@@ -166,6 +166,11 @@ const blankTemplate = {
           kolom: {},
           refType: "",
           real_list: "1",
+          column_unit: {
+            prefix: "",
+            unit: "",
+            eksponen: "",
+          },
         },
       ],
       uncertainty: {
@@ -173,6 +178,11 @@ const blankTemplate = {
         probability: "0.95",
         distribution: "",
         real_list: "1",
+        uncertainty_unit: {
+          prefix: "",
+          unit: "",
+          eksponen: "",
+        },
       },
     },
   ],
@@ -441,7 +451,7 @@ const pt25Template = {
       ],
     },
     { // 6
-      method_name: {id: "Koefisien a, b, c", en: "a, b ,c Coefficients"},
+      method_name: {id: "Koefisien a, b, c", en: "a, b, c Coefficients"},
       method_desc: {
         id: "Koefisien-koefisien a_5, b_5, a_7, b_7, dan c_7 diperoleh dari hasil kalibrasi pada arus eksitasi 1 mA: " + 
             "a_5 = -2,930 475 E-04 ; b_5 = 2,563 645 E-04 ; a_7 = -2,717 029 E-04 ; b_7 = -1,586 798 E-05 ; c_7 = 1,043 757 E-06",
@@ -630,16 +640,31 @@ const pt25Template = {
           kolom: {id: "Titik Tetap", en: "Fixed Points"},
           refType: "other",
           real_list: "1",
+          column_unit: {
+            prefix: "",
+            unit: "",
+            eksponen: "",
+          },
         },
         { // 2
           kolom: {id: "Definisi Suhu", en: "Temp. Definitions"},
           refType: "other",
           real_list: "1",
+          column_unit: {
+            prefix: "",
+            unit: "°C",
+            eksponen: "",
+          },
         },
         { // 3
           kolom: {id: "Penunjukkan SPRT", en: "SPRT Indications"},
           refType: "other",
           real_list: "1",
+          column_unit: {
+            prefix: "",
+            unit: "Ω",
+            eksponen: "",
+          },
         },
       ],
       uncertainty: {
@@ -647,6 +672,11 @@ const pt25Template = {
         probability: "0.95",
         distribution: "normal",
         real_list: "1",
+        uncertainty_unit: {
+          prefix: "m",
+          unit: "K",
+          eksponen: "",
+        },
       },
     },
   ],
@@ -988,6 +1018,11 @@ const pt100Template = {
           kolom: {},
           refType: "",
           real_list: "1",
+          column_unit: {
+            prefix: "",
+            unit: "",
+            eksponen: "",
+          },
         },
       ],
       uncertainty: {
@@ -995,6 +1030,11 @@ const pt100Template = {
         probability: "0.95",
         distribution: "",
         real_list: "1",
+        uncertainty_unit: {
+          prefix: "",
+          unit: "",
+          eksponen: "",
+        },
       },
     },
   ],
@@ -1301,7 +1341,7 @@ export default function CreateDCC() {
                   });
                 }
                 if (!col.refType?.trim()) errors.push(`Parameter ${index + 1}, ` + t("kolom") + `${colIndex + 1}: `+ t("refType") + t("required"));
-                if (!col.real_list?.trim()) errors.push(`Parameter ${index + 1}, ` + t("kolom") + `${colIndex + 1}: `+ t("subkolom") + t("required"));
+                // if (!col.unit?.trim()) errors.push(`Parameter ${index + 1}, ` + t("kolom") + `${colIndex + 1}: `+ t("subkolom") + t("required"));
               });
             }
             if (!result.uncertainty?.factor?.trim()) errors.push(`Parameter ${index + 1}: ` + t("factor") + t("required"));
@@ -1534,14 +1574,35 @@ export default function CreateDCC() {
             kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
             real_list: Number(col.real_list) || 1,
             refType: col.refType || "",
+            column_unit: {
+              prefix: col.column_unit?.prefix || "",
+              unit: col.column_unit?.unit || "",
+              eksponen: col.column_unit?.eksponen || "",
+            },
           })),
           uncertainty: result.uncertainty
             ? {
                 factor: result.uncertainty.factor || "0",
                 probability: result.uncertainty.probability || "0",
                 distribution: result.uncertainty.distribution || "",
+                real_list: Number(result.uncertainty.real_list) || 1,
+                uncertainty_unit: {
+                  prefix: result.uncertainty?.uncertainty_unit?.prefix || "",
+                  unit: result.uncertainty?.uncertainty_unit?.unit || "",
+                  eksponen: result.uncertainty?.uncertainty_unit?.eksponen || "",
+                },
               }
-            : { factor: "0", probability: "0", distribution: "" },
+            : { 
+                factor: "0", 
+                probability: "0", 
+                distribution: "",
+                real_list: 1,
+                uncertainty_unit: {
+                  prefix: "",
+                  unit: "",
+                  eksponen: "",
+                },
+              },
         })),
         excel: fileName,
       };
@@ -1694,14 +1755,34 @@ export default function CreateDCC() {
         kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
         real_list: Number(col.real_list) || 1,
         refType: col.refType || "",
+        column_unit: {
+          prefix: col.column_unit?.prefix || "",
+          unit: col.column_unit?.unit || "",
+          eksponen: col.column_unit?.eksponen || "",
+        },
       })),
       uncertainty: result.uncertainty
         ? {
             factor: result.uncertainty.factor || "0",
             probability: result.uncertainty.probability || "0",
-            distribution: result.uncertainty.distribution || "",
+            real_list: Number(result.uncertainty.real_list) || 1,
+            uncertainty_unit: {
+              prefix: result.uncertainty?.uncertainty_unit?.prefix || "",
+              unit: result.uncertainty?.uncertainty_unit?.unit || "",
+              eksponen: result.uncertainty?.uncertainty_unit?.eksponen || "",
+            },
           }
-        : { factor: "0", probability: "0", distribution: "" },
+        : { 
+            factor: "0", 
+            probability: "0", 
+            distribution: "",
+            real_list: 1,
+            uncertainty_unit: {
+              prefix: "",
+              unit: "",
+              eksponen: "",
+            },
+          },
     })),
     excel: fileName,
   };

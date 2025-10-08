@@ -19,7 +19,7 @@ import {
   Control,
 } from "react-hook-form";
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
-import { z, ZodNumberCheck } from "zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -69,7 +69,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
+import { getUnits, getPrefixes } from "@/utils/prefix-unit";
 
 declare global {
   interface Window {
@@ -77,16 +78,25 @@ declare global {
   }
 }
 
+interface UnitDetail {
+  prefix?: string;
+  unit: string;
+  eksponen?: string;
+}
+
 interface Uncertainty {
   factor: string;
   probability: string;
   distribution: string;
+  real_list: string;
+  uncertainty_unit: UnitDetail;
 }
 
 interface Column {
   kolom: Record<string, string>;
   refType: string;
   real_list: string;
+  column_unit: UnitDetail;
 }
 
 interface Result {
@@ -140,6 +150,11 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
 }) => {
   const [distribution, setDistribution] = useState<string>("");
 
+  const prefixes = useMemo(() => getPrefixes(t), [t]);
+  const units = useMemo(() => getUnits(t), [t]);
+
+  const { setValue } = useFormContext();
+
   return (
     <Card id="uncertainty" className="border shadow">
       <CardHeader>
@@ -148,101 +163,245 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
           {t("ketidakpastian_desc")}
         </p>
       </CardHeader>
-      <CardContent className="grid grid-row md:grid-cols-3 gap-2">
-        <div id="factor" className="grid gap-1">
-          <FormLabel>{t("factor")}</FormLabel>
-          <FormField
-            control={control}
-            name={`results.${resultIndex}.uncertainty.factor`}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    {...field}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*\.?\d{0,2}$/.test(value)) {
-                        field.onChange(e);
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div id="probability" className="grid gap-1">
-          <FormLabel>{t("probability")}</FormLabel>
-          <FormField
-            control={control}
-            name={`results.${resultIndex}.uncertainty.probability`}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="1"
-                    step={"0.01"}
-                    {...field}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (/^\d*\.?\d{0,2}$/.test(value)) {
-                        field.onChange(e);
-                      }
-                    }}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div id="distribution" className="grid gap-1">
-          <FormLabel>{t("distribution")}</FormLabel>
-          <FormField
-            control={control}
-            name={`results.${resultIndex}.uncertainty.distribution`}
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
+      <CardContent className="grid gap-4">
+        <div id="uncertainty_unit">
+          <FormLabel>{t("satuan")}</FormLabel>
+          <div className="grid grid-row md:grid-cols-3 gap-2">
+            <div id="prefix">
+              <FormField
+                control={control}
+                name={`results.${resultIndex}.uncertainty.uncertainty_unit.prefix`}
+                render={({ field }) => (
                   <FormItem>
-                    <Select
-                      onValueChange={(value) => {
-                        setDistribution(value);
-                        field.onChange(value);
-                      }}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="segiempat">{t("segiempat")}</SelectItem>
-                        <SelectItem value="segitiga">{t("segitiga")}</SelectItem>
-                        <SelectItem value="other">{t("other")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {distribution === "other" && (
-                      <Input
-                        placeholder={`${t("other_distribution")}`}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        className="mt-2"
-                      />
-                    )}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="w-full justify-between"
+                          >
+                            {field.value
+                              ? (prefixes.find(
+                                  (p) => p.symbol === field.value
+                                )?.symbol)
+                              : (
+                                  <span className="text-muted-foreground">{t("prefix")}</span>
+                                )}
+                            <ChevronsUpDown className="opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                        <Command>
+                          <CommandInput className="h-9" />
+                          <CommandList>
+                            <CommandGroup>
+                              {prefixes.map((prefix) => (
+                                <CommandItem
+                                  key={prefix.value}
+                                  value={`${prefix.key} ${prefix.symbol}`}
+                                  onSelect={() => {
+                                    setValue(
+                                      `results.${resultIndex}.uncertainty.uncertainty_unit.prefix`,
+                                      prefix.symbol
+                                    );
+                                  }}
+                                >
+                                  {`${prefix.key} (${prefix.symbol})`}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                )}
+              />
+            </div>
+            <div id="unit">
+              <FormField
+                control={control}
+                name={`results.${resultIndex}.uncertainty.uncertainty_unit.unit`}
+                render={({ field }) => (
+                  <FormItem>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className="w-full justify-between"
+                          >
+                            {field.value ? (
+                              units.find(
+                                (p) => p.symbol === field.value
+                              )?.symbol
+                            ) : (
+                              <span className="text-muted-foreground">
+                                {t("satuan")}
+                                <span className="text-red-600">
+                                  {" "}
+                                  *
+                                </span>
+                              </span>
+                            )}
+                            <ChevronsUpDown className="opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                        <Command>
+                          <CommandInput className="h-9" />
+                          <CommandList>
+                            <CommandGroup>
+                              {units.map((unit) => (
+                                <CommandItem
+                                  key={unit.value}
+                                  value={`${unit.key} ${unit.symbol}`}
+                                  onSelect={() => {
+                                    setValue(
+                                      `results.${resultIndex}.uncertainty.uncertainty_unit.unit`,
+                                      unit.symbol
+                                    );
+                                  }}
+                                >
+                                  {`${unit.key} (${unit.symbol})`}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div id="eksponen">
+              <FormField
+                control={control}
+                name={`results.${resultIndex}.uncertainty.uncertainty_unit.eksponen`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        placeholder={t("eksponen")}
+                        value={field.value}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value);
+                        }}
+                        type="number"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="grid grid-row md:grid-cols-3 gap-2">
+          <div id="factor" className="grid gap-1">
+            <FormLabel>{t("factor")}</FormLabel>
+            <FormField
+              control={control}
+              name={`results.${resultIndex}.uncertainty.factor`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*\.?\d{0,2}$/.test(value)) {
+                          field.onChange(e);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div id="probability" className="grid gap-1">
+            <FormLabel>{t("probability")}</FormLabel>
+            <FormField
+              control={control}
+              name={`results.${resultIndex}.uncertainty.probability`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="1"
+                      step={"0.01"}
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*\.?\d{0,2}$/.test(value)) {
+                          field.onChange(e);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div id="distribution" className="grid gap-1">
+            <FormLabel>{t("distribution")}</FormLabel>
+            <FormField
+              control={control}
+              name={`results.${resultIndex}.uncertainty.distribution`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <FormItem>
+                      <Select
+                        onValueChange={(value) => {
+                          setDistribution(value);
+                          field.onChange(value);
+                        }}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="normal">Normal</SelectItem>
+                          <SelectItem value="segiempat">{t("segiempat")}</SelectItem>
+                          <SelectItem value="segitiga">{t("segitiga")}</SelectItem>
+                          <SelectItem value="other">{t("other")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {distribution === "other" && (
+                        <Input
+                          placeholder={`${t("other_distribution")}`}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          className="mt-2"
+                        />
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -255,7 +414,7 @@ const Columns = ({
   createMultilangObject,
   validLanguages,
 }: ColumnsProps) => {
-  const { control } = useFormContext();
+  const { control, setValue } = useFormContext();
 
   const {
     fields: columnFields,
@@ -274,8 +433,13 @@ const Columns = ({
 
     appendColumn({
       kolom: createMultilangObject(currentLanguages),
-      real_list: "1",
       refType: "",
+      real_list: "1",
+      column_unit: {
+        prefix: "",
+        unit: "",
+        eksponen: "",
+      },
     });
   }, [appendColumn, createMultilangObject, usedLanguages]);
 
@@ -290,6 +454,9 @@ const Columns = ({
   useEffect(() => {
     fetchLanguages().then(setLanguages);
   }, []);
+
+  const prefixes = useMemo(() => getPrefixes(t), [t]);
+  const units = useMemo(() => getUnits(t), [t]);
 
   return (
     <div id="columns" className="grid grid-row md:grid-cols-2 gap-4">
@@ -354,85 +521,209 @@ const Columns = ({
                 )}
               </div>
             </div>
-            
-            <div className="grid grid-row md:grid-cols-2 gap-1">
-              <div id="refType">
-                <FormLabel>{t("refType")}</FormLabel>
-                <FormField
-                  control={control}
-                  name={`results.${resultIndex}.columns.${columnIndex}.refType`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="whitespace-normal">
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem
-                            value="basic_measuredValue"
-                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                          >
-                            {t("basic_measuredValue")}
-                          </SelectItem>
-                          <SelectItem
-                            value="basic_nominalValue"
-                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                          >
-                            {t("basic_nominalValue")}
-                          </SelectItem>
-                          <SelectItem
-                            value="basic_referenceValue"
-                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                          >
-                            {t("basic_referenceValue")}
-                          </SelectItem>
-                          <SelectItem
-                            value="basic_measurementError_error"
-                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                          >
-                            {t("basic_measurementError_error")}
-                          </SelectItem>
-                          <SelectItem
-                            value="basic_measurementError_correction"
-                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                          >
-                            {t("basic_measurementError_correction")}
-                          </SelectItem>
-                          <SelectItem
-                            value="other"
-                            className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                          >
-                            {t("other")}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
 
-              <div id="realList">
-                <FormLabel>{t("subkolom")}</FormLabel>
-                <FormField
-                  control={control}
-                  name={`results.${resultIndex}.columns.${columnIndex}.real_list`}
-                  render={({ field }) => (
-                    <FormItem>
+            <div id="refType">
+              <FormLabel>{t("refType")}</FormLabel>
+              <FormField
+                control={control}
+                name={`results.${resultIndex}.columns.${columnIndex}.refType`}
+                render={({ field }) => (
+                  <FormItem>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <FormControl>
-                        <Input type="number" min="1" {...field} />
+                        <SelectTrigger className="whitespace-normal">
+                          <SelectValue />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <SelectContent>
+                        <SelectItem
+                          value="basic_measuredValue"
+                          className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                        >
+                          {t("basic_measuredValue")}
+                        </SelectItem>
+                        <SelectItem
+                          value="basic_nominalValue"
+                          className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                        >
+                          {t("basic_nominalValue")}
+                        </SelectItem>
+                        <SelectItem
+                          value="basic_referenceValue"
+                          className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                        >
+                          {t("basic_referenceValue")}
+                        </SelectItem>
+                        <SelectItem
+                          value="basic_measurementError_error"
+                          className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                        >
+                          {t("basic_measurementError_error")}
+                        </SelectItem>
+                        <SelectItem
+                          value="basic_measurementError_correction"
+                          className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                        >
+                          {t("basic_measurementError_correction")}
+                        </SelectItem>
+                        <SelectItem
+                          value="other"
+                          className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                        >
+                          {t("other")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div id="column_unit">
+              <FormLabel>{t("satuan")}</FormLabel>
+              <div className="grid grid-row md:grid-cols-3 gap-1">
+                <div id="prefix">
+                  <FormField
+                    control={control}
+                    name={`results.${resultIndex}.columns.${columnIndex}.column_unit.prefix`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className="w-full justify-between"
+                              >
+                                {field.value
+                                  ? prefixes.find(
+                                      (p) => p.symbol === field.value
+                                    )?.symbol
+                                  : (
+                                      <span className="text-muted-foreground">{t("prefix")}</span>
+                                    )}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                            <Command>
+                              <CommandInput className="h-9" />
+                              <CommandList>
+                                <CommandGroup>
+                                  {prefixes.map((prefix) => (
+                                    <CommandItem
+                                      key={prefix.value}
+                                      value={`${prefix.key} ${prefix.symbol}`}
+                                      onSelect={() => {
+                                        setValue(
+                                          `results.${resultIndex}.columns.${columnIndex}.column_unit.prefix`,
+                                          prefix.symbol
+                                        );
+                                      }}
+                                    >
+                                      {`${prefix.key} (${prefix.symbol})`}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div id="unit">
+                  <FormField
+                    control={control}
+                    name={`results.${resultIndex}.columns.${columnIndex}.column_unit.unit`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className="w-full justify-between"
+                              >
+                                {field.value ? (
+                                  units.find(
+                                    (p) => p.symbol === field.value
+                                  )?.symbol
+                                ) : (
+                                  <span className="text-muted-foreground">
+                                    {t("satuan")}
+                                    <span className="text-red-600">
+                                      {" "}
+                                      *
+                                    </span>
+                                  </span>
+                                )}
+                                <ChevronsUpDown className="opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                            <Command>
+                              <CommandInput className="h-9" />
+                              <CommandList>
+                                <CommandGroup>
+                                  {units.map((unit) => (
+                                    <CommandItem
+                                      key={unit.value}
+                                      value={`${unit.key} ${unit.symbol}`}
+                                      onSelect={() => {
+                                        setValue(
+                                          `results.${resultIndex}.columns.${columnIndex}.column_unit.unit`,
+                                          unit.symbol
+                                        );
+                                      }}
+                                    >
+                                      {`${unit.key} (${unit.symbol})`}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div id="eksponen">
+                  <FormField
+                    control={control}
+                    name={`results.${resultIndex}.columns.${columnIndex}.column_unit.eksponen`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            placeholder={t("eksponen")}
+                            value={field.value}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              field.onChange(value);
+                            }}
+                            type="number"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-            </div> 
+            </div>
           </CardContent>
         </Card>
       ))}
@@ -992,22 +1283,20 @@ export default function Measurement({
             norm: z.string().min(1, { message: t("input_required") }),
             refType: z.string().min(1, { message: t("input_required") }),
             has_formula: z.boolean(),
-            formula: z.array(
-                z.object({
-                  latex: z.string().optional(),
-                  mathml: z.string().optional(),
-                })
-              )
+            formula: z
+              .object({
+                latex: z.string().optional(),
+                mathml: z.string().optional(),
+              })
               .optional(),
             has_image: z.boolean(),
-            image: z.array(
-                z.object({
-                  fileName: z.any().optional(),
-                  caption: z.string().optional(),
-                  mimeType: z.string().optional(),
-                  base64: z.string().optional(),
-                })
-              )
+            image: z
+              .object({
+                fileName: z.any().optional(),
+                caption: z.string().optional(),
+                mimeType: z.string().optional(),
+                base64: z.string().optional(),
+              })
               .optional(),
           })
         ).min(1, { message: t("input_required") }),
@@ -1076,13 +1365,22 @@ export default function Measurement({
                   message: t("input_required"),
                 }),
                 refType: z.string().min(1, { message: t("input_required") }),
-                real_list: z.string().min(1, { message: t("input_required") }),
+                column_unit: z.object({
+                  prefix: z.string().optional(),
+                  unit: z.string().optional(),
+                  eksponen: z.string().optional(),
+                }),
               })
             ).min(1, { message: t("input_required") }),
             uncertainty: z.object({
               factor: z.string().min(1, { message: t("input_required") }),
               probability: z.string().min(1, { message: t("input_required") }),
               distribution: z.string().min(1, { message: t("input_required") }),
+              uncertainty_unit: z.object({
+                prefix: z.string().optional(),
+                unit: z.string().min(1, { message: t("input_required") }),
+                eksponen: z.string().optional(),
+              }),
             }),
           })
         ).min(1, { message: t("input_required") }),
@@ -1151,17 +1449,16 @@ export default function Measurement({
   const insertSymbol = (
     latex: string,
     methodIndex: number,
-    formulaIndex: number,
     event?: React.MouseEvent<HTMLButtonElement>
   ) => {
     event?.preventDefault();
     event?.stopPropagation();
 
     const currentFormula =
-      form.getValues(`methods.${methodIndex}.formula.${formulaIndex}.latex`) || "";
+      form.getValues(`methods.${methodIndex}.formula.latex`) || "";
     const updatedFormula = currentFormula + latex;
 
-    form.setValue(`methods.${methodIndex}.formula.${formulaIndex}.latex`, updatedFormula);
+    form.setValue(`methods.${methodIndex}.formula.latex`, updatedFormula);
   };
 
   useEffect(() => {
@@ -1173,7 +1470,7 @@ export default function Measurement({
         const index = Number(match[1]);
         const hasFormula = value?.methods?.[index]?.has_formula;
         if (!hasFormula) {
-          form.setValue(`methods.${index}.formula`, []);
+          form.setValue(`methods.${index}.formula`, "");
         }
       }
     });
@@ -1247,8 +1544,7 @@ export default function Measurement({
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
     isImageUpload: boolean, // true jika upload gambar, false jika upload Excel
-    methodIndex?: number, // untuk gambar, digunakan untuk mengetahui indeks metode
-    imageIndex?: ZodNumberCheck
+    methodIndex?: number // untuk gambar, digunakan untuk mengetahui indeks metode
   ) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
@@ -1278,12 +1574,12 @@ export default function Measurement({
           // Store file information (name and mimeType) in the form
           if (methodIndex !== undefined) {
             form.setValue(
-              `methods.${methodIndex}.image.${imageIndex}.fileName`,
+              `methods.${methodIndex}.image.fileName`,
               result.filename // Store the file name after uploading
             );
 
             form.setValue(
-              `methods.${methodIndex}.image.${imageIndex}.mimeType`,
+              `methods.${methodIndex}.image.mimeType`,
               result.mimeType // Store the mimeType
             );
 
@@ -1296,7 +1592,7 @@ export default function Measurement({
 
               // Store base64 image string in the form for preview
               form.setValue(
-                `methods.${methodIndex}.image.${imageIndex}.base64`,
+                `methods.${methodIndex}.image.base64`,
                 base64WithoutPrefix
               );
             };
@@ -1360,107 +1656,8 @@ export default function Measurement({
     fetchLanguages().then(setLanguages);
   }, []);
 
-  const prefixes = [
-    { key: t("yocto"), symbol: "y", value: "\\yocto" },
-    { key: "zepto", symbol: "z", value: "\\zepto" },
-    { key: "atto", symbol: "a", value: "\\atto" },
-    { key: "femto", symbol: "f", value: "\\femto" },
-    { key: t("pico"), symbol: "p", value: "\\pico" },
-    { key: "nano", symbol: "n", value: "\\nano" },
-    { key: t("micro"), symbol: "μ", value: "\\micro" },
-    { key: t("milli"), symbol: "m", value: "\\milli" },
-    { key: t("centi"), symbol: "c", value: "\\centi" },
-    { key: t("deci"), symbol: "d", value: "\\deci" },
-    { key: t("deca"), symbol: "da", value: "\\deca" },
-    { key: t("hecto"), symbol: "h", value: "\\hecto" },
-    { key: "kilo", symbol: "k", value: "\\kilo" },
-    { key: "mega", symbol: "M", value: "\\mega" },
-    { key: "giga", symbol: "G", value: "\\giga" },
-    { key: "tera", symbol: "T", value: "\\tera" },
-    { key: "peta", symbol: "P", value: "\\peta" },
-    { key: t("exa"), symbol: "E", value: "\\exa" },
-    { key: "zetta", symbol: "Z", value: "\\zetta" },
-    { key: "yotta", symbol: "Y", value: "\\yotta" },
-    { key: "ronna", symbol: "R", value: "\\ronna" },
-    { key: "quetta", symbol: "Q", value: "\\quetta" },
-    { key: "kibi", symbol: "Ki", value: "\\kibi" },
-    { key: "mebi", symbol: "Mi", value: "\\mebi" },
-    { key: "gibi", symbol: "Gi", value: "\\gibi" },
-    { key: "tebi", symbol: "Ti", value: "\\tebi" },
-    { key: "pebi", symbol: "Pi", value: "\\pebi" },
-    { key: t("exbi"), symbol: "Ei", value: "\\exbi" },
-    { key: "zebi", symbol: "Zi", value: "\\zebi" },
-    { key: "yobi", symbol: "Yi", value: "\\yobi" },
-  ];
-
-  const units = [
-    { key: t("degreeCelsius"), symbol: "°C", value: "\\degreecelsius" },
-    { key: t("percent"), symbol: "%", value: "\\percent" },
-    { key: t("metre"), symbol: "m", value: "\\metre" },
-    { key: "kilogram", symbol: "kg", value: "\\kilogram" },
-    { key: t("second"), symbol: "s", value: "\\second" },
-    { key: t("ampere"), symbol: "A", value: "\\ampere" },
-    { key: "kelvin", symbol: "K", value: "\\kelvin" },
-    { key: t("mole"), symbol: "mol", value: "\\mole" },
-    { key: t("candela"), symbol: "cd", value: "\\candela" },
-    { key: t("one"), symbol: "1", value: "\\one" },
-    { key: t("day"), symbol: "d", value: "\\day" },
-    { key: t("hour"), symbol: "h", value: "\\hour" },
-    { key: t("minute"), symbol: "min", value: "\\minute" },
-    { key: t("degree"), symbol: "°", value: "\\degree" },
-    { key: t("arcminute"), symbol: "'", value: "\\arcminute" },
-    { key: t("arcsecond"), symbol: "”", value: "\\arcsecond" },
-    { key: "gram", symbol: "g", value: "\\gram" },
-    { key: "radian", symbol: "rad", value: "\\radian" },
-    { key: "steradian", symbol: "sr", value: "\\steradian" },
-    { key: "hertz", symbol: "Hz", value: "\\hertz" },
-    { key: "newton", symbol: "N", value: "\\newton" },
-    { key: "pascal", symbol: "Pa", value: "\\pascal" },
-    { key: "joule", symbol: "J", value: "\\joule" },
-    { key: "watt", symbol: "W", value: "\\watt" },
-    { key: "coulomb", symbol: "C", value: "\\coulomb" },
-    { key: "volt", symbol: "V", value: "\\volt" },
-    { key: "farad", symbol: "F", value: "\\farad" },
-    { key: "ohm", symbol: "Ω", value: "\\ohm" },
-    { key: "siemens", symbol: "S", value: "\\siemens" },
-    { key: "weber", symbol: "Wb", value: "\\weber" },
-    { key: "tesla", symbol: "T", value: "\\tesla" },
-    { key: "henry", symbol: "H", value: "\\henry" },
-    { key: "lumen", symbol: "lm", value: "\\lumen" },
-    { key: "lux", symbol: "lx", value: "\\lux" },
-    { key: "becquerel", symbol: "Bq", value: "\\becquerel" },
-    { key: "sievert", symbol: "Sv", value: "\\sievert" },
-    { key: "gray", symbol: "Gy", value: "\\gray" },
-    { key: "katal", symbol: "kat", value: "\\katal" },
-    { key: "bit", symbol: "bit", value: "\\bit" },
-    { key: t("byte"), symbol: "B", value: "\\byte" },
-    { key: "ppm", symbol: "ppm", value: "\\ppm" },
-    { key: t("hectare"), symbol: "ha", value: "\\hectare" },
-    { key: t("litre"), symbol: "l", value: "\\litre" },
-    { key: t("tonne"), symbol: "t", value: "\\tonne" },
-    { key: t("electronvolt"), symbol: "eV", value: "\\electronvolt" },
-    { key: "dalton", symbol: "Da", value: "\\dalton" },
-    { key: t("astronomicalUnit"), symbol: "au", value: "\\astronomicalunit" },
-    { key: "neper", symbol: "Np", value: "\\neper" },
-    { key: "bel", symbol: "B", value: "\\bel" },
-    { key: t("decibel"), symbol: "dB", value: "\\decibel" },
-    { key: "bar", symbol: "bar", value: "\\bar" },
-    { key: t("mmHg"), symbol: "mmHg", value: "\\mmHg" },
-    { key: "angstrom", symbol: "Å", value: "\\angstrom" },
-    { key: t("nauticalmile"), symbol: "M", value: "\\nauticalmile" },
-    { key: "barn", symbol: "b", value: "\\barn" },
-    { key: "knot", symbol: "kn", value: "\\knot" },
-    { key: "erg", symbol: "erg", value: "\\erg" },
-    { key: "dyne", symbol: "dyn", value: "\\dyne" },
-    { key: "poise", symbol: "P", value: "\\poise" },
-    { key: "stokes", symbol: "ST", value: "\\stokes" },
-    { key: "stilb", symbol: "sb", value: "\\stilb" },
-    { key: "phot", symbol: "ph", value: "\\phot" },
-    { key: "gal", symbol: "Gal", value: "\\gal" },
-    { key: "maxwell", symbol: "Mx", value: "\\maxwell" },
-    { key: "gauss", symbol: "G", value: "\\gauss" },
-    { key: "œrsted", symbol: "Oe", value: "\\oersted" },
-  ];
+  const prefixes = useMemo(() => getPrefixes(t), [t]);
+  const units = useMemo(() => getUnits(t), [t]);
 
   const handleRemoveMethod = useCallback(
     (index: number) => {
@@ -1479,20 +1676,16 @@ export default function Measurement({
       method_desc: createMultilangObject(currentLanguages),
       norm: "",
       has_formula: false,
-      formula: [
-        {
-          latex: "",
-          mathml: "",
-        }
-      ],
-      image: [
-        {
-          fileName: "",
-          caption: "",
-          base64: "",
-          mimeType: "",
-        }
-      ],
+      formula: {
+        latex: "",
+        mathml: "",
+      },
+      image: {
+        fileName: "",
+        caption: "",
+        base64: "",
+        mimeType: "",
+      },
     });
   }, [appendMethod, createMultilangObject, usedLanguages]);
 
@@ -1571,6 +1764,11 @@ export default function Measurement({
           kolom: createMultilangObject(currentLanguages),
           refType: "",
           real_list: "1",
+          column_unit: {
+            prefix: "",
+            unit: "",
+            eksponen: "",
+          },
         },
       ],
       // Tambahkan inisialisasi uncertainty
@@ -1578,6 +1776,12 @@ export default function Measurement({
         factor: "",
         probability: "",
         distribution: "",
+        real_list: "1",
+        uncertainty_unit: {
+          prefix: "",
+          unit: "",
+          eksponen: "",
+        },
       },
     });
   }, [appendResult, createMultilangObject, usedLanguages]);
@@ -1599,7 +1803,7 @@ export default function Measurement({
     try {
       const cleanedMethods = modifiedFormData.methods.map((method, index) => {
         if (!method.has_formula) {
-          form.setValue(`methods.${index}.formula`, []);
+          form.setValue(`methods.${index}.formula`, "");
           const { formula, ...rest } = method;
           return rest;
         }
@@ -2184,6 +2388,7 @@ export default function Measurement({
                                         `\\tothe{${value}}`
                                       ); // update eksponen_pdf
                                     }}
+                                    type="number"
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -2357,6 +2562,7 @@ export default function Measurement({
                                         `\\tothe{${value}}`
                                       ); // update eksponen_pdf
                                     }}
+                                    type="number"
                                   />
                                 </FormControl>
                                 <FormMessage />
