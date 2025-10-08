@@ -118,11 +118,13 @@ def save_image_and_get_base64(upload_file):
         return '', ''
 
 # Memproses data Excel dan mengembalikan hasil terstruktur untuk XML
-def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> dict:
+def read_excel_tables(excel_path: str, sheet_name: str, results_data: list, kepala_peran: str = "") -> dict:
     """Membaca tabel dari file Excel dengan struktur sesuai kebutuhan XML"""
     pythoncom.CoInitialize()
     excel = None
     wb = None
+
+    use_input_units = "Suhu" in kepala_peran
     
     try:
         excel = win32.Dispatch("Excel.Application")
@@ -214,10 +216,14 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list) -> d
                             numbers.append(normalized_value)
                             has_data = True
                             
-                            # Ambil satuan dari kolom sebelah (juga menggunakan .Text)
-                            unit_text = ws.Cells(row, col + 1).Text.strip()
-                            unit = unit_text.replace(".", "") if unit_text else ""
-                            units.append(d_si(unit))
+                            # Ambil unit dari Excel atau dari input
+                            if use_input_units:
+                                units.append("")  # Unit akan diambil dari input
+                            else:
+                                # Ambil satuan dari kolom sebelah (juga menggunakan .Text)
+                                unit_text = ws.Cells(row, col + 1).Text.strip()
+                                unit = unit_text.replace(".", "") if unit_text else ""
+                                units.append(d_si(unit))
                             
                         except ValueError:
                             # Bukan angka, skip
@@ -271,433 +277,447 @@ def invert_number_str(n: str) -> str:
 
 #XML
 def generate_xml(dcc, table_data):
-        #Generate XML for DCC
-        doc, tag, text = Doc().tagtext() 
+    #Generate XML for DCC
+    doc, tag, text = Doc().tagtext() 
 
-        doc.asis('<?xml version="1.0" encoding="UTF-8"?>')
-        doc.asis('<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" schemaVersion="3.3.0">')
+    doc.asis('<?xml version="1.0" encoding="UTF-8"?>')
+    doc.asis('<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" schemaVersion="3.3.0">')
+    
+    # Administrative Data section
+    with tag('dcc:administrativeData'):
         
-        # Administrative Data section
-        with tag('dcc:administrativeData'):
-            
-            #SOFTWARE 
-            with tag('dcc:dccSoftware'): 
-                with tag('dcc:software'): 
-                    with tag('dcc:name'): 
-                        with tag('dcc:content'): text(clean_text(dcc.software))
-                    with tag('dcc:release'): text(clean_text(dcc.version))
-            
-            #DEFINISI REFTYPE        
-            with tag('dcc:refTypeDefinitions'):
-                with tag('dcc:refTypeDefinition'):
-                    with tag('dcc:name'):
-                        with tag('dcc:content', lang="de"): text("Namensraum für Querschnitts-RefTypes")
-                        with tag('dcc:content', lang="en"): text("Namespace for Cross-Community RefTypes")
-                    with tag('dcc:description'):
-                        with tag('dcc:content', lang="de"): text("Der Namensraum 'basic' beinhaltet allgemeine RefTypes die messgrößenübergreifend genutzt werden.")
-                        with tag('dcc:content', lang="en"): text("The \"basic\" namespace contains RefTypes common for multiple communities.")
-                    with tag('dcc:namespace'): text('basic')
-                    with tag('dcc:link'): text('https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=2')
-
-                with tag('dcc:refTypeDefinition'):
-                    with tag('dcc:name'):
-                        with tag('dcc:content', lang="de"): text("Namensraum für mathematische RefTypes")
-                        with tag('dcc:content', lang="en"): text("Namespace for mathematical RefTypes")
-                    with tag('dcc:description'):
-                        with tag('dcc:content', lang="de"): text("Der Namensraum 'math' beinhaltet RefTypes mathematischer Operationen.")
-                        with tag('dcc:content', lang="en"): text("The \"math\" namespace contains RefTypes for mathematical operations.")
-                    with tag('dcc:namespace'): text('math')
-                    with tag('dcc:link'): text('https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=292')
-                        
-            #CORE DATA        
-            with tag('dcc:coreData'): 
-                with tag('dcc:countryCodeISO3166_1'): text(dcc.administrative_data.country_code)
-                for lang in dcc.administrative_data.used_languages:
-                    with tag('dcc:usedLangCodeISO639_1'): text(lang)
-                for lang in dcc.administrative_data.mandatory_languages:
-                    with tag('dcc:mandatoryLangCodeISO639_1'): text(lang)
-                with tag('dcc:uniqueIdentifier'): text(clean_text(dcc.administrative_data.sertifikat))
-                with tag('dcc:identifications'):
-                    with tag('dcc:identification', refType='basic_orderNumber'):
-                        with tag('dcc:issuer'): text(clean_text(dcc.administrative_data.core_issuer))
-                        with tag('dcc:value'): text(clean_text(dcc.administrative_data.order))
-                        with tag('dcc:name'):
-                            with tag('dcc:content'): text('Nomor Order')
-                with tag('dcc:beginPerformanceDate'): text(dcc.Measurement_TimeLine.tgl_mulai)
-                with tag('dcc:endPerformanceDate'): text(dcc.Measurement_TimeLine.tgl_akhir)
-                with tag('dcc:performanceLocation'): text(clean_text(dcc.administrative_data.tempat))
-                with tag('dcc:issueDate'): text(dcc.Measurement_TimeLine.tgl_pengesahan)
-            
-            #ITEMS    
-            with tag("dcc:items"):
-                for obj in dcc.objects:
-                    with tag("dcc:item"):
-                        with tag("dcc:name"):
-                            for lang in dcc.administrative_data.used_languages:
-                                with tag("dcc:content", lang=lang): text(clean_text(obj.jenis.root.get(lang, "")))
-                        with tag("dcc:manufacturer"):
-                            with tag("dcc:name"):
-                                with tag('dcc:content'): text(clean_text(obj.merek))
-                        with tag("dcc:model"): text(clean_text(obj.tipe))
-                        with tag("dcc:identifications"):
-                            with tag("dcc:identification", refType='basic_serialNumber'):
-                                with tag("dcc:issuer"): text(clean_text(obj.item_issuer))
-                                with tag("dcc:value"): text(clean_text(obj.seri_item))
-                                with tag("dcc:name"):
-                                    for lang in dcc.administrative_data.used_languages:
-                                        with tag("dcc:content", lang=lang): text(clean_text(obj.id_lain.root.get(lang, "")))
-            
-            #MUTLAK                    
-            with tag('dcc:calibrationLaboratory'): 
-                with tag('dcc:calibrationLaboratoryCode'): text('LK-070-IDN')
-                with tag('dcc:contact'): 
-                    with tag('dcc:name'): 
-                        with tag('dcc:content'): text('Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)')
-                    with tag('dcc:eMail'): text('nmi@bsn.go.id')
-                    with tag('dcc:phone'): text('Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833')
-                    with tag('dcc:link'): text('www.bsn.go.id')
-                    with tag('dcc:location'): 
-                        with tag('dcc:city'): text('Tangerang Selatan')
-                        with tag('dcc:countryCode'): text('ID')
-                        with tag('dcc:postCode'): text('15314')
-                        with tag('dcc:state'): text('Banten')
-                        with tag('dcc:street'): text('KST BJ Habibie Setu')
-                        with tag('dcc:streetNo'): text('Gedung 420')
-                # with tag('dcc:cryptElectronicSignature'): pass
-                # with tag('dcc:cryptElectronicTimeStamp'): pass
-                
-            #RESP_PERSON 
-            # Iterasi untuk penyelia
-            with tag('dcc:respPersons'): 
-                for resp in dcc.responsible_persons.pelaksana:
-                    with tag('dcc:respPerson'): 
-                        with tag('dcc:person'): 
-                            with tag('dcc:name'): 
-                                with tag('dcc:content'): text(clean_text(resp.nama_resp))
-                        with tag('dcc:description'): 
-                            # with tag('dcc:name'): 
-                            with tag('dcc:content'): text(clean_text(resp.nip))
-                        with tag('dcc:role'): text(clean_text(resp.peran))
-                        with tag('dcc:mainSigner'): text(int(resp.main_signer))
-                        with tag('dcc:cryptElectronicSignature'): text(int(resp.signature))
-                        with tag('dcc:cryptElectronicTimeStamp'): text(int(resp.timestamp))
-
-                # Iterasi untuk penyelia
-                for resp in dcc.responsible_persons.penyelia:
-                    with tag('dcc:respPerson'): 
-                        with tag('dcc:person'): 
-                            with tag('dcc:name'): 
-                                with tag('dcc:content'): text(resp.nama_resp)
-                        with tag('dcc:description'): 
-                            # with tag('dcc:name'): 
-                            with tag('dcc:content'): text(resp.nip)
-                        with tag('dcc:role'): text(resp.peran)
-                        with tag('dcc:mainSigner'): text(int(resp.main_signer))
-                        with tag('dcc:cryptElectronicSignature'): text(int(resp.signature))
-                        with tag('dcc:cryptElectronicTimeStamp'): text(int(resp.timestamp))
-
-                # Iterasi untuk kepala laboratorium
-                with tag('dcc:respPerson'): 
-                    with tag('dcc:person'): 
-                        with tag('dcc:name'): 
-                            with tag('dcc:content'): text(dcc.responsible_persons.kepala.nama_resp)
-                    with tag('dcc:description'): 
-                        # with tag('dcc:name'): 
-                        with tag('dcc:content'): text(dcc.responsible_persons.kepala.nip)
-                    with tag('dcc:role'): text(dcc.responsible_persons.kepala.peran)
-                    with tag('dcc:mainSigner'): text(int(dcc.responsible_persons.kepala.main_signer))
-                    with tag('dcc:cryptElectronicSignature'): text(int(dcc.responsible_persons.kepala.signature))
-                    with tag('dcc:cryptElectronicTimeStamp'): text(int(dcc.responsible_persons.kepala.timestamp))
-
-                # Iterasi untuk direktur
-                with tag('dcc:respPerson'): 
-                    with tag('dcc:person'): 
-                        with tag('dcc:name'): 
-                            with tag('dcc:content'): text(dcc.responsible_persons.direktur.nama_resp)
-                    with tag('dcc:description'): 
-                        # with tag('dcc:name'): 
-                        with tag('dcc:content'): text(dcc.responsible_persons.direktur.nip)
-                    with tag('dcc:role'): text(dcc.responsible_persons.direktur.peran)
-                    with tag('dcc:mainSigner'): text(int(dcc.responsible_persons.direktur.main_signer))
-                    with tag('dcc:cryptElectronicSignature'): text(int(dcc.responsible_persons.direktur.signature))
-                    with tag('dcc:cryptElectronicTimeStamp'): text(int(dcc.responsible_persons.direktur.timestamp))
+        #SOFTWARE 
+        with tag('dcc:dccSoftware'): 
+            with tag('dcc:software'): 
+                with tag('dcc:name'): 
+                    with tag('dcc:content'): text(clean_text(dcc.software))
+                with tag('dcc:release'): text(clean_text(dcc.version))
         
-            #owner
-            with tag('dcc:customer'):
+        #DEFINISI REFTYPE        
+        with tag('dcc:refTypeDefinitions'):
+            with tag('dcc:refTypeDefinition'):
                 with tag('dcc:name'):
-                    with tag('dcc:content'): 
-                        text(clean_text(dcc.owner.nama_cust))
-                with tag('dcc:location'):
-                    with tag('dcc:city'):
-                        text(clean_text(dcc.owner.kota_cust))
-                    with tag('dcc:countryCode'):
-                        text(clean_text(dcc.owner.negara_cust))
-                    with tag('dcc:postCode'):
-                        text(clean_text(dcc.owner.pos_cust))
-                    with tag('dcc:state'):
-                        text(clean_text(dcc.owner.state_cust))
-                    with tag('dcc:street'):
-                        text(clean_text(dcc.owner.jalan_cust))
-                    with tag('dcc:streetNo'):
-                        text(clean_text(dcc.owner.no_jalan_cust))                 
+                    with tag('dcc:content', lang="de"): text("Namensraum für Querschnitts-RefTypes")
+                    with tag('dcc:content', lang="en"): text("Namespace for Cross-Community RefTypes")
+                with tag('dcc:description'):
+                    with tag('dcc:content', lang="de"): text("Der Namensraum 'basic' beinhaltet allgemeine RefTypes die messgrößenübergreifend genutzt werden.")
+                    with tag('dcc:content', lang="en"): text("The \"basic\" namespace contains RefTypes common for multiple communities.")
+                with tag('dcc:namespace'): text('basic')
+                with tag('dcc:link'): text('https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=2')
+
+            with tag('dcc:refTypeDefinition'):
+                with tag('dcc:name'):
+                    with tag('dcc:content', lang="de"): text("Namensraum für mathematische RefTypes")
+                    with tag('dcc:content', lang="en"): text("Namespace for mathematical RefTypes")
+                with tag('dcc:description'):
+                    with tag('dcc:content', lang="de"): text("Der Namensraum 'math' beinhaltet RefTypes mathematischer Operationen.")
+                    with tag('dcc:content', lang="en"): text("The \"math\" namespace contains RefTypes for mathematical operations.")
+                with tag('dcc:namespace'): text('math')
+                with tag('dcc:link'): text('https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=292')
+                    
+        #CORE DATA        
+        with tag('dcc:coreData'): 
+            with tag('dcc:countryCodeISO3166_1'): text(dcc.administrative_data.country_code)
+            for lang in dcc.administrative_data.used_languages:
+                with tag('dcc:usedLangCodeISO639_1'): text(lang)
+            for lang in dcc.administrative_data.mandatory_languages:
+                with tag('dcc:mandatoryLangCodeISO639_1'): text(lang)
+            with tag('dcc:uniqueIdentifier'): text(clean_text(dcc.administrative_data.sertifikat))
+            with tag('dcc:identifications'):
+                with tag('dcc:identification', refType='basic_orderNumber'):
+                    with tag('dcc:issuer'): text(clean_text(dcc.administrative_data.core_issuer))
+                    with tag('dcc:value'): text(clean_text(dcc.administrative_data.order))
+                    with tag('dcc:name'):
+                        with tag('dcc:content'): text('Nomor Order')
+            with tag('dcc:beginPerformanceDate'): text(dcc.Measurement_TimeLine.tgl_mulai)
+            with tag('dcc:endPerformanceDate'): text(dcc.Measurement_TimeLine.tgl_akhir)
+            with tag('dcc:performanceLocation'): text(clean_text(dcc.administrative_data.tempat))
+            with tag('dcc:issueDate'): text(dcc.Measurement_TimeLine.tgl_pengesahan)
+        
+        #ITEMS    
+        with tag("dcc:items"):
+            for obj in dcc.objects:
+                with tag("dcc:item"):
+                    with tag("dcc:name"):
+                        for lang in dcc.administrative_data.used_languages:
+                            with tag("dcc:content", lang=lang): text(clean_text(obj.jenis.root.get(lang, "")))
+                    with tag("dcc:manufacturer"):
+                        with tag("dcc:name"):
+                            with tag('dcc:content'): text(clean_text(obj.merek))
+                    with tag("dcc:model"): text(clean_text(obj.tipe))
+                    with tag("dcc:identifications"):
+                        with tag("dcc:identification", refType='basic_serialNumber'):
+                            with tag("dcc:issuer"): text(clean_text(obj.item_issuer))
+                            with tag("dcc:value"): text(clean_text(obj.seri_item))
+                            with tag("dcc:name"):
+                                for lang in dcc.administrative_data.used_languages:
+                                    with tag("dcc:content", lang=lang): text(clean_text(obj.id_lain.root.get(lang, "")))
+        
+        #MUTLAK                    
+        with tag('dcc:calibrationLaboratory'): 
+            with tag('dcc:calibrationLaboratoryCode'): text('LK-070-IDN')
+            with tag('dcc:contact'): 
+                with tag('dcc:name'): 
+                    with tag('dcc:content'): text('Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)')
+                with tag('dcc:eMail'): text('nmi@bsn.go.id')
+                with tag('dcc:phone'): text('Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833')
+                with tag('dcc:link'): text('www.bsn.go.id')
+                with tag('dcc:location'): 
+                    with tag('dcc:city'): text('Tangerang Selatan')
+                    with tag('dcc:countryCode'): text('ID')
+                    with tag('dcc:postCode'): text('15314')
+                    with tag('dcc:state'): text('Banten')
+                    with tag('dcc:street'): text('KST BJ Habibie Setu')
+                    with tag('dcc:streetNo'): text('Gedung 420')
+            # with tag('dcc:cryptElectronicSignature'): pass
+            # with tag('dcc:cryptElectronicTimeStamp'): pass
+            
+        #RESP_PERSON 
+        # Iterasi untuk penyelia
+        with tag('dcc:respPersons'): 
+            for resp in dcc.responsible_persons.pelaksana:
+                with tag('dcc:respPerson'): 
+                    with tag('dcc:person'): 
+                        with tag('dcc:name'): 
+                            with tag('dcc:content'): text(clean_text(resp.nama_resp))
+                    with tag('dcc:description'): 
+                        # with tag('dcc:name'): 
+                        with tag('dcc:content'): text(clean_text(resp.nip))
+                    with tag('dcc:role'): text(clean_text(resp.peran))
+                    with tag('dcc:mainSigner'): text(int(resp.main_signer))
+                    with tag('dcc:cryptElectronicSignature'): text(int(resp.signature))
+                    with tag('dcc:cryptElectronicTimeStamp'): text(int(resp.timestamp))
+
+            # Iterasi untuk penyelia
+            for resp in dcc.responsible_persons.penyelia:
+                with tag('dcc:respPerson'): 
+                    with tag('dcc:person'): 
+                        with tag('dcc:name'): 
+                            with tag('dcc:content'): text(resp.nama_resp)
+                    with tag('dcc:description'): 
+                        # with tag('dcc:name'): 
+                        with tag('dcc:content'): text(resp.nip)
+                    with tag('dcc:role'): text(resp.peran)
+                    with tag('dcc:mainSigner'): text(int(resp.main_signer))
+                    with tag('dcc:cryptElectronicSignature'): text(int(resp.signature))
+                    with tag('dcc:cryptElectronicTimeStamp'): text(int(resp.timestamp))
+
+            # Iterasi untuk kepala laboratorium
+            with tag('dcc:respPerson'): 
+                with tag('dcc:person'): 
+                    with tag('dcc:name'): 
+                        with tag('dcc:content'): text(dcc.responsible_persons.kepala.nama_resp)
+                with tag('dcc:description'): 
+                    # with tag('dcc:name'): 
+                    with tag('dcc:content'): text(dcc.responsible_persons.kepala.nip)
+                with tag('dcc:role'): text(dcc.responsible_persons.kepala.peran)
+                with tag('dcc:mainSigner'): text(int(dcc.responsible_persons.kepala.main_signer))
+                with tag('dcc:cryptElectronicSignature'): text(int(dcc.responsible_persons.kepala.signature))
+                with tag('dcc:cryptElectronicTimeStamp'): text(int(dcc.responsible_persons.kepala.timestamp))
+
+            # Iterasi untuk direktur
+            with tag('dcc:respPerson'): 
+                with tag('dcc:person'): 
+                    with tag('dcc:name'): 
+                        with tag('dcc:content'): text(dcc.responsible_persons.direktur.nama_resp)
+                with tag('dcc:description'): 
+                    # with tag('dcc:name'): 
+                    with tag('dcc:content'): text(dcc.responsible_persons.direktur.nip)
+                with tag('dcc:role'): text(dcc.responsible_persons.direktur.peran)
+                with tag('dcc:mainSigner'): text(int(dcc.responsible_persons.direktur.main_signer))
+                with tag('dcc:cryptElectronicSignature'): text(int(dcc.responsible_persons.direktur.signature))
+                with tag('dcc:cryptElectronicTimeStamp'): text(int(dcc.responsible_persons.direktur.timestamp))
+    
+        #owner
+        with tag('dcc:customer'):
+            with tag('dcc:name'):
+                with tag('dcc:content'): 
+                    text(clean_text(dcc.owner.nama_cust))
+            with tag('dcc:location'):
+                with tag('dcc:city'):
+                    text(clean_text(dcc.owner.kota_cust))
+                with tag('dcc:countryCode'):
+                    text(clean_text(dcc.owner.negara_cust))
+                with tag('dcc:postCode'):
+                    text(clean_text(dcc.owner.pos_cust))
+                with tag('dcc:state'):
+                    text(clean_text(dcc.owner.state_cust))
+                with tag('dcc:street'):
+                    text(clean_text(dcc.owner.jalan_cust))
+                with tag('dcc:streetNo'):
+                    text(clean_text(dcc.owner.no_jalan_cust))                 
+                        
+        # Statements
+        with tag('dcc:statements'):
+            for stmt in dcc.statements:
+                with tag('dcc:statement', **({"refType": stmt.refType} if stmt.refType != "other" else {})):
+                    with tag('dcc:declaration'):
+                        for lang in dcc.administrative_data.used_languages:
+                            with tag('dcc:content', lang=lang): 
+                                text(clean_text(stmt.values.root.get(lang, "") or ""))
                             
-            # Statements
-            with tag('dcc:statements'):
-                for stmt in dcc.statements:
-                    with tag('dcc:statement', **({"refType": stmt.refType} if stmt.refType != "other" else {})):
-                        with tag('dcc:declaration'):
+                        if stmt.has_formula and stmt.formula:
+                            for formula in stmt.formula:
+                                with tag('dcc:formula'):
+                                    if formula.latex:
+                                        with tag('dcc:latex'):
+                                            text(formula.latex)
+                                    # if formula.mathml:
+                                    #     with tag('dcc:mathml'):
+                                    #         text(formula.mathml)
+                        # bagian gambar (jika ada)
+                        if stmt.has_image and stmt.image:
+                            for image in stmt.image:
+                                with tag('dcc:file'):
+                                    if getattr(image, 'fileName', None):
+                                        with tag('dcc:fileName'):
+                                            text(image.fileName)
+                                    if getattr(image, 'mimeType', None):
+                                        with tag('dcc:mimeType'):
+                                            text(image.mimeType)
+                                    if getattr(image, 'base64', None):
+                                        with tag('dcc:dataBase64'):
+                                            base64_lines = image.base64.splitlines()
+                                            doc.asis('\n')
+                                            indent_spaces = 21
+                                            indent_stm = ' ' * indent_spaces
+                                            for line in base64_lines:
+                                                doc.asis(f"{indent_stm}{line}\n")
+                                            doc.asis(' ' * (indent_spaces - 3))
+
+    # MEASUREMENT RESULT 
+    with tag('dcc:measurementResults'):
+        with tag('dcc:measurementResult'):
+            with tag('dcc:name'):
+                with tag('dcc:content'):text('Hasil Kalibrasi / Calibration Results')
+                
+            # Metode
+            with tag('dcc:usedMethods'):
+                for method in dcc.methods:                        
+                    with tag('dcc:usedMethod', **({"refType": method.refType} if method.refType != "other" else {})):
+                        with tag('dcc:name'):
                             for lang in dcc.administrative_data.used_languages:
-                                with tag('dcc:content', lang=lang): 
-                                    text(clean_text(stmt.values.root.get(lang, "") or ""))
-                                
-                            if stmt.has_formula and stmt.formula:
-                                for formula in stmt.formula:
+                                with tag('dcc:content', lang=lang): text(clean_text(method.method_name.root.get(lang, ""))) #Multilang
+                        with tag('dcc:description'):
+                            for lang in dcc.administrative_data.used_languages:
+                                with tag('dcc:content', lang=lang): text(clean_text(method.method_desc.root.get(lang, ""))) #Multilang
+                            if method.has_formula and method.formula:
+                                for formula in method.formula:
                                     with tag('dcc:formula'):
                                         if formula.latex:
-                                            with tag('dcc:latex'):
-                                                text(formula.latex)
-                                        # if formula.mathml:
-                                        #     with tag('dcc:mathml'):
-                                        #         text(formula.mathml)
-                            # bagian gambar (jika ada)
-                            if stmt.has_image and stmt.image:
-                                for image in stmt.image:
+                                            with tag('dcc:latex'): text(formula.latex)
+                                        # with tag('dcc:mathml'): text(method.formula.mathml or "")
+                            if method.has_image and method.image:
+                                for image in method.image:
                                     with tag('dcc:file'):
                                         if getattr(image, 'fileName', None):
                                             with tag('dcc:fileName'):
                                                 text(image.fileName)
                                         if getattr(image, 'mimeType', None):
                                             with tag('dcc:mimeType'):
-                                                text(image.mimeType)
+                                                text(image.mimeType)         
                                         if getattr(image, 'base64', None):
                                             with tag('dcc:dataBase64'):
                                                 base64_lines = image.base64.splitlines()
                                                 doc.asis('\n')
-                                                indent_spaces = 21
-                                                indent_stm = ' ' * indent_spaces
+                                                indent_spaces = 24
+                                                indent_mth = ' ' * indent_spaces
                                                 for line in base64_lines:
-                                                    doc.asis(f"{indent_stm}{line}\n")
-                                                doc.asis(' ' * (indent_spaces - 3))
+                                                    doc.asis(f"{indent_mth}{line}\n")
+                                                doc.asis(' ' * (indent_spaces - 4)) 
+                                            
+                        with tag('dcc:norm'): text(clean_text(method.norm))
 
-        # MEASUREMENT RESULT 
-        with tag('dcc:measurementResults'):
-            with tag('dcc:measurementResult'):
-                with tag('dcc:name'):
-                    with tag('dcc:content'):text('Hasil Kalibrasi / Calibration Results')
-                    
-                # Metode
-                with tag('dcc:usedMethods'):
-                    for method in dcc.methods:                        
-                        with tag('dcc:usedMethod', **({"refType": method.refType} if method.refType != "other" else {})):
+            # Measuring Equipment 
+            with tag('dcc:measuringEquipments'):
+                for equip in dcc.equipments:
+                    with tag('dcc:measuringEquipment', **({"refType": equip.refType} if equip.refType != "other" else {})):
+                        with tag('dcc:name'):
+                            for lang in dcc.administrative_data.used_languages:
+                                with tag('dcc:content', lang=lang): text(clean_text(equip.nama_alat.root.get(lang, ""))) #Multilang
+                        with tag('dcc:manufacturer'):
                             with tag('dcc:name'):
                                 for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(clean_text(method.method_name.root.get(lang, ""))) #Multilang
-                            with tag('dcc:description'):
-                                for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(clean_text(method.method_desc.root.get(lang, ""))) #Multilang
-                                if method.has_formula and method.formula:
-                                    for formula in method.formula:
-                                        with tag('dcc:formula'):
-                                            if formula.latex:
-                                                with tag('dcc:latex'): text(formula.latex)
-                                            # with tag('dcc:mathml'): text(method.formula.mathml or "")
-                                if method.has_image and method.image:
-                                    for image in method.image:
-                                        with tag('dcc:file'):
-                                            if getattr(image, 'fileName', None):
-                                                with tag('dcc:fileName'):
-                                                    text(image.fileName)
-                                            if getattr(image, 'mimeType', None):
-                                                with tag('dcc:mimeType'):
-                                                    text(image.mimeType)         
-                                            if getattr(image, 'base64', None):
-                                                with tag('dcc:dataBase64'):
-                                                    base64_lines = image.base64.splitlines()
-                                                    doc.asis('\n')
-                                                    indent_spaces = 24
-                                                    indent_mth = ' ' * indent_spaces
-                                                    for line in base64_lines:
-                                                        doc.asis(f"{indent_mth}{line}\n")
-                                                    doc.asis(' ' * (indent_spaces - 4)) 
-                                                
-                            with tag('dcc:norm'): text(clean_text(method.norm))
-
-                # Measuring Equipment 
-                with tag('dcc:measuringEquipments'):
-                    for equip in dcc.equipments:
-                        with tag('dcc:measuringEquipment', **({"refType": equip.refType} if equip.refType != "other" else {})):
-                            with tag('dcc:name'):
-                                for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(clean_text(equip.nama_alat.root.get(lang, ""))) #Multilang
-                            with tag('dcc:manufacturer'):
+                                    with tag('dcc:content', lang=lang): text(clean_text(equip.model.root.get(lang, ""))) #Multilang
+                        with tag('dcc:identifications'):
+                            with tag('dcc:identification', refType='basic_serialNumber'):
+                                with tag('dcc:issuer'): text('manufacturer')
+                                with tag('dcc:value'): text(clean_text(equip.seri_measuring))
                                 with tag('dcc:name'):
-                                    for lang in dcc.administrative_data.used_languages:
-                                        with tag('dcc:content', lang=lang): text(clean_text(equip.model.root.get(lang, ""))) #Multilang
-                            with tag('dcc:identifications'):
-                                with tag('dcc:identification', refType='basic_serialNumber'):
-                                    with tag('dcc:issuer'): text('manufacturer')
-                                    with tag('dcc:value'): text(clean_text(equip.seri_measuring))
-                                    with tag('dcc:name'):
-                                         for lang in dcc.administrative_data.used_languages:
+                                        for lang in dcc.administrative_data.used_languages:
                                             with tag('dcc:content', lang=lang): text(clean_text(equip.manuf_model.root.get(lang, ""))) #Multilang
 
-                # Adding Room Conditions 
-                with tag('dcc:influenceConditions'):
-                    for condition in dcc.conditions:
-                        if condition.jenis_kondisi == 'suhu':
-                            reftype_value = 'basic_temperature'
-                        elif condition.jenis_kondisi == 'lembap':
-                            reftype_value = 'basic_humidityRelative'
-                        else:
-                            reftype_value = None
+            # Adding Room Conditions 
+            with tag('dcc:influenceConditions'):
+                for condition in dcc.conditions:
+                    if condition.jenis_kondisi == 'suhu':
+                        reftype_value = 'basic_temperature'
+                    elif condition.jenis_kondisi == 'lembap':
+                        reftype_value = 'basic_humidityRelative'
+                    else:
+                        reftype_value = None
 
-                        with tag('dcc:influenceCondition', **({'refType': reftype_value} if reftype_value else {})):
-                            with tag('dcc:name'):
-                                with tag('dcc:content'): text(clean_text(condition.jenis_kondisi))
-                            with tag('dcc:description'):
-                                for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(clean_text(condition.desc.root.get(lang, "") or "")) #Multilang
-                                
-                            with tag('dcc:data'):
-                                # Tengah / nilai minimum
-                                with tag('dcc:quantity', refType='math_minimum'):
-                                    with tag('dcc:name'):
-                                        with tag('dcc:content'): text('nilai minimum') 
-                                    with tag('si:real'):
-                                        tengah_val = float(condition.tengah) if condition.tengah not in (None, "") else 0.0
-                                        rentang_val = float(condition.rentang) if condition.rentang not in (None, "") else 0.0
-                                        min_value = tengah_val - rentang_val
-
-                                        with tag('si:value'): text(f"{min_value}") 
-                                        unit_str = ""
-                                        if condition.tengah_unit.prefix:
-                                            unit_str += condition.tengah_unit.prefix + " "
-                                        if condition.tengah_unit.unit:
-                                            unit_str += condition.tengah_unit.unit
-                                        if condition.tengah_unit.eksponen:
-                                            unit_str += f"\\tothe{{{condition.tengah_unit.eksponen}}}"
-                                        with tag('si:unit'): text(d_si(unit_str.strip()))
-
-                                # Rentang / nilai maksimum        
-                                with tag('dcc:quantity', refType='math_maximum'):
-                                    with tag('dcc:name'):
-                                        with tag('dcc:content'): text('nilai maksimum') 
-                                    with tag('si:real'):
-                                        tengah_val = float(condition.tengah) if condition.tengah not in (None, "") else 0.0
-                                        rentang_val = float(condition.rentang) if condition.rentang not in (None, "") else 0.0
-                                        max_value = tengah_val + rentang_val
-                                        
-                                        with tag('si:value'): text(f"{max_value}")  
-                                        unit_str = ""
-                                        if condition.rentang_unit.prefix:
-                                            unit_str += condition.rentang_unit.prefix + " "
-                                        if condition.rentang_unit.unit:
-                                            unit_str += condition.rentang_unit.unit
-                                        if condition.rentang_unit.eksponen:
-                                            unit_str += f"\\tothe{{{condition.rentang_unit.eksponen}}}"
-                                        with tag('si:unit'): text(d_si(unit_str.strip()))
-
-                                        
-                # RESULT
-                with tag("dcc:results"):
-                    for table_name, table_info in table_data.items():
-                        flat_columns = table_info["data"]
-                        config = table_info["config"]
-                        
-                        with tag('dcc:result'):
-                            # Nama result (multilingual)
-                            with tag('dcc:name'):
-                                for lang in dcc.administrative_data.used_languages:
-                                    with tag('dcc:content', lang=lang): text(clean_text(config.parameters.root.get(lang, "")))
+                    with tag('dcc:influenceCondition', **({'refType': reftype_value} if reftype_value else {})):
+                        with tag('dcc:name'):
+                            with tag('dcc:content'): text(clean_text(condition.jenis_kondisi))
+                        with tag('dcc:description'):
+                            for lang in dcc.administrative_data.used_languages:
+                                with tag('dcc:content', lang=lang): text(clean_text(condition.desc.root.get(lang, "") or "")) #Multilang
                             
-                            with tag('dcc:data'):
-                                with tag('dcc:list'):
-                                    flat_index = 0
-                                    
-                                    for col_config in config.columns:
-                                        real_list_count = int(col_config.real_list)
-                                        ref_type = col_config.refType or ""
-                                        
-                                        # Penanganan refType untuk kolom dengan measurement error
-                                        if ref_type == "basic_measurementError_error":
-                                            ref_type = "basic_measurementError"
-                                        elif ref_type == "basic_measurementError_correction":
-                                            ref_type = "basic_measurementError"
-                                            is_correction = True
-                                        else:
-                                            is_correction = False
-                                        
-                                        with tag('dcc:quantity', **({"refType": ref_type} if ref_type != "other" else {})):
-                                            # Nama kolom (multilingual)
-                                            with tag('dcc:name'):
-                                                for lang in dcc.administrative_data.used_languages:
-                                                    with tag('dcc:content', lang=lang):
-                                                        if is_correction:
-                                                            text("Error")
-                                                        else:
-                                                            text(clean_text(col_config.kolom.root.get(lang, "")))
-                                            
-                                            # Proses sub-kolom
-                                            for _ in range(real_list_count):
-                                                if flat_index >= len(flat_columns):
-                                                    break
-                                                numbers, units = flat_columns[flat_index]
-                                                flat_index += 1
+                        with tag('dcc:data'):
+                            # Tengah / nilai minimum
+                            with tag('dcc:quantity', refType='math_minimum'):
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text('nilai minimum') 
+                                with tag('si:real'):
+                                    tengah_val = float(condition.tengah) if condition.tengah not in (None, "") else 0.0
+                                    rentang_val = float(condition.rentang) if condition.rentang not in (None, "") else 0.0
+                                    min_value = tengah_val - rentang_val
 
-                                                if is_correction:
-                                                    numbers = [invert_number_str(n) for n in numbers]
+                                    with tag('si:value'): text(f"{min_value}") 
+                                    unit_str = ""
+                                    if condition.tengah_unit.prefix:
+                                        unit_str += condition.tengah_unit.prefix + " "
+                                    if condition.tengah_unit.unit:
+                                        unit_str += condition.tengah_unit.unit
+                                    if condition.tengah_unit.eksponen:
+                                        unit_str += f"\\tothe{{{condition.tengah_unit.eksponen}}}"
+                                    with tag('si:unit'): text(d_si(unit_str.strip()))
+
+                            # Rentang / nilai maksimum        
+                            with tag('dcc:quantity', refType='math_maximum'):
+                                with tag('dcc:name'):
+                                    with tag('dcc:content'): text('nilai maksimum') 
+                                with tag('si:real'):
+                                    tengah_val = float(condition.tengah) if condition.tengah not in (None, "") else 0.0
+                                    rentang_val = float(condition.rentang) if condition.rentang not in (None, "") else 0.0
+                                    max_value = tengah_val + rentang_val
+                                    
+                                    with tag('si:value'): text(f"{max_value}")  
+                                    unit_str = ""
+                                    if condition.rentang_unit.prefix:
+                                        unit_str += condition.rentang_unit.prefix + " "
+                                    if condition.rentang_unit.unit:
+                                        unit_str += condition.rentang_unit.unit
+                                    if condition.rentang_unit.eksponen:
+                                        unit_str += f"\\tothe{{{condition.rentang_unit.eksponen}}}"
+                                    with tag('si:unit'): text(d_si(unit_str.strip()))
+
+                                    
+            # RESULT
+            with tag("dcc:results"):
+                for table_name, table_info in table_data.items():
+                    flat_columns = table_info["data"]
+                    config = table_info["config"]
+                    
+                    with tag('dcc:result'):
+                        # Nama result (multilingual)
+                        with tag('dcc:name'):
+                            for lang in dcc.administrative_data.used_languages:
+                                with tag('dcc:content', lang=lang): text(clean_text(config.parameters.root.get(lang, "")))
+                        
+                        with tag('dcc:data'):
+                            with tag('dcc:list'):
+                                flat_index = 0
+                                
+                                for col_config in config.columns:
+                                    real_list_count = int(col_config.real_list)
+                                    ref_type = col_config.refType or ""
+                                    
+                                    # Penanganan refType untuk kolom dengan measurement error
+                                    if ref_type == "basic_measurementError_error":
+                                        ref_type = "basic_measurementError"
+                                    elif ref_type == "basic_measurementError_correction":
+                                        ref_type = "basic_measurementError"
+                                        is_correction = True
+                                    else:
+                                        is_correction = False
+                                    
+                                    with tag('dcc:quantity', **({"refType": ref_type} if ref_type != "other" else {})):
+                                        # Nama kolom (multilingual)
+                                        with tag('dcc:name'):
+                                            for lang in dcc.administrative_data.used_languages:
+                                                with tag('dcc:content', lang=lang):
+                                                    if is_correction:
+                                                        text("Error")
+                                                    else:
+                                                        text(clean_text(col_config.kolom.root.get(lang, "")))
+                                        
+                                        # Proses sub-kolom
+                                        for _ in range(real_list_count):
+                                            if flat_index >= len(flat_columns):
+                                                break
+                                            numbers, units_from_excel = flat_columns[flat_index]
+                                            flat_index += 1
+
+                                            if is_correction:
+                                                numbers = [invert_number_str(n) for n in numbers]
+
+                                            # Gunakan unit dari input jika tersedia, jika tidak gunakan dari Excel
+                                            if col_config.column_unit and col_config.column_unit.unit:
+                                                # Bangun unit string dari input
+                                                unit_str = ""
+                                                if col_config.column_unit.prefix:
+                                                    unit_str += col_config.column_unit.prefix + " "
+                                                if col_config.column_unit.unit:
+                                                    unit_str += col_config.column_unit.unit
+                                                if col_config.column_unit.eksponen:
+                                                    unit_str += f"\\tothe{{{col_config.column_unit.eksponen}}}"
                                                 
-                                                with tag('si:realListXMLList'):
-                                                    with tag('si:valueXMLList'): text(" ".join(numbers).strip())
-                                                    with tag('si:unitXMLList'): text(" ".join(units).strip())
+                                                final_units = [d_si(unit_str.strip())] * len(numbers)
+                                            else:
+                                                final_units = units_from_excel
+                                            
+                                            with tag('si:realListXMLList'):
+                                                with tag('si:valueXMLList'): text(" ".join(numbers).strip())
+                                                with tag('si:unitXMLList'): text(" ".join(final_units).strip())
+                                                
+                                                # Tambahkan uncertainty di dalam blok yang sama
+                                                if ref_type == "basic_measurementError" and flat_index < len(flat_columns):
+                                                    uncertainty_numbers, _ = flat_columns[flat_index]
+                                                    flat_index += 1
                                                     
-                                                    # Tambahkan uncertainty di dalam blok yang sama
-                                                    if ref_type == "basic_measurementError" and flat_index < len(flat_columns):
-                                                        uncertainty_numbers, _ = flat_columns[flat_index]
-                                                        flat_index += 1
+                                                    with tag('si:measurementUncertaintyUnivariateXMLList'):
+                                                        with tag('si:expandedMUXMLList'):
+                                                            with tag('si:valueExpandedMUXMLList'):
+                                                                text(" ".join(uncertainty_numbers).strip())
+                                                            with tag('si:coverageFactorXMLList'):
+                                                                text(str(config.uncertainty.factor) if config.uncertainty and config.uncertainty.factor else "")
+                                                            with tag('si:coverageProbabilityXMLList'):
+                                                                text(str(config.uncertainty.probability) if config.uncertainty and config.uncertainty.probability else "")
+                                                            with tag('si:distributionXMLList'):
+                                                                text(config.uncertainty.distribution if config.uncertainty and config.uncertainty.distribution else "normal")
                                                         
-                                                        with tag('si:measurementUncertaintyUnivariateXMLList'):
-                                                            with tag('si:expandedMUXMLList'):
-                                                                with tag('si:valueExpandedMUXMLList'):
-                                                                    text(" ".join(uncertainty_numbers).strip())
-                                                                with tag('si:coverageFactorXMLList'):
-                                                                    text(str(config.uncertainty.factor) if config.uncertainty and config.uncertainty.factor else "")
-                                                                with tag('si:coverageProbabilityXMLList'):
-                                                                    text(str(config.uncertainty.probability) if config.uncertainty and config.uncertainty.probability else "")
-                                                                with tag('si:distributionXMLList'):
-                                                                    text(config.uncertainty.distribution if config.uncertainty and config.uncertainty.distribution else "normal")
+    # COMMENT
+    if dcc.comment:  
+        with tag('dcc:comment'):
+            with tag('dcc:name'):
+                with tag('dcc:content'): text(clean_text(dcc.comment.title or ""))
+            with tag('dcc:description'):
+                for lang in dcc.administrative_data.used_languages:
+                    with tag('dcc:content', lang=lang): text(clean_text(dcc.comment.desc.root.get(lang, "") or ""))
+            if dcc.comment.files: 
+                for file in dcc.comment.files:
+                    with tag('dcc:file'):
+                        if getattr(file, 'fileName', None):
+                            with tag('dcc:fileName'): text(file.fileName)  
+                        if getattr(file, 'mimeType', None):
+                            with tag('dcc:mimeType'): text(file.mimeType) 
+                        if getattr(file, 'base64', None):
+                            with tag('dcc:dataBase64'):
+                                base64_lines = file.base64.splitlines()
+                                doc.asis('\n')
+                                indent_spaces = 12
+                                indent_stm = ' ' * indent_spaces
+                                for line in base64_lines:
+                                    doc.asis(f"{indent_stm}{line}\n")
+                                doc.asis(' ' * (indent_spaces - 3))  
+                                
+        
+    doc.asis('</dcc:digitalCalibrationCertificate>')
 
-                                                            
-        # COMMENT
-        if dcc.comment:  
-            with tag('dcc:comment'):
-                with tag('dcc:name'):
-                    with tag('dcc:content'): text(clean_text(dcc.comment.title or ""))
-                with tag('dcc:description'):
-                    for lang in dcc.administrative_data.used_languages:
-                        with tag('dcc:content', lang=lang): text(clean_text(dcc.comment.desc.root.get(lang, "") or ""))
-                if dcc.comment.files: 
-                    for file in dcc.comment.files:
-                        with tag('dcc:file'):
-                            if getattr(file, 'fileName', None):
-                                with tag('dcc:fileName'): text(file.fileName)  
-                            if getattr(file, 'mimeType', None):
-                                with tag('dcc:mimeType'): text(file.mimeType) 
-                            if getattr(file, 'base64', None):
-                                with tag('dcc:dataBase64'):
-                                    base64_lines = file.base64.splitlines()
-                                    doc.asis('\n')
-                                    indent_spaces = 12
-                                    indent_stm = ' ' * indent_spaces
-                                    for line in base64_lines:
-                                        doc.asis(f"{indent_stm}{line}\n")
-                                    doc.asis(' ' * (indent_spaces - 3))  
-                                    
-            
-        doc.asis('</dcc:digitalCalibrationCertificate>')
-
-        result = indent(doc.getvalue(), indentation='   ')
-        return result
+    result = indent(doc.getvalue(), indentation='   ')
+    return result
 
 def extract_captions_from_dcc(dcc: schemas.DCCFormCreate):
     """Extract image captions that aren't stored in XML"""
@@ -961,7 +981,7 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
         os.makedirs(paths['word_output'].parent, exist_ok=True)
         
         # Gunakan excel_file_path yang sudah didapatkan
-        table_data = read_excel_tables(str(excel_file_path), dcc.sheet_name, dcc.results)
+        table_data = read_excel_tables(str(excel_file_path), dcc.sheet_name, dcc.results, dcc.responsible_persons.kepala.peran)
         
         # Generate XML
         if progress_callback:
@@ -1145,7 +1165,7 @@ def generate_preview_files(dcc: schemas.DCCFormCreate):
         table_data = {}
         if excel_path and excel_path.exists():
             logging.info(f"Reading Excel file: {excel_path}")
-            table_data = read_excel_tables(str(excel_path), dcc.sheet_name, dcc.results)
+            table_data = read_excel_tables(str(excel_path), dcc.sheet_name, dcc.results, dcc.responsible_persons.kepala.peran)
         else:
             # Create mock table data for preview when Excel is not available
             logging.info("Creating mock data for preview (Excel not available)")
