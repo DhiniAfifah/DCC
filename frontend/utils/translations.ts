@@ -212,6 +212,10 @@ const translations: Record<string, { id: string; en: string }> = {
 
   // Excel
   lampiran: { id: "Lampiran", en: "Attachment" },
+  download_template: {
+    id: "Anda dapat mengunduh template Excel untuk Kelistrikan di sini",
+    en: "You can download the Excel template for Electrical here",
+  },
   excel: { id: "Unggah file Excel", en: "Upload Excel file" },
   excel_desc: {
     id: "Silakan pilih dan unggah file Excel yang memmuat data-data yang akan ditampilkan pada bagian Hasil Kalibrasi di Sertifikat Kalibrasi.",

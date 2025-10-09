@@ -148,7 +148,7 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
   control,
   t,
 }) => {
-  const [distribution, setDistribution] = useState<string>("");
+  const [distributionType, setDistributionType] = useState<string>("");
 
   const prefixes = useMemo(() => getPrefixes(t), [t]);
   const units = useMemo(() => getUnits(t), [t]);
@@ -302,11 +302,11 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
                   </FormItem>
                 )}
               />
-            </div>
+      </div>
           </div>
         </div>
         
-        <div className="grid grid-row md:grid-cols-3 gap-2">
+        <div className="grid md:grid-cols-3 gap-2 items-start">
           <div id="factor" className="grid gap-1">
             <FormLabel>{t("factor")}</FormLabel>
             <FormField
@@ -366,41 +366,51 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
               name={`results.${resultIndex}.uncertainty.distribution`}
               render={({ field }) => (
                 <FormItem>
-                  <FormControl>
-                    <FormItem>
-                      <Select
-                        onValueChange={(value) => {
-                          setDistribution(value);
-                          field.onChange(value);
-                        }}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="normal">Normal</SelectItem>
-                          <SelectItem value="segiempat">{t("segiempat")}</SelectItem>
-                          <SelectItem value="segitiga">{t("segitiga")}</SelectItem>
-                          <SelectItem value="other">{t("other")}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {distribution === "other" && (
-                        <Input
-                          placeholder={`${t("other_distribution")}`}
-                          onChange={(e) => field.onChange(e.target.value)}
-                          className="mt-2"
-                        />
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  </FormControl>
+                  <Select
+                    onValueChange={(value) => {
+                      setDistributionType(value);
+                      if (value !== "other") {
+                        field.onChange(value);
+                      } else {
+                        field.onChange("");
+                      }
+                    }}
+                    value={distributionType || (field.value && field.value !== "" && !["normal", "segiempat", "segitiga"].includes(field.value) ? "other" : field.value)}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="normal">Normal</SelectItem>
+                      <SelectItem value="segiempat">{t("segiempat")}</SelectItem>
+                      <SelectItem value="segitiga">{t("segitiga")}</SelectItem>
+                      <SelectItem value="other">{t("other")}</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          
+            {distributionType === "other" && (
+              <FormField
+                control={control}
+                name={`results.${resultIndex}.uncertainty.distribution`}
+                render={({ field: distributionField }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        placeholder={`${t("other_distribution")}`}
+                        {...distributionField}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
         </div>
       </CardContent>
@@ -956,7 +966,7 @@ function MethodItem({
                   }
                 />
               </FormControl>
-              <FormLabel>{t("cb_rumus_statement")}</FormLabel>
+              <FormLabel>{t("cb_rumus_metode")}</FormLabel>
             </FormItem>
           )}
         />

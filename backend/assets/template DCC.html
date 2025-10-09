@@ -645,12 +645,20 @@
                                         {% for col in res.columns %}
                                             {% for sub in col.subcolumn %}
                                                 <td class="number">{{ sub.value[i] }}</td>
-                                                <td>{{ sub.unit[i] }}</td>
+                                                {% if 'Kelistrikan' in kepala.peran %}
+                                                    <td style="font-weight: bold;">{{ sub.unit[i] }}</td>
+                                                {% else %}
+                                                    <td>{{ sub.unit[i] }}</td>
+                                                {% endif %}
                                             {% endfor %}
                                         {% endfor %}
                                         {% if res.uncertainty['value'] is defined and res.uncertainty['value'][i] is defined %}
                                             <td class="number">{{ res.uncertainty.value[i] }}</td>
-                                            <td>{{ res.uncertainty.unit[i] }}</td>
+                                            {% if 'Kelistrikan' in kepala.peran %}
+                                                <td style="font-weight: bold;">{{ res.uncertainty.unit[i] }}</td>
+                                            {% else %}
+                                                <td>{{ res.uncertainty.unit[i] }}</td>
+                                            {% endif %}
                                         {% endif %}
                                     </tr>
                                 {% endfor %}

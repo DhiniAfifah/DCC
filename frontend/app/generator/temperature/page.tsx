@@ -2069,7 +2069,7 @@ export default function CreateDCC() {
               variant="green"
               disabled={isProcessingSubmission}
             >
-              {isProcessingSubmission ? (t("processing")) : t("submit")}
+              {isProcessingSubmission ? t("processing") : t("submit")}
             </Button>
 
             {isSubmitted && pdfBlobUrl && !isProcessingSubmission && (

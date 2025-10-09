@@ -408,7 +408,7 @@ function StatementItem({
                   }
                 />
               </FormControl>
-              <FormLabel>{t("cb_gambar_metode")}</FormLabel>
+              <FormLabel>{t("cb_gambar_statement")}</FormLabel>
             </FormItem>
           )}
         />

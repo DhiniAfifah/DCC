@@ -10,6 +10,7 @@ import {
   Thermometer,
   Paperclip,
   Sheet,
+  Download,
 } from "lucide-react";
 import {
   useFieldArray,
@@ -70,6 +71,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { getUnits, getPrefixes } from "@/utils/prefix-unit";
 
 declare global {
   interface Window {
@@ -138,7 +140,7 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
   control,
   t,
 }) => {
-  const [distribution, setDistribution] = useState<string>("");
+  const [distributionType, setDistributionType] = useState<string>("");
 
   return (
     <Card id="uncertainty" className="border shadow">
@@ -148,7 +150,7 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
           {t("ketidakpastian_desc")}
         </p>
       </CardHeader>
-      <CardContent className="grid grid-row md:grid-cols-3 gap-2">
+      <CardContent className="grid md:grid-cols-3 gap-2 items-start">
         <div id="factor" className="grid gap-1">
           <FormLabel>{t("factor")}</FormLabel>
           <FormField
@@ -208,41 +210,51 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
             name={`results.${resultIndex}.uncertainty.distribution`}
             render={({ field }) => (
               <FormItem>
-                <FormControl>
-                  <FormItem>
-                    <Select
-                      onValueChange={(value) => {
-                        setDistribution(value);
-                        field.onChange(value);
-                      }}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="segiempat">{t("segiempat")}</SelectItem>
-                        <SelectItem value="segitiga">{t("segitiga")}</SelectItem>
-                        <SelectItem value="other">{t("other")}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {distribution === "other" && (
-                      <Input
-                        placeholder={`${t("other_distribution")}`}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        className="mt-2"
-                      />
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                </FormControl>
+                <Select
+                  onValueChange={(value) => {
+                    setDistributionType(value);
+                    if (value !== "other") {
+                      field.onChange(value);
+                    } else {
+                      field.onChange("");
+                    }
+                  }}
+                  value={distributionType || (field.value && field.value !== "" && !["normal", "segiempat", "segitiga"].includes(field.value) ? "other" : field.value)}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="segiempat">{t("segiempat")}</SelectItem>
+                    <SelectItem value="segitiga">{t("segitiga")}</SelectItem>
+                    <SelectItem value="other">{t("other")}</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
+          
+          {distributionType === "other" && (
+            <FormField
+              control={control}
+              name={`results.${resultIndex}.uncertainty.distribution`}
+              render={({ field: distributionField }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      placeholder={`${t("other_distribution")}`}
+                      {...distributionField}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
       </CardContent>
     </Card>
@@ -665,7 +677,7 @@ function MethodItem({
                   }
                 />
               </FormControl>
-              <FormLabel>{t("cb_rumus_statement")}</FormLabel>
+              <FormLabel>{t("cb_rumus_metode")}</FormLabel>
             </FormItem>
           )}
         />
@@ -1360,107 +1372,8 @@ export default function Measurement({
     fetchLanguages().then(setLanguages);
   }, []);
 
-  const prefixes = [
-    { key: t("yocto"), symbol: "y", value: "\\yocto" },
-    { key: "zepto", symbol: "z", value: "\\zepto" },
-    { key: "atto", symbol: "a", value: "\\atto" },
-    { key: "femto", symbol: "f", value: "\\femto" },
-    { key: t("pico"), symbol: "p", value: "\\pico" },
-    { key: "nano", symbol: "n", value: "\\nano" },
-    { key: t("micro"), symbol: "μ", value: "\\micro" },
-    { key: t("milli"), symbol: "m", value: "\\milli" },
-    { key: t("centi"), symbol: "c", value: "\\centi" },
-    { key: t("deci"), symbol: "d", value: "\\deci" },
-    { key: t("deca"), symbol: "da", value: "\\deca" },
-    { key: t("hecto"), symbol: "h", value: "\\hecto" },
-    { key: "kilo", symbol: "k", value: "\\kilo" },
-    { key: "mega", symbol: "M", value: "\\mega" },
-    { key: "giga", symbol: "G", value: "\\giga" },
-    { key: "tera", symbol: "T", value: "\\tera" },
-    { key: "peta", symbol: "P", value: "\\peta" },
-    { key: t("exa"), symbol: "E", value: "\\exa" },
-    { key: "zetta", symbol: "Z", value: "\\zetta" },
-    { key: "yotta", symbol: "Y", value: "\\yotta" },
-    { key: "ronna", symbol: "R", value: "\\ronna" },
-    { key: "quetta", symbol: "Q", value: "\\quetta" },
-    { key: "kibi", symbol: "Ki", value: "\\kibi" },
-    { key: "mebi", symbol: "Mi", value: "\\mebi" },
-    { key: "gibi", symbol: "Gi", value: "\\gibi" },
-    { key: "tebi", symbol: "Ti", value: "\\tebi" },
-    { key: "pebi", symbol: "Pi", value: "\\pebi" },
-    { key: t("exbi"), symbol: "Ei", value: "\\exbi" },
-    { key: "zebi", symbol: "Zi", value: "\\zebi" },
-    { key: "yobi", symbol: "Yi", value: "\\yobi" },
-  ];
-
-  const units = [
-    { key: t("degreeCelsius"), symbol: "°C", value: "\\degreecelsius" },
-    { key: t("percent"), symbol: "%", value: "\\percent" },
-    { key: t("metre"), symbol: "m", value: "\\metre" },
-    { key: "kilogram", symbol: "kg", value: "\\kilogram" },
-    { key: t("second"), symbol: "s", value: "\\second" },
-    { key: t("ampere"), symbol: "A", value: "\\ampere" },
-    { key: "kelvin", symbol: "K", value: "\\kelvin" },
-    { key: t("mole"), symbol: "mol", value: "\\mole" },
-    { key: t("candela"), symbol: "cd", value: "\\candela" },
-    { key: t("one"), symbol: "1", value: "\\one" },
-    { key: t("day"), symbol: "d", value: "\\day" },
-    { key: t("hour"), symbol: "h", value: "\\hour" },
-    { key: t("minute"), symbol: "min", value: "\\minute" },
-    { key: t("degree"), symbol: "°", value: "\\degree" },
-    { key: t("arcminute"), symbol: "'", value: "\\arcminute" },
-    { key: t("arcsecond"), symbol: "”", value: "\\arcsecond" },
-    { key: "gram", symbol: "g", value: "\\gram" },
-    { key: "radian", symbol: "rad", value: "\\radian" },
-    { key: "steradian", symbol: "sr", value: "\\steradian" },
-    { key: "hertz", symbol: "Hz", value: "\\hertz" },
-    { key: "newton", symbol: "N", value: "\\newton" },
-    { key: "pascal", symbol: "Pa", value: "\\pascal" },
-    { key: "joule", symbol: "J", value: "\\joule" },
-    { key: "watt", symbol: "W", value: "\\watt" },
-    { key: "coulomb", symbol: "C", value: "\\coulomb" },
-    { key: "volt", symbol: "V", value: "\\volt" },
-    { key: "farad", symbol: "F", value: "\\farad" },
-    { key: "ohm", symbol: "Ω", value: "\\ohm" },
-    { key: "siemens", symbol: "S", value: "\\siemens" },
-    { key: "weber", symbol: "Wb", value: "\\weber" },
-    { key: "tesla", symbol: "T", value: "\\tesla" },
-    { key: "henry", symbol: "H", value: "\\henry" },
-    { key: "lumen", symbol: "lm", value: "\\lumen" },
-    { key: "lux", symbol: "lx", value: "\\lux" },
-    { key: "becquerel", symbol: "Bq", value: "\\becquerel" },
-    { key: "sievert", symbol: "Sv", value: "\\sievert" },
-    { key: "gray", symbol: "Gy", value: "\\gray" },
-    { key: "katal", symbol: "kat", value: "\\katal" },
-    { key: "bit", symbol: "bit", value: "\\bit" },
-    { key: t("byte"), symbol: "B", value: "\\byte" },
-    { key: "ppm", symbol: "ppm", value: "\\ppm" },
-    { key: t("hectare"), symbol: "ha", value: "\\hectare" },
-    { key: t("litre"), symbol: "l", value: "\\litre" },
-    { key: t("tonne"), symbol: "t", value: "\\tonne" },
-    { key: t("electronvolt"), symbol: "eV", value: "\\electronvolt" },
-    { key: "dalton", symbol: "Da", value: "\\dalton" },
-    { key: t("astronomicalUnit"), symbol: "au", value: "\\astronomicalunit" },
-    { key: "neper", symbol: "Np", value: "\\neper" },
-    { key: "bel", symbol: "B", value: "\\bel" },
-    { key: t("decibel"), symbol: "dB", value: "\\decibel" },
-    { key: "bar", symbol: "bar", value: "\\bar" },
-    { key: t("mmHg"), symbol: "mmHg", value: "\\mmHg" },
-    { key: "angstrom", symbol: "Å", value: "\\angstrom" },
-    { key: t("nauticalmile"), symbol: "M", value: "\\nauticalmile" },
-    { key: "barn", symbol: "b", value: "\\barn" },
-    { key: "knot", symbol: "kn", value: "\\knot" },
-    { key: "erg", symbol: "erg", value: "\\erg" },
-    { key: "dyne", symbol: "dyn", value: "\\dyne" },
-    { key: "poise", symbol: "P", value: "\\poise" },
-    { key: "stokes", symbol: "ST", value: "\\stokes" },
-    { key: "stilb", symbol: "sb", value: "\\stilb" },
-    { key: "phot", symbol: "ph", value: "\\phot" },
-    { key: "gal", symbol: "Gal", value: "\\gal" },
-    { key: "maxwell", symbol: "Mx", value: "\\maxwell" },
-    { key: "gauss", symbol: "G", value: "\\gauss" },
-    { key: "œrsted", symbol: "Oe", value: "\\oersted" },
-  ];
+  const prefixes = useMemo(() => getPrefixes(t), [t]);
+  const units = useMemo(() => getUnits(t), [t]);
 
   const handleRemoveMethod = useCallback(
     (index: number) => {
@@ -1581,6 +1494,13 @@ export default function Measurement({
       },
     });
   }, [appendResult, createMultilangObject, usedLanguages]);
+
+  const handleDownload = () => {
+    const link = document.createElement("a");
+    link.href = "/file/General Template for Electrical.xlsx"; // path relatif ke folder public
+    link.download = "General Template for Electrical.xlsx";
+    link.click();
+  };
 
   const onSubmit = async (data: FormValues) => {
     // const combinedParameters = data.results.map((result) =>
@@ -2389,59 +2309,70 @@ export default function Measurement({
               {t("lampiran")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-row md:grid-cols-2 gap-4">
-            <div id="excel_file">
-              <FormLabel>{t("excel")}</FormLabel>
-              <FormField
-                control={form.control}
-                name="excel"
-                render={({ field }) => {
-                  return (
+          <CardContent>
+            <div className="grid grid-row">
+              <Button
+                variant="blue"
+                onClick={handleDownload}
+              >
+                <Download />
+                {t("download_template")}
+              </Button>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4 mt-4">
+              <div id="excel_file">
+                <FormLabel>{t("excel")}</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="excel"
+                  render={({ field }) => {
+                    return (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            type="file"
+                            {...fileRefExcel}
+                            accept=".xls, .xlsx, .xlsm, .xlsb"
+                            onChange={(e) => handleFileUpload(e, false)}
+                          />
+                        </FormControl>
+                        <FormDescription>{t("excel_desc")}</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
+              </div>
+              <div id="sheet">
+                <FormLabel>{t("sheet")}</FormLabel>
+                <FormField
+                  control={form.control}
+                  name="sheet_name"
+                  render={({ field }) => (
                     <FormItem>
-                      <FormControl>
-                        <Input
-                          type="file"
-                          {...fileRefExcel}
-                          accept=".xls, .xlsx, .xlsm, .xlsb"
-                          onChange={(e) => handleFileUpload(e, false)}
-                        />
-                      </FormControl>
-                      <FormDescription>{t("excel_desc")}</FormDescription>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <FormDescription>{t("sheet_desc")}</FormDescription>
+                        <SelectContent>
+                          {sheets.map((sheet, index) => (
+                            <SelectItem key={index} value={sheet}>
+                              {sheet}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
-                  );
-                }}
-              />
-            </div>
-            <div id="sheet">
-              <FormLabel>{t("sheet")}</FormLabel>
-              <FormField
-                control={form.control}
-                name="sheet_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <FormDescription>{t("sheet_desc")}</FormDescription>
-                      <SelectContent>
-                        {sheets.map((sheet, index) => (
-                          <SelectItem key={index} value={sheet}>
-                            {sheet}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  )}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -2540,7 +2471,6 @@ export default function Measurement({
                 </AccordionItem>
               ))}
             </Accordion>
-
             
             <Button
               variant="green"
