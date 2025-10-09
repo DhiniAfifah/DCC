@@ -219,7 +219,7 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
                       field.onChange("");
                     }
                   }}
-                  value={distributionType || (field.value && field.value !== "" && !["normal", "segiempat", "segitiga"].includes(field.value) ? "other" : field.value)}
+                  value={distributionType || (field.value && field.value !== "" ? "other" : field.value)}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -246,7 +246,6 @@ const UncertaintyCard: React.FC<UncertaintyCardProps> = ({
                 <FormItem>
                   <FormControl>
                     <Input
-                      placeholder={`${t("other_distribution")}`}
                       {...distributionField}
                     />
                   </FormControl>
@@ -1890,7 +1889,6 @@ export default function Measurement({
                           </Select>
                           {selectedConditions[index] === "other" && (
                             <Input
-                              placeholder={`${t("other_condition")}`}
                               onChange={(e) => field.onChange(e.target.value)}
                             />
                           )}

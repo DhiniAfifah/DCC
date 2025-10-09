@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Stepper from "@/components/ui/stepper";
-import Administrative from "@/components/administrative";
+import Administrative from "@/components/administrative-electrical";
 import Measurement from "@/components/measurement-electrical";
 import Statements from "@/components/statements";
 import Comment from "@/components/comment";

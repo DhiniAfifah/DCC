@@ -199,10 +199,6 @@ const translations: Record<string, { id: string; en: string }> = {
   lingkungan: { id: "Parameter lingkungan", en: "Environmental parameter" },
   suhu: { id: "Suhu", en: "Temperature" },
   lembap: { id: "Kelembapan", en: "Humidity" },
-  other_condition: {
-    id: "Masukkan kondisi lain",
-    en: "Enter another condition",
-  },
   tengah: { id: "Nilai tengah", en: "Central value" },
   nilai: { id: "Nilai", en: "Value" },
   prefix: { id: "Awalan", en: "Prefix" },
@@ -271,10 +267,6 @@ const translations: Record<string, { id: string; en: string }> = {
   distribution: { id: "Distribusi", en: "Distribution" },
   segiempat: { id: "Segiempat", en: "Rectangular" },
   segitiga: { id: "Segitiga", en: "Triangular" },
-  other_distribution: {
-    id: "Masukkan distribusi lain",
-    en: "Enter another distribution",
-  },
 
   // === Statement ===
   statement: { id: "Pernyataan", en: "Statement" },
