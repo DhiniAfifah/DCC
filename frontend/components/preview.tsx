@@ -118,7 +118,6 @@ export default function Preview({ previewFiles, isLoading, onRefresh }: PreviewP
             <Button
               onClick={onRefresh}
               disabled={isLoading}
-              variant="outline"
               className="flex items-center gap-2"
             >
               <RefreshCw />

@@ -34,6 +34,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Language, fetchLanguages } from "@/utils/language";
 import { toast } from "sonner"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 function StatementItem({ 
   field, 
@@ -85,411 +91,415 @@ function StatementItem({
   };
 
   return (
-    <div key={field.id} className="grid gap-1 border-b pb-4 relative">
-      <div className="flex items-center justify-between">
-        <CardDescription>
-          {t("statement")} {statementIndex + 1}
-        </CardDescription>
+    <AccordionItem
+      value={statementIndex.toString()}
+      key={field.id}
+      className="relative"
+    >
+      <AccordionTrigger>{t("statement")} {statementIndex + 1}</AccordionTrigger>
+      <AccordionContent className="pb-4">
         {statementFields.length > 1 && (
           <Button
             type="button"
             variant="destructive"
             size="icon"
-            className="flex items-center justify-center"
+            className="absolute top-0 right-0 mt-2"
             onClick={() => handleRemoveStatement(statementIndex)}
           >
             <X />
           </Button>
         )}
-      </div>
-      {validLanguages.length === 0 ? (
-        <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
-      ) : (
-        validLanguages.map((lang: { value: string }) => (
+        <div id="value" className="space-y-1 mt-6">
+          {validLanguages.length === 0 ? (
+            <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+          ) : (
+            validLanguages.map((lang: { value: string }) => (
+              <FormField
+                control={form.control}
+                key={`statements-${statementIndex}-${lang.value}`} // Key yang lebih stabil
+                name={`statements.${statementIndex}.values.${lang.value}`}
+                render={({ field: statementField }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-2">
+                      <FormControl>
+                        <Textarea
+                          placeholder={`${t("bahasa")} ${
+                            languages.find((l: Language) => l.value === lang.value)?.label || lang.value
+                          }`}
+                          {...statementField}
+                          value={statementField.value || ""}
+                          onChange={(e) => {
+                            // Pastikan onChange tidak memicu re-render yang tidak perlu
+                            statementField.onChange(e.target.value);
+                          }}
+                        />
+                      </FormControl>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ))
+          )}
+        </div>
+
+        <div id="refType" className="my-3">
+          <FormLabel>{t("refType")}</FormLabel>
           <FormField
             control={form.control}
-            key={`statements-${statementIndex}-${lang.value}`} // Key yang lebih stabil
-            name={`statements.${statementIndex}.values.${lang.value}`}
-            render={({ field: statementField }) => (
+            name={`statements.${statementIndex}.refType`}
+            render={({ field }) => (
               <FormItem>
-                <div className="flex items-center gap-2">
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
                   <FormControl>
-                    <Textarea
-                      placeholder={`${t("bahasa")} ${
-                        languages.find((l: Language) => l.value === lang.value)?.label || lang.value
-                      }`}
-                      {...statementField}
-                      value={statementField.value || ""}
-                      onChange={(e) => {
-                        // Pastikan onChange tidak memicu re-render yang tidak perlu
-                        statementField.onChange(e.target.value);
-                      }}
-                    />
+                    <SelectTrigger className="whitespace-normal">
+                      <SelectValue />
+                    </SelectTrigger>
                   </FormControl>
-                </div>
+                  <SelectContent>
+                    <SelectItem
+                      value="basic_conformity"
+                      className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                    >
+                      {t("basic_conformity")}
+                    </SelectItem>
+                    <SelectItem
+                      value="basic_metrologicallyTraceableToSI"
+                      className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                    >
+                      {t("basic_metrologicallyTraceableToSI")}
+                    </SelectItem>
+                    <SelectItem
+                      value="basic_revision"
+                      className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                    >
+                      {t("basic_revision")}
+                    </SelectItem>
+                    <SelectItem
+                      value="basic_isInCMC"
+                      className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                    >
+                      {t("basic_isInCMC")}
+                    </SelectItem>
+                    <SelectItem
+                      value="other" // ga ada refType
+                      className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                    >
+                      {t("other")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-        ))
-      )}
+        </div>
 
-      <div id="refType" className="my-3">
-        <FormLabel>{t("refType")}</FormLabel>
-        <FormField
-          control={form.control}
-          name={`statements.${statementIndex}.refType`}
-          render={({ field }) => (
-            <FormItem>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value}
-              >
+        <div id="checkbox_rumus" className="my-4">
+          <FormField
+            control={form.control}
+            name={`statements.${statementIndex}.has_formula`}
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-x-2 space-y-0">
                 <FormControl>
-                  <SelectTrigger className="whitespace-normal">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked)
+                    }
+                  />
                 </FormControl>
-                <SelectContent>
-                  <SelectItem
-                    value="basic_conformity"
-                    className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                  >
-                    {t("basic_conformity")}
-                  </SelectItem>
-                  <SelectItem
-                    value="basic_metrologicallyTraceableToSI"
-                    className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                  >
-                    {t("basic_metrologicallyTraceableToSI")}
-                  </SelectItem>
-                  <SelectItem
-                    value="basic_revision"
-                    className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                  >
-                    {t("basic_revision")}
-                  </SelectItem>
-                  <SelectItem
-                    value="basic_isInCMC"
-                    className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                  >
-                    {t("basic_isInCMC")}
-                  </SelectItem>
-                  <SelectItem
-                    value="other" // ga ada refType
-                    className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                  >
-                    {t("other")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+                <FormLabel>{t("cb_rumus_statement")}</FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
 
-      <div id="checkbox_rumus" className="mt-3">
-        <FormField
-          control={form.control}
-          name={`statements.${statementIndex}.has_formula`}
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={(checked) =>
-                    field.onChange(checked)
-                  }
-                />
-              </FormControl>
-              <FormLabel>{t("cb_rumus_statement")}</FormLabel>
-            </FormItem>
-          )}
-        />
-      </div>
+        {form.watch(`statements.${statementIndex}.has_formula`) && (
+          <>
+            {formulaFields.map((field, formulaIndex) => (
+              <div id="rumus" key={field.id} className="mt-2 grid gap-1 relative">
+                <MathJaxContext>
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-muted-foreground">{t("rumus")} {formulaIndex + 1}</FormLabel>
+                    {formulaFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="flex items-center justify-center"
+                        onClick={() => handleRemoveFormula(formulaIndex)}
+                      >
+                        <X />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-row md:grid-cols-2 gap-4">
+                    <div className="grid gap-1">
+                      <FormField
+                        control={form.control}
+                        name={`statements.${statementIndex}.formula.${formulaIndex}.latex`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                ref={latexInputRef}
+                                value={
+                                  form.watch(
+                                    `statements.${statementIndex}.formula.${formulaIndex}.latex`
+                                  ) ?? ""
+                                }
+                                onChange={(e) =>
+                                  form.setValue(
+                                    `statements.${statementIndex}.formula.${formulaIndex}.latex`,
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="LaTeX"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`statements.${statementIndex}.formula.${formulaIndex}.mathml`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder="MathML" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Card className="border shadow h-28">
+                        <CardContent>
+                          <MathJax>{`$$${
+                            form.watch(`statements.${statementIndex}.formula.${formulaIndex}.latex`) ||
+                            ""
+                          }$$`}</MathJax>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    <div>
+                      <ScrollArea className="h-40 w-full border rounded-md p-2">
+                        <div className="p-2">
+                          <div className="grid grid-row md:grid-cols-2 gap-2">
+                            {latexSymbols.map((group) => (
+                              <div key={group.category}>
+                                <Select
+                                  onValueChange={(value) =>
+                                    insertSymbol(value, statementIndex, formulaIndex)
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <span>{group.category == "Huruf Yunani" ? t("greek") : t("arrow")}</span>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {group.symbols.map(
+                                      ({ latex, description }) => (
+                                        <SelectItem key={latex} value={latex}>
+                                          <span className="inline-flex items-center">
+                                            <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                            <span className="ml-1">
+                                              {description}
+                                            </span>
+                                          </span>
+                                        </SelectItem>
+                                      )
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="p-2">
+                          <div className="grid grid-cols-8 gap-1">
+                            {latexOperations
+                              .find((group) => group.category === "small")
+                              ?.symbols.map(({ latex }) => (
+                                <Button
+                                  variant="secondary"
+                                  key={latex}
+                                  onClick={(e) => insertSymbol(latex, statementIndex, formulaIndex, e)}
+                                >
+                                  <span className="text-lg">
+                                    <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                  </span>
+                                </Button>
+                              ))}
+                          </div>
+                          <div className="grid grid-cols-5 gap-1 mt-1">
+                            {latexOperations
+                              .find((group) => group.category === "long")
+                              ?.symbols.map(({ latex }) => (
+                                <Button
+                                  variant="secondary"
+                                  key={latex}
+                                  value={latex}
+                                  onClick={(e) => insertSymbol(latex, statementIndex, formulaIndex, e)}
+                                >
+                                  <span>
+                                    <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                  </span>
+                                </Button>
+                              ))}
+                          </div>
+                        </div>
+                      </ScrollArea>
+                      <Button
+                        type="button"
+                        variant="blue"
+                        className="mt-1"
+                        onClick={() => {
+                          const latex = form.getValues(
+                            `statements.${statementIndex}.formula.${formulaIndex}.latex`
+                          );
+                          const encodedLatex = encodeURIComponent(latex || "");
 
-      {form.watch(`statements.${statementIndex}.has_formula`) && (
-        <>
-          {formulaFields.map((field, formulaIndex) => (
-            <div id="rumus" key={field.id} className="mt-2 grid gap-1 relative">
-              <MathJaxContext>
+                          const popup = window.open(
+                            `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
+                            "mathEditorPopup",
+                            "width=800,height=600"
+                          );
+
+                          // Define the callback function to receive LaTeX from the popup
+                          window.ShowLatexResult = (latex, mathml) => {
+                            form.setValue(
+                              `statements.${statementIndex}.formula.${formulaIndex}.latex`,
+                              latex
+                            );
+                            form.setValue(
+                              `statements.${statementIndex}.formula.${formulaIndex}.mathml`,
+                              mathml
+                            );
+                          };
+                        }}
+                      >
+                        {t("editor")}
+                      </Button>
+                    </div>
+                  </div>
+                </MathJaxContext>
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              type="button"
+              size="sm"
+              className="mt-2 w-10 h-10"
+              onClick={handleAppendFormula}
+            >
+              <p className="text-xl">
+                <Plus />
+              </p>
+            </Button>
+          </>
+        )}
+
+        <div id="checkbox_gambar" className="my-4">
+          <FormField
+            control={form.control}
+            name={`statements.${statementIndex}.has_image`}
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked)
+                    }
+                  />
+                </FormControl>
+                <FormLabel>{t("cb_gambar_statement")}</FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {form.watch(`statements.${statementIndex}.has_image`) && (
+          <>
+            {imageFields.map((field, imageIndex) => (
+              <div id="gambar" key={field.id} className="mt-2 relative">
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-muted-foreground">{t("rumus")} {formulaIndex + 1}</FormLabel>
-                  {formulaFields.length > 1 && (
+                  <p className="text-muted-foreground text-sm mb-2">{t("gambar")} {imageIndex + 1}</p>
+                  {imageFields.length > 1 && (
                     <Button
                       type="button"
                       variant="destructive"
                       size="icon"
                       className="flex items-center justify-center"
-                      onClick={() => handleRemoveFormula(formulaIndex)}
+                      onClick={() => handleRemoveImage(imageIndex)}
                     >
                       <X />
                     </Button>
                   )}
                 </div>
                 <div className="grid grid-row md:grid-cols-2 gap-4">
-                  <div className="grid gap-1">
+                  <div id="upload">
+                    <FormLabel>{t("upload_gambar")}</FormLabel>
                     <FormField
                       control={form.control}
-                      name={`statements.${statementIndex}.formula.${formulaIndex}.latex`}
-                      render={({ field }) => (
+                      name={`statements.${statementIndex}.image.${imageIndex}.fileName`}
+                      render={({ field: { onChange, ref } }) => (
                         <FormItem>
                           <FormControl>
                             <Input
-                              ref={latexInputRef}
-                              value={
-                                form.watch(
-                                  `statements.${statementIndex}.formula.${formulaIndex}.latex`
-                                ) ?? ""
-                              }
-                              onChange={(e) =>
-                                form.setValue(
-                                  `statements.${statementIndex}.formula.${formulaIndex}.latex`,
-                                  e.target.value
-                                )
-                              }
-                              placeholder="LaTeX"
+                              type="file"
+                              accept=".jpg, .jpeg, .png"
+                              ref={ref}
+                              onChange={(e) => {
+                                handleFileUpload(e, true, statementIndex, imageIndex);
+                                onChange(
+                                  e.target.files ? e.target.files[0] : null
+                                );
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  </div>
+                  <div id="caption">
+                    <FormLabel>{t("caption")}</FormLabel>
                     <FormField
                       control={form.control}
-                      name={`statements.${statementIndex}.formula.${formulaIndex}.mathml`}
+                      name={`statements.${statementIndex}.image.${imageIndex}.caption`}
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input placeholder="MathML" {...field} />
+                            <Input {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <Card className="border shadow">
-                      <CardContent>
-                        <MathJax>{`$$${
-                          form.watch(`statements.${statementIndex}.formula.${formulaIndex}.latex`) ||
-                          ""
-                        }$$`}</MathJax>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  <div>
-                    <ScrollArea className="h-40 w-full border rounded-md p-2">
-                      <div className="p-2">
-                        <div className="grid grid-row md:grid-cols-2 gap-2">
-                          {latexSymbols.map((group) => (
-                            <div key={group.category}>
-                              <Select
-                                onValueChange={(value) =>
-                                  insertSymbol(value, statementIndex, formulaIndex)
-                                }
-                              >
-                                <SelectTrigger>
-                                  <span>{group.category == "Huruf Yunani" ? t("greek") : t("arrow")}</span>
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {group.symbols.map(
-                                    ({ latex, description }) => (
-                                      <SelectItem key={latex} value={latex}>
-                                        <span className="inline-flex items-center">
-                                          <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                          <span className="ml-1">
-                                            {description}
-                                          </span>
-                                        </span>
-                                      </SelectItem>
-                                    )
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="p-2">
-                        <div className="grid grid-cols-8 gap-1">
-                          {latexOperations
-                            .find((group) => group.category === "small")
-                            ?.symbols.map(({ latex }) => (
-                              <Button
-                                variant="secondary"
-                                key={latex}
-                                onClick={(e) => insertSymbol(latex, statementIndex, formulaIndex, e)}
-                              >
-                                <span className="text-lg">
-                                  <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                </span>
-                              </Button>
-                            ))}
-                        </div>
-                        <div className="grid grid-cols-5 gap-1 mt-1">
-                          {latexOperations
-                            .find((group) => group.category === "long")
-                            ?.symbols.map(({ latex }) => (
-                              <Button
-                                variant="secondary"
-                                key={latex}
-                                value={latex}
-                                onClick={(e) => insertSymbol(latex, statementIndex, formulaIndex, e)}
-                              >
-                                <span>
-                                  <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                </span>
-                              </Button>
-                            ))}
-                        </div>
-                      </div>
-                    </ScrollArea>
-                    <Button
-                      type="button"
-                      variant="blue"
-                      className="mt-1"
-                      onClick={() => {
-                        const latex = form.getValues(
-                          `statements.${statementIndex}.formula.${formulaIndex}.latex`
-                        );
-                        const encodedLatex = encodeURIComponent(latex || "");
-
-                        const popup = window.open(
-                          `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
-                          "mathEditorPopup",
-                          "width=800,height=600"
-                        );
-
-                        // Define the callback function to receive LaTeX from the popup
-                        window.ShowLatexResult = (latex, mathml) => {
-                          form.setValue(
-                            `statements.${statementIndex}.formula.${formulaIndex}.latex`,
-                            latex
-                          );
-                          form.setValue(
-                            `statements.${statementIndex}.formula.${formulaIndex}.mathml`,
-                            mathml
-                          );
-                        };
-                      }}
-                    >
-                      {t("editor")}
-                    </Button>
                   </div>
                 </div>
-              </MathJaxContext>
-            </div>
-          ))}
-          <Button
-            variant="outline"
-            type="button"
-            size="sm"
-            className="mt-2 w-10 h-10"
-            onClick={handleAppendFormula}
-          >
-            <p className="text-xl">
-              <Plus />
-            </p>
-          </Button>
-        </>
-      )}
-
-      <div id="checkbox_gambar" className="mt-3 mb-1">
-        <FormField
-          control={form.control}
-          name={`statements.${statementIndex}.has_image`}
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={(checked) =>
-                    field.onChange(checked)
-                  }
-                />
-              </FormControl>
-              <FormLabel>{t("cb_gambar_statement")}</FormLabel>
-            </FormItem>
-          )}
-        />
-      </div>
-
-      {form.watch(`statements.${statementIndex}.has_image`) && (
-        <>
-          {imageFields.map((field, imageIndex) => (
-            <div id="gambar" key={field.id} className="mt-2 relative">
-              <div className="flex items-center justify-between">
-                <p className="text-muted-foreground text-sm">{t("gambar")} {imageIndex + 1}</p>
-                {imageFields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="flex items-center justify-center"
-                    onClick={() => handleRemoveImage(imageIndex)}
-                  >
-                    <X />
-                  </Button>
-                )}
               </div>
-              <div className="grid grid-row md:grid-cols-2 gap-4">
-                <div id="upload">
-                  <FormLabel>{t("upload_gambar")}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`statements.${statementIndex}.image.${imageIndex}.fileName`}
-                    render={({ field: { onChange, ref } }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept=".jpg, .jpeg, .png"
-                            ref={ref}
-                            onChange={(e) => {
-                              handleFileUpload(e, true, statementIndex, imageIndex);
-                              onChange(
-                                e.target.files ? e.target.files[0] : null
-                              );
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div id="caption">
-                  <FormLabel>{t("caption")}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`statements.${statementIndex}.image.${imageIndex}.caption`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-          <Button
-            variant="outline"
-            type="button"
-            size="sm"
-            className="mt-2 w-10 h-10"
-            onClick={handleAppendImage}
-          >
-            <p className="text-xl">
-              <Plus />
-            </p>
-          </Button>
-        </>
-      )}
-    </div>
+            ))}
+            <Button
+              variant="outline"
+              type="button"
+              size="sm"
+              className="mt-2 w-10 h-10"
+              onClick={handleAppendImage}
+            >
+              <p className="text-xl">
+                <Plus />
+              </p>
+            </Button>
+          </>
+        )}
+      </AccordionContent>
+    </AccordionItem>
   );
 }
 
@@ -837,33 +847,40 @@ export default function Statements({
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4">
-            {statementFields.map((field, statementIndex) => (
-              <StatementItem
-                key={field.id}
-                field={field}
-                statementIndex={statementIndex}
-                statementFields={statementFields}
-                form={form}
-                validLanguages={validLanguages}
-                languages={languages}
-                t={t}
-                handleRemoveStatement={handleRemoveStatement}
-                insertSymbol={insertSymbol}
-                latexInputRef={latexInputRef}
-                handleFileUpload={handleFileUpload}
-              />
-            ))}
-            <Button
-              variant="green"
-              type="button"
-              size="sm"
-              className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={handleAppendStatement}
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+              defaultValue="0"
             >
-              <p className="text-xl">
-                <Plus />
-              </p>
-            </Button>
+              {statementFields.map((field, statementIndex) => (
+                <StatementItem
+                  key={field.id}
+                  field={field}
+                  statementIndex={statementIndex}
+                  statementFields={statementFields}
+                  form={form}
+                  validLanguages={validLanguages}
+                  languages={languages}
+                  t={t}
+                  handleRemoveStatement={handleRemoveStatement}
+                  insertSymbol={insertSymbol}
+                  latexInputRef={latexInputRef}
+                  handleFileUpload={handleFileUpload}
+                />
+              ))}
+              <Button
+                variant="green"
+                type="button"
+                size="sm"
+                className="mt-2 w-10 h-10 flex items-center justify-center mx-auto"
+                onClick={handleAppendStatement}
+              >
+                <p className="text-xl">
+                  <Plus />
+                </p>
+              </Button>
+            </Accordion>
           </CardContent>
         </Card>
       </form>

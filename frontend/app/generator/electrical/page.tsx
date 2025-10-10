@@ -8,7 +8,7 @@ import Statements from "@/components/statements";
 import Comment from "@/components/comment";
 import Preview from "@/components/preview";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Zap, Send, Download } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
@@ -1637,11 +1637,14 @@ export default function CreateDCC() {
         // Show specific validation errors immediately
         toast.error("Please fill in all required fields:", {
           description: (
-            <ul className="list-disc pl-5">
-              {errors.map((error, index) => (
-                <li key={index}>{error}</li>
-              ))}
-            </ul>
+            <div>
+              <ul className="list-disc pl-5">
+                {errors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
+              {t("strip")}
+            </div>
           )
         });
         return;
@@ -2009,7 +2012,12 @@ export default function CreateDCC() {
               variant="green"
               disabled={isProcessingSubmission}
             >
-              {isProcessingSubmission ? t("processing") : t("submit")}
+              {isProcessingSubmission ? t("processing") : (
+                <>
+                  <Send />
+                  {t("submit")}
+                </>
+              )}
             </Button>
 
             {isSubmitted && pdfBlobUrl && !isProcessingSubmission && (
@@ -2019,6 +2027,7 @@ export default function CreateDCC() {
                     href={pdfBlobUrl}
                     download={`${formData.administrative_data.sertifikat}.pdf`}
                   >
+                    <Download />
                     {t("download")}
                   </a>
                 </Button>

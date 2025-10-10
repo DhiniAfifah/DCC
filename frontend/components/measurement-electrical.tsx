@@ -512,23 +512,25 @@ function MethodItem({
   };
 
   return (
-    <div key={field.id} className="border-b pb-4 relative">
-      <div className="grid gap-4">
-        <CardDescription>
-          {t("metode")} {index + 1}
-        </CardDescription>
+    <AccordionItem
+      value={index.toString()}
+      key={field.id}
+      className="relative"
+    >
+      <AccordionTrigger>{t("metode")} {index + 1}</AccordionTrigger>
+      <AccordionContent className="pb-4">
         {methodFields.length > 1 && (
           <Button
             type="button"
             variant="destructive"
             size="icon"
-            className="absolute top-0 right-0"
+            className="absolute top-0 right-0 mt-2"
             onClick={() => handleRemoveMethod(index)}
           >
             <X />
           </Button>
         )}
-        <div className="grid grid-row md:grid-cols-2 gap-4">
+        <div className="grid grid-row md:grid-cols-2 gap-4 mb-4 mt-2">
           <div id="method_name">
             <FormLabel>{t("nama")}</FormLabel>
             <div className="space-y-1">
@@ -585,7 +587,7 @@ function MethodItem({
           </div>
         </div>
 
-        <div id="method_desc">
+        <div id="method_desc" className="mb-4">
           <FormLabel>{t("deskripsi")}</FormLabel>
           <div className="space-y-1">
             {validLanguages.length === 0 ? (
@@ -624,7 +626,7 @@ function MethodItem({
           </div>
         </div>
 
-        <div id="refType" className="mb-3">
+        <div id="refType" className="mb-4">
           <FormLabel>{t("refType")}</FormLabel>
           <FormField
             control={form.control}
@@ -660,309 +662,309 @@ function MethodItem({
             )}
           />
         </div>
-      </div>
 
-      <div id="checkbox_rumus" className="my-3">
-        <FormField
-          control={form.control}
-          name={`methods.${index}.has_formula`}
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={(checked) =>
-                    field.onChange(checked)
-                  }
-                />
-              </FormControl>
-              <FormLabel>{t("cb_rumus_metode")}</FormLabel>
-            </FormItem>
-          )}
-        />
-      </div>
+        <div id="checkbox_rumus" className="my-4">
+          <FormField
+            control={form.control}
+            name={`methods.${index}.has_formula`}
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked)
+                    }
+                  />
+                </FormControl>
+                <FormLabel>{t("cb_rumus_metode")}</FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
 
-      {form.watch(`methods.${index}.has_formula`) && (
-        <>
-          {formulaFields.map((field, formulaIndex) => (
-            <div id="rumus" key={field.id} className="mt-2 grid gap-1 relative">
-              <MathJaxContext>
+        {form.watch(`methods.${index}.has_formula`) && (
+          <>
+            {formulaFields.map((field, formulaIndex) => (
+              <div id="rumus" key={field.id} className="mt-2 grid gap-1 relative">
+                <MathJaxContext>
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="text-muted-foreground">{t("rumus")} {formulaIndex + 1}</FormLabel>
+                    {formulaFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="flex items-center justify-center"
+                        onClick={() => handleRemoveFormula(formulaIndex)}
+                      >
+                        <X />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-row md:grid-cols-2 gap-4">
+                    <div className="grid gap-1">
+                      <FormField
+                        control={form.control}
+                        name={`methods.${index}.formula.${formulaIndex}.latex`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input
+                                ref={latexInputRef}
+                                value={
+                                  form.watch(
+                                    `methods.${index}.formula.${formulaIndex}.latex`
+                                  ) ?? ""
+                                }
+                                onChange={(e) =>
+                                  form.setValue(
+                                    `methods.${index}.formula.${formulaIndex}.latex`,
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="LaTeX"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`methods.${index}.formula.${formulaIndex}.mathml`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Input placeholder="MathML" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Card className="border shadow h-28">
+                        <CardContent>
+                          <MathJax>{`$$${
+                            form.watch(`methods.${index}.formula.${formulaIndex}.latex`) ||
+                            ""
+                          }$$`}</MathJax>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    <div>
+                      <ScrollArea className="h-40 w-full border rounded-md p-2">
+                        <div className="p-2">
+                          <div className="grid grid-row md:grid-cols-2 gap-2">
+                            {latexSymbols.map((group) => (
+                              <div key={group.category}>
+                                <Select
+                                  onValueChange={(value) =>
+                                    insertSymbol(value, index, formulaIndex)
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <span>{group.category == "Huruf Yunani" ? t("greek") : t("arrow")}</span>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {group.symbols.map(
+                                      ({ latex, description }) => (
+                                        <SelectItem key={latex} value={latex}>
+                                          <span className="inline-flex items-center">
+                                            <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                            <span className="ml-1">
+                                              {description}
+                                            </span>
+                                          </span>
+                                        </SelectItem>
+                                      )
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="p-2">
+                          <div className="grid grid-cols-8 gap-1">
+                            {latexOperations
+                              .find((group) => group.category === "small")
+                              ?.symbols.map(({ latex }) => (
+                                <Button
+                                  variant="secondary"
+                                  key={latex}
+                                  onClick={(e) => insertSymbol(latex, index, formulaIndex, e)}
+                                >
+                                  <span className="text-lg">
+                                    <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                  </span>
+                                </Button>
+                              ))}
+                          </div>
+                          <div className="grid grid-cols-5 gap-1 mt-1">
+                            {latexOperations
+                              .find((group) => group.category === "long")
+                              ?.symbols.map(({ latex }) => (
+                                <Button
+                                  variant="secondary"
+                                  key={latex}
+                                  value={latex}
+                                  onClick={(e) => insertSymbol(latex, index, formulaIndex, e)}
+                                >
+                                  <span>
+                                    <MathJax>{`\\(${latex}\\)`}</MathJax>
+                                  </span>
+                                </Button>
+                              ))}
+                          </div>
+                        </div>
+                      </ScrollArea>
+                      <Button
+                        type="button"
+                        variant="blue"
+                        className="mt-1"
+                        onClick={() => {
+                          const latex = form.getValues(
+                            `methods.${index}.formula.${formulaIndex}.latex`
+                          );
+                          const encodedLatex = encodeURIComponent(latex || "");
+
+                          const popup = window.open(
+                            `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
+                            "mathEditorPopup",
+                            "width=800,height=600"
+                          );
+
+                          // Define the callback function to receive LaTeX from the popup
+                          window.ShowLatexResult = (latex, mathml) => {
+                            form.setValue(
+                              `methods.${index}.formula.${formulaIndex}.latex`,
+                              latex
+                            );
+                            form.setValue(
+                              `methods.${index}.formula.${formulaIndex}.mathml`,
+                              mathml
+                            );
+                          };
+                        }}
+                      >
+                        {t("editor")}
+                      </Button>
+                    </div>
+                  </div>
+                </MathJaxContext>
+              </div>
+            ))}
+            <Button
+              variant="outline"
+              type="button"
+              size="sm"
+              className="my-2 w-10 h-10"
+              onClick={handleAppendFormula}
+            >
+              <p className="text-xl">
+                <Plus />
+              </p>
+            </Button>
+          </>
+        )}
+
+        <div id="checkbox_gambar" className="my-4">
+          <FormField
+            control={form.control}
+            name={`methods.${index}.has_image`}
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked)
+                    }
+                  />
+                </FormControl>
+                <FormLabel>{t("cb_gambar_metode")}</FormLabel>
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {form.watch(`methods.${index}.has_image`) && (
+          <>
+            {imageFields.map((field, imageIndex) => (
+              <div id="gambar" key={field.id} className="mt-2 relative">
                 <div className="flex items-center justify-between">
-                  <FormLabel className="text-muted-foreground">{t("rumus")} {formulaIndex + 1}</FormLabel>
-                  {formulaFields.length > 1 && (
+                  <p className="text-muted-foreground text-sm mb-2">{t("gambar")} {imageIndex + 1}</p>
+                  {imageFields.length > 1 && (
                     <Button
                       type="button"
                       variant="destructive"
                       size="icon"
                       className="flex items-center justify-center"
-                      onClick={() => handleRemoveFormula(formulaIndex)}
+                      onClick={() => handleRemoveImage(imageIndex)}
                     >
                       <X />
                     </Button>
                   )}
                 </div>
                 <div className="grid grid-row md:grid-cols-2 gap-4">
-                  <div className="grid gap-1">
+                  <div id="upload">
+                    <FormLabel>{t("upload_gambar")}</FormLabel>
                     <FormField
                       control={form.control}
-                      name={`methods.${index}.formula.${formulaIndex}.latex`}
-                      render={({ field }) => (
+                      name={`methods.${index}.image.${imageIndex}.fileName`}
+                      render={({ field: { onChange, ref } }) => (
                         <FormItem>
                           <FormControl>
                             <Input
-                              ref={latexInputRef}
-                              value={
-                                form.watch(
-                                  `methods.${index}.formula.${formulaIndex}.latex`
-                                ) ?? ""
-                              }
-                              onChange={(e) =>
-                                form.setValue(
-                                  `methods.${index}.formula.${formulaIndex}.latex`,
-                                  e.target.value
-                                )
-                              }
-                              placeholder="LaTeX"
+                              type="file"
+                              accept=".jpg, .jpeg, .png"
+                              ref={ref}
+                              onChange={(e) => {
+                                handleFileUpload(e, true, index, imageIndex);
+                                onChange(
+                                  e.target.files ? e.target.files[0] : null
+                                );
+                              }}
                             />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  </div>
+                  <div id="caption">
+                    <FormLabel>{t("caption")}</FormLabel>
                     <FormField
                       control={form.control}
-                      name={`methods.${index}.formula.${formulaIndex}.mathml`}
+                      name={`methods.${index}.image.${imageIndex}.caption`}
                       render={({ field }) => (
                         <FormItem>
                           <FormControl>
-                            <Input placeholder="MathML" {...field} />
+                            <Input {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <Card className="border shadow">
-                      <CardContent>
-                        <MathJax>{`$$${
-                          form.watch(`methods.${index}.formula.${formulaIndex}.latex`) ||
-                          ""
-                        }$$`}</MathJax>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  <div>
-                    <ScrollArea className="h-40 w-full border rounded-md p-2">
-                      <div className="p-2">
-                        <div className="grid grid-row md:grid-cols-2 gap-2">
-                          {latexSymbols.map((group) => (
-                            <div key={group.category}>
-                              <Select
-                                onValueChange={(value) =>
-                                  insertSymbol(value, index, formulaIndex)
-                                }
-                              >
-                                <SelectTrigger>
-                                  <span>{group.category == "Huruf Yunani" ? t("greek") : t("arrow")}</span>
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {group.symbols.map(
-                                    ({ latex, description }) => (
-                                      <SelectItem key={latex} value={latex}>
-                                        <span className="inline-flex items-center">
-                                          <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                          <span className="ml-1">
-                                            {description}
-                                          </span>
-                                        </span>
-                                      </SelectItem>
-                                    )
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="p-2">
-                        <div className="grid grid-cols-8 gap-1">
-                          {latexOperations
-                            .find((group) => group.category === "small")
-                            ?.symbols.map(({ latex }) => (
-                              <Button
-                                variant="secondary"
-                                key={latex}
-                                onClick={(e) => insertSymbol(latex, index, formulaIndex, e)}
-                              >
-                                <span className="text-lg">
-                                  <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                </span>
-                              </Button>
-                            ))}
-                        </div>
-                        <div className="grid grid-cols-5 gap-1 mt-1">
-                          {latexOperations
-                            .find((group) => group.category === "long")
-                            ?.symbols.map(({ latex }) => (
-                              <Button
-                                variant="secondary"
-                                key={latex}
-                                value={latex}
-                                onClick={(e) => insertSymbol(latex, index, formulaIndex, e)}
-                              >
-                                <span>
-                                  <MathJax>{`\\(${latex}\\)`}</MathJax>
-                                </span>
-                              </Button>
-                            ))}
-                        </div>
-                      </div>
-                    </ScrollArea>
-                    <Button
-                      type="button"
-                      variant="blue"
-                      className="mt-1"
-                      onClick={() => {
-                        const latex = form.getValues(
-                          `methods.${index}.formula.${formulaIndex}.latex`
-                        );
-                        const encodedLatex = encodeURIComponent(latex || "");
-
-                        const popup = window.open(
-                          `/imatheq.html?latex=${encodedLatex}`, // adjust to your actual path
-                          "mathEditorPopup",
-                          "width=800,height=600"
-                        );
-
-                        // Define the callback function to receive LaTeX from the popup
-                        window.ShowLatexResult = (latex, mathml) => {
-                          form.setValue(
-                            `methods.${index}.formula.${formulaIndex}.latex`,
-                            latex
-                          );
-                          form.setValue(
-                            `methods.${index}.formula.${formulaIndex}.mathml`,
-                            mathml
-                          );
-                        };
-                      }}
-                    >
-                      {t("editor")}
-                    </Button>
                   </div>
                 </div>
-              </MathJaxContext>
-            </div>
-          ))}
-          <Button
-            variant="outline"
-            type="button"
-            size="sm"
-            className="my-2 w-10 h-10"
-            onClick={handleAppendFormula}
-          >
-            <p className="text-xl">
-              <Plus />
-            </p>
-          </Button>
-        </>
-      )}
-
-      <div id="checkbox_gambar" className="mt-3 mb-1">
-        <FormField
-          control={form.control}
-          name={`methods.${index}.has_image`}
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={(checked) =>
-                    field.onChange(checked)
-                  }
-                />
-              </FormControl>
-              <FormLabel>{t("cb_gambar_metode")}</FormLabel>
-            </FormItem>
-          )}
-        />
-      </div>
-
-      {form.watch(`methods.${index}.has_image`) && (
-        <>
-          {imageFields.map((field, imageIndex) => (
-            <div id="gambar" key={field.id} className="mt-2 relative">
-              <div className="flex items-center justify-between">
-                <p className="text-muted-foreground text-sm">{t("gambar")} {imageIndex + 1}</p>
-                {imageFields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="flex items-center justify-center"
-                    onClick={() => handleRemoveImage(imageIndex)}
-                  >
-                    <X />
-                  </Button>
-                )}
               </div>
-              <div className="grid grid-row md:grid-cols-2 gap-4">
-                <div id="upload">
-                  <FormLabel>{t("upload_gambar")}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`methods.${index}.image.${imageIndex}.fileName`}
-                    render={({ field: { onChange, ref } }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            type="file"
-                            accept=".jpg, .jpeg, .png"
-                            ref={ref}
-                            onChange={(e) => {
-                              handleFileUpload(e, true, index, imageIndex);
-                              onChange(
-                                e.target.files ? e.target.files[0] : null
-                              );
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div id="caption">
-                  <FormLabel>{t("caption")}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`methods.${index}.image.${imageIndex}.caption`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-          <Button
-            variant="outline"
-            type="button"
-            size="sm"
-            className="mt-2 w-10 h-10"
-            onClick={handleAppendImage}
-          >
-            <p className="text-xl">
-              <Plus />
-            </p>
-          </Button>
-        </>
-      )}
-    </div>
+            ))}
+            <Button
+              variant="outline"
+              type="button"
+              size="sm"
+              className="mt-2 w-10 h-10"
+              onClick={handleAppendImage}
+            >
+              <p className="text-xl">
+                <Plus />
+              </p>
+            </Button>
+          </>
+        )}
+      </AccordionContent>
+    </AccordionItem>
   );
 }
 
@@ -1582,721 +1584,746 @@ export default function Measurement({
               {t("metode")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4">
-            {methodFields.map((field, index) => (
-              <MethodItem
-                key={field.id}
-                field={field}
-                index={index}
-                methodFields={methodFields}
-                form={form}
-                validLanguages={validLanguages}
-                languages={languages}
-                t={t}
-                handleRemoveMethod={handleRemoveMethod}
-                insertSymbol={insertSymbol}
-                latexInputRef={latexInputRef}
-                handleFileUpload={handleFileUpload}
-              />
-            ))}
-            <Button
-              variant="green"
-              type="button"
-              size="sm"
-              className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={handleAppendMethod}
+          <CardContent>
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+              defaultValue="0"
             >
-              <p className="text-xl">
-                <Plus />
-              </p>
-            </Button>
+              {methodFields.map((field, index) => (
+                <MethodItem
+                  key={field.id}
+                  field={field}
+                  index={index}
+                  methodFields={methodFields}
+                  form={form}
+                  validLanguages={validLanguages}
+                  languages={languages}
+                  t={t}
+                  handleRemoveMethod={handleRemoveMethod}
+                  insertSymbol={insertSymbol}
+                  latexInputRef={latexInputRef}
+                  handleFileUpload={handleFileUpload}
+                />
+              ))}
+              <Button
+                variant="green"
+                type="button"
+                size="sm"
+                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                onClick={handleAppendMethod}
+              >
+                <p className="text-xl">
+                  <Plus />
+                </p>
+              </Button>
+            </Accordion>
           </CardContent>
         </Card>
 
-        <Card id="measuring_equipment">
+        <Card id="equipment">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PencilRuler className="w-5 h-5" />
               {t("pengukuran")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4">
-            {equipmentFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="grid gap-4 border-b pb-4 relative"
-              >
-                <CardDescription>
-                  {t("alat")} {index + 1}
-                </CardDescription>
-                {equipmentFields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-0 right-0"
-                    onClick={() => handleRemoveEquipment(index)}
-                  >
-                    <X />
-                  </Button>
-                )}
-                <div className="grid grid-row md:grid-cols-2 gap-4">
-                  <div id="nama_alat">
-                    <FormLabel>{t("nama")}</FormLabel>
-                    <div className="space-y-1">
-                      {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-500">
-                          {t("pilih_bahasa")}
-                        </p>
-                      ) : (
-                        validLanguages.map(
-                          (lang: { value: string }) => (
-                            <FormField
-                              control={form.control}
-                              key={`${field.id}-nama_alat-${lang.value}`}
-                              name={`equipments.${index}.nama_alat.${lang.value}`}
-                              render={({ field: namaAlatField }) => (
-                                <FormItem>
-                                  <div className="flex items-center gap-2">
-                                    <FormControl>
-                                      <Input
-                                        placeholder={`${t("bahasa")} ${
-                                          languages.find(
-                                            (l) => l.value === lang.value
-                                          )?.label || lang.value
-                                        }`}
-                                        {...namaAlatField}
-                                        value={namaAlatField.value || ""}
-                                      />
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )
-                        )
-                      )}
-                    </div>
-                  </div>
-                  <div id="seri_measuring">
-                    <FormLabel>{t("seri")}</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name={`equipments.${index}.seri_measuring`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-row grid-cols-2 gap-4">
-                  <div id="manuf_model">
-                    <FormLabel>{t("manuf")}</FormLabel>
-                    <div className="space-y-1">
-                      {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-500">
-                          {t("pilih_bahasa")}
-                        </p>
-                      ) : (
-                        validLanguages.map(
-                          (lang: { value: string }) => (
-                            <FormField
-                              control={form.control}
-                              key={`${field.id}-manuf_model-${lang.value}`}
-                              name={`equipments.${index}.manuf_model.${lang.value}`}
-                              render={({ field: manufField }) => (
-                                <FormItem>
-                                  <div className="flex items-center gap-2">
-                                    <FormControl>
-                                      <Input
-                                        placeholder={`${t("bahasa")} ${
-                                          languages.find(
-                                            (l) => l.value === lang.value
-                                          )?.label || lang.value
-                                        }`}
-                                        {...manufField}
-                                        value={manufField.value || ""}
-                                      />
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )
-                        )
-                      )}
-                    </div>
-                  </div>
-                  <div id="model">
-                    <FormLabel>{t("model")}</FormLabel>
-                    <div className="space-y-1">
-                      {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-500">
-                          {t("pilih_bahasa")}
-                        </p>
-                      ) : (
-                        validLanguages.map(
-                          (lang: { value: string }) => (
-                            <FormField
-                              control={form.control}
-                              key={`${field.id}-model-${lang.value}`}
-                              name={`equipments.${index}.model.${lang.value}`}
-                              render={({ field: modelField }) => (
-                                <FormItem>
-                                  <div className="flex items-center gap-2">
-                                    <FormControl>
-                                      <Input
-                                        placeholder={`${t("bahasa")} ${
-                                          languages.find(
-                                            (l) => l.value === lang.value
-                                          )?.label || lang.value
-                                        }`}
-                                        {...modelField}
-                                        value={modelField.value || ""}
-                                      />
-                                    </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div id="refType">
-                  <FormLabel>{t("refType")}</FormLabel>
-                  <FormField
-                    control={form.control}
-                    name={`equipments.${index}.refType`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="whitespace-normal">
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem
-                              value="basic_measurementStandard"
-                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                            >
-                              {t("basic_measurementStandard")}
-                            </SelectItem>
-                            <SelectItem
-                              value="other" // ga ada refType
-                              className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
-                            >
-                              {t("other")}
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-            ))}
-            <Button
-              variant="green"
-              type="button"
-              size="sm"
-              className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={handleAppendEquipment}
+          <CardContent>
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+              defaultValue="0"
             >
-              <p className="text-xl">
-                <Plus />
-              </p>
-            </Button>
+              {equipmentFields.map((field, index) => (
+                <AccordionItem
+                  value={index.toString()}
+                  key={field.id}
+                  className="relative"
+                >
+                  <AccordionTrigger>{t("alat")} {index + 1}</AccordionTrigger>
+                  <AccordionContent className="grid gap-4 pb-4">
+                    {equipmentFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0 mt-2"
+                        onClick={() => handleRemoveEquipment(index)}
+                      >
+                        <X />
+                      </Button>
+                    )}
+                    <div className="grid grid-row md:grid-cols-2 gap-4 mt-2">
+                      <div id="nama_alat">
+                        <FormLabel>{t("nama")}</FormLabel>
+                        <div className="space-y-1">
+                          {validLanguages.length === 0 ? (
+                            <p className="text-sm text-red-500">
+                              {t("pilih_bahasa")}
+                            </p>
+                          ) : (
+                            validLanguages.map(
+                              (lang: { value: string }) => (
+                                <FormField
+                                  control={form.control}
+                                  key={`${field.id}-nama_alat-${lang.value}`}
+                                  name={`equipments.${index}.nama_alat.${lang.value}`}
+                                  render={({ field: namaAlatField }) => (
+                                    <FormItem>
+                                      <div className="flex items-center gap-2">
+                                        <FormControl>
+                                          <Input
+                                            placeholder={`${t("bahasa")} ${
+                                              languages.find(
+                                                (l) => l.value === lang.value
+                                              )?.label || lang.value
+                                            }`}
+                                            {...namaAlatField}
+                                            value={namaAlatField.value || ""}
+                                          />
+                                        </FormControl>
+                                      </div>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              )
+                            )
+                          )}
+                        </div>
+                      </div>
+                      <div id="seri_measuring">
+                        <FormLabel>{t("seri")}</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`equipments.${index}.seri_measuring`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-row grid-cols-2 gap-4">
+                      <div id="manuf_model">
+                        <FormLabel>{t("manuf")}</FormLabel>
+                        <div className="space-y-1">
+                          {validLanguages.length === 0 ? (
+                            <p className="text-sm text-red-500">
+                              {t("pilih_bahasa")}
+                            </p>
+                          ) : (
+                            validLanguages.map(
+                              (lang: { value: string }) => (
+                                <FormField
+                                  control={form.control}
+                                  key={`${field.id}-manuf_model-${lang.value}`}
+                                  name={`equipments.${index}.manuf_model.${lang.value}`}
+                                  render={({ field: manufField }) => (
+                                    <FormItem>
+                                      <div className="flex items-center gap-2">
+                                        <FormControl>
+                                          <Input
+                                            placeholder={`${t("bahasa")} ${
+                                              languages.find(
+                                                (l) => l.value === lang.value
+                                              )?.label || lang.value
+                                            }`}
+                                            {...manufField}
+                                            value={manufField.value || ""}
+                                          />
+                                        </FormControl>
+                                      </div>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              )
+                            )
+                          )}
+                        </div>
+                      </div>
+                      <div id="model">
+                        <FormLabel>{t("model")}</FormLabel>
+                        <div className="space-y-1">
+                          {validLanguages.length === 0 ? (
+                            <p className="text-sm text-red-500">
+                              {t("pilih_bahasa")}
+                            </p>
+                          ) : (
+                            validLanguages.map(
+                              (lang: { value: string }) => (
+                                <FormField
+                                  control={form.control}
+                                  key={`${field.id}-model-${lang.value}`}
+                                  name={`equipments.${index}.model.${lang.value}`}
+                                  render={({ field: modelField }) => (
+                                    <FormItem>
+                                      <div className="flex items-center gap-2">
+                                        <FormControl>
+                                          <Input
+                                            placeholder={`${t("bahasa")} ${
+                                              languages.find(
+                                                (l) => l.value === lang.value
+                                              )?.label || lang.value
+                                            }`}
+                                            {...modelField}
+                                            value={modelField.value || ""}
+                                          />
+                                        </FormControl>
+                                      </div>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              )
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div id="refType">
+                      <FormLabel>{t("refType")}</FormLabel>
+                      <FormField
+                        control={form.control}
+                        name={`equipments.${index}.refType`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className="whitespace-normal">
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem
+                                  value="basic_measurementStandard"
+                                  className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                                >
+                                  {t("basic_measurementStandard")}
+                                </SelectItem>
+                                <SelectItem
+                                  value="other" // ga ada refType
+                                  className="whitespace-normal break-words w-[var(--radix-select-trigger-width)]"
+                                >
+                                  {t("other")}
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+              <Button
+                variant="green"
+                type="button"
+                size="sm"
+                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                onClick={handleAppendEquipment}
+              >
+                <p className="text-xl">
+                  <Plus />
+                </p>
+              </Button>
+            </Accordion>
           </CardContent>
         </Card>
 
-        <Card id="influence_condition">
+        <Card id="condition">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Thermometer className="w-5 h-5" />
               {t("kondisi")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4">
-            {conditionFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="grid gap-4 border-b pb-4 relative"
-              >
-                <CardDescription>Parameter {index + 1}</CardDescription>
-                {conditionFields.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    className="absolute top-0 right-0"
-                    onClick={() => handleRemoveCondition(index)}
-                  >
-                    <X />
-                  </Button>
-                )}
-                <div className="grid grid-row md:grid-cols-2 gap-4">
-                  <div id="jenis_kondisi">
-                    <FormLabel>
-                      {t("lingkungan")}
-                    </FormLabel>
-                    <FormField
-                      control={form.control}
-                      name={`conditions.${index}.jenis_kondisi`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select
-                            onValueChange={(value) => {
-                              setSelectedConditions((prev) => ({
-                                ...prev,
-                                [index]: value,
-                              }));
-                              field.onChange(value);
-                            }}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Suhu">
-                                {t("suhu")}
-                              </SelectItem>
-                              <SelectItem value="Kelembapan">
-                                {t("lembap")}
-                              </SelectItem>
-                              <SelectItem value="other">
-                                {t("other")}
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {selectedConditions[index] === "other" && (
-                            <Input
-                              onChange={(e) => field.onChange(e.target.value)}
-                            />
+          <CardContent>
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+              defaultValue="0"
+            >
+              {conditionFields.map((field, index) => (
+                <AccordionItem
+                  value={index.toString()}
+                  key={field.id}
+                  className="relative"
+                >
+                  <AccordionTrigger>Parameter {index + 1}</AccordionTrigger>
+                  <AccordionContent className="grid gap-4 pb-4">
+                    {conditionFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0 mt-2"
+                        onClick={() => handleRemoveCondition(index)}
+                      >
+                        <X />
+                      </Button>
+                    )}
+                    <div className="grid grid-row md:grid-cols-2 gap-4 mt-2">
+                      <div id="jenis_kondisi">
+                        <FormLabel>
+                          {t("lingkungan")}
+                        </FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`conditions.${index}.jenis_kondisi`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <Select
+                                onValueChange={(value) => {
+                                  setSelectedConditions((prev) => ({
+                                    ...prev,
+                                    [index]: value,
+                                  }));
+                                  field.onChange(value);
+                                }}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Suhu">
+                                    {t("suhu")}
+                                  </SelectItem>
+                                  <SelectItem value="Kelembapan">
+                                    {t("lembap")}
+                                  </SelectItem>
+                                  <SelectItem value="other">
+                                    {t("other")}
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {selectedConditions[index] === "other" && (
+                                <Input
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                />
+                              )}
+                              <FormMessage />
+                            </FormItem>
                           )}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div id="kondisi_desc">
-                    <FormLabel>{t("deskripsi")}</FormLabel>
-                    <div className="space-y-1">
-                      {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-500">
-                          {t("pilih_bahasa")}
-                        </p>
-                      ) : (
-                        validLanguages.map(
-                          (lang: { value: string }) => (
-                            <FormField
-                              control={form.control}
-                              key={`${field.id}-desc-${lang.value}`}
-                              name={`conditions.${index}.desc.${lang.value}`}
-                              render={({ field: kondisiDescField }) => (
-                                <FormItem>
-                                  <div className="flex items-center gap-2">
+                        />
+                      </div>
+                      <div id="kondisi_desc">
+                        <FormLabel>{t("deskripsi")}</FormLabel>
+                        <div className="space-y-1">
+                          {validLanguages.length === 0 ? (
+                            <p className="text-sm text-red-500">
+                              {t("pilih_bahasa")}
+                            </p>
+                          ) : (
+                            validLanguages.map(
+                              (lang: { value: string }) => (
+                                <FormField
+                                  control={form.control}
+                                  key={`${field.id}-desc-${lang.value}`}
+                                  name={`conditions.${index}.desc.${lang.value}`}
+                                  render={({ field: kondisiDescField }) => (
+                                    <FormItem>
+                                      <div className="flex items-center gap-2">
+                                        <FormControl>
+                                          <Input
+                                            placeholder={`${t("bahasa")} ${
+                                              languages.find(
+                                                (l) => l.value === lang.value
+                                              )?.label || lang.value
+                                            }`}
+                                            {...kondisiDescField}
+                                            value={kondisiDescField.value || ""}
+                                          />
+                                        </FormControl>
+                                      </div>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              )
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div id="tengah">
+                      <div className="grid grid-row md:grid-cols-2 gap-4">
+                        <div id="tengah_value">
+                          <FormLabel>{t("tengah")}</FormLabel>
+                          <FormField
+                            control={form.control}
+                            name={`conditions.${index}.tengah`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input 
+                                    type="number"
+                                    min="0"
+                                    step={"0.1"}
+                                    placeholder={t("nilai")} 
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div id="tengah_unit">
+                          <FormLabel>{t("satuan")}</FormLabel>
+                          <div className="grid grid-cols-3 gap-1">
+                            <div id="prefix">
+                              <FormField
+                                control={form.control}
+                                name={`conditions.${index}.tengah_unit.prefix`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <FormControl>
+                                          <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            className="w-full justify-between"
+                                          >
+                                            {field.value
+                                              ? prefixes.find(
+                                                  (p) => p.value === field.value
+                                                )?.symbol
+                                              : (
+                                                  <span className="text-muted-foreground">{t("prefix")}</span>
+                                                )}
+                                            <ChevronsUpDown className="opacity-50" />
+                                          </Button>
+                                        </FormControl>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                        <Command>
+                                          <CommandInput className="h-9" />
+                                          <CommandList>
+                                            <CommandGroup>
+                                              {prefixes.map((prefix) => (
+                                                <CommandItem
+                                                  key={prefix.value}
+                                                  value={`${prefix.key} ${prefix.symbol}`}
+                                                  onSelect={() => {
+                                                    form.setValue(
+                                                      `conditions.${index}.tengah_unit.prefix`,
+                                                      prefix.value
+                                                    );
+                                                    form.setValue(
+                                                      `conditions.${index}.tengah_unit.prefix_pdf`,
+                                                      prefix.symbol
+                                                    );
+                                                  }}
+                                                >
+                                                  {`${prefix.key} (${prefix.symbol})`}
+                                                </CommandItem>
+                                              ))}
+                                            </CommandGroup>
+                                          </CommandList>
+                                        </Command>
+                                      </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <div id="unit">
+                              <FormField
+                                control={form.control}
+                                name={`conditions.${index}.tengah_unit.unit`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <FormControl>
+                                          <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            className="w-full justify-between"
+                                          >
+                                            {field.value ? (
+                                              units.find(
+                                                (p) => p.value === field.value
+                                              )?.symbol
+                                            ) : (
+                                              <span className="text-muted-foreground">
+                                                {t("satuan")}
+                                                <span className="text-red-600">
+                                                  {" "}
+                                                  *
+                                                </span>
+                                              </span>
+                                            )}
+                                            <ChevronsUpDown className="opacity-50" />
+                                          </Button>
+                                        </FormControl>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                        <Command>
+                                          <CommandInput className="h-9" />
+                                          <CommandList>
+                                            <CommandGroup>
+                                              {units.map((unit) => (
+                                                <CommandItem
+                                                  key={unit.value}
+                                                  value={`${unit.key} ${unit.symbol}`}
+                                                  onSelect={() => {
+                                                    form.setValue(
+                                                      `conditions.${index}.tengah_unit.unit`,
+                                                      unit.value
+                                                    );
+                                                    form.setValue(
+                                                      `conditions.${index}.tengah_unit.unit_pdf`,
+                                                      unit.symbol
+                                                    );
+                                                  }}
+                                                >
+                                                  {`${unit.key} (${unit.symbol})`}
+                                                </CommandItem>
+                                              ))}
+                                            </CommandGroup>
+                                          </CommandList>
+                                        </Command>
+                                      </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <div id="eksponen">
+                              <FormField
+                                control={form.control}
+                                name={`conditions.${index}.tengah_unit.eksponen`}
+                                render={({ field }) => (
+                                  <FormItem>
                                     <FormControl>
                                       <Input
-                                        placeholder={`${t("bahasa")} ${
-                                          languages.find(
-                                            (l) => l.value === lang.value
-                                          )?.label || lang.value
-                                        }`}
-                                        {...kondisiDescField}
-                                        value={kondisiDescField.value || ""}
+                                        placeholder={t("eksponen")}
+                                        value={field.value}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          field.onChange(value); // update eksponen
+                                          form.setValue(
+                                            `conditions.${index}.tengah_unit.eksponen_pdf`,
+                                            `\\tothe{${value}}`
+                                          ); // update eksponen_pdf
+                                        }}
                                       />
                                     </FormControl>
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )
-                        )
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div id="tengah">
-                  <div className="grid grid-row md:grid-cols-2 gap-4">
-                    <div id="tengah_value">
-                      <FormLabel>{t("tengah")}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`conditions.${index}.tengah`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input 
-                                type="number"
-                                min="0"
-                                step={"0.1"}
-                                placeholder={t("nilai")} 
-                                {...field} 
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
                               />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div id="tengah_unit">
-                      <FormLabel>{t("satuan")}</FormLabel>
-                      <div className="grid grid-cols-3 gap-1">
-                        <div id="prefix">
+                    <div id="rentang">
+                      <div className="grid grid-row md:grid-cols-2 gap-4">
+                        <div id="rentang_value">
+                          <FormLabel>
+                            {t("rentang")}
+                          </FormLabel>
                           <FormField
                             control={form.control}
-                            name={`conditions.${index}.tengah_unit.prefix`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <FormControl>
-                                      <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className="w-full justify-between"
-                                      >
-                                        {field.value
-                                          ? prefixes.find(
-                                              (p) => p.value === field.value
-                                            )?.symbol
-                                          : (
-                                              <span className="text-muted-foreground">{t("prefix")}</span>
-                                            )}
-                                        <ChevronsUpDown className="opacity-50" />
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                                    <Command>
-                                      <CommandInput className="h-9" />
-                                      <CommandList>
-                                        <CommandGroup>
-                                          {prefixes.map((prefix) => (
-                                            <CommandItem
-                                              key={prefix.value}
-                                              value={`${prefix.key} ${prefix.symbol}`}
-                                              onSelect={() => {
-                                                form.setValue(
-                                                  `conditions.${index}.tengah_unit.prefix`,
-                                                  prefix.value
-                                                );
-                                                form.setValue(
-                                                  `conditions.${index}.tengah_unit.prefix_pdf`,
-                                                  prefix.symbol
-                                                );
-                                              }}
-                                            >
-                                              {`${prefix.key} (${prefix.symbol})`}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="unit">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.tengah_unit.unit`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <FormControl>
-                                      <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className="w-full justify-between"
-                                      >
-                                        {field.value ? (
-                                          units.find(
-                                            (p) => p.value === field.value
-                                          )?.symbol
-                                        ) : (
-                                          <span className="text-muted-foreground">
-                                            {t("satuan")}
-                                            <span className="text-red-600">
-                                              {" "}
-                                              *
-                                            </span>
-                                          </span>
-                                        )}
-                                        <ChevronsUpDown className="opacity-50" />
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                                    <Command>
-                                      <CommandInput className="h-9" />
-                                      <CommandList>
-                                        <CommandGroup>
-                                          {units.map((unit) => (
-                                            <CommandItem
-                                              key={unit.value}
-                                              value={`${unit.key} ${unit.symbol}`}
-                                              onSelect={() => {
-                                                form.setValue(
-                                                  `conditions.${index}.tengah_unit.unit`,
-                                                  unit.value
-                                                );
-                                                form.setValue(
-                                                  `conditions.${index}.tengah_unit.unit_pdf`,
-                                                  unit.symbol
-                                                );
-                                              }}
-                                            >
-                                              {`${unit.key} (${unit.symbol})`}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="eksponen">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.tengah_unit.eksponen`}
+                            name={`conditions.${index}.rentang`}
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
-                                  <Input
-                                    placeholder={t("eksponen")}
-                                    value={field.value}
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      field.onChange(value); // update eksponen
-                                      form.setValue(
-                                        `conditions.${index}.tengah_unit.eksponen_pdf`,
-                                        `\\tothe{${value}}`
-                                      ); // update eksponen_pdf
-                                    }}
-                                  />
+                                  <Input placeholder={t("nilai")} {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div id="rentang">
-                  <div className="grid grid-row md:grid-cols-2 gap-4">
-                    <div id="rentang_value">
-                      <FormLabel>
-                        {t("rentang")}
-                      </FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`conditions.${index}.rentang`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input placeholder={t("nilai")} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div id="rentang_unit">
-                      <FormLabel>{t("satuan")}</FormLabel>
-                      <div className="grid grid-cols-3 gap-1">
-                        <div id="prefix">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.rentang_unit.prefix`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <FormControl>
-                                      <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className="w-full justify-between"
-                                      >
-                                        {field.value
-                                          ? prefixes.find(
-                                              (p) => p.value === field.value
-                                            )?.symbol
-                                          : (
-                                              <span className="text-muted-foreground">{t("prefix")}</span>
+                        <div id="rentang_unit">
+                          <FormLabel>{t("satuan")}</FormLabel>
+                          <div className="grid grid-cols-3 gap-1">
+                            <div id="prefix">
+                              <FormField
+                                control={form.control}
+                                name={`conditions.${index}.rentang_unit.prefix`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <FormControl>
+                                          <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            className="w-full justify-between"
+                                          >
+                                            {field.value
+                                              ? prefixes.find(
+                                                  (p) => p.value === field.value
+                                                )?.symbol
+                                              : (
+                                                  <span className="text-muted-foreground">{t("prefix")}</span>
+                                                )}
+                                            <ChevronsUpDown className="opacity-50" />
+                                          </Button>
+                                        </FormControl>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                        <Command>
+                                          <CommandInput className="h-9" />
+                                          <CommandList>
+                                            <CommandGroup>
+                                              {prefixes.map((prefix) => (
+                                                <CommandItem
+                                                  key={prefix.value}
+                                                  value={`${prefix.key} ${prefix.symbol}`}
+                                                  onSelect={() => {
+                                                    form.setValue(
+                                                      `conditions.${index}.rentang_unit.prefix`,
+                                                      prefix.value
+                                                    );
+                                                    form.setValue(
+                                                      `conditions.${index}.rentang_unit.prefix_pdf`,
+                                                      prefix.symbol
+                                                    );
+                                                  }}
+                                                >
+                                                  {`${prefix.key} (${prefix.symbol})`}
+                                                </CommandItem>
+                                              ))}
+                                            </CommandGroup>
+                                          </CommandList>
+                                        </Command>
+                                      </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <div id="unit">
+                              <FormField
+                                control={form.control}
+                                name={`conditions.${index}.rentang_unit.unit`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <FormControl>
+                                          <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            className="w-full justify-between"
+                                          >
+                                            {field.value ? (
+                                              units.find(
+                                                (p) => p.value === field.value
+                                              )?.symbol
+                                            ) : (
+                                              <span className="text-muted-foreground">
+                                                {t("satuan")}
+                                                <span className="text-red-600">
+                                                  {" "}
+                                                  *
+                                                </span>
+                                              </span>
                                             )}
-                                        <ChevronsUpDown className="opacity-50" />
-                                      </Button>
-                                    </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                                    <Command>
-                                      <CommandInput className="h-9" />
-                                      <CommandList>
-                                        <CommandGroup>
-                                          {prefixes.map((prefix) => (
-                                            <CommandItem
-                                              key={prefix.value}
-                                              value={`${prefix.key} ${prefix.symbol}`}
-                                              onSelect={() => {
-                                                form.setValue(
-                                                  `conditions.${index}.rentang_unit.prefix`,
-                                                  prefix.value
-                                                );
-                                                form.setValue(
-                                                  `conditions.${index}.rentang_unit.prefix_pdf`,
-                                                  prefix.symbol
-                                                );
-                                              }}
-                                            >
-                                              {`${prefix.key} (${prefix.symbol})`}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="unit">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.rentang_unit.unit`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Popover>
-                                  <PopoverTrigger asChild>
+                                            <ChevronsUpDown className="opacity-50" />
+                                          </Button>
+                                        </FormControl>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+                                        <Command>
+                                          <CommandInput className="h-9" />
+                                          <CommandList>
+                                            <CommandGroup>
+                                              {units.map((unit) => (
+                                                <CommandItem
+                                                  key={unit.value}
+                                                  value={`${unit.key} ${unit.symbol}`}
+                                                  onSelect={() => {
+                                                    form.setValue(
+                                                      `conditions.${index}.rentang_unit.unit`,
+                                                      unit.value
+                                                    );
+                                                    form.setValue(
+                                                      `conditions.${index}.rentang_unit.unit_pdf`,
+                                                      unit.symbol
+                                                    );
+                                                  }}
+                                                >
+                                                  {`${unit.key} (${unit.symbol})`}
+                                                </CommandItem>
+                                              ))}
+                                            </CommandGroup>
+                                          </CommandList>
+                                        </Command>
+                                      </PopoverContent>
+                                    </Popover>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            <div id="eksponen">
+                              <FormField
+                                control={form.control}
+                                name={`conditions.${index}.rentang_unit.eksponen`}
+                                render={({ field }) => (
+                                  <FormItem>
                                     <FormControl>
-                                      <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className="w-full justify-between"
-                                      >
-                                        {field.value ? (
-                                          units.find(
-                                            (p) => p.value === field.value
-                                          )?.symbol
-                                        ) : (
-                                          <span className="text-muted-foreground">
-                                            {t("satuan")}
-                                            <span className="text-red-600">
-                                              {" "}
-                                              *
-                                            </span>
-                                          </span>
-                                        )}
-                                        <ChevronsUpDown className="opacity-50" />
-                                      </Button>
+                                      <Input
+                                        placeholder={t("eksponen")}
+                                        value={field.value}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          field.onChange(value); // update eksponen
+                                          form.setValue(
+                                            `conditions.${index}.rentang_unit.eksponen_pdf`,
+                                            `\\tothe{${value}}`
+                                          ); // update eksponen_pdf
+                                        }}
+                                      />
                                     </FormControl>
-                                  </PopoverTrigger>
-                                  <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
-                                    <Command>
-                                      <CommandInput className="h-9" />
-                                      <CommandList>
-                                        <CommandGroup>
-                                          {units.map((unit) => (
-                                            <CommandItem
-                                              key={unit.value}
-                                              value={`${unit.key} ${unit.symbol}`}
-                                              onSelect={() => {
-                                                form.setValue(
-                                                  `conditions.${index}.rentang_unit.unit`,
-                                                  unit.value
-                                                );
-                                                form.setValue(
-                                                  `conditions.${index}.rentang_unit.unit_pdf`,
-                                                  unit.symbol
-                                                );
-                                              }}
-                                            >
-                                              {`${unit.key} (${unit.symbol})`}
-                                            </CommandItem>
-                                          ))}
-                                        </CommandGroup>
-                                      </CommandList>
-                                    </Command>
-                                  </PopoverContent>
-                                </Popover>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="eksponen">
-                          <FormField
-                            control={form.control}
-                            name={`conditions.${index}.rentang_unit.eksponen`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input
-                                    placeholder={t("eksponen")}
-                                    value={field.value}
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      field.onChange(value); // update eksponen
-                                      form.setValue(
-                                        `conditions.${index}.rentang_unit.eksponen_pdf`,
-                                        `\\tothe{${value}}`
-                                      ); // update eksponen_pdf
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            <Button
-              variant="green"
-              type="button"
-              size="sm"
-              className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
-              onClick={handleAppendCondition}
-            >
-              <Plus />
-            </Button>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+              <Button
+                variant="green"
+                type="button"
+                size="sm"
+                className="mt-4 w-10 h-10 flex items-center justify-center mx-auto"
+                onClick={handleAppendCondition}
+              >
+                <Plus />
+              </Button>
+            </Accordion>
           </CardContent>
         </Card>
 

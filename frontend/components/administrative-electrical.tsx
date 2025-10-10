@@ -57,6 +57,12 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "sonner";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 type Country = { label: string; value: string };
 const fetchCountries = async (): Promise<Country[]> => {
@@ -481,7 +487,7 @@ export default function Administrative({
               {t("software")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-6">
+          <CardContent className="grid gap-4">
             <div className="grid grid-row md:grid-cols-2 gap-4">
               <div id="software">
                 <FormLabel>{t("nama")}</FormLabel>
@@ -525,7 +531,7 @@ export default function Administrative({
               {t("data")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-6">
+          <CardContent className="grid gap-4">
             <div className="grid grid-row md:grid-cols-2 gap-4">
               <div id="country_code">
                 <FormLabel>{t("negara_calib")}</FormLabel>
@@ -906,7 +912,7 @@ export default function Administrative({
               {t("linimasa")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-6">
+          <CardContent className="grid gap-4">
             <div className="grid grid-row md:grid-cols-2 gap-4">
               <div id="tgl_mulai">
                 <FormLabel>{t("mulai")}</FormLabel>
@@ -1084,192 +1090,199 @@ export default function Administrative({
               {t("object_desc")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-6">
-            <div className="grid gap-4">
+         <CardContent>
+            <Accordion
+              type="single"
+              collapsible
+              className="w-full"
+              defaultValue="0"
+            >
               {itemFields.map((field, index) => (
-                <div
+                <AccordionItem
+                  value={index.toString()}
                   key={field.id}
-                  className="grid gap-4 border-b pb-4 relative"
+                  className="relative"
                 >
-                  <CardDescription>
-                    {t("objek")} {index + 1}
-                  </CardDescription>
-                  {itemFields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-0 right-0"
-                      onClick={() => handleRemoveItem(index)}
-                    >
-                      <X />
-                    </Button>
-                  )}
-                  <div id="jenis">
-                    <FormLabel>{t("jenis")}</FormLabel>
-                    <div className="space-y-1">
-                      {validLanguages.length === 0 ? (
-                        <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
-                      ) : (
-                        validLanguages.map((lang: { value: string }) => (
-                          <FormField
-                            control={form.control}
-                            key={`objects-${index}-jenis-${lang.value}`} // Key yang lebih spesifik dan stabil
-                            name={`objects.${index}.jenis.${lang.value}`}
-                            render={({ field: jenisField }) => (
-                              <FormItem>
-                                <div className="flex items-center gap-2">
-                                  <FormControl>
-                                    <Input
-                                      placeholder={`${t("bahasa")} ${
-                                        languages.find((l) => l.value === lang.value)?.label || lang.value
-                                      }`}
-                                      {...jenisField}
-                                      value={jenisField.value || ""}
-                                      onChange={(e) => {
-                                        // Pastikan onChange tidak memicu re-render yang tidak perlu
-                                        jenisField.onChange(e.target.value);
-                                      }}
-                                    />
-                                  </FormControl>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        ))
-                      )}
-                    </div>
-                  </div>
-                  <div className="grid grid-row md:grid-cols-2 gap-4">
-                    <div id="merek">
-                      <FormLabel>{t("merek")}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.merek`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
+                  <AccordionTrigger>{t("objek")} {index + 1}</AccordionTrigger>
+                  <AccordionContent className="grid gap-4 pb-4">
+                    {itemFields.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-0 right-0 mt-2"
+                        onClick={() => handleRemoveItem(index)}
+                      >
+                        <X />
+                      </Button>
+                    )}
+                    <div id="jenis">
+                      <FormLabel>{t("jenis")}</FormLabel>
+                      <div className="grid grid-row md:grid-cols-2 gap-1">
+                        {validLanguages.length === 0 ? (
+                          <p className="text-sm text-red-600">{t("pilih_bahasa")}</p>
+                        ) : (
+                          validLanguages.map((lang: { value: string }) => (
+                            <FormField
+                              control={form.control}
+                              key={`objects-${index}-jenis-${lang.value}`} // Key yang lebih spesifik dan stabil
+                              name={`objects.${index}.jenis.${lang.value}`}
+                              render={({ field: jenisField }) => (
+                                <FormItem>
+                                  <div className="flex items-center gap-2">
+                                    <FormControl>
+                                      <Input
+                                        placeholder={`${t("bahasa")} ${
+                                          languages.find((l) => l.value === lang.value)?.label || lang.value
+                                        }`}
+                                        {...jenisField}
+                                        value={jenisField.value || ""}
+                                        onChange={(e) => {
+                                          // Pastikan onChange tidak memicu re-render yang tidak perlu
+                                          jenisField.onChange(e.target.value);
+                                        }}
+                                      />
+                                    </FormControl>
+                                  </div>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          ))
                         )}
-                      />
-                    </div>
-                    <div id="tipe">
-                      <FormLabel>{t("tipe")}</FormLabel>
-                      <FormField
-                        control={form.control}
-                        name={`objects.${index}.tipe`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <Card id="identifikasi-alat" className="border shadow mt-5">
-                    <CardHeader>
-                      <CardTitle className="text-black">
-                        {t("identifikasi")}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid gap-6">
-                      <div className="grid grid-row md:grid-cols-2 gap-4">
-                        <div id="item_issuer">
-                          <FormLabel>{t("penerbit_seri")}</FormLabel>
-                          <FormField
-                            control={form.control}
-                            name={`objects.${index}.item_issuer`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="manufacturer">{t("manufacturer")}</SelectItem>
-                                    <SelectItem value="calibrationLaboratory">{t("calibrationLaboratory")}</SelectItem>
-                                    <SelectItem value="customer">{t("customer")}</SelectItem>
-                                    <SelectItem value="owner">{t("owner")}</SelectItem>
-                                    <SelectItem value="other">{t("other")}</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        <div id="seri_item">
-                          <FormLabel>{t("seri")}</FormLabel>
-                          <FormField
-                            control={form.control}
-                            name={`objects.${index}.seri_item`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
                       </div>
-                      <div id="id_lain">
-                        <FormLabel>{t("id_lain")}</FormLabel>
-                        <div className="space-y-1">
-                          {validLanguages.length === 0 ? (
-                            <p className="text-sm text-red-600">
-                              {t("pilih_bahasa")}
-                            </p>
-                          ) : (
-                            validLanguages.map(
-                              (lang: { value: string }) => (
-                                <FormField
-                                  control={form.control}
-                                  key={`${field.id}-id_lain-${lang.value}`}
-                                  name={`objects.${index}.id_lain.${lang.value}`}
-                                  render={({ field: idLainField }) => (
-                                    <FormItem>
-                                      <div className="flex items-center gap-2">
-                                        <FormControl>
-                                          <Input
-                                            placeholder={`${t("bahasa")} ${
-                                              languages.find(
-                                                (l) => l.value === lang.value
-                                              )?.label || lang.value
-                                            }`}
-                                            {...idLainField}
-                                            value={idLainField.value || ""}
-                                          />
-                                        </FormControl>
-                                      </div>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              )
-                            )
+                    </div>
+                    <div className="grid grid-row md:grid-cols-2 gap-4">
+                      <div id="merek">
+                        <FormLabel>{t("merek")}</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`objects.${index}.merek`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
                           )}
-                        </div>
+                        />
                       </div>
-                    </CardContent>
-                  </Card>
-                </div>
+                      <div id="tipe">
+                        <FormLabel>{t("tipe")}</FormLabel>
+                        <FormField
+                          control={form.control}
+                          name={`objects.${index}.tipe`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <Card id="identifikasi-alat" className="border shadow">
+                      <CardHeader>
+                        <CardTitle className="text-black">
+                          {t("identifikasi")}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="grid gap-4">
+                        <div className="grid grid-row md:grid-cols-2 gap-4">
+                          <div id="item_issuer">
+                            <FormLabel>{t("penerbit_seri")}</FormLabel>
+                            <FormField
+                              control={form.control}
+                              name={`objects.${index}.item_issuer`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="manufacturer">{t("manufacturer")}</SelectItem>
+                                      <SelectItem value="calibrationLaboratory">{t("calibrationLaboratory")}</SelectItem>
+                                      <SelectItem value="customer">{t("customer")}</SelectItem>
+                                      <SelectItem value="owner">{t("owner")}</SelectItem>
+                                      <SelectItem value="other">{t("other")}</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div id="seri_item">
+                            <FormLabel>{t("seri")}</FormLabel>
+                            <FormField
+                              control={form.control}
+                              name={`objects.${index}.seri_item`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                        <div id="id_lain">
+                          <FormLabel>{t("id_lain")}</FormLabel>
+                          <div className="grid grid-row md:grid-cols-2 gap-1">
+                            {validLanguages.length === 0 ? (
+                              <p className="text-sm text-red-600">
+                                {t("pilih_bahasa")}
+                              </p>
+                            ) : (
+                              validLanguages.map(
+                                (lang: { value: string }) => (
+                                  <FormField
+                                    control={form.control}
+                                    key={`${field.id}-id_lain-${lang.value}`}
+                                    name={`objects.${index}.id_lain.${lang.value}`}
+                                    render={({ field: idLainField }) => (
+                                      <FormItem>
+                                        <div className="flex items-center gap-2">
+                                          <FormControl>
+                                            <Input
+                                              placeholder={`${t("bahasa")} ${
+                                                languages.find(
+                                                  (l) => l.value === lang.value
+                                                )?.label || lang.value
+                                              }`}
+                                              {...idLainField}
+                                              value={idLainField.value || ""}
+                                            />
+                                          </FormControl>
+                                        </div>
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                )
+                              )
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </div>
+            </Accordion>
+
             <Button
               variant="green"
               type="button"
@@ -1291,9 +1304,9 @@ export default function Administrative({
               {t("responsible")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-6">
+          <CardContent className="grid gap-4">
             <div className="grid gap-4">
-              <div id="pelaksana" className="grid gap-4 border-b pb-4">
+              <div id="pelaksana" className="grid gap-4 border-b-2 pb-4">
                 {pelaksanaFields.map((field, index) => (
                   <div key={field.id} className="relative grid gap-1">
                     <p className="text-sm font-bold">
@@ -1403,7 +1416,7 @@ export default function Administrative({
                   </p>
                 </Button>
               </div>
-              <div id="penyelia" className="grid gap-4 border-b pb-4">
+              <div id="penyelia" className="grid gap-4 border-b-2 pb-4">
                 {penyeliaFields.map((field, index) => (
                   <div key={field.id} className="relative grid gap-1">
                     <p className="text-sm font-bold">
@@ -1513,7 +1526,7 @@ export default function Administrative({
                   </p>
                 </Button>
               </div>
-              <div id="kepala" className="grid gap-1 border-b pb-4 relative">
+              <div id="kepala" className="grid gap-1 border-b-2 pb-4 relative">
                 <p className="text-sm font-bold">{t("kepala")}</p>
                 <div className="grid grid-row md:grid-cols-2 gap-4">
                   <div id="nama_resp">
@@ -1760,7 +1773,7 @@ export default function Administrative({
               {t("identitas")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-6">
+          <CardContent className="grid gap-4">
             <div className="grid gap-4">
               <div id="nama_cust">
                 <FormLabel>{t("nama")}</FormLabel>
@@ -1778,11 +1791,11 @@ export default function Administrative({
                 />
               </div>
 
-              <Card id="alamat" className="border shadow mt-5">
+              <Card id="alamat" className="border shadow mt-0">
                 <CardHeader>
                   <CardTitle className="text-black">{t("alamat")}</CardTitle>
                 </CardHeader>
-                <CardContent className="grid gap-6">
+                <CardContent className="grid gap-4">
                   <div className="grid grid-row md:grid-cols-2 gap-4">
                     <div id="jalan_cust">
                       <FormLabel>{t("jalan")}</FormLabel>

@@ -427,6 +427,7 @@ const translations: Record<string, { id: string; en: string }> = {
   at_least_one: { id: "Setidaknya satu ", en: "At least one " },
   required: { id: " wajib diisi", en: " is required" },
   must_be_filled_for_language: { id: " harus diisi untuk bahasa ", en: " must be filled for language " },
+  strip: { id: "Silakan isi dengan '-' jika tidak ada data", en: "Please fill in with '-' if there is no data" },
   
   software_name: { id: "Nama perangkat lunak", en: "Software name" },
   software_version: { id: "Versi perangkat lunak", en: "Software version" },
