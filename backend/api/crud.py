@@ -116,6 +116,53 @@ def save_image_and_get_base64(upload_file):
     except Exception as e:
         logging.error(f"Error in save_image_and_get_base64: {str(e)}")
         return '', ''
+    
+def find_uncertainty_values(ws, max_rows: int, max_columns: int) -> dict:
+    """
+    Find uncertainty values by searching for 'Ketidakpastian' or 'Uncertainty' text
+    and extracting numbers underneath it
+    """
+    uncertainty_data = {}
+    
+    for row in range(1, max_rows + 1):
+        for col in range(1, max_columns + 1):
+            cell_text = ws.Cells(row, col).Text.strip().lower()
+            
+            # Check if cell contains uncertainty keyword
+            if "ketidakpastian" in cell_text or "uncertainty" in cell_text:
+                # Extract numbers from cells below this header
+                numbers = []
+                current_row = row + 1
+                
+                while current_row <= max_rows:
+                    value = ws.Cells(current_row, col).Text.strip()
+                    
+                    if value and value != "":
+                        try:
+                            normalized_value = (
+                                value
+                                .replace("\u00A0", "")
+                                .replace(" ", "")
+                                .replace(",", ".")
+                            )
+                            float(normalized_value)
+                            numbers.append(normalized_value)
+                            current_row += 1
+                        except ValueError:
+                            # Stop when we hit non-numeric value
+                            break
+                    else:
+                        break
+                
+                if numbers:
+                    uncertainty_data[col] = numbers
+                    logging.info(f"Found uncertainty values at column {col}: {numbers}")
+                    break  # Found uncertainty column, no need to continue
+        
+        if uncertainty_data:
+            break  # Found uncertainty data, exit outer loop
+    
+    return uncertainty_data
 
 # Memproses data Excel dan mengembalikan hasil terstruktur untuk XML
 def read_excel_tables(excel_path: str, sheet_name: str, results_data: list, kepala_peran: str = "") -> dict:
@@ -123,8 +170,6 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list, kepa
     pythoncom.CoInitialize()
     excel = None
     wb = None
-
-    use_input_units = "Suhu" in kepala_peran
     
     try:
         excel = win32.Dispatch("Excel.Application")
@@ -144,8 +189,16 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list, kepa
         ws = sheet_found
         max_columns = ws.UsedRange.Columns.Count
         max_rows = ws.UsedRange.Rows.Count
+
+        min_filled_cells = 2
+
+        # Find uncertainty values if not "Kelistrikan"
+        uncertainty_values = {}
+        if "Kelistrikan" not in kepala_peran:
+            uncertainty_values = find_uncertainty_values(ws, max_rows, max_columns)
+            min_filled_cells = 1
         
-        # Deteksi tabel: baris dengan >2 sel terisi
+        # Deteksi tabel: baris dengan >min_filled_cells sel terisi
         tables = []
         in_table = False
         first_row, last_row = None, None
@@ -158,7 +211,7 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list, kepa
             ]
             filled_cells = [cell for cell in filled_cells if cell != ""]
             
-            if len(filled_cells) > 2:
+            if len(filled_cells) > min_filled_cells:
                 if not in_table:
                     first_row = row
                     in_table = True
@@ -217,7 +270,7 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list, kepa
                             has_data = True
                             
                             # Ambil unit dari Excel atau dari input
-                            if use_input_units:
+                            if "Suhu" in kepala_peran:
                                 units.append("")  # Unit akan diambil dari input
                             else:
                                 # Ambil satuan dari kolom sebelah (juga menggunakan .Text)
@@ -240,7 +293,8 @@ def read_excel_tables(excel_path: str, sheet_name: str, results_data: list, kepa
             
             table_data[table_name] = {
                 "data": extracted_data,
-                "config": result_config
+                "config": result_config,
+                "uncertainty_values": uncertainty_values
             }
         
         return table_data
@@ -602,7 +656,6 @@ def generate_xml(dcc, table_data):
                                     if condition.rentang_unit.eksponen:
                                         unit_str += f"\\tothe{{{condition.rentang_unit.eksponen}}}"
                                     with tag('si:unit'): text(d_si(unit_str.strip()))
-
                                     
             # RESULT
             with tag("dcc:results"):
@@ -672,10 +725,19 @@ def generate_xml(dcc, table_data):
                                                 with tag('si:valueXMLList'): text(" ".join(numbers).strip())
                                                 with tag('si:unitXMLList'): text(" ".join(final_units).strip())
                                                 
-                                                # Tambahkan uncertainty di dalam blok yang sama
-                                                if ref_type == "basic_measurementError" and flat_index < len(flat_columns):
-                                                    uncertainty_numbers, _ = flat_columns[flat_index]
-                                                    flat_index += 1
+                                                # Tambahkan uncertainty dari kolom terakhir, bukan setelah basic_measurementError
+                                                if ref_type == "basic_measurementError" and len(flat_columns) > 0:
+                                                    # Check if we have uncertainty_values from search
+                                                    if "Kelistrikan" not in dcc.responsible_persons.kepala.peran:
+                                                        # Use uncertainty values found by searching for "Ketidakpastian"/"Uncertainty"
+                                                        if table_info.get("uncertainty_values"):
+                                                            uncertainty_numbers = list(table_info["uncertainty_values"].values())[0]
+                                                        else:
+                                                            # Fallback to last column if search didn't find anything
+                                                            uncertainty_numbers, _ = flat_columns[-1]
+                                                    else:
+                                                        # For "Kelistrikan", always use last column
+                                                        uncertainty_numbers, _ = flat_columns[-1]
                                                     
                                                     with tag('si:measurementUncertaintyUnivariateXMLList'):
                                                         with tag('si:expandedMUXMLList'):
