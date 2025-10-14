@@ -13,9 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useLanguage } from "@/context/LanguageContext";
 import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider
+} from "@/components/ui/tooltip"
 
 export type Certificate = {
     id: number
@@ -23,6 +28,7 @@ export type Certificate = {
     date: string
     object: string
     submitter: string
+    lab: string
     status: "pending" | "approved" | "rejected"
 }
 
@@ -87,26 +93,13 @@ const downloadDCCPDF = async (id: number, certificateId: string) => {
 
 export const columns: ColumnDef<Certificate>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
+    id: "number",
+    header: () => <div className="text-center">No.</div>,
+    cell: ({ row, table }) => {
+      const sortedRows = table.getSortedRowModel().rows;
+      const displayIndex = sortedRows.findIndex(r => r.id === row.id);
+      return <div className="text-center text-muted-foreground">{displayIndex + 1}</div>;
+    },
   },
   {
     accessorKey: "certificateId",
@@ -115,6 +108,7 @@ export const columns: ColumnDef<Certificate>[] = [
       return (
         <Button
           variant="ghost"
+          className="font-bold"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           {t("certificate_id")}
@@ -130,6 +124,7 @@ export const columns: ColumnDef<Certificate>[] = [
       return (
         <Button
           variant="ghost"
+          className="font-bold"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           {t("submission_date")}
@@ -156,6 +151,7 @@ export const columns: ColumnDef<Certificate>[] = [
       return (
         <Button
           variant="ghost"
+          className="font-bold"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           {t("calibrated_object")}
@@ -171,9 +167,26 @@ export const columns: ColumnDef<Certificate>[] = [
       return (
         <Button
           variant="ghost"
+          className="font-bold"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           {t("submitted_by")}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "lab",
+    header: ({ column }) => {
+      const { t } = useLanguage();
+      return (
+        <Button
+          variant="ghost"
+          className="font-bold"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {t("lab")}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )
@@ -198,7 +211,7 @@ export const columns: ColumnDef<Certificate>[] = [
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost">
+            <Button variant="ghost" className="font-bold">
               Status <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -219,17 +232,10 @@ export const columns: ColumnDef<Certificate>[] = [
     },
     cell: ({ row }) => {
       const { t } = useLanguage()
-
       const status = row.getValue("status") as Certificate["status"]
 
-      const statusStyles: Record<Certificate["status"], string> = {
-        pending: "bg-sky-500 text-white",
-        approved: "bg-green-600 text-white",
-        rejected: "bg-red-600 text-white",
-      };
-
       return (
-        <Badge className={statusStyles[status]}>
+        <Badge variant={status === "pending" ? "blue" : status === "approved" ? "green" : "red"}>
           {t(status)}
         </Badge>
       );
@@ -241,6 +247,10 @@ export const columns: ColumnDef<Certificate>[] = [
   },
   {
     id: "actions",
+    // header: () => {
+    //   const { t } = useLanguage();
+    //   return <div>{t("aksi")}</div>
+    // },
     cell: ({ row }) => {
       const { t } = useLanguage();
       const router = useRouter();
@@ -249,22 +259,10 @@ export const columns: ColumnDef<Certificate>[] = [
       const handleStatusChange = async (newStatus: "approved" | "rejected") => {
         try {
           await updateCertificateStatus(certificate.id, newStatus);
-          
-          // // Show success toast
-          // toast({
-          //   title: "Success",
-          //   description: `Certificate ${newStatus} successfully`,
-          // });
-          
-          // Refresh the page to show updated data
-          router.refresh();
+          router.refresh(); // Refresh the page to show updated data
         } catch (error) {
-          // // Show error toast
-          // toast({
-          //   title: "Error",
-          //   description: `Failed to ${newStatus} certificate`,
-          //   variant: "destructive",
-          // });
+          // Show error toast
+          toast.error(`Failed to ${newStatus} certificate`);
         }
       };
 
@@ -278,35 +276,51 @@ export const columns: ColumnDef<Certificate>[] = [
       };
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleDownloadPDF}>
-              <Download className="mr-2 h-4 w-4" /> 
-              {t("download")}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => handleStatusChange("approved")}
-              disabled={certificate.status === "approved"}
-            >
-              <Check className="mr-2 h-4 w-4" /> 
-              {t("approve")}
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => handleStatusChange("rejected")}
-              disabled={certificate.status === "rejected"}
-            >
-              <X className="mr-2 h-4 w-4" /> 
-              {t("reject")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <TooltipProvider>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleDownloadPDF}>
+                <Download className="mr-2 h-4 w-4 text-sky-500" /> 
+                {t("download")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuItem 
+                    onClick={() => handleStatusChange("approved")}
+                    disabled={certificate.status === "approved" || certificate.status === "rejected"}
+                  >
+                    <Check className="mr-2 h-4 w-4 text-green-600" /> 
+                    {t("approve")}
+                  </DropdownMenuItem>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("cant_undo")}</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuItem 
+                    onClick={() => handleStatusChange("rejected")}
+                    disabled={certificate.status === "rejected" || certificate.status === "approved"}
+                  >
+                    <X className="mr-2 h-4 w-4 text-red-600" /> 
+                    {t("reject")}
+                  </DropdownMenuItem>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{t("cant_undo")}</p>
+                </TooltipContent>
+              </Tooltip>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TooltipProvider>
       )
     },
   },

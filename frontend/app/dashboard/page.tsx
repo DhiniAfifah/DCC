@@ -22,9 +22,10 @@ async function getData(): Promise<Certificate[]> {
     return dccList.map((dcc: any) => ({
       id: dcc.id,
       certificateId: dcc.administrative_data.sertifikat,
-      date: dcc.Measurement_TimeLine?.tgl_pengesahan || new Date().toISOString(),
+      date: dcc.Measurement_TimeLine?.tgl_akhir || new Date().toISOString(),
       object: dcc.objects_description?.[0]?.jenis?.en || dcc.objects_description?.[0]?.jenis?.id || '-',
       submitter: dcc.responsible_persons?.pelaksana?.[0]?.nama_resp || '-',
+      lab: dcc.responsible_persons?.kepala?.peran.match(/SNSU\s+(.*)/)?.[1] || '-',
       status: dcc.status || 'pending' as const,
     }));
   } catch (error) {

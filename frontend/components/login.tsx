@@ -148,7 +148,7 @@ export default function Login({ formData }: { formData: any }) {
   return (
     <FormProvider {...form}>
       <div className="flex flex-col gap-6">
-        <Card className="overflow-hidden p-0">
+        <Card className="overflow-hidden p-0 border border-gray-400">
           <CardContent className="grid p-0 md:grid-cols-2">
             <div className="bg-muted relative hidden md:block">
               <img

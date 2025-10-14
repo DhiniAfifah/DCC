@@ -16,9 +16,9 @@ export default function Item({ title, ...rest }: Partial<PaginationWithLinksProp
     rest.pageSize ||
     Number.parseInt(searchParams.get(rest.pageSizeSelectOptions?.pageSizeSearchParam || "pageSize") || "10");
   return (
-    <div>
+    <>
       {title && <h4 className="font-medium tracking-wide mb-3 text-sm">{title}</h4>}
       <PaginationWithLinks {...defaultProps} page={page} pageSize={pageSize} {...rest} />
-    </div>
+    </>
   );
 }

@@ -83,7 +83,7 @@ export default function Register({ formData }: { formData: any }) {
   return (
     <FormProvider {...form}>
       <div className="flex flex-col gap-1">
-        <Card className="overflow-hidden p-0">
+        <Card className="overflow-hidden p-0 border border-gray-400">
           <CardContent className="grid p-0 md:grid-cols-2">
             <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-3">

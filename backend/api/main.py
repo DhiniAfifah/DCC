@@ -878,7 +878,7 @@ async def get_dcc_list(
                     "administrative_data": {"sertifikat": f"DCC-{dcc.id}"},
                     "Measurement_TimeLine": {},
                     "objects_description": [{"jenis": {"en": "Unknown"}}],
-                    "responsible_persons": {"pelaksana": [{"name": "Unknown"}]},
+                    "responsible_persons": {"pelaksana": [{"name": "Unknown"}], "kepala": {"peran": "Unknown"}},
                     "created_at": None,
                     "status": "pending"
                 })

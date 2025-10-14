@@ -9,7 +9,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
@@ -24,8 +23,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
-import { Suspense } from "react";
-import Item from "@/components/ui/item";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -42,13 +39,6 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   
   const { t } = useLanguage();
-
-  const columnLabels: Record<string, string> = {
-    certificateId: t("certificate_id"),
-    date: t("submission_date"),
-    object: t("calibrated_object"),
-    submitter: t("submitted_by"),
-  };
   
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -71,7 +61,6 @@ export function DataTable<TData, TValue>({
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
@@ -88,33 +77,23 @@ export function DataTable<TData, TValue>({
     },
   })
 
-  const pageCount = table.getPageCount()
-
   return (
     <div>
       <div className="py-4">
-        {/* <Input
-          placeholder="Filter objects..."
-          value={(table.getColumn("object")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("object")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        /> */}
         <Input
           value={globalFilter ?? ""}
           onChange={e => table.setGlobalFilter(String(e.target.value))}
           placeholder={`${t("search")}...`}
         />
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border border-gray-400">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="text-bold font-bold">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -150,17 +129,6 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-
-        {/* Pagination */}
-        <Suspense>
-          <Item />
-        </Suspense>
       </div>
     </div>
   )

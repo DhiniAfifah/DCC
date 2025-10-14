@@ -12,7 +12,7 @@ import {
 } from "./pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { useLanguage } from "@/context/LanguageContext";
 
 export interface PaginationWithLinksProps {
   pageSizeSelectOptions?: {
@@ -137,17 +137,16 @@ export function PaginationWithLinks({
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center gap-3 w-full">
+    <div className="flex justify-between gap-4 w-full">
       {pageSizeSelectOptions && (
-        <div className="flex flex-col gap-4 flex-1">
-          <SelectRowsPerPage
-            options={pageSizeSelectOptions.pageSizeOptions}
-            setPageSize={navToPageSize}
-            pageSize={pageSize}
-          />
-        </div>
+        <SelectRowsPerPage
+          options={pageSizeSelectOptions.pageSizeOptions}
+          setPageSize={navToPageSize}
+          pageSize={pageSize}
+        />
       )}
-      <Pagination className={cn({ "md:justify-end": pageSizeSelectOptions })}>
+
+      <Pagination>
         <PaginationContent className="max-sm:gap-0">
           <PaginationItem>
             <PaginationPrevious
@@ -181,12 +180,14 @@ function SelectRowsPerPage({
   setPageSize: (newSize: number) => void;
   pageSize: number;
 }) {
+  const { t } = useLanguage();
+
   return (
-    <div className="flex items-center gap-4">
-      <span className="whitespace-nowrap text-sm">Rows per page</span>
+    <div className="flex items-center gap-2">
+      <span className="whitespace-nowrap text-sm">{t("rows")}</span>
 
       <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value))}>
-        <SelectTrigger>
+        <SelectTrigger className="w-[70px]">
           <SelectValue placeholder="Select page size">{String(pageSize)}</SelectValue>
         </SelectTrigger>
         <SelectContent>
