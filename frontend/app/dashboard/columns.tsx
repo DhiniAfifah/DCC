@@ -134,14 +134,30 @@ export const columns: ColumnDef<Certificate>[] = [
     },
     cell: ({ row }) => {
       const rawDate = row.getValue("date") as string;
-      const date = new Date(rawDate);
-      const formatted = new Intl.DateTimeFormat("en-GB", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      }).format(date);
+    
+      // Handle null, undefined, or empty string
+      if (!rawDate) {
+        return <div className="text-muted-foreground"></div>;
+      }
+      
+      try {
+        const date = new Date(rawDate);
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          return <div className="text-muted-foreground"></div>;
+        }
+        
+        const formatted = new Intl.DateTimeFormat("en-GB", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }).format(date);
 
-      return <div>{formatted}</div>;
+        return <div>{formatted}</div>;
+      } catch (error) {
+        return <div className="text-muted-foreground"></div>;
+      }
     },
   },
   {

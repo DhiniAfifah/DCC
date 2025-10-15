@@ -1,6 +1,6 @@
 import logging
 from fastapi import FastAPI, Depends, HTTPException, File, Header, UploadFile, Body, status, Request, Response
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -368,7 +368,6 @@ async def get_user_role(current_user: schemas.User = Depends(get_current_user)):
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
-# The rest of your endpoints remain the same...
 # CREATE DCC
 @app.post("/create-dcc/")
 async def create_dcc(
@@ -837,13 +836,16 @@ async def get_dcc_list(
     """Get list of all DCC certificates for dashboard"""
     try:
         # Fetch all DCC records from database
-        dcc_list = db.query(models.DCC).offset(skip).all()
+        dcc_list = db.query(models.DCC).options(joinedload(models.DCC.submitter)).offset(skip).all()
         
         # Transform to match frontend expectations
         result = []
         for dcc in dcc_list:
             try:
                 # Parse JSON fields if they're stored as strings
+
+                created_at_str = dcc.created_at.strftime('%Y-%m-%d') if dcc.created_at else None
+
                 administrative_data = dcc.administrative_data
                 if isinstance(administrative_data, str):
                     administrative_data = json.loads(administrative_data)
@@ -855,6 +857,10 @@ async def get_dcc_list(
                 objects_description = dcc.objects_description
                 if isinstance(objects_description, str):
                     objects_description = json.loads(objects_description)
+                
+                submitter_name = ""
+                if dcc.submitter:
+                    submitter_name = dcc.submitter.full_name or dcc.submitter.email
                     
                 responsible_persons = dcc.responsible_persons
                 if isinstance(responsible_persons, str):
@@ -862,11 +868,12 @@ async def get_dcc_list(
                 
                 result.append({
                     "id": dcc.id,
+                    "created_at": created_at_str,
                     "administrative_data": administrative_data,
                     "Measurement_TimeLine": measurement_timeline,
                     "objects_description": objects_description,
+                    "submitter": submitter_name,
                     "responsible_persons": responsible_persons,
-                    "created_at": dcc.created_at.isoformat() if hasattr(dcc, 'created_at') and dcc.created_at else None,
                     "status": getattr(dcc, 'status', 'pending')  # Default to pending if no status field
                 })
                 
@@ -875,11 +882,12 @@ async def get_dcc_list(
                 # Still include the record with basic info
                 result.append({
                     "id": dcc.id,
-                    "administrative_data": {"sertifikat": f"DCC-{dcc.id}"},
+                    "created_at": "",
+                    "administrative_data": {"sertifikat": ""},
                     "Measurement_TimeLine": {},
-                    "objects_description": [{"jenis": {"en": "Unknown"}}],
-                    "responsible_persons": {"pelaksana": [{"name": "Unknown"}], "kepala": {"peran": "Unknown"}},
-                    "created_at": None,
+                    "objects_description": [{"jenis": {"en": ""}}],
+                    "submitter": "",
+                    "responsible_persons": {"pelaksana": [{"name": ""}], "kepala": {"peran": ""}},
                     "status": "pending"
                 })
         
@@ -1167,6 +1175,7 @@ async def create_dcc_streaming(
     request: Request,
     dcc: schemas.DCCFormCreate = Body(...),
     db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user),
 ):
     language = get_language_from_request(request)
     
@@ -1246,7 +1255,7 @@ async def create_dcc_streaming(
             loop = asyncio.get_event_loop()
             
             # Create a task for the DCC creation
-            dcc_task = loop.run_in_executor(None, crud.create_dcc, db, dcc, progress_callback, language)
+            dcc_task = loop.run_in_executor(None, crud.create_dcc, db, dcc, progress_callback, language, current_user)
             
             # Monitor for progress updates while the task runs
             result = None

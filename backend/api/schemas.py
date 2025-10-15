@@ -1,8 +1,7 @@
 from pydantic import BaseModel, RootModel
-from typing import List, Optional, Any, Union, Dict
-from fastapi import UploadFile
-from datetime import date
-from pydantic import BaseModel, validator
+from typing import List, Optional,  Dict
+from datetime import datetime
+from pydantic import BaseModel
 from enum import Enum
 
 class DCCStatus(str, Enum):
@@ -247,3 +246,27 @@ class DCCFormCreate(BaseModel):
 
 class ExcelFileResponse(BaseModel):
     excel_file_path: str
+
+class DCCResponse(BaseModel):
+    id: int
+    created_at: datetime
+    submitter_name: Optional[str] = None
+    status: DCCStatus
+    software: str  # software
+    version: str  # versi
+    Measurement_TimeLine: MeasurementTimeline
+    administrative_data: AdministrativeData
+    objects: List[ObjectDescription]  # Deskripsi objek yang diukur
+    responsible_persons: ResponsiblePersons  # Penanggung jawab
+    owner: OwnerIdentity  # Identitas pemilik
+    methods: List[Method]  # Metode
+    equipments: List[Equipment]  # Peralatan
+    conditions: List[Condition]  # Kondisi (Suhu dan Kelembapan)
+    results: List[Result]
+    excel: Optional[str]
+    sheet_name: str
+    statements: List[Statements]  # Catatan
+    comment: Optional[Comment]
+    
+    class Config:
+        from_attributes = True

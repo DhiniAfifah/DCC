@@ -9,10 +9,10 @@ export function middleware(request: NextRequest) {
   
   // Also check if the token is actually valid (not empty, not expired placeholder)
   const hasValidToken = cookieToken && 
-                       cookieToken.trim() !== "" && 
-                       cookieToken !== "undefined" && 
-                       cookieToken !== "null" &&
-                       !cookieToken.includes("expires=Thu, 01 Jan 1970"); // Check if it's an expired cookie
+                        cookieToken.trim() !== "" && 
+                        cookieToken !== "undefined" && 
+                        cookieToken !== "null" &&
+                        !cookieToken.includes("expires=Thu, 01 Jan 1970"); // Check if it's an expired cookie
   
   console.log("🍪 Middleware: Cookie token present:", cookieToken ? "YES" : "NO");
   console.log("🍪 Middleware: Cookie token valid:", hasValidToken ? "YES" : "NO");
@@ -63,13 +63,6 @@ export function middleware(request: NextRequest) {
     
     return response;
   }
-
-  // // If accessing login/register with valid token, redirect to home
-  // if (isPublicRoute && hasValidToken) {
-  //   console.log("⚠️ Middleware: Has valid token on public route");
-  //   console.log("🔄 Middleware: Redirecting to home (valid token present)");
-  //   return NextResponse.redirect(new URL("/home", request.url));
-  // }
 
   // If on public route with invalid token, clear the cookie and allow
   if (isPublicRoute && cookieToken && !hasValidToken) {

@@ -4,7 +4,7 @@ from pathlib import Path
 import api.models as models
 import api.schemas as schemas
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import os
 import pythoncom
 from yattag import Doc, indent
@@ -829,7 +829,7 @@ def extract_corrections_from_dcc(dcc: schemas.DCCFormCreate):
     return corrections
 
 #db n excel 
-def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, language='en'):
+def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, language='en', current_user=None):
     logging.info("Starting DCC creation process")
     
     # Inisialisasi variabel Office
@@ -842,6 +842,9 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
             progress_callback(30, get_progress_message("processing_form", language))
 
         logging.debug("Creating DCC model instance")
+
+        wib_timezone = timezone(timedelta(hours=7))
+        created_at = datetime.now(wib_timezone)
         
         measurement_timeline_data = {
             "tgl_mulai": dcc.Measurement_TimeLine.tgl_mulai,
@@ -998,6 +1001,8 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
             progress_callback(40, get_progress_message("saving", language))
 
         db_dcc = models.DCC(
+            created_at=created_at,
+            submitter_id=current_user.id if current_user else None,
             software_name=dcc.software,
             software_version=dcc.version,
             administrative_data=administrative_data_dict,
@@ -1095,74 +1100,6 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
             for doc in word.Documents:
                 doc.Close(SaveChanges=False)
             word.Quit()
-
-def get_all_dccs(db: Session):
-    """
-    Get all DCCs from database for director dashboard
-    """
-    try:
-        dccs = db.query(models.DCC).all()
-        
-        # Transform the data to match the frontend expectations
-        dcc_list = []
-        for dcc in dccs:
-            try:
-                # Parse JSON fields safely
-                admin_data = dcc.administrative_data if isinstance(dcc.administrative_data, dict) else {}
-                timeline = dcc.Measurement_TimeLine if isinstance(dcc.Measurement_TimeLine, dict) else {}
-                objects_desc = dcc.objects_description if isinstance(dcc.objects_description, list) else []
-                responsible_persons = dcc.responsible_persons if isinstance(dcc.responsible_persons, dict) else {}
-                
-                # Extract relevant information
-                certificate_id = admin_data.get('sertifikat', f'DCC-{dcc.id}')
-                date = timeline.get('tgl_pengesahan', datetime.now().isoformat())
-                
-                # Get object description
-                object_name = '-'
-                if objects_desc and len(objects_desc) > 0:
-                    obj = objects_desc[0]
-                    if isinstance(obj, dict) and 'jenis' in obj:
-                        jenis = obj['jenis']
-                        if isinstance(jenis, dict):
-                            object_name = jenis.get('en') or jenis.get('id', '-')
-                        else:
-                            object_name = str(jenis)
-                
-                # Get submitter name
-                submitter = '-'
-                if 'pelaksana' in responsible_persons and responsible_persons['pelaksana']:
-                    pelaksana_list = responsible_persons['pelaksana']
-                    if pelaksana_list and len(pelaksana_list) > 0:
-                        submitter = pelaksana_list[0].get('nama_resp', '-')
-                
-                dcc_item = {
-                    'id': dcc.id,
-                    'certificate_id': certificate_id,
-                    'date': date,
-                    'object': object_name,
-                    'submitter': submitter,
-                    'status': dcc.status.value if dcc.status else 'pending'
-                }
-                
-                dcc_list.append(dcc_item)
-                
-            except Exception as item_error:
-                logging.error(f"Error processing DCC item {dcc.id}: {item_error}")
-                # Add a basic entry even if processing fails
-                dcc_list.append({
-                    'id': dcc.id,
-                    'certificate_id': f'DCC-{dcc.id}',
-                    'date': datetime.now().isoformat(),
-                    'object': 'Error loading',
-                    'submitter': 'Error loading',
-                    'status': 'pending'
-                })
-        
-        return dcc_list
-        
-    except Exception as e:
-        logging.error(f"Error in get_all_dccs: {e}")
-        raise e
     
 def get_preview_paths(unique_id: str):
     """Generate temporary paths for preview files"""

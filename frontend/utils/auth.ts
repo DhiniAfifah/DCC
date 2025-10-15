@@ -177,3 +177,23 @@ export const isAuthenticated = (): boolean => {
   const token = getToken();
   return token ? verifyToken(token) : false;
 };
+
+// export function getAuthToken(): string | null {
+//   if (typeof window === 'undefined') return null;
+  
+//   const token = document.cookie
+//     .split('; ')
+//     .find(row => row.startsWith('access_token='))
+//     ?.split('=')[1];
+  
+//   return token || null;
+// }
+
+// export function getAuthHeaders(additionalHeaders: Record<string, string> = {}): Record<string, string> {
+//   const token = getAuthToken();
+  
+//   return {
+//     ...additionalHeaders,
+//     ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+//   };
+// }

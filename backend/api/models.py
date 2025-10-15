@@ -1,8 +1,8 @@
-from sqlalchemy import Column, String, Integer, Date, Text, JSON, Boolean, Enum, DateTime
+from sqlalchemy import Column, String, Integer, JSON, Boolean, Enum, DateTime, ForeignKey
 import enum
 import datetime
 from .database import Base
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import relationship
 
 class DCCStatusEnum(str, enum.Enum):
     pending = "pending"
@@ -18,6 +18,9 @@ class DCC(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     status = Column(Enum(DCCStatusEnum), default=DCCStatusEnum.pending)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))))  # WIB timezone
+    submitter_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    submitter = relationship("User", foreign_keys=[submitter_id])
     software_name = Column(String)
     software_version = Column(String)
     Measurement_TimeLine = Column(JSON)

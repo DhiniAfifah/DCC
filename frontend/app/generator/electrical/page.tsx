@@ -1755,6 +1755,21 @@ export default function CreateDCC() {
     setProgressMessage(t("preparing"));
     setProgressPercent(0);
 
+    // Get the authentication token from cookies
+    const token = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('access_token='))
+      ?.split('=')[1];
+
+    if (!token) {
+      toast.error("Authentication required", {
+        description: "Please log in to submit DCC",
+        duration: 5000
+      });
+      setIsProcessingSubmission(false);
+      return;
+    }
+
     // Create FormData object for multipart/form-data submission
     const submitFormData = new FormData();
 
@@ -1815,11 +1830,21 @@ export default function CreateDCC() {
         headers: {
           "Content-Type": "application/json",
           "Accept-Language": language === 'id' ? 'id-ID,id;q=0.9' : 'en-US,en;q=0.9',
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(sanitizeData(modifiedFormData)),
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          toast.error("Authentication failed", {
+            description: "Please log in again",
+          });
+          // Optionally redirect to login page
+          window.location.href = '/';
+          return;
+        }
+
         const errorText = await response.text();
         throw new Error(
           `HTTP error! Status: ${response.status}, Message: ${errorText}`
@@ -1994,7 +2019,7 @@ export default function CreateDCC() {
                 )}
               </div>
               
-              <span>{t("please_wait")}</span>
+              <span className="mt-2">{t("please_wait")}</span>
             </div>
           </div>
         </div>
