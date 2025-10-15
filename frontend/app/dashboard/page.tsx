@@ -11,22 +11,22 @@ async function getData(): Promise<Certificate[]> {
 
     if (!response.ok) {
       if (response.status === 403) {
-        console.error('Access denied - Director role required');
+        console.error('Access denied - Officer role required');
         return [];
       }
       throw new Error('Failed to fetch data');
     }
 
     const dccList = await response.json();
-
+    
     return dccList.map((dcc: any) => ({
       id: dcc.id,
-      date: dcc.created_at,
       certificateId: dcc.administrative_data.sertifikat,
+      date: dcc.created_at,
       object: dcc.objects_description?.[0]?.jenis?.en || dcc.objects_description?.[0]?.jenis?.id,
       submitter: dcc.submitter,
       lab: dcc.responsible_persons?.kepala?.peran.match(/SNSU\s+(.*)/)?.[1],
-      status: dcc.status || 'pending' as const,
+      status: dcc.status,
     }));
   } catch (error) {
     console.error('Error fetching DCC data:', error);

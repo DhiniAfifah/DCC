@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
   TooltipProvider
 } from "@/components/ui/tooltip"
+import { isDirector, isHead } from "@/utils/auth"
 
 export type Certificate = {
     id: number
@@ -29,11 +30,17 @@ export type Certificate = {
     object: string
     submitter: string
     lab: string
-    status: "pending" | "approved" | "rejected"
+    status: "pending_head" | "approved_head" | "rejected_head" | "approved_director" | "rejected_director"
 }
 
+type StatusType =
+  | "approved_head"
+  | "rejected_head"
+  | "approved_director"
+  | "rejected_director";
+
 // Function to update certificate status
-const updateCertificateStatus = async (id: number, status: "approved" | "rejected") => {
+const updateCertificateStatus = async (id: number, status: StatusType) => {
   try {
     const response = await fetch(`http://127.0.0.1:8000/api/dcc/${id}/status`, {
       method: 'PATCH',
@@ -211,7 +218,7 @@ export const columns: ColumnDef<Certificate>[] = [
   {
     accessorKey: "status",
     header: ({ column }) => {
-      const statuses = ["pending", "approved", "rejected"]
+      const statuses = ["pending_head", "approved_head", "rejected_head", "approved_director", "rejected_director"]
 
       const selectedStatuses = column.getFilterValue() as string[] || []
 
@@ -251,8 +258,33 @@ export const columns: ColumnDef<Certificate>[] = [
       const status = row.getValue("status") as Certificate["status"]
 
       return (
-        <Badge variant={status === "pending" ? "blue" : status === "approved" ? "green" : "red"}>
-          {t(status)}
+        <Badge
+          variant={
+            isHead()
+              ? status === "pending_head" ? "blue" : 
+                status === "approved_head" ? "green" : 
+                status === "rejected_head" ? "red" : 
+                "default"
+            : isDirector()
+              ? status === "approved_head" ? "blue" : 
+                status === "approved_director" ? "green" : 
+                status === "rejected_director" ? "red" : 
+                "default"
+              : "default"
+          }
+        >
+          {isHead()
+            ? status === "pending_head" ? t("pending") : 
+              status === "approved_head" ? t("approved") : 
+              status === "rejected_head" ? t("rejected") : 
+              t("unknown")
+          : isDirector()
+            ? status === "approved_head" ? t("pending") : 
+              status === "approved_director" ? t("approved") : 
+              status === "rejected_director" ? t("rejected") : 
+              t("unknown")
+            : t("unknown")
+          }
         </Badge>
       );
     },
@@ -263,22 +295,18 @@ export const columns: ColumnDef<Certificate>[] = [
   },
   {
     id: "actions",
-    // header: () => {
-    //   const { t } = useLanguage();
-    //   return <div>{t("aksi")}</div>
-    // },
     cell: ({ row }) => {
       const { t } = useLanguage();
       const router = useRouter();
       const certificate = row.original;
  
-      const handleStatusChange = async (newStatus: "approved" | "rejected") => {
+      const handleStatusChange = async (newStatus: StatusType) => {
         try {
           await updateCertificateStatus(certificate.id, newStatus);
           router.refresh(); // Refresh the page to show updated data
         } catch (error) {
           // Show error toast
-          toast.error(`Failed to ${newStatus} certificate`);
+          toast.error("Failed to change certificate status");
         }
       };
 
@@ -290,6 +318,17 @@ export const columns: ColumnDef<Certificate>[] = [
           toast.error(`Failed to download PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       };
+      
+      let approve: StatusType;
+      let reject: StatusType;
+
+      if (isHead()) {
+        approve = "approved_head";
+        reject = "rejected_head";
+      } else if (isDirector()) {
+        approve = "approved_director";
+        reject = "rejected_director";
+      }
 
       return (
         <TooltipProvider>
@@ -309,8 +348,11 @@ export const columns: ColumnDef<Certificate>[] = [
               <Tooltip>
                 <TooltipTrigger asChild>
                   <DropdownMenuItem 
-                    onClick={() => handleStatusChange("approved")}
-                    disabled={certificate.status === "approved" || certificate.status === "rejected"}
+                    onClick={() => handleStatusChange(approve)}
+                    disabled={
+                      (isHead() && (certificate.status === "approved_head" || certificate.status === "rejected_head")) ||
+                      (isDirector() && (certificate.status === "approved_director" || certificate.status === "rejected_director"))
+                    }
                   >
                     <Check className="mr-2 h-4 w-4 text-green-600" /> 
                     {t("approve")}
@@ -323,8 +365,11 @@ export const columns: ColumnDef<Certificate>[] = [
               <Tooltip>
                 <TooltipTrigger asChild>
                   <DropdownMenuItem 
-                    onClick={() => handleStatusChange("rejected")}
-                    disabled={certificate.status === "rejected" || certificate.status === "approved"}
+                    onClick={() => handleStatusChange(reject)}
+                    disabled={
+                      (isHead() && (certificate.status === "approved_head" || certificate.status === "rejected_head")) ||
+                      (isDirector() && (certificate.status === "approved_director" || certificate.status === "rejected_director"))
+                    }
                   >
                     <X className="mr-2 h-4 w-4 text-red-600" /> 
                     {t("reject")}

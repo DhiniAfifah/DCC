@@ -26,14 +26,14 @@ export function middleware(request: NextRequest) {
   }
   
   const protectedRoutes = ["/home", "/dashboard", "/generator", "/importer"];
-  const directorOnlyRoutes = ["/dashboard"];
+  const officerOnlyRoutes = ["/dashboard"];
   const publicRoutes = ["/", "/register"];
 
   const isProtectedRoute = protectedRoutes.some(route => 
     request.nextUrl.pathname.startsWith(route)
   );
 
-  const isDirectorOnlyRoute = directorOnlyRoutes.some(route => 
+  const isOfficerOnlyRoute = officerOnlyRoutes.some(route => 
     request.nextUrl.pathname.startsWith(route)
   );
   

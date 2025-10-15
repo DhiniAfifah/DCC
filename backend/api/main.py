@@ -249,6 +249,20 @@ async def get_current_director(
         )
     return current_user
 
+# Dependency to ensure current user is a lab head
+async def get_current_head(
+    current_user: schemas.User = Depends(get_current_user)
+):
+    """
+    Dependency that ensures the current user has lab head role
+    """
+    if current_user.role != UserRole.head:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Lab head role required."
+        )
+    return current_user
+
 # Endpoint Register
 @app.post("/register", response_model=schemas.User)
 def register_user(
@@ -289,7 +303,7 @@ async def login_for_access_token(
     print(f"🔑 Token generated successfully")
     
     # Determine redirect URL based on role
-    redirect_url = "/dashboard" if auth_user.role == UserRole.director else "/home"
+    redirect_url = "/dashboard" if auth_user.role in [UserRole.director, UserRole.head] else "/home"
     
     # Create response with token and redirect info
     response = JSONResponse(
@@ -874,7 +888,7 @@ async def get_dcc_list(
                     "objects_description": objects_description,
                     "submitter": submitter_name,
                     "responsible_persons": responsible_persons,
-                    "status": getattr(dcc, 'status', 'pending')  # Default to pending if no status field
+                    "status": getattr(dcc, 'status', 'pending_head')
                 })
                 
             except (json.JSONDecodeError, AttributeError) as e:
@@ -888,7 +902,7 @@ async def get_dcc_list(
                     "objects_description": [{"jenis": {"en": ""}}],
                     "submitter": "",
                     "responsible_persons": {"pelaksana": [{"name": ""}], "kepala": {"peran": ""}},
-                    "status": "pending"
+                    "status": "pending_head"
                 })
         
         return result

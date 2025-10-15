@@ -106,3 +106,15 @@ def is_director(user: models.User) -> bool:
         True if user is director, False otherwise
     """
     return user.role == models.UserRole.director
+
+def is_head(user: models.User) -> bool:
+    """
+    Check if user has lab head role
+    
+    Args:
+        user: User object
+    
+    Returns:
+        True if user is lab head, False otherwise
+    """
+    return user.role == models.UserRole.head

@@ -5,12 +5,15 @@ from pydantic import BaseModel
 from enum import Enum
 
 class DCCStatus(str, Enum):
-    pending = "pending"
-    approved = "approved"
-    rejected = "rejected"
+    pending_head = "pending_head"
+    approved_head = "approved_head"
+    rejected_head = "rejected_head"
+    approved_director = "approved_director"
+    rejected_director = "rejected_director"
 
 class UserRole(str, Enum):
     user = "user"
+    head = "head"
     director = "director"
 
 class Language(BaseModel):
@@ -227,7 +230,7 @@ class TokenData(BaseModel):
     scopes: list[str] = []
 
 class DCCFormCreate(BaseModel):
-    status: DCCStatus = DCCStatus.pending
+    status: DCCStatus = DCCStatus.pending_head
     software: str  # software
     version: str  # versi
     Measurement_TimeLine: MeasurementTimeline

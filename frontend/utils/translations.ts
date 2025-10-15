@@ -398,12 +398,17 @@ const translations: Record<string, { id: string; en: string }> = {
   // Dashboard
   dasbor: { id: "Dasbor", en: "Dashboard" },
   access_denied: { id: "Akses Ditolak", en: "Access Denied" },
-  DirectorProtectedRoute: { id: "Halaman ini hanya dapat diakses oleh Direktur.", en: "This page is only accessible to Directors." },
+  OfficerProtectedRoute: { id: "Halaman ini hanya dapat diakses oleh Direktur atau Kepala lab.", en: "This page is only accessible to Directors or Lab Heads." },
   back_to_home: { id: "Kembali ke Beranda", en: "Back to Home" },
-  dashboard: { id: "Dasbor Direktur", en: "Director Dashboard" },
-  welcome_dashboard: { 
+  director_dashboard: { id: "Dasbor Direktur", en: "Director Dashboard" },
+  welcome_dashboard_director: { 
     id: "Selamat datang di dasbor direktur. Di sini Anda dapat melihat dan mengelola semua pengajuan DCC.", 
-    en: "Welcome to the director dashboard. Here you can view and manage all DCC submissions." 
+    en: "Welcome to the Director dashboard. Here you can view and manage all DCC submissions." 
+  },
+  head_dashboard: { id: "Dasbor Kepala Lab", en: "Lab Head Dashboard" },
+  welcome_dashboard_head: { 
+    id: "Selamat datang di dasbor kepala laboratorium. Di sini Anda dapat melihat dan mengelola semua pengajuan DCC.", 
+    en: "Welcome to the Laboratory Head dashboard. Here you can view and manage all DCC submissions." 
   },
   search: { id: "Cari", en: "Search" },
   columns: { id: "Kolom", en: "Columns" },
@@ -422,7 +427,7 @@ const translations: Record<string, { id: string; en: string }> = {
 
   // animate-spin
   authentication: { id: "Memeriksa autentikasi", en: "Checking authentication"},
-  verify_director: { id: "Memverifikasi akses direktur", en: "Verifying director access" },
+  verify_officer: { id: "Memverifikasi akses pejabat", en: "Verifying officer access" },
   verify_session: { id: "Memverifikasi sesi", en: "Verifying session" },
 
   // Errors

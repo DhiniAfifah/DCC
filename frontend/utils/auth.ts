@@ -38,10 +38,24 @@ export const getUserRole = (): string | null => {
   }
 };
 
+// Check if current user is officer
+export const isOfficer = (): boolean => {
+  const role = getUserRole();
+  return role === "director" || role === "head";
+};
+
 // Check if current user is director
 export const isDirector = (): boolean => {
   const role = getUserRole();
+  console.log("User role:", role);
   return role === "director";
+};
+
+// Check if current user is lab head
+export const isHead = (): boolean => {
+  const role = getUserRole();
+  console.log("User role:", role);
+  return role === "head";
 };
 
 // Get token from localStorage first, then try cookies as fallback
@@ -177,23 +191,3 @@ export const isAuthenticated = (): boolean => {
   const token = getToken();
   return token ? verifyToken(token) : false;
 };
-
-// export function getAuthToken(): string | null {
-//   if (typeof window === 'undefined') return null;
-  
-//   const token = document.cookie
-//     .split('; ')
-//     .find(row => row.startsWith('access_token='))
-//     ?.split('=')[1];
-  
-//   return token || null;
-// }
-
-// export function getAuthHeaders(additionalHeaders: Record<string, string> = {}): Record<string, string> {
-//   const token = getAuthToken();
-  
-//   return {
-//     ...additionalHeaders,
-//     ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-//   };
-// }

@@ -1,11 +1,11 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getToken, verifyToken, isDirector, getUserRole } from "@/utils/auth";
+import { getToken, verifyToken, isOfficer, getUserRole } from "@/utils/auth";
 import { useLanguage } from '@/context/LanguageContext';
 import { Button } from "@/components/ui/button";
 
-export default function DirectorProtectedRoute({
+export default function OfficerProtectedRoute({
   children,
 }: {
   children: React.ReactNode;
@@ -16,8 +16,8 @@ export default function DirectorProtectedRoute({
   const { t } = useLanguage();
 
   useEffect(() => {
-    const checkDirectorAuth = async () => {
-      console.log("🎯 DirectorProtectedRoute: Starting director auth check...");
+    const checkOfficerAuth = async () => {
+      console.log("🎯 OfficerProtectedRoute: Starting officer auth check...");
       setIsLoading(true);
 
       try {
@@ -25,28 +25,28 @@ export default function DirectorProtectedRoute({
         const token = getToken();
         
         if (!token) {
-          console.log("❌ DirectorProtectedRoute: No token found, redirecting to login");
+          console.log("❌ OfficerProtectedRoute: No token found, redirecting to login");
           throw new Error("No token found");
         }
 
-        console.log("🔍 DirectorProtectedRoute: Verifying token...");
+        console.log("🔍 OfficerProtectedRoute: Verifying token...");
         const isValid = verifyToken(token);
         
         if (!isValid) {
-          console.log("❌ DirectorProtectedRoute: Token invalid");
+          console.log("❌ OfficerProtectedRoute: Token invalid");
           throw new Error("Token invalid");
         }
 
-        // Check if user is director
+        // Check if user is officer
         const userRole = getUserRole();
-        console.log("👤 DirectorProtectedRoute: User role:", userRole);
+        console.log("👤 OfficerProtectedRoute: User role:", userRole);
         
-        if (userRole !== "director") {
-          console.log("🚫 DirectorProtectedRoute: User is not director");
+        if (userRole !== "director" && userRole !== "head") {
+          console.log("🚫 OfficerProtectedRoute: User is not officer");
           return;
         }
 
-        console.log("✅ DirectorProtectedRoute: User is director, checking with server...");
+        console.log("✅ OfficerProtectedRoute: User is officer, checking with server...");
         
         // FIXED: Double-check with server using proper headers
         try {
@@ -64,53 +64,53 @@ export default function DirectorProtectedRoute({
             mode: "cors", // Explicitly set CORS mode
           });
 
-          console.log("📡 DirectorProtectedRoute: Server response status:", response.status);
-          console.log("📋 DirectorProtectedRoute: Response headers:", Object.fromEntries(response.headers.entries()));
+          console.log("📡 OfficerProtectedRoute: Server response status:", response.status);
+          console.log("📋 OfficerProtectedRoute: Response headers:", Object.fromEntries(response.headers.entries()));
 
           if (response.ok) {
             const userData = await response.json();
-            console.log("✅ DirectorProtectedRoute: Server authentication successful, role:", userData.role);
+            console.log("✅ OfficerProtectedRoute: Server authentication successful, role:", userData.role);
             
-            if (userData.role === "director") {
+            if (userData.role === "director" || userData.role === "head") {
               setIsAuthorized(true);
             } else {
-              console.log("🚫 DirectorProtectedRoute: Server confirms user is not director");
-              throw new Error("Not a director");
+              console.log("🚫 OfficerProtectedRoute: Server confirms user is not officer");
+              throw new Error("Not an officer");
             }
           } else if (response.status === 401) {
-            console.log("❌ DirectorProtectedRoute: Server rejected token (401)");
+            console.log("❌ OfficerProtectedRoute: Server rejected token (401)");
             const errorText = await response.text();
             console.log("📝 Error response:", errorText);
             throw new Error("Token rejected by server");
           } else if (response.status === 403) {
-            console.log("🚫 DirectorProtectedRoute: Server denied access (403)");
-            // Redirect to home page for non-directors
+            console.log("🚫 OfficerProtectedRoute: Server denied access (403)");
+            // Redirect to home page for non-officers
             setTimeout(() => {
               window.location.href = "/home";
             }, 100);
             return;
           } else {
-            console.log("⚠️ DirectorProtectedRoute: Server error, but token seems valid locally");
+            console.log("⚠️ OfficerProtectedRoute: Server error, but token seems valid locally");
             console.log("📝 Response text:", await response.text());
-            // If server is down but token is valid and role is director, allow access
-            if (isDirector()) {
+            // If server is down but token is valid and role is officer, allow access
+            if (isOfficer()) {
               setIsAuthorized(true);
             } else {
               throw new Error("Not authorized");
             }
           }
         } catch (serverError) {
-          console.error("🌐 DirectorProtectedRoute: Server check failed:", serverError);
+          console.error("🌐 OfficerProtectedRoute: Server check failed:", serverError);
           
           // Check if it's a network error vs auth error
           if (serverError instanceof TypeError && serverError.message === "Failed to fetch") {
             console.log("🌐 Network error detected, checking local token validation");
-            // If server is unreachable but token is valid and role is director, allow access
-            if (isDirector()) {
-              console.log("⚠️ DirectorProtectedRoute: Server unreachable, trusting local token validation");
+            // If server is unreachable but token is valid and role is officer, allow access
+            if (isOfficer()) {
+              console.log("⚠️ OfficerProtectedRoute: Server unreachable, trusting local token validation");
               setIsAuthorized(true);
             } else {
-              throw new Error("Server unreachable and not director");
+              throw new Error("Server unreachable and not officer");
             }
           } else {
             // Re-throw other errors
@@ -118,13 +118,13 @@ export default function DirectorProtectedRoute({
           }
         }
       } catch (error) {
-        console.error("❌ DirectorProtectedRoute: Authorization check failed:", error);
+        console.error("❌ OfficerProtectedRoute: Authorization check failed:", error);
         
         // Clear all authentication data
         localStorage.removeItem("access_token");
         document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
         
-        console.log("🔄 DirectorProtectedRoute: Redirecting to login...");
+        console.log("🔄 OfficerProtectedRoute: Redirecting to login...");
         
         // Use setTimeout to ensure this runs after current execution context
         setTimeout(() => {
@@ -137,10 +137,10 @@ export default function DirectorProtectedRoute({
     };
 
     // Run auth check
-    checkDirectorAuth();
+    checkOfficerAuth();
 
     // Check auth every 5 minutes
-    const interval = setInterval(checkDirectorAuth, 5 * 60 * 1000);
+    const interval = setInterval(checkOfficerAuth, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [router]);
@@ -161,12 +161,12 @@ export default function DirectorProtectedRoute({
   };
 
   if (isLoading) {
-    console.log("⏳ DirectorProtectedRoute: Showing loading screen");
+    console.log("⏳ OfficerProtectedRoute: Showing loading screen");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t("verify_director")}...</p>
+          <p className="mt-4 text-gray-600">{t("verify_officer")}...</p>
           {/* Debug button for testing CORS */}
           <button 
             onClick={testCORS}
@@ -180,15 +180,15 @@ export default function DirectorProtectedRoute({
   }
 
   if (!isAuthorized) {
-    console.log("🚫 DirectorProtectedRoute: Showing access denied");
+    console.log("🚫 OfficerProtectedRoute: Showing access denied");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800">{t("access_denied")}</h1>
-          <p className="text-gray-600 mt-2">{t("DirectorProtectedRoute")}</p>
+          <p className="text-gray-600 mt-2">{t("OfficerProtectedRoute")}</p>
           <Button
             onClick={() => {
-              console.log("🔄 DirectorProtectedRoute: Manual redirect to home");
+              console.log("🔄 OfficerProtectedRoute: Manual redirect to home");
               window.location.href = "/home";
             }}
             variant="green"
@@ -201,6 +201,6 @@ export default function DirectorProtectedRoute({
     );
   }
 
-  console.log("✅ DirectorProtectedRoute: Rendering director content");
+  console.log("✅ OfficerProtectedRoute: Rendering officer content");
   return <>{children}</>;
 }

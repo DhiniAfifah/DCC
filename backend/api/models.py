@@ -5,19 +5,22 @@ from .database import Base
 from sqlalchemy.orm import relationship
 
 class DCCStatusEnum(str, enum.Enum):
-    pending = "pending"
-    approved = "approved"
-    rejected = "rejected"
+    pending_head = "pending_head"
+    approved_head = "approved_head"
+    rejected_head = "rejected_head"
+    approved_director = "approved_director"
+    rejected_director = "rejected_director"
 
 class UserRole(str, enum.Enum):
     user = "user"
+    head = "head"
     director = "director"
 
 class DCC(Base):
     __tablename__ = "dcc"
 
     id = Column(Integer, primary_key=True, index=True)
-    status = Column(Enum(DCCStatusEnum), default=DCCStatusEnum.pending)
+    status = Column(Enum(DCCStatusEnum), default=DCCStatusEnum.pending_head)
     created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))))  # WIB timezone
     submitter_id = Column(Integer, ForeignKey('users.id'), nullable=True)
     submitter = relationship("User", foreign_keys=[submitter_id])
@@ -43,7 +46,7 @@ class XML(Base):
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String, index=True)
     file_path = Column(String, index=True)
-    status = Column(String, default="pending")
+    status = Column(String, default="pending_head")
 
 class User(Base):
     __tablename__ = "users"

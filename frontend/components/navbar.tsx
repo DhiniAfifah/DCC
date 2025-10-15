@@ -5,7 +5,7 @@ import Link from "next/link";
 import type React from "react";
 import { useLanguage } from '@/context/LanguageContext';
 import { Switch } from "@/components/ui/switch";
-import { logout, isDirector, isAuthenticated } from "@/utils/auth";
+import { logout, isOfficer, isAuthenticated } from "@/utils/auth";
 import { Menu } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
@@ -18,7 +18,7 @@ import { House } from 'lucide-react';
 
 const Navbar = () => {
   const { t } = useLanguage();
-  const [userIsDirector, setUserIsDirector] = useState(false);
+  const [userIsOfficer, setUserIsOfficer] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Check user role on component mount and when auth state changes
@@ -28,11 +28,11 @@ const Navbar = () => {
       setIsLoggedIn(authenticated);
       
       if (authenticated) {
-        const directorStatus = isDirector();
-        setUserIsDirector(directorStatus);
-        console.log("🔍 Navbar: User is director:", directorStatus);
+        const officerStatus = isOfficer();
+        setUserIsOfficer(officerStatus);
+        console.log("🔍 Navbar: User is offical:", officerStatus);
       } else {
-        setUserIsDirector(false);
+        setUserIsOfficer(false);
       }
     };
 
@@ -99,8 +99,8 @@ const Navbar = () => {
               <NavLink href="/">{t("login")}</NavLink>
             )}
             
-            {/* Dashboard button - only visible for directors */}
-            {isLoggedIn && userIsDirector && (
+            {/* Dashboard button - only visible for officers */}
+            {isLoggedIn && userIsOfficer && (
               <NavLink href="/dashboard" isDashboard={true}>
                 {t("dasbor")}
               </NavLink>
@@ -127,7 +127,7 @@ const Navbar = () => {
                   </Link>
                 </DropdownMenuItem>
 
-                {isLoggedIn && userIsDirector && (
+                {isLoggedIn && userIsOfficer && (
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard">Dashboard</Link>
                   </DropdownMenuItem>

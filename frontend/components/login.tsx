@@ -104,9 +104,9 @@ export default function Login({ formData }: { formData: any }) {
           if (redirectUrl) {
             targetUrl = redirectUrl;
             console.log("🎯 Using redirect URL from backend:", targetUrl);
-          } else if (userRole === "director") {
+          } else if (userRole === "director" || userRole === "head") {
             targetUrl = "/dashboard";
-            console.log("🎯 Director role detected, redirecting to dashboard");
+            console.log("🎯 Officer role detected, redirecting to dashboard");
           } else {
             console.log("🎯 Regular user, redirecting to home");
           }
