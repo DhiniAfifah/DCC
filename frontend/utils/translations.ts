@@ -421,9 +421,14 @@ const translations: Record<string, { id: string; en: string }> = {
   pending: { id: "Menunggu", en: "Pending" },
   approved: { id: "Disetujui", en: "Approved" },
   rejected: { id: "Ditolak", en: "Rejected" },
+  pending_head: { id: "Menunggu untuk Kepala Lab", en: "Pending for Lab Head" },
+  approved_head: { id: "Disetujui oleh Kepala Lab", en: "Approved by Lab Head" },
+  rejected_head: { id: "Ditolak oleh Kepala Lab", en: "Rejected by Lab Head" },
+  approved_director: { id: "Disetujui oleh Direktur", en: "Approved by Director" },
+  rejected_director: { id: "Ditolak oleh Direktur", en: "Rejected by Director" },
   aksi: { id: "Aksi", en: "Actions" },
   cant_undo: { id: "Aksi ini tidak dapat dibatalkan", en: "This action can't be undone" },
-  rows: { id: "Baris per halaman", en: "Rows per page" },
+  no_results: { id: "Tidak ada hasil.", en: "No result." },
 
   // animate-spin
   authentication: { id: "Memeriksa autentikasi", en: "Checking authentication"},

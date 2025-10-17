@@ -21,7 +21,6 @@ import {
   TooltipTrigger,
   TooltipProvider
 } from "@/components/ui/tooltip"
-import { isDirector, isHead } from "@/utils/auth"
 
 export type Certificate = {
     id: number
@@ -244,7 +243,6 @@ export const columns: ColumnDef<Certificate>[] = [
                 key={status}
                 checked={selectedStatuses.includes(status)}
                 onCheckedChange={() => toggleStatus(status)}
-                className="capitalize"
               >
                 {t(`${status}`)}
               </DropdownMenuCheckboxItem>
@@ -258,30 +256,24 @@ export const columns: ColumnDef<Certificate>[] = [
       const status = row.getValue("status") as Certificate["status"]
 
       return (
-        <Badge variant={
-            isHead()
-              ? status === "pending_head" ? "blue" : 
-                status === "approved_head" ? "green" : 
-                status === "rejected_head" ? "red" : 
-                "default"
-            : isDirector()
-              ? status === "approved_head" ? "blue" : 
-                status === "approved_director" ? "green" : 
-                status === "rejected_director" ? "red" : 
-                "default"
-              : "default"
-        }>
-          {isHead()
-            ? status === "pending_head" ? t("pending") : 
-              status === "approved_head" ? t("approved") : 
-              status === "rejected_head" ? t("rejected") : 
-              t("unknown")
-          : isDirector()
-            ? status === "approved_head" ? t("pending") : 
-              status === "approved_director" ? t("approved") : 
-              status === "rejected_director" ? t("rejected") : 
-              t("unknown")
-            : t("unknown")
+        <Badge 
+          variant={
+            status === "pending_head" ? "blue" : 
+            status === "approved_head" ? "teal" : 
+            status === "rejected_head" ? "red" : 
+            status === "approved_director" ? "green" : 
+            status === "rejected_director" ? "red" : 
+            "default"
+          }
+          className="whitespace-nowrap"
+        >
+          {
+            status === "pending_head" ? t("pending_head") : 
+            status === "approved_head" ? t("approved_head") : 
+            status === "rejected_head" ? t("rejected_head") : 
+            status === "approved_director" ? t("approved_director") : 
+            status === "rejected_director" ? t("rejected_director") : 
+            t("unknown")
           }
         </Badge>
       );
@@ -316,17 +308,6 @@ export const columns: ColumnDef<Certificate>[] = [
           toast.error(`Failed to download PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       };
-      
-      let approve: StatusType;
-      let reject: StatusType;
-
-      if (isHead()) {
-        approve = "approved_head";
-        reject = "rejected_head";
-      } else if (isDirector()) {
-        approve = "approved_director";
-        reject = "rejected_director";
-      }
 
       return (
         <TooltipProvider>
@@ -342,41 +323,6 @@ export const columns: ColumnDef<Certificate>[] = [
                 <Download className="mr-2 h-4 w-4 text-sky-500" /> 
                 {t("download")}
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenuItem 
-                    onClick={() => handleStatusChange(approve)}
-                    disabled={
-                      (isHead() && (certificate.status === "approved_head" || certificate.status === "rejected_head")) ||
-                      (isDirector() && (certificate.status === "approved_director" || certificate.status === "rejected_director"))
-                    }
-                  >
-                    <Check className="mr-2 h-4 w-4 text-green-600" /> 
-                    {t("approve")}
-                  </DropdownMenuItem>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t("cant_undo")}</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenuItem 
-                    onClick={() => handleStatusChange(reject)}
-                    disabled={
-                      (isHead() && (certificate.status === "approved_head" || certificate.status === "rejected_head")) ||
-                      (isDirector() && (certificate.status === "approved_director" || certificate.status === "rejected_director"))
-                    }
-                  >
-                    <X className="mr-2 h-4 w-4 text-red-600" /> 
-                    {t("reject")}
-                  </DropdownMenuItem>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t("cant_undo")}</p>
-                </TooltipContent>
-              </Tooltip>
             </DropdownMenuContent>
           </DropdownMenu>
         </TooltipProvider>

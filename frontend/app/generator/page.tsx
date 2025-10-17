@@ -1,8 +1,20 @@
 "use client";
 
 import LabButtons from "@/components/ui/lab-buttons";
-import { Zap, Thermometer, Timer, Lightbulb, FlaskConical, Ruler, Weight, AudioWaveform, Radiation, Microscope } from "lucide-react";
+import {
+  Zap,
+  Thermometer,
+  Timer,
+  Lightbulb,
+  FlaskConical,
+  Ruler,
+  Weight,
+  AudioWaveform,
+  Radiation,
+  Microscope,
+} from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import DashboardClient from "./DashboardClient";
 
 type Lab = {
     href: string;
@@ -28,21 +40,21 @@ export default function Generator() {
     ];
 
     return (
-        <div className="pt-20 min-h-screen flex flex-col justify-center">
-            <div className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-green-100"></div>
+        <div className="mt-20">
+            <div id="background" className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-green-100"></div>
 
-            <h1 className="text-2xl font-semibold text-center mb-8 mt-8 lg:mt-0">
-                {t("pilih_lab")}
-            </h1>
-
-            <div className="flex items-center justify-center px-4 sm:px-10">
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-10 lg:mb-0">
-                    {labs.map(({ href, icon, color, label }) => (
-                        <LabButtons key={label} href={href} icon={icon} color={color}>
-                            {t(label)}
-                        </LabButtons>
-                    ))}
+            <div id="lab-buttons" className="pt-8 py-4 flex justify-center">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                {labs.map(({ href, icon, color, label }) => (
+                    <LabButtons key={label} href={href} icon={icon} color={color}>
+                    {t(label)}
+                    </LabButtons>
+                ))}
                 </div>
+            </div>
+
+            <div id="table" className="flex justify-center mb-8">
+                <DashboardClient />
             </div>
         </div>
     );
