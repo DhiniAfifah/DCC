@@ -13,6 +13,51 @@ import { useLanguage } from "@/context/LanguageContext";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { Progress } from "@/components/ui/progress"
+import { Save } from "lucide-react";
+import { Input } from "@/components/ui/input"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+
+const DRAFTS_STORAGE_KEY = 'dcc_drafts_electrical';
+
+interface Draft {
+  id: string;
+  name: string;
+  timestamp: number;
+  data: any;
+}
+
+const saveDraft = (name: string, data: any): void => {
+  const drafts = getDrafts();
+  const newDraft: Draft = {
+    id: Date.now().toString(),
+    name,
+    timestamp: Date.now(),
+    data
+  };
+  drafts.push(newDraft);
+  localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(drafts));
+};
+
+const getDrafts = (): Draft[] => {
+  const stored = localStorage.getItem(DRAFTS_STORAGE_KEY);
+  return stored ? JSON.parse(stored) : [];
+};
+
+const loadDraft = (id: string): any | null => {
+  const drafts = getDrafts();
+  const draft = drafts.find(d => d.id === id);
+  return draft ? draft.data : null;
+};
 
 // Helper type guard untuk cek apakah value adalah File
 const isFile = (value: any): value is File => {
@@ -1408,16 +1453,30 @@ export default function CreateDCC() {
 
   // When template changes, update formData
   useEffect(() => {
-    if (selectedTemplate === "multimeter") {
-      setFormData(multimeterTemplate);
-    } else if (selectedTemplate === "calibrator") {
-      setFormData(calibratorTemplate);
-    } else {
-      setFormData(blankTemplate);
+    // Only apply template if not loading from draft
+    const params = new URLSearchParams(window.location.search);
+    const isDraftLoading = params.get('draft');
+    
+    if (!isDraftLoading) {
+      if (selectedTemplate === "multimeter") {
+        setFormData(multimeterTemplate);
+      } else if (selectedTemplate === "calibrator") {
+        setFormData(calibratorTemplate);
+      } else if (selectedTemplate === "blank") {
+        setFormData(blankTemplate);
+      }
+      // Increment key to signal template change
+      setTemplateChangeKey(prev => prev + 1);
     }
-    // Increment key to signal template change
-    setTemplateChangeKey(prev => prev + 1);
   }, [selectedTemplate]);
+
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [draftName, setDraftName] = useState("");
+
+  // Add useEffect to load drafts
+  useEffect(() => {
+    setDrafts(getDrafts());
+  }, []);
 
   // Kasih warning saat user mencoba meninggalkan halaman (agar isi formulir tidak hilang)
   useEffect(() => {
@@ -1928,6 +1987,24 @@ export default function CreateDCC() {
     }
   };
 
+  useEffect(() => {
+    // Check for draft parameter in URL
+    const params = new URLSearchParams(window.location.search);
+    const draftId = params.get('draft');
+    
+    if (draftId) {
+      const draftData = loadDraft(draftId);
+      if (draftData) {
+        // Set template to blank to prevent automatic reset
+        setSelectedTemplate("");
+        setFormData(draftData);
+        toast.success(t("draft_loaded"));
+        // Clear the URL parameter
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+  }, [t]);
+
   return (
     <div className="container mx-auto py-8 pt-20">
       <div className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-green-100"></div>
@@ -2029,6 +2106,56 @@ export default function CreateDCC() {
         <Button variant="blue" onClick={prevStep} disabled={currentStep === 0 || isProcessingSubmission}>
           <ArrowLeft />
         </Button>
+
+        <div className="flex justify-center gap-4 max-w-4xl mx-auto px-4">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button 
+                variant="amber"
+                disabled={isProcessingSubmission}
+              >
+                <Save />
+                {t("save_draft")}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>{t("save_draft")}</DialogTitle>
+                <DialogDescription>{t("draft_desc")}</DialogDescription>
+              </DialogHeader>
+              <div className="flex items-center gap-2">
+                <div className="grid flex-1 gap-2">
+                  <Label htmlFor="draft_name">{t("draft_name")}</Label>
+                  <Input
+                    id="draft_name"
+                    value={draftName}
+                    onChange={(e) => setDraftName(e.target.value)}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="secondary">{t("cancel")}</Button>
+                </DialogClose>
+                <DialogClose asChild>
+                  <Button
+                    onClick={() => {
+                      if (draftName.trim()) {
+                        saveDraft(draftName, formData);
+                        setDrafts(getDrafts());
+                        setDraftName("");
+                        toast.success(t("draft_saved"));
+                      }
+                    }}
+                    variant="green"
+                  >
+                    {t("save")}
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         {currentStep === steps.length - 1 ? (
           <div className="flex flex-col items-center gap-4">

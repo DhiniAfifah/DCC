@@ -119,6 +119,7 @@ export default function Preview({ previewFiles, isLoading, onRefresh }: PreviewP
               onClick={onRefresh}
               disabled={isLoading}
               className="flex items-center gap-2"
+              variant="secondary"
             >
               <RefreshCw />
               {t('refresh')}
