@@ -57,3 +57,15 @@ class User(Base):
     full_name = Column(String, nullable=True)
     disabled = Column(Boolean, default=False)
     role = Column(Enum(UserRole), default=UserRole.user)
+    drafts = relationship("Draft", back_populates="user", cascade="all, delete-orphan")
+
+class Draft(Base):
+    __tablename__ = "drafts"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    name = Column(String, nullable=False)
+    data = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))))
+    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))), onupdate=lambda: datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))))
+    user = relationship("User", back_populates="drafts")

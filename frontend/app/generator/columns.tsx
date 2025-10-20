@@ -100,7 +100,7 @@ const downloadDCCPDF = async (id: number, certificateId: string) => {
 export const columns: ColumnDef<Certificate>[] = [
   {
     id: "number",
-    header: () => <div className="text-center">No.</div>,
+    header: () => <div className="text-center px-4 py-2">No.</div>,
     cell: ({ row, table }) => {
       const sortedRows = table.getSortedRowModel().rows;
       const displayIndex = sortedRows.findIndex(r => r.id === row.id);

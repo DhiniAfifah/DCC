@@ -73,6 +73,20 @@ const translations: Record<string, { id: string; en: string }> = {
     en: "Indicates required question",
   },
   
+  saved_drafts: { id: "Draf Tersimpan", en: "Saved Drafts" },
+  loading_drafts: { id: "Memuat draf", en: "Loading drafts" },
+  no_draft: { id: "Tidak ada draf.", en: "No draft." },
+  load: { id: "Muat", en: "Load" },
+  save_draft: { id: "Simpan Draf", en: "Save Draft" },
+  draft_desc: { id: "Progres Anda akan disimpan sebagai draf. Anda dapat kembali kapan saja untuk menyelesaikan dan mengirimnya.", 
+                en: "Your progress will be saved as a draft. You can return anytime to complete and submit it." },
+  draft_name: { id: "Nama draf", en: "Draft name" },
+  cancel: { id: "Batal", en: "Cancel" },
+  save: { id: "Simpan", en: "Save" },
+  draft_saved: { id: "Draf tersimpan!", en: "Draft saved!" },
+  draft_loaded: { id: "Draf dimuat!", en: "Draft loaded!" },
+  draft_deleted: { id: "Draf terhapus!", en: "Draft deleted!" },
+
   submit: { id: "Kirim", en: "Submit" },
 
   pilih_bahasa: {id: "Tolong pilih bahasa yang digunakan.", en: "Please select the used languages."},
@@ -321,7 +335,7 @@ const translations: Record<string, { id: string; en: string }> = {
     en: "Make changes to the form to generate preview" 
   },
   available: { id: "Tidak ada pratinjau XML yang tersedia", en: "No XML preview available" },
-  loading: { id: "Memuat XML", en: "Loading XML" },
+  loading_xml: { id: "Memuat XML", en: "Loading XML" },
   xml_error: { id: "Gagal memuat XML", en: "Failed to load XML" },
   after: { id: "XML akan muncul di sini setelah pembuatan.", en: "XML will appear here after generation." },
 
@@ -428,7 +442,7 @@ const translations: Record<string, { id: string; en: string }> = {
   rejected_director: { id: "Ditolak oleh Direktur", en: "Rejected by Director" },
   aksi: { id: "Aksi", en: "Actions" },
   cant_undo: { id: "Aksi ini tidak dapat dibatalkan", en: "This action can't be undone" },
-  no_results: { id: "Tidak ada hasil.", en: "No result." },
+  no_result: { id: "Tidak ada hasil.", en: "No result." },
 
   // animate-spin
   authentication: { id: "Memeriksa autentikasi", en: "Checking authentication"},

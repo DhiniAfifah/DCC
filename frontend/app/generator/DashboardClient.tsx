@@ -7,6 +7,15 @@ import { FileText, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
+import { toast } from "sonner"
+
+interface Draft {
+  id: number;
+  name: string;
+  data: any;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function DashboardClient() {
   const { t } = useLanguage();
@@ -52,28 +61,60 @@ export default function DashboardClient() {
     getData().then((data) => setData(data));
   }, []);
 
-  const [drafts, setDrafts] = useState<any[]>([]);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [isLoadingDrafts, setIsLoadingDrafts] = useState(true);
 
+  // Fetch drafts on mount
   useEffect(() => {
-    const loadDrafts = () => {
-      const stored = localStorage.getItem('dcc_drafts_electrical');
-      if (stored) {
-        const parsedDrafts = JSON.parse(stored);
-        setDrafts(parsedDrafts);
-      }
-    };
-    
-    loadDrafts();
-    
-    // Refresh drafts periodically
-    const interval = setInterval(loadDrafts, 1000);
-    return () => clearInterval(interval);
+    fetchDrafts();
   }, []);
 
-  const handleDeleteDraft = (id: string) => {
-    const updatedDrafts = drafts.filter(d => d.id !== id);
-    localStorage.setItem('dcc_drafts_electrical', JSON.stringify(updatedDrafts));
-    setDrafts(updatedDrafts);
+  const fetchDrafts = async () => {
+    try {
+      setIsLoadingDrafts(true);
+      const token = localStorage.getItem("access_token");
+      
+      const response = await fetch("http://127.0.0.1:8000/api/drafts/", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch drafts");
+      }
+
+      const data = await response.json();
+      setDrafts(data);
+    } catch (error) {
+      console.error("Error fetching drafts:", error);
+      toast.error(t("failed_to_load_drafts"));
+    } finally {
+      setIsLoadingDrafts(false);
+    }
+  };
+
+  const handleDeleteDraft = async (draftId: number) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      
+      const response = await fetch(`http://127.0.0.1:8000/api/drafts/${draftId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete draft");
+      }
+
+      toast.success(t("draft_deleted"));
+      fetchDrafts(); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting draft:", error);
+      toast.error(t("failed_to_delete_draft"));
+    }
   };
 
   return (
@@ -84,28 +125,34 @@ export default function DashboardClient() {
           {t("saved_drafts")}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-          {drafts.map((draft) => (
-            <div key={draft.id} className="flex items-center justify-between p-3 bg-white rounded-md border">
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">{draft.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(draft.timestamp).toLocaleString()}
-                </p>
+          {isLoadingDrafts ? (
+            <p className="text-sm text-muted-foreground">{t("loading_drafts")}...</p>
+          ) : drafts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("no_draft")}</p>
+          ) : (
+            drafts.map((draft) => (
+              <div key={draft.id} className="flex items-center justify-between p-3 bg-white rounded-md border">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{draft.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {new Date(draft.updated_at).toLocaleString()}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Link href={`/generator/electrical?draft=${draft.id}`}>
+                    <Button variant="blue" size="sm">{t("load")}</Button>
+                  </Link>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => handleDeleteDraft(draft.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-2">
-                <Link href={`/generator/electrical?draft=${draft.id}`}>
-                  <Button variant="blue" size="sm">{t("load")}</Button>
-                </Link>
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  onClick={() => handleDeleteDraft(draft.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
       

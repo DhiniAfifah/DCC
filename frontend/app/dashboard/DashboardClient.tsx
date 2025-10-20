@@ -15,7 +15,7 @@ export default function DashboardClient({ data }: { data: Certificate[] }) {
   const filteredData = useMemo(() => {
     if (isHead()) {
       return data.filter((cert) =>
-        ["pending_head", "approved_head", "rejected_head"].includes(cert.status)
+        ["pending_head", "approved_head", "rejected_head", "approved_director", "rejected_director"].includes(cert.status)
       );
     } else if (isDirector()) {
       return data.filter((cert) =>

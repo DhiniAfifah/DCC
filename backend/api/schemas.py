@@ -273,3 +273,17 @@ class DCCResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+class DraftCreate(BaseModel):
+    name: str
+    data: dict
+
+class DraftResponse(BaseModel):
+    id: int
+    name: str
+    data: dict
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True

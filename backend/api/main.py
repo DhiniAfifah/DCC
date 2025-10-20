@@ -1,5 +1,5 @@
 import logging
-from fastapi import FastAPI, Depends, HTTPException, File, Header, UploadFile, Body, status, Request, Response
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Body, status, Request, Response
 from sqlalchemy.orm import Session, joinedload
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,7 +37,7 @@ from .models import DCC, DCCStatusEnum, UserRole
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import asyncio
-from typing import AsyncGenerator
+from typing import AsyncGenerator, List
 
 def get_language_from_request(request: Request) -> str:
     """Extract language preference from request headers"""
@@ -124,15 +124,15 @@ app.add_middleware(
 @app.middleware("http")
 async def cors_handler(request: Request, call_next):
     # Log incoming request for debugging
-    logger.info(f"🌐 Request: {request.method} {request.url}")
-    logger.info(f"🔍 Headers: {dict(request.headers)}")
+    logger.info(f"ðŸŒ Request: {request.method} {request.url}")
+    logger.info(f"ðŸ” Headers: {dict(request.headers)}")
     
     if request.method == "OPTIONS":
         # Handle preflight requests explicitly with detailed logging
-        logger.info("🎯 Handling CORS preflight request")
+        logger.info("ðŸŽ¯ Handling CORS preflight request")
         
         origin = request.headers.get("origin")
-        logger.info(f"📍 Origin: {origin}")
+        logger.info(f"ðŸ“ Origin: {origin}")
         
         # Create preflight response
         response = Response()
@@ -153,9 +153,9 @@ async def cors_handler(request: Request, call_next):
             response.headers["Access-Control-Allow-Headers"] = "accept, accept-encoding, authorization, content-type, dnt, origin, user-agent, x-csrftoken, x-requested-with"
             response.headers["Access-Control-Max-Age"] = "86400"
             
-            logger.info("✅ CORS preflight response headers set successfully")
+            logger.info("âœ… CORS preflight response headers set successfully")
         else:
-            logger.warning(f"❌ Origin {origin} not allowed")
+            logger.warning(f"âŒ Origin {origin} not allowed")
         
         return response
     
@@ -168,7 +168,7 @@ async def cors_handler(request: Request, call_next):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
     
-    logger.info(f"✅ Response: {response.status_code}")
+    logger.info(f"âœ… Response: {response.status_code}")
     return response
 
 # Test endpoint to verify CORS is working
@@ -281,18 +281,18 @@ async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
-    print(f"🔐 Login attempt for user: {form_data.username}")
+    print(f"ðŸ” Login attempt for user: {form_data.username}")
     
     auth_user = user_module.authenticate_user(db, form_data.username, form_data.password)
     if not auth_user:
-        print(f"❌ Authentication failed for user: {form_data.username}")
+        print(f"âŒ Authentication failed for user: {form_data.username}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    print(f"✅ Authentication successful for user: {auth_user.email} with role: {auth_user.role}")
+    print(f"âœ… Authentication successful for user: {auth_user.email} with role: {auth_user.role}")
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
@@ -300,7 +300,7 @@ async def login_for_access_token(
         expires_delta=access_token_expires
     )
     
-    print(f"🔑 Token generated successfully")
+    print(f"ðŸ”‘ Token generated successfully")
     
     # Determine redirect URL based on role
     redirect_url = "/dashboard" if auth_user.role in [UserRole.director, UserRole.head] else "/home"
@@ -326,14 +326,14 @@ async def login_for_access_token(
         path="/"  # Explicitly set path
     )
     
-    print(f"🍪 Cookie set successfully with redirect to {redirect_url}")
+    print(f"ðŸª Cookie set successfully with redirect to {redirect_url}")
     
     return response
 
 #LOGOUT
 @app.post("/logout")
 async def logout():
-    print("🚪 Backend: Logout endpoint called")
+    print("ðŸšª Backend: Logout endpoint called")
     
     # Create response that clears the cookie
     response = JSONResponse(content={"message": "Logged out successfully"})
@@ -359,7 +359,7 @@ async def logout():
         samesite="lax"
     )
     
-    print("🍪 Backend: Logout cookies cleared")
+    print("ðŸª Backend: Logout cookies cleared")
     return response
 
 # FIXED: Endpoint untuk mendapatkan user saat ini
@@ -367,7 +367,7 @@ async def logout():
 async def read_users_me(
     current_user: schemas.User = Depends(get_current_user)
 ):
-    print(f"✅ /users/me/ endpoint called for user: {current_user.email}")
+    print(f"âœ… /users/me/ endpoint called for user: {current_user.email}")
     return current_user
 
 @app.get("/users/me/role")
@@ -1317,3 +1317,85 @@ async def create_dcc_streaming(
             "Access-Control-Allow-Headers": "*",
         }
     )
+
+# Create draft
+@app.post("/api/drafts/", response_model=schemas.DraftResponse)
+async def create_draft(
+    draft: schemas.DraftCreate,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        db_draft = models.Draft(
+            user_id=current_user.id,
+            name=draft.name,
+            data=draft.data
+        )
+        db.add(db_draft)
+        db.commit()
+        db.refresh(db_draft)
+        return db_draft
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create draft: {str(e)}")
+
+# Get user's drafts
+@app.get("/api/drafts/", response_model=List[schemas.DraftResponse])
+async def get_user_drafts(
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        drafts = db.query(models.Draft).filter(
+            models.Draft.user_id == current_user.id
+        ).order_by(models.Draft.updated_at.desc()).all()
+        return drafts
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch drafts: {str(e)}")
+
+# Get specific draft
+@app.get("/api/drafts/{draft_id}", response_model=schemas.DraftResponse)
+async def get_draft(
+    draft_id: int,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        draft = db.query(models.Draft).filter(
+            models.Draft.id == draft_id,
+            models.Draft.user_id == current_user.id
+        ).first()
+        
+        if not draft:
+            raise HTTPException(status_code=404, detail="Draft not found")
+        
+        return draft
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch draft: {str(e)}")
+
+# Delete draft
+@app.delete("/api/drafts/{draft_id}")
+async def delete_draft(
+    draft_id: int,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    try:
+        draft = db.query(models.Draft).filter(
+            models.Draft.id == draft_id,
+            models.Draft.user_id == current_user.id
+        ).first()
+        
+        if not draft:
+            raise HTTPException(status_code=404, detail="Draft not found")
+        
+        db.delete(draft)
+        db.commit()
+        return {"message": "Draft deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete draft: {str(e)}")

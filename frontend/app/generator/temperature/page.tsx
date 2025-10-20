@@ -27,38 +27,6 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 
-const DRAFTS_STORAGE_KEY = 'dcc_drafts_electrical';
-
-interface Draft {
-  id: string;
-  name: string;
-  timestamp: number;
-  data: any;
-}
-
-const saveDraft = (name: string, data: any): void => {
-  const drafts = getDrafts();
-  const newDraft: Draft = {
-    id: Date.now().toString(),
-    name,
-    timestamp: Date.now(),
-    data
-  };
-  drafts.push(newDraft);
-  localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(drafts));
-};
-
-const getDrafts = (): Draft[] => {
-  const stored = localStorage.getItem(DRAFTS_STORAGE_KEY);
-  return stored ? JSON.parse(stored) : [];
-};
-
-const loadDraft = (id: string): any | null => {
-  const drafts = getDrafts();
-  const draft = drafts.find(d => d.id === id);
-  return draft ? draft.data : null;
-};
-
 // Helper type guard untuk cek apakah value adalah File
 const isFile = (value: any): value is File => {
   return (
@@ -586,7 +554,7 @@ const pt25Template = {
     { // 2
       nama_alat: {id: "H2O TP Cell", en: "H2O TP Cell"},
       manuf_model: {id: "PTB", en: "PTB"},
-      model: {id: "", en: ""},
+      model: {id: "-", en: "-"},
       seri_measuring: "PTB4",
       refType: "basic_measurementStandard",
     },
@@ -1472,30 +1440,16 @@ export default function CreateDCC() {
 
   // When template changes, update formData
   useEffect(() => {
-    // Only apply template if not loading from draft
-    const params = new URLSearchParams(window.location.search);
-    const isDraftLoading = params.get('draft');
-    
-    if (!isDraftLoading) {
-      if (selectedTemplate === "multimeter") {
-        setFormData(pt25Template);
-      } else if (selectedTemplate === "calibrator") {
-        setFormData(pt100Template);
-      } else if (selectedTemplate === "blank") {
-        setFormData(blankTemplate);
+    if (selectedTemplate === "pt25") {
+      setFormData(pt25Template);
+    } else if (selectedTemplate === "pt100") {
+      setFormData(pt100Template);
+    } else {
+      setFormData(blankTemplate);
       }
-      // Increment key to signal template change
-      setTemplateChangeKey(prev => prev + 1);
-    }
+    // Increment key to signal template change
+    setTemplateChangeKey(prev => prev + 1);
   }, [selectedTemplate]);
-
-  const [drafts, setDrafts] = useState<Draft[]>([]);
-  const [draftName, setDraftName] = useState("");
-
-  // Add useEffect to load drafts
-  useEffect(() => {
-    setDrafts(getDrafts());
-  }, []);
 
   // Kasih warning saat user mencoba meninggalkan halaman (agar isi formulir tidak hilang)
   useEffect(() => {
@@ -2047,23 +2001,101 @@ export default function CreateDCC() {
     }
   };
 
+  const saveDraft = async (name: string, data: any) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      
+      const response = await fetch("http://127.0.0.1:8000/api/drafts/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: name,
+          data: data,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save draft");
+      }
+
+      const result = await response.json();
+      toast.success(t("draft_saved"));
+      return result;
+    } catch (error) {
+      console.error("Error saving draft:", error);
+      toast.error(t("failed_to_save_draft"));
+    }
+  };
+
+  const [isLoadingDraft, setIsLoadingDraft] = useState(false);
+
+  // Load draft
+  const loadDraft = async (draftId: string) => {
+    try {
+      setIsLoadingDraft(true);
+      const token = localStorage.getItem("access_token");
+      
+      const response = await fetch(`http://127.0.0.1:8000/api/drafts/${draftId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to load draft");
+      }
+
+      const draft = await response.json();
+      
+      // CRITICAL: Ensure data is properly formatted before setting
+      const loadedData = {
+        ...draft.data,
+        // Ensure arrays exist
+        objects: Array.isArray(draft.data.objects) ? draft.data.objects : [],
+        methods: Array.isArray(draft.data.methods) ? draft.data.methods : [],
+        equipments: Array.isArray(draft.data.equipments) ? draft.data.equipments : [],
+        conditions: Array.isArray(draft.data.conditions) ? draft.data.conditions : [],
+        results: Array.isArray(draft.data.results) ? draft.data.results : [],
+        statements: Array.isArray(draft.data.statements) ? draft.data.statements : [],
+        // Ensure nested objects exist
+        administrative_data: draft.data.administrative_data || blankTemplate.administrative_data,
+        Measurement_TimeLine: draft.data.Measurement_TimeLine || blankTemplate.Measurement_TimeLine,
+        responsible_persons: draft.data.responsible_persons || blankTemplate.responsible_persons,
+        owner: draft.data.owner || blankTemplate.owner,
+        comment: draft.data.comment || blankTemplate.comment,
+      };
+      
+      setFormData(loadedData);
+      
+      // Increment template change key to force re-render of all child components
+      setTemplateChangeKey(prev => prev + 1);
+      
+      toast.success(t("draft_loaded"));
+      setIsLoadingDraft(false);
+    } catch (error) {
+      console.error("Error loading draft:", error);
+      toast.error(t("failed_to_load_draft"));
+      setIsLoadingDraft(false);
+    }
+  };
+
+  // Check for draft parameter in URL on mount
   useEffect(() => {
-    // Check for draft parameter in URL
-    const params = new URLSearchParams(window.location.search);
-    const draftId = params.get('draft');
+    const searchParams = new URLSearchParams(window.location.search);
+    const draftId = searchParams.get('draft');
     
     if (draftId) {
-      const draftData = loadDraft(draftId);
-      if (draftData) {
-        // Set template to blank to prevent automatic reset
-        setSelectedTemplate("");
-        setFormData(draftData);
-        toast.success(t("draft_loaded"));
-        // Clear the URL parameter
-        window.history.replaceState({}, '', window.location.pathname);
-      }
+      // Small delay to ensure components are mounted
+      setTimeout(() => {
+        loadDraft(draftId);
+      }, 100);
     }
-  }, [t]);
+  }, []); // Keep empty dependency array
+
+  const [draftName, setDraftName] = useState<string>("");
 
   return (
     <div className="container mx-auto py-8 pt-20">
@@ -2202,9 +2234,9 @@ export default function CreateDCC() {
                     onClick={() => {
                       if (draftName.trim()) {
                         saveDraft(draftName, formData);
-                        setDrafts(getDrafts());
                         setDraftName("");
-                        toast.success(t("draft_saved"));
+                        // Don't try to update drafts here since they're in DashboardClient
+                        // The drafts will be visible when user navigates back to dashboard
                       }
                     }}
                     variant="green"
