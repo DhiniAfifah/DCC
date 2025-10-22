@@ -1046,7 +1046,7 @@ async def update_dcc_status(
         # Update the status
         dcc.status = status_update.status
 
-        # If director approves, update the issue date
+        # If director approves, update the issue date and regenerate PDF with embedded XML
         if status_update.status == DCCStatusEnum.approved_director:
             # Parse the Measurement_TimeLine JSON
             measurement_timeline = dcc.Measurement_TimeLine
@@ -1060,10 +1060,24 @@ async def update_dcc_status(
             
             # Save back to database
             dcc.Measurement_TimeLine = measurement_timeline
-        
-        # Commit the changes
-        db.commit()
-        db.refresh(dcc)
+            
+            # Commit the changes first
+            db.commit()
+            db.refresh(dcc)
+            
+            # Regenerate PDF with embedded XML
+            try:
+                crud.regenerate_dcc_with_embedded_xml(db, dcc_id)
+            except Exception as e:
+                logging.error(f"Error regenerating DCC with embedded XML: {e}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Failed to regenerate DCC files: {str(e)}"
+                )
+        else:
+            # Commit the changes for other status updates
+            db.commit()
+            db.refresh(dcc)
         
         return {
             "message": f"DCC status updated to {status_update.status}",
@@ -1071,6 +1085,8 @@ async def update_dcc_status(
             "status": dcc.status
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(

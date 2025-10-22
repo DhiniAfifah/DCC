@@ -1065,13 +1065,9 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
         
         pdf_generator = PDFGenerator()
         pdf_path = str(paths['pdf_output'])
-        # Baca konten XML untuk di-embed
-        with open(xml_path, "r", encoding="utf-8") as f:
-            xml_content = f.read()
-        success = pdf_generator.generate_pdf_with_embedded_xml(
-            xml_content,
-            pdf_path,
+        success = pdf_generator.generate_pdf(
             xml_path,
+            pdf_path,
             dcc.administrative_data.tempat_pdf,
             captions,
             corrections,
@@ -1281,3 +1277,138 @@ def cleanup_old_preview_files(max_age_hours: int = 24):
                     
     except Exception as e:
         logging.warning(f"Error cleaning up old preview files: {e}")
+
+def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
+    """
+    Regenerate PDF with embedded XML from database record
+    Used when director approves a DCC
+    """
+    logging.info(f"Regenerating DCC {dcc_id} with embedded XML")
+    
+    try:
+        # Get DCC record from database
+        db_dcc = db.query(models.DCC).filter(models.DCC.id == dcc_id).first()
+        if not db_dcc:
+            raise Exception(f"DCC {dcc_id} not found in database")
+        
+        # Parse administrative data
+        admin_data = db_dcc.administrative_data
+        if isinstance(admin_data, str):
+            admin_data = json.loads(admin_data)
+        
+        certificate_id = admin_data.get('sertifikat', f'DCC-{dcc_id}')
+        
+        # Get file paths
+        backend_root = Path(__file__).parent.parent
+        dcc_files_dir = backend_root / "dcc_files"
+        filename_base = f"{dcc_id}_{certificate_id}"
+        
+        xml_path = dcc_files_dir / f"{filename_base}.xml"
+        pdf_path = dcc_files_dir / f"{filename_base}.pdf"
+        
+        # Check if XML exists
+        if not xml_path.exists():
+            raise Exception(f"XML file not found: {xml_path}")
+        
+        # Read XML content
+        with open(xml_path, 'r', encoding='utf-8') as f:
+            xml_content = f.read()
+        
+        # Get tempat_pdf from database
+        tempat_pdf = admin_data.get('tempat_pdf', admin_data.get('tempat', ''))
+        
+        # Extract captions and corrections from database
+        captions = extract_captions_from_database(db_dcc)
+        corrections = extract_corrections_from_database(db_dcc)
+        
+        # Generate PDF with embedded XML
+        pdf_generator = PDFGenerator()
+        success = pdf_generator.generate_pdf_with_embedded_xml(
+            xml_content,
+            str(pdf_path),
+            str(xml_path),
+            tempat_pdf,
+            captions,
+            corrections
+        )
+        
+        if not success:
+            raise Exception("Failed to generate PDF with embedded XML")
+        
+        logging.info(f"Successfully regenerated DCC {dcc_id} with embedded XML at {pdf_path}")
+        
+        return {
+            "pdf_path": str(pdf_path),
+            "xml_path": str(xml_path),
+            "certificate_name": filename_base
+        }
+        
+    except Exception as e:
+        logging.error(f"Error regenerating DCC {dcc_id}: {str(e)}")
+        raise
+
+def extract_captions_from_database(db_dcc: models.DCC):
+    """Extract image captions from database record"""
+    captions = {
+        'methods': {},
+        'statements': {}
+    }
+    
+    try:
+        # Extract method captions
+        methods = db_dcc.methods
+        if isinstance(methods, str):
+            methods = json.loads(methods)
+        
+        for i, method in enumerate(methods):
+            if method.get('has_image') and method.get('image'):
+                method_captions = []
+                for img in method['image']:
+                    if img.get('caption'):
+                        method_captions.append(img['caption'])
+                if method_captions:
+                    captions['methods'][i] = method_captions
+        
+        # Extract statement captions
+        statements = db_dcc.statement
+        if isinstance(statements, str):
+            statements = json.loads(statements)
+        
+        for i, statement in enumerate(statements):
+            if statement.get('has_image') and statement.get('image'):
+                statement_captions = []
+                for img in statement['image']:
+                    if img.get('caption'):
+                        statement_captions.append(img['caption'])
+                if statement_captions:
+                    captions['statements'][i] = statement_captions
+                    
+    except Exception as e:
+        logging.warning(f"Error extracting captions from database: {e}")
+    
+    return captions
+
+def extract_corrections_from_database(db_dcc: models.DCC):
+    """Extract correction information from database record"""
+    corrections = {}
+    
+    try:
+        results = db_dcc.results
+        if isinstance(results, str):
+            results = json.loads(results)
+        
+        for result_idx, result in enumerate(results):
+            result_corrections = {}
+            for col_idx, col in enumerate(result.get('columns', [])):
+                if col.get('refType') == "basic_measurementError_correction":
+                    result_corrections[col_idx] = {
+                        'is_correction': True,
+                        'kolom': col.get('kolom', {})
+                    }
+            if result_corrections:
+                corrections[result_idx] = result_corrections
+                
+    except Exception as e:
+        logging.warning(f"Error extracting corrections from database: {e}")
+    
+    return corrections
