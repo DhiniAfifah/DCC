@@ -38,6 +38,7 @@ from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import asyncio
 from typing import AsyncGenerator, List
+from datetime import timezone, timedelta
 
 def get_language_from_request(request: Request) -> str:
     """Extract language preference from request headers"""
@@ -947,6 +948,21 @@ async def update_dcc_status(
         
         # Update the status
         dcc.status = status_update.status
+
+        # If director approves, update the issue date
+        if status_update.status == DCCStatusEnum.approved_director:
+            # Parse the Measurement_TimeLine JSON
+            measurement_timeline = dcc.Measurement_TimeLine
+            if isinstance(measurement_timeline, str):
+                measurement_timeline = json.loads(measurement_timeline)
+            
+            # Update the issue date to current date
+            wib_timezone = timezone(timedelta(hours=7))
+            current_date = datetime.now(wib_timezone).date().isoformat()
+            measurement_timeline['tgl_pengesahan'] = current_date
+            
+            # Save back to database
+            dcc.Measurement_TimeLine = measurement_timeline
         
         # Commit the changes
         db.commit()
@@ -964,7 +980,6 @@ async def update_dcc_status(
             status_code=500,
             detail=f"Failed to update DCC status: {str(e)}"
         )
-        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # Schedule cleanup of old preview files
 @app.on_event("startup")

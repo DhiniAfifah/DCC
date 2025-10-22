@@ -412,17 +412,17 @@ const translations: Record<string, { id: string; en: string }> = {
   // Dashboard
   dasbor: { id: "Dasbor", en: "Dashboard" },
   access_denied: { id: "Akses Ditolak", en: "Access Denied" },
-  OfficerProtectedRoute: { id: "Halaman ini hanya dapat diakses oleh Direktur atau Kepala lab.", en: "This page is only accessible to Directors or Lab Heads." },
+  OfficerProtectedRoute: { id: "Halaman ini hanya dapat diakses oleh Direktur atau Kepala lab.", en: "This page is only accessible to Directors or Heads of Lab." },
   back_to_home: { id: "Kembali ke Beranda", en: "Back to Home" },
   director_dashboard: { id: "Dasbor Direktur", en: "Director Dashboard" },
   welcome_dashboard_director: { 
     id: "Selamat datang di dasbor direktur. Di sini Anda dapat melihat dan mengelola semua pengajuan DCC.", 
     en: "Welcome to the Director dashboard. Here you can view and manage all DCC submissions." 
   },
-  head_dashboard: { id: "Dasbor Kepala Lab", en: "Lab Head Dashboard" },
+  head_dashboard: { id: "Dasbor Kepala Lab", en: "Head of Lab Dashboard" },
   welcome_dashboard_head: { 
     id: "Selamat datang di dasbor kepala laboratorium. Di sini Anda dapat melihat dan mengelola semua pengajuan DCC.", 
-    en: "Welcome to the Laboratory Head dashboard. Here you can view and manage all DCC submissions." 
+    en: "Welcome to the Head of Laboratory dashboard. Here you can view and manage all DCC submissions." 
   },
   search: { id: "Cari", en: "Search" },
   columns: { id: "Kolom", en: "Columns" },
@@ -435,9 +435,9 @@ const translations: Record<string, { id: string; en: string }> = {
   pending: { id: "Menunggu", en: "Pending" },
   approved: { id: "Disetujui", en: "Approved" },
   rejected: { id: "Ditolak", en: "Rejected" },
-  pending_head: { id: "Menunggu untuk Kepala Lab", en: "Pending for Lab Head" },
-  approved_head: { id: "Disetujui oleh Kepala Lab", en: "Approved by Lab Head" },
-  rejected_head: { id: "Ditolak oleh Kepala Lab", en: "Rejected by Lab Head" },
+  pending_head: { id: "Menunggu Persetujuan KaLab", en: "Waiting for HoL's Approval" },
+  approved_head: { id: "Menunggu Persetujuan Direktur", en: "Waiting for Director's Approval" },
+  rejected_head: { id: "Ditolak oleh KaLab", en: "Rejected by HoL" },
   approved_director: { id: "Disetujui oleh Direktur", en: "Approved by Director" },
   rejected_director: { id: "Ditolak oleh Direktur", en: "Rejected by Director" },
   aksi: { id: "Aksi", en: "Actions" },
@@ -458,9 +458,9 @@ const translations: Record<string, { id: string; en: string }> = {
   software_name: { id: "Nama perangkat lunak", en: "Software name" },
   software_version: { id: "Versi perangkat lunak", en: "Software version" },
   
-  nama_kepala: { id: "Nama kepala lab", en: "Lab head's name" },
-  nip_kepala: { id: "NIP kepala lab", en: "Lab head's employee ID number" },
-  lab_kepala: { id: "Laboratorium dari kepala lab", en: "Lab head's laboratory" },
+  nama_kepala: { id: "Nama kepala lab", en: "Head of lab's name" },
+  nip_kepala: { id: "NIP kepala lab", en: "Head of lab's employee ID number" },
+  lab_kepala: { id: "Laboratorium dari kepala lab", en: "Head of lab's laboratory" },
   nama_direktur: { id: "Nama direktur", en: "Director's name" },
   nip_direktur: { id: "NIP direktur", en: "Director's employee ID number" },
   jabatan_direktur: { id: "Jabatan direktur", en: "Director's position" },

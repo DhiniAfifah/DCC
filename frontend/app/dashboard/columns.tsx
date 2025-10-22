@@ -261,7 +261,7 @@ export const columns: ColumnDef<Certificate>[] = [
         <Badge variant={
             isHead()
               ? status === "pending_head" ? "blue" : 
-                status === "approved_head" || "approved_director" || "rejected_director" ? "green" : 
+                status === "approved_head" || status === "approved_director" || status === "rejected_director" ? "green" : 
                 status === "rejected_head" ? "red" : 
                 "default"
             : isDirector()
@@ -273,7 +273,7 @@ export const columns: ColumnDef<Certificate>[] = [
         }>
           {isHead()
             ? status === "pending_head" ? t("pending") : 
-              status === "approved_head" || "approved_director" || "rejected_director" ? t("approved") : 
+              status === "approved_head" || status === "approved_director" || status === "rejected_director" ? t("approved") : 
               status === "rejected_head" ? t("rejected") : 
               t("unknown")
           : isDirector()

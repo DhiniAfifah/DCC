@@ -1129,7 +1129,6 @@ export default function CreateDCC() {
 
         if (!formData.Measurement_TimeLine.tgl_mulai) errors.push(t("mulai") + t("required"));
         if (!formData.Measurement_TimeLine.tgl_akhir) errors.push(t("akhir") + t("required"));
-        if (!formData.Measurement_TimeLine.tgl_pengesahan) errors.push(t("pengesahan") + t("required"));
 
         if (!formData.objects?.length) {
           errors.push(t("at_least_one") + t("objek") + t("required"));
