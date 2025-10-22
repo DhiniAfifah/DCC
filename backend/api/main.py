@@ -842,6 +842,103 @@ async def download_dcc_xml(dcc_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         logging.error(f"Error downloading DCC XML: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error downloading XML: {str(e)}")
+    
+@app.get("/view-dcc-pdf/{dcc_id}")
+async def view_dcc_pdf(dcc_id: int, db: Session = Depends(get_db)):
+    """
+    View the PDF file for a specific DCC by database ID
+    """
+    try:
+        # Get the DCC record from database to get the certificate ID
+        dcc_record = db.query(models.DCC).filter(models.DCC.id == dcc_id).first()
+        
+        if not dcc_record:
+            raise HTTPException(status_code=404, detail="DCC not found")
+        
+        # Extract certificate ID from administrative data
+        admin_data = dcc_record.administrative_data
+        if isinstance(admin_data, str):
+            admin_data = json.loads(admin_data)
+        
+        certificate_id = admin_data.get('sertifikat', f'DCC-{dcc_id}')
+        
+        # Create filename with database ID and certificate ID (matching the format used in crud.py)
+        filename_base = f"{dcc_id}_{certificate_id}"
+        pdf_file_path = f"./dcc_files/{filename_base}.pdf"
+        
+        # Check if the PDF file exists
+        if not os.path.exists(pdf_file_path):
+            # Try fallback to old naming convention if new file doesn't exist
+            old_pdf_file_path = f"./dcc_files/{certificate_id}.pdf"
+            if os.path.exists(old_pdf_file_path):
+                pdf_file_path = old_pdf_file_path
+            else:
+                logging.error(f"PDF file not found: {pdf_file_path}")
+                raise HTTPException(status_code=404, detail="PDF file not found")
+        
+        # Check file size and log
+        file_size = os.path.getsize(pdf_file_path)
+        logging.info(f"Serving PDF file: {pdf_file_path} (Size: {file_size} bytes)")
+        
+        return FileResponse(
+            path=pdf_file_path,
+            media_type='application/pdf',
+            filename=f"{filename_base}.pdf",
+            headers={
+                "Content-Disposition": f"inline; filename={filename_base}.pdf"
+            }
+        )
+    
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        logging.error(f"Error viewing DCC PDF: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error viewing PDF: {str(e)}")
+
+@app.get("/view-dcc-xml/{dcc_id}")
+async def view_dcc_xml(dcc_id: int, db: Session = Depends(get_db)):
+    """
+    View the XML file for a specific DCC by database ID
+    """
+    try:
+        # Get the DCC record from database to get the certificate ID
+        dcc_record = db.query(models.DCC).filter(models.DCC.id == dcc_id).first()
+        
+        if not dcc_record:
+            raise HTTPException(status_code=404, detail="DCC not found")
+        
+        # Extract certificate ID from administrative data
+        admin_data = dcc_record.administrative_data
+        if isinstance(admin_data, str):
+            admin_data = json.loads(admin_data)
+        
+        certificate_id = admin_data.get('sertifikat', f'DCC-{dcc_id}')
+        
+        # Create filename with database ID and certificate ID
+        filename_base = f"{dcc_id}_{certificate_id}"
+        xml_file_path = f"./dcc_files/{filename_base}.xml"
+        
+        if not os.path.exists(xml_file_path):
+            # Fallback to old naming convention if new file doesn't exist
+            old_xml_file_path = f"./dcc_files/{certificate_id}.xml"
+            if os.path.exists(old_xml_file_path):
+                xml_file_path = old_xml_file_path
+            else:
+                raise HTTPException(status_code=404, detail="XML file not found")
+        
+        return FileResponse(
+            path=xml_file_path, 
+            media_type='application/xml', 
+            filename=f"{filename_base}.xml",
+            headers={
+                "Content-Disposition": f"inline; filename={filename_base}.xml"
+            }
+        )
+    
+    except Exception as e:
+        logging.error(f"Error viewing DCC XML: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error viewing XML: {str(e)}")
 
 @app.get("/api/dcc/list")
 async def get_dcc_list(

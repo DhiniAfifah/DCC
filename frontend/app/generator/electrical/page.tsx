@@ -8,7 +8,7 @@ import Statements from "@/components/statements";
 import Comment from "@/components/comment";
 import Preview from "@/components/preview";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Zap, Send, Download } from "lucide-react";
+import { ArrowLeft, ArrowRight, Zap, Send } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
@@ -2107,9 +2107,8 @@ export default function CreateDCC() {
         )}
       </div>
 
-      {/* Progress Bar */}
       {isProcessingSubmission && (
-        <div className="max-w-4xl mx-auto px-4 mt-8">
+        <div id="progress-bar" className="max-w-4xl mx-auto px-4 mt-8">
           <div className="p-6 bg-sky-50 rounded-lg border border-sky-200 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sky-800 font-semibold text-lg">{progressMessage}</p>
@@ -2202,20 +2201,6 @@ export default function CreateDCC() {
                 </>
               )}
             </Button>
-
-            {isSubmitted && pdfBlobUrl && !isProcessingSubmission && (
-              <div>
-                <Button asChild variant="blue">
-                  <a 
-                    href={pdfBlobUrl}
-                    download={`${formData.administrative_data.sertifikat}.pdf`}
-                  >
-                    <Download />
-                    {t("download")}
-                  </a>
-                </Button>
-              </div>
-            )}
           </div>
         ) : (
           <Button 

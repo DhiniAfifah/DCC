@@ -2,7 +2,7 @@ type Language = "id" | "en";
 
 const translations: Record<string, { id: string; en: string }> = {
   // Navbar
-  home: { id: "Beranda", en: "Home" },
+  language: { id: "Ganti bahasa website", en: "Change website language" },
 
   // ProtectedRoute
   permission: { id: "Anda tidak memiliki izin untuk mengakses halaman ini.", en: "You do not have permission to access this page." },
@@ -343,7 +343,7 @@ const translations: Record<string, { id: string; en: string }> = {
   preparing: {id: "Mempersiapkan data...", en: "Preparing data..."},
   please_wait: {id: "Mohon tunggu...", en: "Please wait..."},
   dcc_created_successfully: {
-    id: "DCC berhasil dibuat! Silakan unduh.", en: "DCC created successfully! Please download.",
+    id: "DCC berhasil dibuat!", en: "DCC created successfully!",
   },
 
   // Importer
@@ -430,6 +430,7 @@ const translations: Record<string, { id: string; en: string }> = {
   submission_date: { id: "Tanggal Pengajuan", en: "Submission Date" },
   calibrated_object: { id: "Nama Alat", en: "Instrument Name" },
   submitted_by: { id: "Diajukan Oleh", en: "Submitted By" },
+  view: { id: "Tinjau", en: "View" },
   approve: { id: "Setujui", en: "Approve" },
   reject: { id: "Tolak", en: "Reject" },
   pending: { id: "Menunggu", en: "Pending" },

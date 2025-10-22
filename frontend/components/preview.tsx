@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { RefreshCw, FileText, SquareArrowOutUpRight, AlertCircle } from "lucide-react";
+import { RefreshCw, Download, FileText, FileCode, SquareArrowOutUpRight, AlertCircle } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,6 +10,12 @@ import { useLanguage } from '@/context/LanguageContext';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider
+} from "@/components/ui/tooltip"
 
 interface PreviewProps {
   previewFiles: {
@@ -28,13 +34,26 @@ export default function Preview({ previewFiles, isLoading, onRefresh }: PreviewP
 
   const { t } = useLanguage();
 
-  const handleDownload = (url: string, filename: string) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      // Fallback to opening in new tab
+      window.open(url, '_blank');
+    }
   };
 
   const handleViewPdf = (url: string) => {
@@ -136,22 +155,123 @@ export default function Preview({ previewFiles, isLoading, onRefresh }: PreviewP
           </div>
         ) : (
           <CardContent className='space-y-6'>
-            {/* PDF Preview Section */}
-            <div className="border rounded-lg p-6">
+            <div id="xml" className="border rounded-lg p-6">
+              <div className='flex justify-between items-center mb-4'>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <FileCode className="w-5 h-5 text-green-600" />
+                  XML
+                </h3>
+
+                <div className="flex gap-3">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => handleViewPdf(previewFiles.xml!)}
+                          variant="outline"
+                          className="flex items-center gap-2"
+                        >
+                          <SquareArrowOutUpRight className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t("tab")}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => handleDownload(previewFiles.xml!, 'dcc-preview.xml')}
+                          variant="blue"
+                          className="flex items-center gap-2"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t("download")}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </div>
+
+              {!previewFiles.xml && (
+                <div className="text-center py-6 text-gray-500">
+                  <p>{t("available")}</p>
+                </div>
+              )}
+
+              {previewFiles.xml && (
+                <div>
+                  {xmlLoading ? (
+                    <p className="text-sm text-gray-600">{t("loading_xml")}...</p>
+                  ) : xmlError ? (
+                    <div className="text-sm text-red-600">
+                      {t("xml_error")}: {xmlError}
+                    </div>
+                  ) : xmlText ? (
+                    <ScrollArea className="h-[420px] w-full pr-2">
+                      <SyntaxHighlighter
+                        language="xml"
+                        style={coy}
+                        customStyle={{
+                          fontSize: "0.875rem",
+                          background: "transparent",
+                          margin: 0,
+                          width: "max-content",
+                        }}
+                      >
+                        {xmlText}
+                      </SyntaxHighlighter>
+                      <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
+                  ) : (
+                    <p className="text-sm text-gray-600">{t("after")}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div id="pdf" className="border rounded-lg p-6">
               <div className='flex justify-between items-center mb-4'>
                 <h3 className="text-lg font-semibold flex items-center gap-2">
                   <FileText className="w-5 h-5 text-red-600" />
                   PDF
                 </h3>
 
-                <Button
-                  onClick={() => handleViewPdf(previewFiles.pdf!)}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <SquareArrowOutUpRight className="w-4 h-4" />
-                  {t("tab")}
-                </Button>
+                <div className="flex gap-3">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => handleViewPdf(previewFiles.pdf!)}
+                          variant="outline"
+                          className="flex items-center gap-2"
+                        >
+                          <SquareArrowOutUpRight className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t("tab")}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={() => handleDownload(previewFiles.pdf!, 'dcc-preview.pdf')}
+                          variant="blue"
+                          className="flex items-center gap-2"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t("download")}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
               
               {previewFiles.pdf ? (
@@ -193,61 +313,6 @@ export default function Preview({ previewFiles, isLoading, onRefresh }: PreviewP
                   <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>{t("appear")}</p>
                   <p className="text-sm">{t("changes")}</p>
-                </div>
-              )}
-            </div>
-
-            {/* XML Preview Section */}
-            <div className="border rounded-lg p-6">
-              <div className='flex justify-between items-center mb-4'>
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-green-600" />
-                  XML
-                </h3>
-
-                <Button
-                  onClick={() => handleViewPdf(previewFiles.xml!)}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <SquareArrowOutUpRight className="w-4 h-4" />
-                  {t("tab")}
-                </Button>
-              </div>
-
-              {!previewFiles.xml && (
-                <div className="text-center py-6 text-gray-500">
-                  <p>{t("available")}</p>
-                </div>
-              )}
-
-              {previewFiles.xml && (
-                <div>
-                  {xmlLoading ? (
-                    <p className="text-sm text-gray-600">{t("loading_xml")}...</p>
-                  ) : xmlError ? (
-                    <div className="text-sm text-red-600">
-                      {t("xml_error")}: {xmlError}
-                    </div>
-                  ) : xmlText ? (
-                    <ScrollArea className="h-[420px] w-full pr-2">
-                      <SyntaxHighlighter
-                        language="xml"
-                        style={coy}
-                        customStyle={{
-                          fontSize: "0.875rem",
-                          background: "transparent",
-                          margin: 0,
-                          width: "max-content",
-                        }}
-                      >
-                        {xmlText}
-                      </SyntaxHighlighter>
-                      <ScrollBar orientation="horizontal" />
-                    </ScrollArea>
-                  ) : (
-                    <p className="text-sm text-gray-600">{t("after")}</p>
-                  )}
                 </div>
               )}
             </div>
