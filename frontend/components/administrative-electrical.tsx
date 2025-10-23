@@ -316,38 +316,18 @@ export default function Administrative({
     name: "responsible_persons.penyelia",
   });
 
-  const {
-    fields: kepalaFields,
-    append: appendKepala,
-    remove: removeKepala,
-  } = useFieldArray({
-    control: form.control,
-    name: "responsible_persons.kepala",
-  });
+  const [pelaksanaName, setPelaksanaName] = useState<Record<number, string>>({});
+  const [penyeliaName, setPenyeliaName] = useState<Record<number, string>>({});
 
-  const {
-    fields: direkturFields,
-    append: appendDirektur,
-    remove: removeDirektur,
-  } = useFieldArray({
-    control: form.control,
-    name: "responsible_persons.direktur",
-  });
-
-  // Initial state untuk peran pada pelaksana, penyelia, kepala, dan direktur
-  const [selectedRoles, setSelectedRoles] = useState(
-    pelaksanaFields
-      .concat(penyeliaFields, kepalaFields, direkturFields)
-      .map(() => "")
-  );
-
-  // Mengubah peran yang dipilih pada masing-masing pelaksana atau penyelia
-  const handleRoleChange = (index: number, value: string) => {
-    setSelectedRoles((prevRoles) => {
-      const newRoles = [...prevRoles];
-      newRoles[index] = value;
-      return newRoles;
-    });
+  const respPersonData: Record<string, string> = {
+    "Agah Faisal, M.Sc.": "198102142006041004",
+    "Lukluk Khairiyati, M.T.": "197911292006042005",
+    "Nibras Fitrah Yayienda, M.T.": "199107212015032001",
+    "Hayati Amalia, M.T.": "199009212015022002",
+    "Azka Quamila Yusrina, S.T.": "199610192022032010",
+    "Arif Muhamad Fadli, S.Si.": "199802232022031001",
+    "Dyah Styarini, M.Si.": "197910302005022002",
+    "Dr. Ghufron Zaid": "197111041990121001"
   };
 
   // Use direct watch without memoization - this ensures immediate updates
@@ -454,22 +434,6 @@ export default function Administrative({
     },
     [removeItem]
   );
-
-  const [pelaksanaType, setPelaksanaType] = useState<{ [key: number]: string }>({});
-  const [penyeliaType, setPenyeliaType] = useState<{ [key: number]: string }>({});
-  const [kepalaType, setKepalaType] = useState<string>("");
-  const [direkturType, setDirekturType] = useState<string>("");
-
-  const namaToNip: Record<string, string> = {
-    "Agah Faisal, M.Sc.": "198102142006041004",
-    "Lukluk Khairiyati, M.T.": "197911292006042005",
-    "Nibras Fitrah Yayienda, M.T.": "199107212015032001",
-    "Hayati Amalia, M.T.": "199009212015022002",
-    "Azka Quamila Yusrina, S.T.": "199610192022032010",
-    "Arif Muhamad Fadli, S.Si.": "199802232022031001",
-    "Dyah Styarini, M.Si.": "197910302005022002",
-    "Dr. Ghufron Zaid": "197111041990121001",
-  };
 
   return (
     <FormProvider {...form}>
@@ -1035,7 +999,7 @@ export default function Administrative({
               {t("object_desc")}
             </CardTitle>
           </CardHeader>
-         <CardContent>
+          <CardContent>
             <Accordion
               type="single"
               collapsible
@@ -1278,18 +1242,23 @@ export default function Administrative({
                             <FormItem>
                               <Select
                                 onValueChange={(value) => {
-                                  setPelaksanaType((prev) => ({ ...prev, [index]: value }));  
-                                  if (value !== "other") {
-                                    field.onChange(value);
-                                    // Autofill nip based on name
-                                    const nipValue = namaToNip[value] || "";
-                                    form.setValue(`responsible_persons.pelaksana.${index}.nip`, nipValue);
-                                  } else {
+                                  if (value === "other") {
+                                    setPelaksanaName(prev => ({ ...prev, [index]: "" }));
                                     field.onChange("");
                                     form.setValue(`responsible_persons.pelaksana.${index}.nip`, "");
+                                  } else {
+                                    setPelaksanaName(prev => {
+                                      const newState = { ...prev };
+                                      delete newState[index];
+                                      return newState;
+                                    });
+                                    field.onChange(value);
+                                    // Auto-fill NIP based on selected name
+                                    const nip = respPersonData[value] || "";
+                                    form.setValue(`responsible_persons.pelaksana.${index}.nip`, nip);
                                   }
                                 }}
-                                value={pelaksanaType[index] || (field.value && field.value !== "" ? "other" : field.value)}
+                                value={index in pelaksanaName ? "other" : field.value}
                               >
                                 <FormControl>
                                   <SelectTrigger>
@@ -1297,30 +1266,26 @@ export default function Administrative({
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {Object.keys(namaToNip).slice(0, 6).map((name) => (
-                                    <SelectItem key={name} value={name}>{name}</SelectItem>
-                                  ))}
+                                  <SelectItem value="Agah Faisal, M.Sc.">Agah Faisal, M.Sc.</SelectItem>
+                                  <SelectItem value="Lukluk Khairiyati, M.T.">Lukluk Khairiyati, M.T.</SelectItem>
+                                  <SelectItem value="Nibras Fitrah Yayienda, M.T.">Nibras Fitrah Yayienda, M.T.</SelectItem>
+                                  <SelectItem value="Hayati Amalia, M.T.">Hayati Amalia, M.T.</SelectItem>
+                                  <SelectItem value="Azka Quamila Yusrina, S.T.">Azka Quamila Yusrina, S.T.</SelectItem>
+                                  <SelectItem value="Arif Muhamad Fadli, S.Si.">Arif Muhamad Fadli, S.Si.</SelectItem>
+                                  <SelectItem value="Dyah Styarini, M.Si.">Dyah Styarini, M.Si.</SelectItem>
                                   <SelectItem value="other">{t("other")}</SelectItem>
                                 </SelectContent>
                               </Select>
+                              {index in pelaksanaName && (
+                                <Input
+                                  value={field.value || ""}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                />
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                        {pelaksanaType[index] === "other" && (
-                          <FormField
-                            control={form.control}
-                            name={`responsible_persons.pelaksana.${index}.nama_resp`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
                       </div>
                       <div id="nip">
                         <FormLabel>{t("nip")}</FormLabel>
@@ -1388,18 +1353,23 @@ export default function Administrative({
                             <FormItem>
                               <Select
                                 onValueChange={(value) => {
-                                  setPenyeliaType((prev) => ({ ...prev, [index]: value }));  
-                                  if (value !== "other") {
-                                    field.onChange(value);
-                                    // Autofill nip based on name
-                                    const nipValue = namaToNip[value] || "";
-                                    form.setValue(`responsible_persons.penyelia.${index}.nip`, nipValue);
-                                  } else {
+                                  if (value === "other") {
+                                    setPenyeliaName(prev => ({ ...prev, [index]: "" }));
                                     field.onChange("");
-                                    form.setValue(`responsible_persons.penyelia.${index}.nip`, "");
+                                    form.setValue(`responsible_persons.pelaksana.${index}.nip`, "");
+                                  } else {
+                                    setPenyeliaName(prev => {
+                                      const newState = { ...prev };
+                                      delete newState[index];
+                                      return newState;
+                                    });
+                                    field.onChange(value);
+                                    // Auto-fill NIP based on selected name
+                                    const nip = respPersonData[value] || "";
+                                    form.setValue(`responsible_persons.pelaksana.${index}.nip`, nip);
                                   }
                                 }}
-                                value={penyeliaType[index] || (field.value && field.value !== "" ? "other" : field.value)}
+                                value={index in penyeliaName ? "other" : field.value}
                               >
                                 <FormControl>
                                   <SelectTrigger>
@@ -1407,30 +1377,26 @@ export default function Administrative({
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {Object.keys(namaToNip).slice(0, 6).map((name) => (
-                                    <SelectItem key={name} value={name}>{name}</SelectItem>
-                                  ))}
+                                  <SelectItem value="Agah Faisal, M.Sc.">Agah Faisal, M.Sc.</SelectItem>
+                                  <SelectItem value="Lukluk Khairiyati, M.T.">Lukluk Khairiyati, M.T.</SelectItem>
+                                  <SelectItem value="Nibras Fitrah Yayienda, M.T.">Nibras Fitrah Yayienda, M.T.</SelectItem>
+                                  <SelectItem value="Hayati Amalia, M.T.">Hayati Amalia, M.T.</SelectItem>
+                                  <SelectItem value="Azka Quamila Yusrina, S.T.">Azka Quamila Yusrina, S.T.</SelectItem>
+                                  <SelectItem value="Arif Muhamad Fadli, S.Si.">Arif Muhamad Fadli, S.Si.</SelectItem>
+                                  <SelectItem value="Dyah Styarini, M.Si.">Dyah Styarini, M.Si.</SelectItem>
                                   <SelectItem value="other">{t("other")}</SelectItem>
                                 </SelectContent>
                               </Select>
+                              {index in penyeliaName && (
+                                <Input
+                                  value={field.value || ""}
+                                  onChange={(e) => field.onChange(e.target.value)}
+                                />
+                              )}
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                        {penyeliaType[index] === "other" && (
-                          <FormField
-                            control={form.control}
-                            name={`responsible_persons.penyelia.${index}.nama_resp`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        )}
                       </div>
                       <div id="nip">
                         <FormLabel>{t("nip")}</FormLabel>
@@ -1483,18 +1449,12 @@ export default function Administrative({
                         <FormItem>
                           <Select
                             onValueChange={(value) => {
-                              setKepalaType(value);  
-                              if (value !== "other") {
-                                field.onChange(value);
-                                // Autofill nip based on name
-                                const nipValue = namaToNip[value] || "";
-                                form.setValue(`responsible_persons.kepala.nip`, nipValue);
-                              } else {
-                                field.onChange("");
-                                form.setValue(`responsible_persons.kepala.nip`, "");
-                              }
+                              field.onChange(value);
+                              // Auto-fill NIP based on selected name
+                              const nip = respPersonData[value] || "";
+                              form.setValue("responsible_persons.kepala.nip", nip);
                             }}
-                            value={kepalaType || (field.value && field.value !== "" ? "other" : field.value)}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -1502,9 +1462,7 @@ export default function Administrative({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {Object.keys(namaToNip).slice(0, 1).map((name) => (
-                                <SelectItem key={name} value={name}>{name}</SelectItem>
-                              ))}
+                              <SelectItem value="Agah Faisal, M.Sc.">Agah Faisal, M.Sc.</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -1625,18 +1583,12 @@ export default function Administrative({
                         <FormItem>
                           <Select
                             onValueChange={(value) => {
-                              setDirekturType(value);  
-                              if (value !== "other") {
-                                field.onChange(value);
-                                // Autofill nip based on name
-                                const nipValue = namaToNip[value] || "";
-                                form.setValue(`responsible_persons.direktur.nip`, nipValue);
-                              } else {
-                                field.onChange("");
-                                form.setValue(`responsible_persons.direktur.nip`, "");
-                              }
+                              field.onChange(value);
+                              // Auto-fill NIP based on selected name
+                              const nip = respPersonData[value] || "";
+                              form.setValue("responsible_persons.direktur.nip", nip);
                             }}
-                            value={direkturType || (field.value && field.value !== "" ? "other" : field.value)}
+                            value={field.value}
                           >
                             <FormControl>
                               <SelectTrigger>
@@ -1644,9 +1596,8 @@ export default function Administrative({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {Object.keys(namaToNip).slice(6, 8).map((name) => (
-                                <SelectItem key={name} value={name}>{name}</SelectItem>
-                              ))}
+                              <SelectItem value="Dyah Styarini, M.Si.">Dyah Styarini, M.Si.</SelectItem>
+                              <SelectItem value="Dr. Ghufron Zaid">Dr. Ghufron Zaid</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

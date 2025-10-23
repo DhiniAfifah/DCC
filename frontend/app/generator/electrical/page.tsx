@@ -268,15 +268,15 @@ const multimeterTemplate = {
     penyelia: [
       { // 1
         nama_resp: "Agah Faisal, M.Sc.",
-        nip: "",
+        nip: "198102142006041004",
         peran: "Penyelia Kalibrasi",
         main_signer: "0",
         signature: "0",
         timestamp: "0",
       },
       { // 2
-        nama_resp: "Lukluk Khairiyanti, M.T.",
-        nip: "",
+        nama_resp: "Lukluk Khairiyati, M.T.",
+        nip: "197911292006042005",
         peran: "Penyelia Kalibrasi",
         main_signer: "0",
         signature: "0",
@@ -285,7 +285,7 @@ const multimeterTemplate = {
     ],
     kepala: {
       nama_resp: "Agah Faisal, M.Sc.",
-      nip: "",
+      nip: "198102142006041004",
       peran: "Kepala Laboratorium SNSU Kelistrikan",
       main_signer: "0",
       signature: "0",
@@ -293,7 +293,7 @@ const multimeterTemplate = {
     },
     direktur: {
       nama_resp: "Dr. Ghufron Zaid",
-      nip: "19711104 199012 1 001",
+      nip: "197111041990121001",
       peran: "Direktur SNSU Termoelektrik dan Kimia",
       main_signer: "1",
       signature: "1",
@@ -711,7 +711,7 @@ const calibratorTemplate = {
     penyelia: [
       { // 1
         nama_resp: "Agah Faisal, M.Sc.",
-        nip: "",
+        nip: "198102142006041004",
         peran: "Penyelia Kalibrasi",
         main_signer: "0",
         signature: "0",
@@ -720,7 +720,7 @@ const calibratorTemplate = {
     ],
     kepala: {
       nama_resp: "Agah Faisal, M.Sc.",
-      nip: "",
+      nip: "198102142006041004",
       peran: "Kepala Laboratorium SNSU Kelistrikan",
       main_signer: "0",
       signature: "0",
@@ -728,7 +728,7 @@ const calibratorTemplate = {
     },
     direktur: {
       nama_resp: "Dr. Ghufron Zaid",
-      nip: "19711104 199012 1 001",
+      nip: "197111041990121001",
       peran: "Direktur SNSU Termoelektrik dan Kimia",
       main_signer: "1",
       signature: "1",
