@@ -162,7 +162,6 @@ const NavLink = ({
   href,
   children,
   isContact = false,
-  isDashboard = false,
 }: {
   href: string;
   children: React.ReactNode;

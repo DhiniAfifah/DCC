@@ -58,26 +58,26 @@ export const isHead = (): boolean => {
   return role === "head";
 };
 
-// Get token from localStorage first, then try cookies as fallback
+// Get token from cookies first (for persistent auth), then localStorage as fallback
 export const getToken = (): string | null => {
   if (typeof window !== "undefined") {
-    // First try localStorage
-    const localStorageToken = localStorage.getItem("access_token");
-    if (localStorageToken) {
-      console.log("🔑 Token found in localStorage");
-      return localStorageToken;
-    }
-
-    // Fallback to cookies
+    // First try cookies (persistent across sessions)
     const cookieToken = getCookieValue("access_token");
-    if (cookieToken) {
-      console.log("🍪 Token found in cookies");
+    if (cookieToken && cookieToken.trim() !== "" && cookieToken !== "undefined" && cookieToken !== "null") {
+      console.log("🍪 Token found in cookies (persistent)");
       // Sync to localStorage for consistency
       localStorage.setItem("access_token", cookieToken);
       return cookieToken;
     }
 
-    console.log("❌ No token found in localStorage or cookies");
+    // Fallback to localStorage (session-based)
+    const localStorageToken = localStorage.getItem("access_token");
+    if (localStorageToken && localStorageToken.trim() !== "" && localStorageToken !== "undefined" && localStorageToken !== "null") {
+      console.log("🔒 Token found in localStorage");
+      return localStorageToken;
+    }
+
+    console.log("❌ No valid token found");
   }
   return null;
 };

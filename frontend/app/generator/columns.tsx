@@ -336,7 +336,6 @@ export const columns: ColumnDef<Certificate>[] = [
     id: "actions",
     cell: ({ row }) => {
       const { t } = useLanguage();
-      const router = useRouter();
       const certificate = row.original;
 
       const handleDownloadPDF = async () => {

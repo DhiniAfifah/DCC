@@ -77,7 +77,8 @@ def get_streaming_message(key: str, lang: str = 'en') -> str:
 # Kunci dan algoritma untuk enkripsi token
 SECRET_KEY = "5965815bee66d2c201cabe787a432ba80e31884133cf6c4b8e50a0df54a0c880"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30
+                            # menit * jam * hari = 1 bulan
 
 # Set log level
 logging.basicConfig(level=logging.INFO)
@@ -320,7 +321,7 @@ async def login_for_access_token(
     response.set_cookie(
         key="access_token",
         value=access_token,
-        max_age=60*60*24*7,  # 7 days
+        max_age=60*60*24*30,  # detik * menit * jam * hari = 1 bulan
         httponly=False,  # False so JavaScript can access it
         secure=False,  # False for localhost HTTP
         samesite="lax",  # Use lowercase
