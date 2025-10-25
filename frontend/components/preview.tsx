@@ -205,7 +205,7 @@ export default function Preview({ previewFiles, isLoading, onRefresh }: PreviewP
               {previewFiles.xml && (
                 <div>
                   {xmlLoading ? (
-                    <p className="text-sm text-gray-600">{t("loading_xml")}...</p>
+                    <p className="text-sm text-gray-600">{t("loading")}...</p>
                   ) : xmlError ? (
                     <div className="text-sm text-red-600">
                       {t("xml_error")}: {xmlError}

@@ -167,13 +167,6 @@ export default function OfficerProtectedRoute({
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
           <p className="mt-4 text-gray-600">{t("verify_officer")}...</p>
-          {/* Debug button for testing CORS */}
-          <button 
-            onClick={testCORS}
-            className="mt-2 px-4 py-2 bg-blue-500 text-white rounded text-sm"
-          >
-            Test CORS
-          </button>
         </div>
       </div>
     );

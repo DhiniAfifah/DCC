@@ -1,6 +1,6 @@
-from sqlalchemy import Column, String, Integer, JSON, Boolean, Enum, DateTime, ForeignKey
+from sqlalchemy import Column, String, Integer, JSON, Boolean, Enum, DateTime, ForeignKey, Text
 import enum
-import datetime
+from datetime import datetime
 from .database import Base
 from sqlalchemy.orm import relationship
 
@@ -39,6 +39,10 @@ class DCC(Base):
     excel = Column(String, nullable=False)  
     sheet_name = Column(String, nullable=False)
     results = Column(JSON)
+
+    rejection_note = Column(Text, nullable=True)
+    rejected_by = Column(String(255), nullable=True)
+    rejected_at = Column(DateTime, nullable=True)
     
 class XML(Base):
     __tablename__ = "uploaded_files"

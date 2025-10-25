@@ -287,3 +287,33 @@ class DraftResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+class RejectionNoteCreate(BaseModel):
+    note: str
+
+class RejectionNoteResponse(BaseModel):
+    note: str
+    created_at: datetime
+    rejected_by: str
+
+class DCCEditResponse(BaseModel):
+    id: int
+    software: str
+    version: str
+    administrative_data: AdministrativeData
+    Measurement_TimeLine: MeasurementTimeline
+    objects: List[ObjectDescription]
+    responsible_persons: ResponsiblePersons
+    owner: OwnerIdentity
+    methods: List[Method]
+    equipments: List[Equipment]
+    conditions: List[Condition]
+    results: List[Result]
+    statements: List[Statements]
+    comment: Optional[Comment]
+    excel: Optional[str]
+    sheet_name: str
+    status: DCCStatus
+    
+    class Config:
+        from_attributes = True

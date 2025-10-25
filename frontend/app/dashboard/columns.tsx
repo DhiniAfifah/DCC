@@ -1,7 +1,7 @@
 "use client"
  
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown, ChevronDown, Eye, Download, Check, X, RefreshCw, AlertCircle, FileText, FileCode, SquareArrowOutUpRight } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, ChevronDown, Eye, Download, Check, X, RefreshCw, AlertCircle, FileText, FileCode, SquareArrowOutUpRight, MessageSquareText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -34,6 +34,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useState, useEffect } from "react"
+import { Textarea } from "@/components/ui/textarea"
 
 export type Certificate = {
     id: number
@@ -146,6 +147,63 @@ const downloadDCCXML = async (id: number, certificateId: string) => {
     throw error;
   }
 };
+
+function RejectionNoteDisplay({ certificateId }: { certificateId: number }) {
+  const { t } = useLanguage();
+  const [note, setNote] = useState<string>("");
+  const [rejectedBy, setRejectedBy] = useState<string>("");
+  const [rejectedAt, setRejectedAt] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNote = async () => {
+      try {
+        // Get the token from cookies
+        const token = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('access_token='))
+          ?.split('=')[1];
+
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/dcc/${certificateId}/rejection-note`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          setNote(data.note);
+          setRejectedBy(data.rejected_by);
+          setRejectedAt(data.rejected_at);
+        }
+      } catch (error) {
+        console.error("Failed to fetch rejection note:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNote();
+  }, [certificateId]);
+
+  if (loading) return <p>{t("loading")}...</p>;
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="whitespace-pre-wrap">{note}</p>
+      </div>
+      {rejectedBy && (
+        <div className="text-sm text-muted-foreground">
+          <p>{t("rejected_by")}: {rejectedBy}</p>
+          {rejectedAt && <p>{t("rejected_at")}: {new Date(rejectedAt).toLocaleString()}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export const columns: ColumnDef<Certificate>[] = [
   {
@@ -330,7 +388,7 @@ export const columns: ColumnDef<Certificate>[] = [
               status === "approved_director" ? t("approved") : 
               status === "rejected_director" ? t("rejected") : 
               t("unknown")
-            : t("unknown")
+          : t("unknown")
           }
         </Badge>
       );
@@ -462,6 +520,9 @@ export const columns: ColumnDef<Certificate>[] = [
         window.open(url, '_blank');
       };
 
+      const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+      const [rejectionNote, setRejectionNote] = useState("");
+
       return (
         <TooltipProvider>
           <DropdownMenu>
@@ -527,7 +588,7 @@ export const columns: ColumnDef<Certificate>[] = [
                         </div>
 
                         {xmlLoading ? (
-                          <p className="text-sm text-gray-600">{t("loading_xml")}...</p>
+                          <p className="text-sm text-gray-600">{t("loading")}...</p>
                         ) : xmlError ? (
                           <div className="text-sm text-red-600">
                             {t("xml_error")}: {xmlError}
@@ -634,43 +695,144 @@ export const columns: ColumnDef<Certificate>[] = [
                   {t("download")}
                 </DropdownMenuItem>
               )}
+
               <DropdownMenuSeparator />
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenuItem 
-                    onClick={() => handleStatusChange(approve)}
-                    disabled={
-                      (isHead() && (certificate.status === "approved_head" || certificate.status === "rejected_head")) ||
-                      (isDirector() && (certificate.status === "approved_director" || certificate.status === "rejected_director"))
-                    }
-                  >
-                    <Check className="mr-2 h-4 w-4 text-green-600" /> 
-                    {t("approve")}
-                  </DropdownMenuItem>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t("cant_undo")}</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenuItem 
-                    onClick={() => handleStatusChange(reject)}
-                    disabled={
-                      (isHead() && (certificate.status === "approved_head" || certificate.status === "rejected_head")) ||
-                      (isDirector() && (certificate.status === "approved_director" || certificate.status === "rejected_director"))
-                    }
-                  >
-                    <X className="mr-2 h-4 w-4 text-red-600" /> 
-                    {t("reject")}
-                  </DropdownMenuItem>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{t("cant_undo")}</p>
-                </TooltipContent>
-              </Tooltip>
+
+              <DropdownMenuItem 
+                onClick={() => handleStatusChange(approve)}
+                disabled={
+                  (isHead() && (certificate.status === "approved_head" || certificate.status === "rejected_head" || certificate.status === "approved_director" || certificate.status === "rejected_director")) ||
+                  (isDirector() && (certificate.status === "approved_director" || certificate.status === "rejected_director"))
+                }
+              >
+                <Check className="mr-2 h-4 w-4 text-green-600" /> 
+                {t("approve")}
+              </DropdownMenuItem>
+
+              <DropdownMenuItem 
+                onSelect={(e) => {
+                  e.preventDefault();
+                  setRejectDialogOpen(true);
+                }}
+                disabled={
+                  (isHead() && (certificate.status === "approved_head" || certificate.status === "rejected_head" || certificate.status === "approved_director" || certificate.status === "rejected_director")) ||
+                  (isDirector() && (certificate.status === "approved_director" || certificate.status === "rejected_director"))
+                }
+              >
+                <X className="mr-2 h-4 w-4 text-red-600" /> 
+                {t("reject")}
+              </DropdownMenuItem>
+
+              {isHead()
+                ? (certificate.status === "rejected_head") && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <MessageSquareText className="mr-2 h-4 w-4 text-red-600" />
+                            {t("revision_note")}
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-x-2">
+                              <MessageSquareText className="w-5 h-5" /> 
+                              {t("revision_note")}
+                            </DialogTitle>
+                          </DialogHeader>
+                          <RejectionNoteDisplay certificateId={certificate.id} />
+                        </DialogContent>
+                      </Dialog>
+                    </>
+                  )
+              : isDirector()
+                ? (certificate.status === "rejected_director") && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <MessageSquareText className="mr-2 h-4 w-4 text-red-600" />
+                            {t("revision_note")}
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-x-2">
+                              <MessageSquareText className="w-5 h-5" /> 
+                              {t("revision_note")}
+                            </DialogTitle>
+                          </DialogHeader>
+                          <RejectionNoteDisplay certificateId={certificate.id} />
+                        </DialogContent>
+                      </Dialog>
+                    </>
+                  )
+              : <></>
+              }
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-x-2">
+                  <MessageSquareText className="w-5 h-5" /> 
+                  {t("revision_note")}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <Textarea
+                  value={rejectionNote}
+                  onChange={(e) => setRejectionNote(e.target.value)}
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="green" 
+                  onClick={async () => {
+                    if (!rejectionNote.trim()) {
+                      toast.error(t("revision_note_required"));
+                      return;
+                    }
+                    try {
+                      // Get the token from cookies
+                      const token = document.cookie
+                        .split('; ')
+                        .find(row => row.startsWith('access_token='))
+                        ?.split('=')[1];
+
+                      const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/status-with-note`, {
+                        method: 'PATCH',
+                        headers: { 
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ 
+                          status: reject, 
+                          rejection_note: rejectionNote 
+                        }),
+                      });
+                      
+                      if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to reject');
+                      }
+                      
+                      setRejectDialogOpen(false);
+                      setRejectionNote("");
+                      router.refresh();
+                    } catch (error) {
+                      console.error('Rejection error:', error);
+                    }
+                  }}
+                >
+                  {t("confirm")}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </TooltipProvider>
       )
     },

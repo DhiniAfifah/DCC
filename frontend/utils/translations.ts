@@ -1,6 +1,10 @@
 type Language = "id" | "en";
 
 const translations: Record<string, { id: string; en: string }> = {
+  loading: { id: "Memuat", en: "Loading" },
+  loaded: { id: "Termuat", en: "Loaded!" },
+  failed_to_load: { id: "Gagal memuat", en: "Failed to load" },
+
   // Navbar
   language: { id: "Ganti bahasa website", en: "Change website language" },
 
@@ -74,7 +78,6 @@ const translations: Record<string, { id: string; en: string }> = {
   },
   
   saved_drafts: { id: "Draf Tersimpan", en: "Saved Drafts" },
-  loading_drafts: { id: "Memuat draf", en: "Loading drafts" },
   no_draft: { id: "Tidak ada draf.", en: "No draft." },
   load: { id: "Muat", en: "Load" },
   save_draft: { id: "Simpan Draf", en: "Save Draft" },
@@ -84,7 +87,6 @@ const translations: Record<string, { id: string; en: string }> = {
   cancel: { id: "Batal", en: "Cancel" },
   save: { id: "Simpan", en: "Save" },
   draft_saved: { id: "Draf tersimpan!", en: "Draft saved!" },
-  draft_loaded: { id: "Draf dimuat!", en: "Draft loaded!" },
   draft_deleted: { id: "Draf terhapus!", en: "Draft deleted!" },
 
   submit: { id: "Kirim", en: "Submit" },
@@ -335,7 +337,6 @@ const translations: Record<string, { id: string; en: string }> = {
     en: "Make changes to the form to generate preview" 
   },
   available: { id: "Tidak ada pratinjau XML yang tersedia", en: "No XML preview available" },
-  loading_xml: { id: "Memuat XML", en: "Loading XML" },
   xml_error: { id: "Gagal memuat XML", en: "Failed to load XML" },
   after: { id: "XML akan muncul di sini setelah pembuatan.", en: "XML will appear here after generation." },
 
@@ -444,6 +445,12 @@ const translations: Record<string, { id: string; en: string }> = {
   aksi: { id: "Aksi", en: "Actions" },
   cant_undo: { id: "Aksi ini tidak dapat dibatalkan", en: "This action can't be undone" },
   no_result: { id: "Tidak ada hasil.", en: "No result." },
+
+  rejected_by: { id: "Ditolak oleh", en: "Rejected by" },
+  rejected_at: { id: "Ditolak pada", en: "Rejected at" },
+  revision_note: { id: "Catatan revisi", en: "Revision note" },
+  revision_note_required: { id: "Catatan revisi dibutuhkan", en: "Revision note required" },
+  confirm: { id: "Konfirmasi", en: "Confirm" },
 
   // animate-spin
   authentication: { id: "Memeriksa autentikasi", en: "Checking authentication"},

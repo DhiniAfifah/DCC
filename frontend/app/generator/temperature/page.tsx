@@ -2072,11 +2072,11 @@ export default function CreateDCC() {
       // Increment template change key to force re-render of all child components
       setTemplateChangeKey(prev => prev + 1);
       
-      toast.success(t("draft_loaded"));
+      toast.success(t("loaded"));
       setIsLoadingDraft(false);
     } catch (error) {
       console.error("Error loading draft:", error);
-      toast.error(t("failed_to_load_draft"));
+      toast.error(t("failed_to_load"));
       setIsLoadingDraft(false);
     }
   };
@@ -2095,6 +2095,76 @@ export default function CreateDCC() {
   }, []); // Keep empty dependency array
 
   const [draftName, setDraftName] = useState<string>("");
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const editId = searchParams.get('edit');
+    
+    if (editId) {
+      const loadDccForEdit = async () => {
+        try {
+          setIsLoadingDraft(true);
+          
+          // Try to get data from sessionStorage first
+          const storedData = sessionStorage.getItem('editDccData');
+          if (storedData) {
+            const dccData = JSON.parse(storedData);
+            
+            // Transform data to match form structure
+            const transformedData = {
+              software: dccData.software || "",
+              version: dccData.version || "",
+              administrative_data: {
+                ...dccData.administrative_data,
+                // Ensure languages are in correct format
+                used_languages: Array.isArray(dccData.administrative_data?.used_languages)
+                  ? dccData.administrative_data.used_languages.map((lang: any) => 
+                      typeof lang === 'object' && 'value' in lang ? lang : { value: lang }
+                    )
+                  : [],
+                mandatory_languages: Array.isArray(dccData.administrative_data?.mandatory_languages)
+                  ? dccData.administrative_data.mandatory_languages.map((lang: any) => 
+                      typeof lang === 'object' && 'value' in lang ? lang : { value: lang }
+                    )
+                  : [],
+              },
+              Measurement_TimeLine: dccData.Measurement_TimeLine || blankTemplate.Measurement_TimeLine,
+              objects: Array.isArray(dccData.objects) ? dccData.objects : [],
+              responsible_persons: dccData.responsible_persons || blankTemplate.responsible_persons,
+              owner: dccData.owner || blankTemplate.owner,
+              methods: Array.isArray(dccData.methods) ? dccData.methods : [],
+              equipments: Array.isArray(dccData.equipments) ? dccData.equipments : [],
+              conditions: Array.isArray(dccData.conditions) ? dccData.conditions : [],
+              results: Array.isArray(dccData.results) ? dccData.results : [],
+              statements: Array.isArray(dccData.statements) ? dccData.statements : [],
+              comment: dccData.comment || blankTemplate.comment,
+              excel: dccData.excel || "",
+              sheet_name: dccData.sheet_name || "",
+            };
+            
+            setFormData(transformedData);
+            setFileName(dccData.excel || "");
+            setTemplateChangeKey(prev => prev + 1);
+            
+            // Clear sessionStorage after loading
+            sessionStorage.removeItem('editDccData');
+            
+            toast.success(t("loaded"));
+          }
+          
+          setIsLoadingDraft(false);
+        } catch (error) {
+          console.error('Error loading DCC for edit:', error);
+          toast.error(t("failed_to_load"));
+          setIsLoadingDraft(false);
+        }
+      };
+      
+      setTimeout(() => {
+        loadDccForEdit();
+      }, 100);
+    }
+  }, []);
 
   return (
     <div className="container mx-auto py-8 pt-20">

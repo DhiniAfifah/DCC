@@ -1,7 +1,7 @@
 "use client"
  
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown, ChevronDown, Eye, Download, RefreshCw, AlertCircle, FileText, FileCode, SquareArrowOutUpRight } from "lucide-react"
+import { MoreHorizontal, ArrowUpDown, ChevronDown, Eye, Download, RefreshCw, AlertCircle, FileText, FileCode, SquareArrowOutUpRight, MessageSquareText, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -145,6 +145,63 @@ const downloadDCCXML = async (id: number, certificateId: string) => {
     throw error;
   }
 };
+
+function RejectionNoteDisplay({ certificateId }: { certificateId: number }) {
+  const { t } = useLanguage();
+  const [note, setNote] = useState<string>("");
+  const [rejectedBy, setRejectedBy] = useState<string>("");
+  const [rejectedAt, setRejectedAt] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchNote = async () => {
+      try {
+        // Get the token from cookies
+        const token = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('access_token='))
+          ?.split('=')[1];
+
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/dcc/${certificateId}/rejection-note`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          setNote(data.note);
+          setRejectedBy(data.rejected_by);
+          setRejectedAt(data.rejected_at);
+        }
+      } catch (error) {
+        console.error("Failed to fetch rejection note:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchNote();
+  }, [certificateId]);
+
+  if (loading) return <p>{t("loading")}...</p>;
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="whitespace-pre-wrap">{note}</p>
+      </div>
+      {rejectedBy && (
+        <div className="text-sm text-muted-foreground">
+          <p>{t("rejected_by")}: {rejectedBy}</p>
+          {rejectedAt && <p>{t("rejected_at")}: {new Date(rejectedAt).toLocaleString()}</p>}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export const columns: ColumnDef<Certificate>[] = [
   {
@@ -336,6 +393,7 @@ export const columns: ColumnDef<Certificate>[] = [
     id: "actions",
     cell: ({ row }) => {
       const { t } = useLanguage();
+      const router = useRouter();
       const certificate = row.original;
 
       const handleDownloadPDF = async () => {
@@ -497,7 +555,7 @@ export const columns: ColumnDef<Certificate>[] = [
                         </div>
 
                         {xmlLoading ? (
-                          <p className="text-sm text-gray-600">{t("loading_xml")}...</p>
+                          <p className="text-sm text-gray-600">{t("loading")}...</p>
                         ) : xmlError ? (
                           <div className="text-sm text-red-600">
                             {t("xml_error")}: {xmlError}
@@ -603,6 +661,67 @@ export const columns: ColumnDef<Certificate>[] = [
                   <Download className="mr-2 h-4 w-4 text-sky-500" /> 
                   {t("download")}
                 </DropdownMenuItem>
+              )}
+
+              {(certificate.status === "rejected_head" || certificate.status === "rejected_director") && (
+                <>
+                  <DropdownMenuSeparator />
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <MessageSquareText className="mr-2 h-4 w-4 text-red-600" />
+                        {t("revision_note")}
+                      </DropdownMenuItem>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-x-2">
+                          <MessageSquareText className="w-5 h-5" /> 
+                          {t("revision_note")}
+                        </DialogTitle>
+                      </DialogHeader>
+                      <RejectionNoteDisplay certificateId={certificate.id} />
+                    </DialogContent>
+                  </Dialog>
+                  <DropdownMenuItem 
+                    onClick={async () => {
+                      try {
+                        const token = document.cookie
+                          .split('; ')
+                          .find(row => row.startsWith('access_token='))
+                          ?.split('=')[1];
+
+                        const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/data`, {
+                          headers: {
+                            'Authorization': `Bearer ${token}`
+                          }
+                        });
+                        
+                        if (!response.ok) {
+                          throw new Error('Failed to load DCC data');
+                        }
+                        
+                        const dccData = await response.json();
+                        
+                        // Determine redirect path based on responsible persons
+                        const kepala = dccData.responsible_persons?.kepala;
+                        const redirectPath = kepala?.peran?.includes("Kelistrikan") 
+                          ? `/generator/electrical?edit=${certificate.id}` 
+                          : `/generator/temperature?edit=${certificate.id}`;
+                        
+                        // Store DCC data in sessionStorage
+                        sessionStorage.setItem('editDccData', JSON.stringify(dccData));
+                        router.push(redirectPath);
+                      } catch (error) {
+                        console.error('Edit error:', error);
+                        toast.error(t("failed_to_load_dcc"));
+                      }
+                    }}
+                  >
+                    <Pencil className="mr-2 h-4 w-4 text-green-600" />
+                    Edit
+                  </DropdownMenuItem>
+                </>
               )}
             </DropdownMenuContent>
           </DropdownMenu>

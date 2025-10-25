@@ -1528,3 +1528,218 @@ async def delete_draft(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to delete draft: {str(e)}")
+    
+class StatusUpdateWithNoteRequest(BaseModel):
+    status: DCCStatusEnum
+    rejection_note: str | None = None
+
+@app.patch("/api/dcc/{dcc_id}/status-with-note")
+async def update_dcc_status_with_note(
+    dcc_id: int,
+    status_update: StatusUpdateWithNoteRequest,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update DCC status with optional rejection note"""
+    try:
+        dcc = db.query(DCC).filter(DCC.id == dcc_id).first()
+        
+        if not dcc:
+            raise HTTPException(status_code=404, detail=f"DCC with ID {dcc_id} not found")
+        
+        # Verify user has permission to reject
+        if status_update.status in [DCCStatusEnum.rejected_head, DCCStatusEnum.approved_head]:
+            if current_user.role != UserRole.head:
+                raise HTTPException(status_code=403, detail="Only lab heads can approve/reject at this stage")
+        elif status_update.status in [DCCStatusEnum.rejected_director, DCCStatusEnum.approved_director]:
+            if current_user.role != UserRole.director:
+                raise HTTPException(status_code=403, detail="Only directors can approve/reject at this stage")
+        
+        dcc.status = status_update.status
+        
+        # If rejecting, save the rejection note
+        if status_update.status in [DCCStatusEnum.rejected_head, DCCStatusEnum.rejected_director]:
+            if not status_update.rejection_note or not status_update.rejection_note.strip():
+                raise HTTPException(status_code=400, detail="Rejection note is required when rejecting")
+            dcc.rejection_note = status_update.rejection_note
+            dcc.rejected_by = current_user.full_name or current_user.email
+            dcc.rejected_at = datetime.now(timezone(timedelta(hours=7)))
+            logging.info(f"DCC {dcc_id} rejected by {current_user.email} with note: {status_update.rejection_note[:50]}...")
+        else:
+            # Clear rejection note if approving
+            dcc.rejection_note = None
+            dcc.rejected_by = None
+            dcc.rejected_at = None
+        
+        db.commit()
+        db.refresh(dcc)
+        
+        logging.info(f"DCC {dcc_id} status updated to {status_update.status} by {current_user.email}")
+        
+        return {
+            "message": f"DCC status updated to {status_update.status.value}",
+            "id": dcc.id,
+            "status": dcc.status.value
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logging.error(f"Failed to update DCC {dcc_id} status: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to update DCC status: {str(e)}"
+        )
+
+@app.get("/api/dcc/{dcc_id}/rejection-note")
+async def get_rejection_note(
+    dcc_id: int,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get rejection note for a DCC"""
+    try:
+        dcc = db.query(DCC).filter(DCC.id == dcc_id).first()
+        
+        if not dcc:
+            raise HTTPException(status_code=404, detail="DCC not found")
+        
+        if not dcc.rejection_note:
+            raise HTTPException(status_code=404, detail="No rejection note found")
+        
+        return {
+            "note": dcc.rejection_note,
+            "rejected_by": dcc.rejected_by or "Unknown",
+            "rejected_at": dcc.rejected_at.isoformat() if dcc.rejected_at else None
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error retrieving rejection note for DCC {dcc_id}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to retrieve rejection note: {str(e)}"
+        )
+
+@app.get("/api/dcc/{dcc_id}/data")
+async def get_dcc_data(
+    dcc_id: int,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get full DCC data for editing"""
+    try:
+        dcc = db.query(DCC).filter(DCC.id == dcc_id).first()
+        
+        if not dcc:
+            raise HTTPException(status_code=404, detail="DCC not found")
+        
+        # Helper function to safely parse JSON
+        def safe_parse_json(data, default=None):
+            if data is None:
+                return default if default is not None else {}
+            if isinstance(data, str):
+                try:
+                    return json.loads(data)
+                except json.JSONDecodeError as e:
+                    logging.error(f"JSON decode error: {e}, data: {data[:100]}")
+                    return default if default is not None else {}
+            return data
+        
+        # Helper function to transform language arrays
+        def transform_languages(langs):
+            """Transform language array to object array format"""
+            if not langs:
+                return []
+            if isinstance(langs, str):
+                langs = json.loads(langs)
+            if isinstance(langs, list):
+                # If already in correct format
+                if langs and isinstance(langs[0], dict) and 'value' in langs[0]:
+                    return langs
+                # Transform from string array to object array
+                return [{"value": lang} for lang in langs]
+            return []
+        
+        # Helper function to normalize results data
+        def normalize_results(results):
+            """Ensure real_list is a string and other fields are properly formatted"""
+            if not isinstance(results, list):
+                return []
+            
+            normalized = []
+            for result in results:
+                normalized_result = {
+                    "parameters": result.get("parameters", {}),
+                    "columns": []
+                }
+                
+                # Normalize columns
+                for col in result.get("columns", []):
+                    normalized_col = {
+                        "kolom": col.get("kolom", {}),
+                        "refType": col.get("refType", ""),
+                        "real_list": str(col.get("real_list", "1")),  # Convert to string
+                    }
+                    # Add column_unit if it exists
+                    if "column_unit" in col:
+                        normalized_col["column_unit"] = col["column_unit"]
+                    normalized_result["columns"].append(normalized_col)
+                
+                # Add uncertainty if it exists
+                if "uncertainty" in result:
+                    normalized_result["uncertainty"] = {
+                        "factor": str(result["uncertainty"].get("factor", "2")),
+                        "probability": str(result["uncertainty"].get("probability", "0.95")),
+                        "distribution": result["uncertainty"].get("distribution", "normal"),
+                    }
+                
+                normalized.append(normalized_result)
+            
+            return normalized
+        
+        # Parse administrative data and transform languages
+        admin_data = safe_parse_json(dcc.administrative_data)
+        admin_data['used_languages'] = transform_languages(admin_data.get('used_languages', []))
+        admin_data['mandatory_languages'] = transform_languages(admin_data.get('mandatory_languages', []))
+        
+        # Parse conditions - handle nested structure
+        conditions_data = safe_parse_json(dcc.conditions, {})
+        conditions = conditions_data.get('environmental_conditions', []) if isinstance(conditions_data, dict) else []
+        
+        # Parse and normalize results
+        results_raw = safe_parse_json(dcc.results, [])
+        results = normalize_results(results_raw)
+        
+        # Parse all JSON fields
+        result = {
+            "id": dcc.id,
+            "software": dcc.software_name,
+            "version": dcc.software_version,
+            "administrative_data": admin_data,
+            "Measurement_TimeLine": safe_parse_json(dcc.Measurement_TimeLine),
+            "objects": safe_parse_json(dcc.objects_description, []),
+            "responsible_persons": safe_parse_json(dcc.responsible_persons),
+            "owner": safe_parse_json(dcc.owner),
+            "methods": safe_parse_json(dcc.methods, []),
+            "equipments": safe_parse_json(dcc.equipments, []),
+            "conditions": conditions,
+            "results": results,  # Use normalized results
+            "statements": safe_parse_json(dcc.statement, []),
+            "comment": safe_parse_json(dcc.comment),
+            "excel": dcc.excel,
+            "sheet_name": dcc.sheet_name,
+            "status": dcc.status.value if hasattr(dcc.status, 'value') else dcc.status
+        }
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error retrieving DCC data: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to retrieve DCC data: {str(e)}"
+        )
