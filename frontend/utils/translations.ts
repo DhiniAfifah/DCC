@@ -88,6 +88,7 @@ const translations: Record<string, { id: string; en: string }> = {
   save: { id: "Simpan", en: "Save" },
   draft_saved: { id: "Draf tersimpan!", en: "Draft saved!" },
   draft_deleted: { id: "Draf terhapus!", en: "Draft deleted!" },
+  failed_to_save_draft: { id: "Gagal menyimpan draf.", en: "Failed to save draft." },
 
   submit: { id: "Kirim", en: "Submit" },
 

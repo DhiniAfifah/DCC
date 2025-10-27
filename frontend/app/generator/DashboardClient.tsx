@@ -74,17 +74,24 @@ export default function DashboardClient() {
       setIsLoadingDrafts(true);
       const token = localStorage.getItem("access_token");
       
+      console.log("Fetching drafts with token:", token ? "present" : "missing");
+      
       const response = await fetch("http://127.0.0.1:8000/api/drafts/", {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
       });
 
+      console.log("Fetch drafts response status:", response.status);
+
       if (!response.ok) {
-        throw new Error("Failed to fetch drafts");
+        const errorText = await response.text();
+        console.error("Fetch drafts error:", errorText);
+        throw new Error(`Failed to fetch drafts: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log("Fetched drafts:", data);
       setDrafts(data);
     } catch (error) {
       console.error("Error fetching drafts:", error);

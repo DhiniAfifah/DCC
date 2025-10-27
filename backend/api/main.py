@@ -1455,6 +1455,12 @@ async def create_draft(
     db: Session = Depends(get_db)
 ):
     try:
+        logging.info(f"Creating draft for user {current_user.email}: {draft.name}")
+        
+        # Validate draft data
+        if not draft.name or not draft.name.strip():
+            raise HTTPException(status_code=400, detail="Draft name is required")
+        
         db_draft = models.Draft(
             user_id=current_user.id,
             name=draft.name,
@@ -1463,9 +1469,14 @@ async def create_draft(
         db.add(db_draft)
         db.commit()
         db.refresh(db_draft)
+        
+        logging.info(f"Draft created successfully with ID: {db_draft.id}")
         return db_draft
+    except HTTPException:
+        raise
     except Exception as e:
         db.rollback()
+        logging.error(f"Failed to create draft: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to create draft: {str(e)}")
 
 # Get user's drafts

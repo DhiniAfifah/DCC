@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, JSON, Boolean, Enum, DateTime, ForeignKey, Text
 import enum
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from .database import Base
 from sqlalchemy.orm import relationship
 
@@ -21,7 +21,7 @@ class DCC(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     status = Column(Enum(DCCStatusEnum), default=DCCStatusEnum.pending_head)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))))  # WIB timezone
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone(timedelta(hours=7))))  # WIB timezone
     submitter_id = Column(Integer, ForeignKey('users.id'), nullable=True)
     submitter = relationship("User", foreign_keys=[submitter_id])
     software_name = Column(String)
@@ -70,6 +70,6 @@ class Draft(Base):
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     name = Column(String, nullable=False)
     data = Column(JSON, nullable=False)
-    created_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))))
-    updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))), onupdate=lambda: datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))))
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone(timedelta(hours=7))))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone(timedelta(hours=7))), onupdate=lambda: datetime.now(timezone(timedelta(hours=7))))
     user = relationship("User", back_populates="drafts")

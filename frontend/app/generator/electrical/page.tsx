@@ -1944,6 +1944,11 @@ export default function CreateDCC() {
     try {
       const token = localStorage.getItem("access_token");
       
+      if (!token) {
+        toast.error(t("authentication_required"));
+        return;
+      }
+      
       const response = await fetch("http://127.0.0.1:8000/api/drafts/", {
         method: "POST",
         headers: {
@@ -1957,7 +1962,8 @@ export default function CreateDCC() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to save draft");
+        const errorData = await response.json().catch(() => ({ detail: "Unknown error" }));
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
@@ -1965,7 +1971,7 @@ export default function CreateDCC() {
       return result;
     } catch (error) {
       console.error("Error saving draft:", error);
-      toast.error(t("failed_to_save_draft"));
+      toast.error(t("failed_to_save_draft") + ": " + (error instanceof Error ? error.message : "Unknown error"));
     }
   };
 
