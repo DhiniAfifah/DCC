@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" schemaVersion="3.3.0">
+<?xml version='1.0' encoding='utf-8'?>
+<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" schemaVersion="3.3.0">
    <dcc:administrativeData>
       <dcc:dccSoftware>
          <dcc:software>
@@ -53,7 +53,7 @@
          <dcc:beginPerformanceDate>2025-10-24</dcc:beginPerformanceDate>
          <dcc:endPerformanceDate>2025-10-25</dcc:endPerformanceDate>
          <dcc:performanceLocation>laboratory</dcc:performanceLocation>
-         <dcc:issueDate></dcc:issueDate>
+         <dcc:issueDate/>
       </dcc:coreData>
       <dcc:items>
          <dcc:item>
@@ -625,4 +625,4 @@
          <dcc:content lang="en">-</dcc:content>
       </dcc:description>
    </dcc:comment>
-</dcc:digitalCalibrationCertificate>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><ds:Reference URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>vISDzPqeXUk48w89L0PurBbiBPQ=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>lJ5s2wWw3ueGmK6IGFrYjHfjGn/vCyUFOBRl5nAAqcVA6AL+4/lfrag12iHvdIrwV0nEko2LIaWtVDALpoiYVPszgqntaIA488zSy5U92x/RaDb4Hh9yC6exjcVHJ08U5JUrpz7XZaeOc6zFE2rhEoH8hh9obgmvFC5QKkxQKoGVBu4MfI37nGygoYdrAgVhQqpbML2mViF/sEmrI7KrwqrGCJDVMS2jQhVokWzl5s/OmYaxN4wsXvhmO0h8oWCGAtSTG19Tb7WmCz1DdIFxcbuy1HT0h3kK+Batiej2MVqkTIKMbqsfwkRbmLlzff9kDrNqptqSPGzHmpSnlPY6Qg==</ds:SignatureValue><ds:KeyInfo><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>ndJMEHwOqPaocZ5T5JyEwjKRscgrFdSyinIAdQy2XUWc3/kNht/1i2FhX0EBUO5ZKVocagat6ffUc252uI4VPX5OSLqpJ5HhNJI14vECGYrcGYMoCdbuio4wAbOxN+81OThIdwsGOP/Gzx9qxy6YiZvGqdaLg6C5t4uzssr91PCvEnB1y88ZXf8IujV9Ir1UgM3l6cZw69lZzv7YFqpiJkeDPgRuo2GJ4xrdw69GsQ4cY1sC/68X2MhEBnY+qmAKb/jqwFrA88m60OcYX24gGaPgkx9udFg4NcKnQ5O1ux26d7uIUtbCSzrFOPWB7EwscVKXK1WUBKjnQHyQJfkPAw==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo></ds:Signature></dcc:digitalCalibrationCertificate>

@@ -13,7 +13,6 @@ from api.ds_i_utils import d_si
 from api.ds_i_utils import convert_latex_unit
 import subprocess
 import sys
-from pathlib import Path
 from pikepdf import Pdf, AttachedFileSpec
 
 # Konfigurasi logging
@@ -721,11 +720,11 @@ class PDFGenerator:
             logger.error(f"Unexpected error: {e}")
             return False
 
-    def generate_pdf_with_embedded_xml(self, xml_content: str, output_path: str, xml_path: str, tempat_pdf, captions=None, corrections=None) -> bool:
+    def generate_pdf_with_embedded_xml(self, output_path: str, xml_path: str, tempat_pdf, captions=None, corrections=None, qr_code_path=None) -> bool:
         try:
             # Generate PDF sementara tanpa embedded XML
             temp_pdf_path = os.path.join(self.temp_dir.name, "temp.pdf")
-            if not self.generate_pdf(xml_path, temp_pdf_path, tempat_pdf, captions, corrections):
+            if not self.generate_pdf(xml_path, temp_pdf_path, tempat_pdf, captions, corrections, qr_code_path):
                 return False
 
             # Konversi ke PDF/A-3a
@@ -749,7 +748,7 @@ class PDFGenerator:
             logger.error(f"PDF generation with embedded XML failed: {e}")
             return False
 
-    def generate_pdf(self, xml_path, output_path, tempat_pdf, captions=None, corrections=None):
+    def generate_pdf(self, xml_path, output_path, tempat_pdf, captions=None, corrections=None, qr_code_path=None):
         """Generate PDF dari konten XML"""
         try:
             
@@ -765,6 +764,15 @@ class PDFGenerator:
             # Ekstrak data dari XML
             logger.info("Extracting data from XML...")
             data = self.extract_data_from_xml(xml_content, tempat_pdf, captions, corrections)
+            
+            # Add QR code to data if provided
+            if qr_code_path and os.path.exists(qr_code_path):
+                with open(qr_code_path, 'rb') as f:
+                    qr_data = base64.b64encode(f.read()).decode('utf-8')
+                    data['qr_code'] = f"data:image/png;base64,{qr_data}"
+            else:
+                # Use default placeholder QR code
+                data['qr_code'] = "assets/pics/qr_code.png"
             
             # Perbaiki base_url ke direktori assets yang benar
             current_dir = os.path.dirname(os.path.abspath(__file__))

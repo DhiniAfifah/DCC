@@ -397,14 +397,19 @@
             </div>
 
             <div id="validation" style="font-size: 12px; text-align: justify; line-height: 1.2;">
-                <div id="signature" style="padding-left: 104px; page-break-inside: avoid;">
-                    <div>
-                        Dokumen ini disahkan secara elektronik sesuai peraturan yang berlaku dengan sertifikat dari Balai Sertifikasi Elektronik 
-                        (BsrE) dan tidak memerlukan tanda tangan atau cap. Dokumen asli dapat diperoleh dengan memindai kode QR di samping ini.
-                    </div>
-                    <div style="font-style: italic;">
-                        This document is digitally signed. No signature or seal is required. The original document can be obtained by scanning 
-                        the QR code on the left.
+                <div id="signature" style="display: flex; align-items: center;">
+                    {% if qr_code %}
+                        <img src="{{ qr_code }}" style="height: 70px;">
+                    {% endif %}
+                    <div id="signature-text" style="page-break-inside: avoid;">
+                        <div>
+                            Dokumen ini disahkan secara elektronik sesuai peraturan yang berlaku dengan sertifikat dari Balai Sertifikasi Elektronik 
+                            (BsrE) dan tidak memerlukan tanda tangan atau cap. Dokumen asli dapat diperoleh dengan memindai kode QR di samping ini.
+                        </div>
+                        <div style="font-style: italic;">
+                            This document is digitally signed. No signature or seal is required. The original document can be obtained by scanning 
+                            the QR code on the left.
+                        </div>
                     </div>
                 </div>
 

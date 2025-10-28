@@ -1281,11 +1281,15 @@ def cleanup_old_preview_files(max_age_hours: int = 24):
 def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
     """
     Regenerate PDF with embedded XML from database record
-    Used when director approves a DCC
+    Used when director approves a DCC - adds digital signature
     """
-    logging.info(f"Regenerating DCC {dcc_id} with embedded XML")
+    logging.info(f"Regenerating DCC {dcc_id} with embedded XML and digital signature")
+    
+    qr_path = None  # Track QR code path for cleanup
     
     try:
+        from api.digital_signature import DigitalSigner
+        
         # Get DCC record from database
         db_dcc = db.query(models.DCC).filter(models.DCC.id == dcc_id).first()
         if not db_dcc:
@@ -1314,6 +1318,32 @@ def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
         with open(xml_path, 'r', encoding='utf-8') as f:
             xml_content = f.read()
         
+        # Initialize digital signer
+        keys_dir = backend_root / "keys"
+        signer = DigitalSigner(
+            private_key_path=str(keys_dir / "private_key.pem"),
+            public_key_path=str(keys_dir / "public_key.pem")
+        )
+        
+        # Sign XML - use database ID instead of certificate_id
+        signed_xml = signer.sign_xml(xml_content, str(dcc_id))
+        
+        # Save signed XML
+        with open(xml_path, 'w', encoding='utf-8') as f:
+            f.write(signed_xml)
+        
+        # Generate QR code - use database ID instead of certificate_id
+        verification_url = "http://localhost:3000/verify"  # UPDATE THIS to your domain
+        qr_code_data = signer.generate_qr_code(str(dcc_id), verification_url)
+        
+        # Save QR code image temporarily
+        qr_path = dcc_files_dir / f"{filename_base}_qr.png"
+        qr_image_data = qr_code_data.split(',')[1]
+        with open(qr_path, 'wb') as f:
+            f.write(base64.b64decode(qr_image_data))
+        
+        logging.info(f"QR code created temporarily at: {qr_path}")
+        
         # Get tempat_pdf from database
         tempat_pdf = admin_data.get('tempat_pdf', admin_data.get('tempat', ''))
         
@@ -1321,21 +1351,21 @@ def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
         captions = extract_captions_from_database(db_dcc)
         corrections = extract_corrections_from_database(db_dcc)
         
-        # Generate PDF with embedded XML
+        # Generate PDF with embedded XML and QR code
         pdf_generator = PDFGenerator()
         success = pdf_generator.generate_pdf_with_embedded_xml(
-            xml_content,
             str(pdf_path),
             str(xml_path),
             tempat_pdf,
             captions,
-            corrections
+            corrections,
+            qr_code_path=str(qr_path)  # Pass QR code path
         )
         
         if not success:
             raise Exception("Failed to generate PDF with embedded XML")
         
-        logging.info(f"Successfully regenerated DCC {dcc_id} with embedded XML at {pdf_path}")
+        logging.info(f"Successfully regenerated DCC {dcc_id} with digital signature at {pdf_path}")
         
         return {
             "pdf_path": str(pdf_path),
@@ -1346,6 +1376,14 @@ def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
     except Exception as e:
         logging.error(f"Error regenerating DCC {dcc_id}: {str(e)}")
         raise
+    # finally:
+    #     # Clean up: Delete QR code image after PDF generation
+    #     if qr_path and os.path.exists(qr_path):
+    #         try:
+    #             os.remove(qr_path)
+    #             logging.info(f"QR code image deleted: {qr_path}")
+    #         except Exception as cleanup_error:
+    #             logging.warning(f"Failed to delete QR code image {qr_path}: {cleanup_error}")
 
 def extract_captions_from_database(db_dcc: models.DCC):
     """Extract image captions from database record"""

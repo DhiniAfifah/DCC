@@ -40,18 +40,18 @@
          <dcc:usedLangCodeISO639_1>id</dcc:usedLangCodeISO639_1>
          <dcc:usedLangCodeISO639_1>en</dcc:usedLangCodeISO639_1>
          <dcc:mandatoryLangCodeISO639_1>id</dcc:mandatoryLangCodeISO639_1>
-         <dcc:uniqueIdentifier>10</dcc:uniqueIdentifier>
+         <dcc:uniqueIdentifier>12</dcc:uniqueIdentifier>
          <dcc:identifications>
             <dcc:identification refType="basic_orderNumber">
                <dcc:issuer>calibrationLaboratory</dcc:issuer>
-               <dcc:value>10</dcc:value>
+               <dcc:value>12</dcc:value>
                <dcc:name>
                   <dcc:content>Nomor Order</dcc:content>
                </dcc:name>
             </dcc:identification>
          </dcc:identifications>
-         <dcc:beginPerformanceDate>2025-10-26</dcc:beginPerformanceDate>
-         <dcc:endPerformanceDate>2025-10-27</dcc:endPerformanceDate>
+         <dcc:beginPerformanceDate>2025-10-27</dcc:beginPerformanceDate>
+         <dcc:endPerformanceDate>2025-10-28</dcc:endPerformanceDate>
          <dcc:performanceLocation>laboratory</dcc:performanceLocation>
          <dcc:issueDate/>
       </dcc:coreData>
@@ -625,4 +625,4 @@
          <dcc:content lang="en">-</dcc:content>
       </dcc:description>
    </dcc:comment>
-<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><ds:Reference URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>2Sss8Ehs6WF7dZG5i8T51hnejv4=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>HSMKRqXbBX/1/QaS75RX+vm2q4f1QjdF4e/hX2ifyv27oyFeygJs+SdIqYQcrbOIFhQos1EVRMigvD8qD7ue9uuFt5YN7Yl/KU0SmpsUdAT4SchJfBP4N7vx2vEP/LkKI6EZiOhfW5lGalJG1FGFP2Q6BOmUZMwc0bLpo1WONsl5HWWanP9Pw/+yJ61BQaESpQr8eQGGuRdl5yVsO6Vw84y6JwrY8BDzhohzhRLfTwIZsYAc0i8tN+SzyHPv0j39CO+moCJUHN2ePR4vsGQcETyxKMMEI61uTkWEi1pjHY8htuae2btT46JnEZgv5iha6n01Y3S79KN3uEymr39zSw==</ds:SignatureValue><ds:KeyInfo><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>ndJMEHwOqPaocZ5T5JyEwjKRscgrFdSyinIAdQy2XUWc3/kNht/1i2FhX0EBUO5ZKVocagat6ffUc252uI4VPX5OSLqpJ5HhNJI14vECGYrcGYMoCdbuio4wAbOxN+81OThIdwsGOP/Gzx9qxy6YiZvGqdaLg6C5t4uzssr91PCvEnB1y88ZXf8IujV9Ir1UgM3l6cZw69lZzv7YFqpiJkeDPgRuo2GJ4xrdw69GsQ4cY1sC/68X2MhEBnY+qmAKb/jqwFrA88m60OcYX24gGaPgkx9udFg4NcKnQ5O1ux26d7uIUtbCSzrFOPWB7EwscVKXK1WUBKjnQHyQJfkPAw==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo></ds:Signature></dcc:digitalCalibrationCertificate>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><ds:Reference URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>D3wX8ivv6tiPWvH6SaeTIaeWvEk=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>JRFMUFngbUKUqPlbd+OLGFBRYM69mNmxQEaYPsTUcoBL/7SE7UrDxuh4QaaNUFGhZcQg8NAR56gI/vPEmmtJpOj3tKAe8I/VDa0bG+oXxMu03hswAsUSZjkp0KjNDFQ8LolHG+3Ol7G1h4MNzcGBfBjlSJh3N8aBVj8rtKd4IW25AKmurpGK3oTUouwfq9YDbMhUFeOHB9YOKSGzdwYExVl9j8LvHHfXQdIE6cMpTm0Evc+EzP99+PqFLs5aRPE8krH/jzv7bDSl14qsDMV3oQ2qSI/3cdI7/ZWfnvolq7M1O0wmEr2hbZeoPK+vNdQoyoawtqvXhFdSVTpuCIqPcQ==</ds:SignatureValue><ds:KeyInfo><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>ndJMEHwOqPaocZ5T5JyEwjKRscgrFdSyinIAdQy2XUWc3/kNht/1i2FhX0EBUO5ZKVocagat6ffUc252uI4VPX5OSLqpJ5HhNJI14vECGYrcGYMoCdbuio4wAbOxN+81OThIdwsGOP/Gzx9qxy6YiZvGqdaLg6C5t4uzssr91PCvEnB1y88ZXf8IujV9Ir1UgM3l6cZw69lZzv7YFqpiJkeDPgRuo2GJ4xrdw69GsQ4cY1sC/68X2MhEBnY+qmAKb/jqwFrA88m60OcYX24gGaPgkx9udFg4NcKnQ5O1ux26d7uIUtbCSzrFOPWB7EwscVKXK1WUBKjnQHyQJfkPAw==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo></ds:Signature></dcc:digitalCalibrationCertificate>
