@@ -55,10 +55,17 @@ type StatusType =
 // Function to update certificate status
 const updateCertificateStatus = async (id: number, status: StatusType) => {
   try {
+    // Get the token from cookies
+    const token = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('access_token='))
+      ?.split('=')[1];
+
     const response = await fetch(`http://127.0.0.1:8000/api/dcc/${id}/status`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({ status }),
     });
@@ -76,8 +83,16 @@ const updateCertificateStatus = async (id: number, status: StatusType) => {
 
 const downloadDCCPDF = async (id: number, certificateId: string) => {
   try {
+    const token = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('access_token='))
+      ?.split('=')[1];
+
     const response = await fetch(`http://127.0.0.1:8000/download-dcc-pdf/${id}`, {
       method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
 
     if (!response.ok) {
@@ -113,8 +128,16 @@ const downloadDCCPDF = async (id: number, certificateId: string) => {
 
 const downloadDCCXML = async (id: number, certificateId: string) => {
   try {
+    const token = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('access_token='))
+      ?.split('=')[1];
+
     const response = await fetch(`http://127.0.0.1:8000/download-dcc-xml/${id}`, {
       method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
 
     if (!response.ok) {
@@ -449,6 +472,11 @@ export const columns: ColumnDef<Certificate>[] = [
       const [xmlText, setXmlText] = useState<string | null>(null);
       const [xmlLoading, setXmlLoading] = useState(false);
       const [xmlError, setXmlError] = useState<string | null>(null);
+
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('access_token='))
+        ?.split('=')[1];
 
       const pdfUrl = `http://127.0.0.1:8000/view-dcc-pdf/${certificate.id}`;
       const xmlUrl = `http://127.0.0.1:8000/view-dcc-xml/${certificate.id}`;

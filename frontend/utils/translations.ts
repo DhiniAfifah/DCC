@@ -492,6 +492,15 @@ const translations: Record<string, { id: string; en: string }> = {
 
   comment_title: { id: "Judul catatan", en: "Comment title" },
   comment_desc: { id: "Deskripsi catatan", en: "Comment description" },
+
+  // Verify
+  verification: { id: "Verifikasi DCC", en: "DCC Verification" },
+  signer_name: { id: "Nama penandatangan", en: "Signer name" },
+  timestamp: { id: "Waktu tanda tangan", en: "Signature time" },
+  this_page: { 
+    id: "Halaman ini menampilkan informasi tanda tangan digital dari DCC. Anda juga dapat mengunduh salinan sertifikatnya.",
+    en: "This page displays digital signature information of the DCC. You can also download a copy of the certificate."
+  }
 };
 
 export const getTranslation = (key: string, language: Language = "en") => {

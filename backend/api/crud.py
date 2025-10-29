@@ -1376,14 +1376,6 @@ def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
     except Exception as e:
         logging.error(f"Error regenerating DCC {dcc_id}: {str(e)}")
         raise
-    # finally:
-    #     # Clean up: Delete QR code image after PDF generation
-    #     if qr_path and os.path.exists(qr_path):
-    #         try:
-    #             os.remove(qr_path)
-    #             logging.info(f"QR code image deleted: {qr_path}")
-    #         except Exception as cleanup_error:
-    #             logging.warning(f"Failed to delete QR code image {qr_path}: {cleanup_error}")
 
 def extract_captions_from_database(db_dcc: models.DCC):
     """Extract image captions from database record"""

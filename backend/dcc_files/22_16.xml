@@ -1,0 +1,628 @@
+<?xml version='1.0' encoding='utf-8'?>
+<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" schemaVersion="3.3.0">
+   <dcc:administrativeData>
+      <dcc:dccSoftware>
+         <dcc:software>
+            <dcc:name>
+               <dcc:content>DiCCA</dcc:content>
+            </dcc:name>
+            <dcc:release>0.1</dcc:release>
+         </dcc:software>
+      </dcc:dccSoftware>
+      <dcc:refTypeDefinitions>
+         <dcc:refTypeDefinition>
+            <dcc:name>
+               <dcc:content lang="de">Namensraum für Querschnitts-RefTypes</dcc:content>
+               <dcc:content lang="en">Namespace for Cross-Community RefTypes</dcc:content>
+            </dcc:name>
+            <dcc:description>
+               <dcc:content lang="de">Der Namensraum 'basic' beinhaltet allgemeine RefTypes die messgrößenübergreifend genutzt werden.</dcc:content>
+               <dcc:content lang="en">The "basic" namespace contains RefTypes common for multiple communities.</dcc:content>
+            </dcc:description>
+            <dcc:namespace>basic</dcc:namespace>
+            <dcc:link>https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=2</dcc:link>
+         </dcc:refTypeDefinition>
+         <dcc:refTypeDefinition>
+            <dcc:name>
+               <dcc:content lang="de">Namensraum für mathematische RefTypes</dcc:content>
+               <dcc:content lang="en">Namespace for mathematical RefTypes</dcc:content>
+            </dcc:name>
+            <dcc:description>
+               <dcc:content lang="de">Der Namensraum 'math' beinhaltet RefTypes mathematischer Operationen.</dcc:content>
+               <dcc:content lang="en">The "math" namespace contains RefTypes for mathematical operations.</dcc:content>
+            </dcc:description>
+            <dcc:namespace>math</dcc:namespace>
+            <dcc:link>https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=292</dcc:link>
+         </dcc:refTypeDefinition>
+      </dcc:refTypeDefinitions>
+      <dcc:coreData>
+         <dcc:countryCodeISO3166_1>ID</dcc:countryCodeISO3166_1>
+         <dcc:usedLangCodeISO639_1>id</dcc:usedLangCodeISO639_1>
+         <dcc:usedLangCodeISO639_1>en</dcc:usedLangCodeISO639_1>
+         <dcc:mandatoryLangCodeISO639_1>id</dcc:mandatoryLangCodeISO639_1>
+         <dcc:uniqueIdentifier>16</dcc:uniqueIdentifier>
+         <dcc:identifications>
+            <dcc:identification refType="basic_orderNumber">
+               <dcc:issuer>calibrationLaboratory</dcc:issuer>
+               <dcc:value>16</dcc:value>
+               <dcc:name>
+                  <dcc:content>Nomor Order</dcc:content>
+               </dcc:name>
+            </dcc:identification>
+         </dcc:identifications>
+         <dcc:beginPerformanceDate>2025-10-28</dcc:beginPerformanceDate>
+         <dcc:endPerformanceDate>2025-10-29</dcc:endPerformanceDate>
+         <dcc:performanceLocation>laboratory</dcc:performanceLocation>
+         <dcc:issueDate/>
+      </dcc:coreData>
+      <dcc:items>
+         <dcc:item>
+            <dcc:name>
+               <dcc:content lang="id">Multiproduct Calibrator</dcc:content>
+               <dcc:content lang="en">Multiproduct Calibrator</dcc:content>
+            </dcc:name>
+            <dcc:manufacturer>
+               <dcc:name>
+                  <dcc:content>Fluke</dcc:content>
+               </dcc:name>
+            </dcc:manufacturer>
+            <dcc:model>5730A</dcc:model>
+            <dcc:identifications>
+               <dcc:identification refType="basic_serialNumber">
+                  <dcc:issuer>manufacturer</dcc:issuer>
+                  <dcc:value>-</dcc:value>
+                  <dcc:name>
+                     <dcc:content lang="id">-</dcc:content>
+                     <dcc:content lang="en">-</dcc:content>
+                  </dcc:name>
+               </dcc:identification>
+            </dcc:identifications>
+         </dcc:item>
+      </dcc:items>
+      <dcc:calibrationLaboratory>
+         <dcc:calibrationLaboratoryCode>LK-070-IDN</dcc:calibrationLaboratoryCode>
+         <dcc:contact>
+            <dcc:name>
+               <dcc:content>Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)</dcc:content>
+            </dcc:name>
+            <dcc:eMail>nmi@bsn.go.id</dcc:eMail>
+            <dcc:phone>Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833</dcc:phone>
+            <dcc:link>www.bsn.go.id</dcc:link>
+            <dcc:location>
+               <dcc:city>Tangerang Selatan</dcc:city>
+               <dcc:countryCode>ID</dcc:countryCode>
+               <dcc:postCode>15314</dcc:postCode>
+               <dcc:state>Banten</dcc:state>
+               <dcc:street>KST BJ Habibie Setu</dcc:street>
+               <dcc:streetNo>Gedung 420</dcc:streetNo>
+            </dcc:location>
+         </dcc:contact>
+      </dcc:calibrationLaboratory>
+      <dcc:respPersons>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Hayati Amalia, M.T.</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>199009212015022002</dcc:content>
+            </dcc:description>
+            <dcc:role>Pelaksana Kalibrasi</dcc:role>
+            <dcc:mainSigner>0</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>0</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>0</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Agah Faisal, M.Sc.</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>198102142006041004</dcc:content>
+            </dcc:description>
+            <dcc:role>Penyelia Kalibrasi</dcc:role>
+            <dcc:mainSigner>0</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>0</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>0</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Agah Faisal, M.Sc.</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>198102142006041004</dcc:content>
+            </dcc:description>
+            <dcc:role>Kepala Laboratorium SNSU Kelistrikan</dcc:role>
+            <dcc:mainSigner>0</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>0</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>0</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Dr. Ghufron Zaid</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>197111041990121001</dcc:content>
+            </dcc:description>
+            <dcc:role>Direktur SNSU Termoelektrik dan Kimia</dcc:role>
+            <dcc:mainSigner>1</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>1</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>1</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+      </dcc:respPersons>
+      <dcc:customer>
+         <dcc:name>
+            <dcc:content>.</dcc:content>
+         </dcc:name>
+         <dcc:location>
+            <dcc:city>.</dcc:city>
+            <dcc:countryCode>ID</dcc:countryCode>
+            <dcc:postCode>.</dcc:postCode>
+            <dcc:state>.</dcc:state>
+            <dcc:street>.</dcc:street>
+            <dcc:streetNo>.</dcc:streetNo>
+         </dcc:location>
+      </dcc:customer>
+      <dcc:statements>
+         <dcc:statement refType="basic_isInCMC">
+            <dcc:declaration>
+               <dcc:content lang="id">Hasil kalibrasi yang ditandai bintang (*) tidak tercakup dalam ruang lingkup akreditasi KAN.</dcc:content>
+               <dcc:content lang="en">Calibration results marked by asterisk (*) are not covered by KAN accreditation.</dcc:content>
+            </dcc:declaration>
+         </dcc:statement>
+      </dcc:statements>
+   </dcc:administrativeData>
+   <dcc:measurementResults>
+      <dcc:measurementResult>
+         <dcc:name>
+            <dcc:content>Hasil Kalibrasi / Calibration Results</dcc:content>
+         </dcc:name>
+         <dcc:usedMethods>
+            <dcc:usedMethod refType="basic_calibrationMethod">
+               <dcc:name>
+                  <dcc:content lang="id">Instruksi Kerja</dcc:content>
+                  <dcc:content lang="en">Work Instruction</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">Hasil kalibrasi ini diperoleh berdasarkan prosedur kalibrasi I.ME.1.05 untuk tegangan DC, I.ME.3.05 untuk arus DC, I.ME.5.04 untuk tegangan AC, I.ME.6.06 untuk arus AC, dan I.ME.2.09 untuk resistansi dengan menggunakan alat standar yang tertelusur ke SI melalui SNSU-BSN.</dcc:content>
+                  <dcc:content lang="en">The calibration result was acquired based on the procedure of I.ME.1.05 for DC voltage, I.ME.3.05 for DC current, I.ME.5.04 for AC voltage, I.ME.6.06 for AC current, and I.ME.2.09 for resistance using standard instruments that is traceable to SI through SNSU-BSN.</dcc:content>
+               </dcc:description>
+               <dcc:norm>-</dcc:norm>
+            </dcc:usedMethod>
+            <dcc:usedMethod refType="basic_calibrationMethod">
+               <dcc:name>
+                  <dcc:content lang="id">Pengkabelan untuk Pengukuran Resistansi</dcc:content>
+                  <dcc:content lang="en">Wiring Setup for Resistance Measurement</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">Pengukuran resistansi di bawah dan sama dengan 100 kΩ menggunakan metode 4-kawat, sedangkan pada nominal di atas 100 kΩ menggunakan metode 2-kawat.</dcc:content>
+                  <dcc:content lang="en">The resistance measurement below and equal to 100 kΩ uses the 4-wire method, while for nominal resistance above 100 kΩ use the 2-wire method.</dcc:content>
+               </dcc:description>
+               <dcc:norm>-</dcc:norm>
+            </dcc:usedMethod>
+            <dcc:usedMethod refType="basic_methodMeasurementUncertainty">
+               <dcc:name>
+                  <dcc:content lang="id">Ketidakpastian</dcc:content>
+                  <dcc:content lang="en">Uncertainty</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">Ketidakpastian pengukuran dihitung  dengan tingkat kepercayaan tidak kurang dari 95% dan faktor cakupan k = 2.</dcc:content>
+                  <dcc:content lang="en">The uncertainty of measurement was calculated with a confidence level not less than 95% and coverage factor of k = 2.</dcc:content>
+               </dcc:description>
+               <dcc:norm>-</dcc:norm>
+            </dcc:usedMethod>
+         </dcc:usedMethods>
+         <dcc:measuringEquipments>
+            <dcc:measuringEquipment refType="basic_measurementStandard">
+               <dcc:name>
+                  <dcc:content lang="id">Reference Multimeter</dcc:content>
+                  <dcc:content lang="en">Reference Multimeter</dcc:content>
+               </dcc:name>
+               <dcc:manufacturer>
+                  <dcc:name>
+                     <dcc:content lang="id">8508A</dcc:content>
+                     <dcc:content lang="en">8508A</dcc:content>
+                  </dcc:name>
+               </dcc:manufacturer>
+               <dcc:identifications>
+                  <dcc:identification refType="basic_serialNumber">
+                     <dcc:issuer>manufacturer</dcc:issuer>
+                     <dcc:value>941254525</dcc:value>
+                     <dcc:name>
+                        <dcc:content lang="id">Fluke</dcc:content>
+                        <dcc:content lang="en">Fluke</dcc:content>
+                     </dcc:name>
+                  </dcc:identification>
+               </dcc:identifications>
+            </dcc:measuringEquipment>
+         </dcc:measuringEquipments>
+         <dcc:influenceConditions>
+            <dcc:influenceCondition>
+               <dcc:name>
+                  <dcc:content>Suhu</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">-</dcc:content>
+                  <dcc:content lang="en">-</dcc:content>
+               </dcc:description>
+               <dcc:data>
+                  <dcc:quantity refType="math_minimum">
+                     <dcc:name>
+                        <dcc:content>nilai minimum</dcc:content>
+                     </dcc:name>
+                     <si:real>
+                        <si:value>22.0</si:value>
+                        <si:unit>\degreecelsius</si:unit>
+                     </si:real>
+                  </dcc:quantity>
+                  <dcc:quantity refType="math_maximum">
+                     <dcc:name>
+                        <dcc:content>nilai maksimum</dcc:content>
+                     </dcc:name>
+                     <si:real>
+                        <si:value>24.0</si:value>
+                        <si:unit>\degreecelsius</si:unit>
+                     </si:real>
+                  </dcc:quantity>
+               </dcc:data>
+            </dcc:influenceCondition>
+            <dcc:influenceCondition>
+               <dcc:name>
+                  <dcc:content>Kelembapan</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">-</dcc:content>
+                  <dcc:content lang="en">-</dcc:content>
+               </dcc:description>
+               <dcc:data>
+                  <dcc:quantity refType="math_minimum">
+                     <dcc:name>
+                        <dcc:content>nilai minimum</dcc:content>
+                     </dcc:name>
+                     <si:real>
+                        <si:value>50.0</si:value>
+                        <si:unit>\percent</si:unit>
+                     </si:real>
+                  </dcc:quantity>
+                  <dcc:quantity refType="math_maximum">
+                     <dcc:name>
+                        <dcc:content>nilai maksimum</dcc:content>
+                     </dcc:name>
+                     <si:real>
+                        <si:value>62.0</si:value>
+                        <si:unit>\percent</si:unit>
+                     </si:real>
+                  </dcc:quantity>
+               </dcc:data>
+            </dcc:influenceCondition>
+         </dcc:influenceConditions>
+         <dcc:results>
+            <dcc:result>
+               <dcc:name>
+                  <dcc:content lang="id">Tegangan DC</dcc:content>
+                  <dcc:content lang="en">DC Voltage</dcc:content>
+               </dcc:name>
+               <dcc:data>
+                  <dcc:list>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Rentang</dcc:content>
+                           <dcc:content lang="en">Range</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>330</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_nominalValue">
+                        <dcc:name>
+                           <dcc:content lang="id">Titik Ukur</dcc:content>
+                           <dcc:content lang="en">Measurement Point</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>0</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Pembacaan Standar</dcc:content>
+                           <dcc:content lang="en">Standard Reading</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>0.00000</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_measurementError">
+                        <dcc:name>
+                           <dcc:content lang="id">Error</dcc:content>
+                           <dcc:content lang="en">Error</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>-0.00080</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt</si:unitXMLList>
+                           <si:measurementUncertaintyUnivariateXMLList>
+                              <si:expandedMUXMLList>
+                                 <si:valueExpandedMUXMLList>0.00089</si:valueExpandedMUXMLList>
+                                 <si:coverageFactorXMLList>2</si:coverageFactorXMLList>
+                                 <si:coverageProbabilityXMLList>0.95</si:coverageProbabilityXMLList>
+                                 <si:distributionXMLList>normal</si:distributionXMLList>
+                              </si:expandedMUXMLList>
+                           </si:measurementUncertaintyUnivariateXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                  </dcc:list>
+               </dcc:data>
+            </dcc:result>
+            <dcc:result>
+               <dcc:name>
+                  <dcc:content lang="id">Arus DC</dcc:content>
+                  <dcc:content lang="en">DC Current</dcc:content>
+               </dcc:name>
+               <dcc:data>
+                  <dcc:list>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Rentang</dcc:content>
+                           <dcc:content lang="en">Range</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>330</si:valueXMLList>
+                           <si:unitXMLList>\micro\ampere</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_nominalValue">
+                        <dcc:name>
+                           <dcc:content lang="id">Titik Ukur</dcc:content>
+                           <dcc:content lang="en">Measurement Point</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>0</si:valueXMLList>
+                           <si:unitXMLList>\micro\ampere</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Pembacaan Standar</dcc:content>
+                           <dcc:content lang="en">Standard Reading</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>0.0000</si:valueXMLList>
+                           <si:unitXMLList>\micro\ampere</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_measurementError">
+                        <dcc:name>
+                           <dcc:content lang="id">Error</dcc:content>
+                           <dcc:content lang="en">Error</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>-0.0005</si:valueXMLList>
+                           <si:unitXMLList>\micro\ampere</si:unitXMLList>
+                           <si:measurementUncertaintyUnivariateXMLList>
+                              <si:expandedMUXMLList>
+                                 <si:valueExpandedMUXMLList>0.0014</si:valueExpandedMUXMLList>
+                                 <si:coverageFactorXMLList>2</si:coverageFactorXMLList>
+                                 <si:coverageProbabilityXMLList>0.95</si:coverageProbabilityXMLList>
+                                 <si:distributionXMLList>normal</si:distributionXMLList>
+                              </si:expandedMUXMLList>
+                           </si:measurementUncertaintyUnivariateXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                  </dcc:list>
+               </dcc:data>
+            </dcc:result>
+            <dcc:result>
+               <dcc:name>
+                  <dcc:content lang="id">Tegangan AC</dcc:content>
+                  <dcc:content lang="en">AC Voltage</dcc:content>
+               </dcc:name>
+               <dcc:data>
+                  <dcc:list>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Rentang</dcc:content>
+                           <dcc:content lang="en">Range</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>33</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_nominalValue">
+                        <dcc:name>
+                           <dcc:content lang="id">Titik Ukur</dcc:content>
+                           <dcc:content lang="en">Measurement Point</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>5</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Frekuensi</dcc:content>
+                           <dcc:content lang="en">Frequency</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>40</si:valueXMLList>
+                           <si:unitXMLList>\hertz</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Pembacaan Standar</dcc:content>
+                           <dcc:content lang="en">Standard Reading</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>5.0000</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_measurementError">
+                        <dcc:name>
+                           <dcc:content lang="id">Error</dcc:content>
+                           <dcc:content lang="en">Error</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>0.0079</si:valueXMLList>
+                           <si:unitXMLList>\milli\volt</si:unitXMLList>
+                           <si:measurementUncertaintyUnivariateXMLList>
+                              <si:expandedMUXMLList>
+                                 <si:valueExpandedMUXMLList>0.0097</si:valueExpandedMUXMLList>
+                                 <si:coverageFactorXMLList>2</si:coverageFactorXMLList>
+                                 <si:coverageProbabilityXMLList>0.95</si:coverageProbabilityXMLList>
+                                 <si:distributionXMLList>normal</si:distributionXMLList>
+                              </si:expandedMUXMLList>
+                           </si:measurementUncertaintyUnivariateXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                  </dcc:list>
+               </dcc:data>
+            </dcc:result>
+            <dcc:result>
+               <dcc:name>
+                  <dcc:content lang="id">Arus AC</dcc:content>
+                  <dcc:content lang="en">AC Current</dcc:content>
+               </dcc:name>
+               <dcc:data>
+                  <dcc:list>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Rentang</dcc:content>
+                           <dcc:content lang="en">Range</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>330</si:valueXMLList>
+                           <si:unitXMLList>\micro\ampere</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_nominalValue">
+                        <dcc:name>
+                           <dcc:content lang="id">Titik Ukur</dcc:content>
+                           <dcc:content lang="en">Measurement Point</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>50</si:valueXMLList>
+                           <si:unitXMLList>\micro\ampere</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Frekuensi</dcc:content>
+                           <dcc:content lang="en">Frequency</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>40</si:valueXMLList>
+                           <si:unitXMLList>\hertz</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Pembacaan Standar</dcc:content>
+                           <dcc:content lang="en">Standard Reading</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>50.00</si:valueXMLList>
+                           <si:unitXMLList>\micro\ampere</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_measurementError">
+                        <dcc:name>
+                           <dcc:content lang="id">Error</dcc:content>
+                           <dcc:content lang="en">Error</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>0.04</si:valueXMLList>
+                           <si:unitXMLList>\micro\ampere</si:unitXMLList>
+                           <si:measurementUncertaintyUnivariateXMLList>
+                              <si:expandedMUXMLList>
+                                 <si:valueExpandedMUXMLList>0.25</si:valueExpandedMUXMLList>
+                                 <si:coverageFactorXMLList>2</si:coverageFactorXMLList>
+                                 <si:coverageProbabilityXMLList>0.95</si:coverageProbabilityXMLList>
+                                 <si:distributionXMLList>normal</si:distributionXMLList>
+                              </si:expandedMUXMLList>
+                           </si:measurementUncertaintyUnivariateXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                  </dcc:list>
+               </dcc:data>
+            </dcc:result>
+            <dcc:result>
+               <dcc:name>
+                  <dcc:content lang="id">Resistansi</dcc:content>
+                  <dcc:content lang="en">Resistance</dcc:content>
+               </dcc:name>
+               <dcc:data>
+                  <dcc:list>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Rentang</dcc:content>
+                           <dcc:content lang="en">Range</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>11</si:valueXMLList>
+                           <si:unitXMLList>\ohm</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_nominalValue">
+                        <dcc:name>
+                           <dcc:content lang="id">Titik Ukur</dcc:content>
+                           <dcc:content lang="en">Measurement Point</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>0</si:valueXMLList>
+                           <si:unitXMLList>\ohm</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Pembacaan Standar</dcc:content>
+                           <dcc:content lang="en">Standard Reading</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>0.000000</si:valueXMLList>
+                           <si:unitXMLList>\ohm</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_measurementError">
+                        <dcc:name>
+                           <dcc:content lang="id">Error</dcc:content>
+                           <dcc:content lang="en">Error</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>-0.000000</si:valueXMLList>
+                           <si:unitXMLList>\ohm</si:unitXMLList>
+                           <si:measurementUncertaintyUnivariateXMLList>
+                              <si:expandedMUXMLList>
+                                 <si:valueExpandedMUXMLList>0.000011</si:valueExpandedMUXMLList>
+                                 <si:coverageFactorXMLList>2</si:coverageFactorXMLList>
+                                 <si:coverageProbabilityXMLList>0.95</si:coverageProbabilityXMLList>
+                                 <si:distributionXMLList>normal</si:distributionXMLList>
+                              </si:expandedMUXMLList>
+                           </si:measurementUncertaintyUnivariateXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                  </dcc:list>
+               </dcc:data>
+            </dcc:result>
+         </dcc:results>
+      </dcc:measurementResult>
+   </dcc:measurementResults>
+   <dcc:comment>
+      <dcc:name>
+         <dcc:content>-</dcc:content>
+      </dcc:name>
+      <dcc:description>
+         <dcc:content lang="id">-</dcc:content>
+         <dcc:content lang="en">-</dcc:content>
+      </dcc:description>
+   </dcc:comment>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><ds:Reference URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>LnWOumR549Fy/Jh/IUpK2f3btrU=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>lbP9SATCD1A/DRbxSTcCvjRWCrpI6q1iIl5Qf6WFnZ9VN6v43jLzxB4UBJgh8+8chwExXaXM07md5WIKXlOKOXIFvs+MjWm139Wpk9WYczkE5rRjTAMaFQxexZnaOnOrB7AnFTsrhp/6eMlSTaRIsICtS7fULQH0slvafBK936T9chlU/PB0fNO5ucxj5TIz2Qlk55XBf7hS385Y1JIWv3daNvbvdagb93nlN7kkWSeWUTDQc9ll4Dfcq8o7+oSsnR9/Ls1EAF4msUNaomBYv1ld1P0tHUuNlczYdFqsv6dUmrb07HV/8JmMNzsJJTJ5E2wNCjGzyvUfOK9FRgk5/w==</ds:SignatureValue><ds:KeyInfo><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>ndJMEHwOqPaocZ5T5JyEwjKRscgrFdSyinIAdQy2XUWc3/kNht/1i2FhX0EBUO5ZKVocagat6ffUc252uI4VPX5OSLqpJ5HhNJI14vECGYrcGYMoCdbuio4wAbOxN+81OThIdwsGOP/Gzx9qxy6YiZvGqdaLg6C5t4uzssr91PCvEnB1y88ZXf8IujV9Ir1UgM3l6cZw69lZzv7YFqpiJkeDPgRuo2GJ4xrdw69GsQ4cY1sC/68X2MhEBnY+qmAKb/jqwFrA88m60OcYX24gGaPgkx9udFg4NcKnQ5O1ux26d7uIUtbCSzrFOPWB7EwscVKXK1WUBKjnQHyQJfkPAw==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo></ds:Signature></dcc:digitalCalibrationCertificate>

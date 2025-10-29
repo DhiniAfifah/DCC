@@ -1014,7 +1014,7 @@ class StatusUpdateRequest(BaseModel):
     status: DCCStatusEnum
 
 @app.options("/api/dcc/{dcc_id}/status")
-async def options_dcc_status(dcc_id: int):
+async def options_dcc_status():
     """Handle preflight requests for DCC status updates"""
     return JSONResponse(
         content={},
@@ -1031,18 +1031,13 @@ async def update_dcc_status(
     status_update: StatusUpdateRequest,
     db: Session = Depends(get_db)
 ):
-    """
-    Update the status of a DCC certificate by ID
-    """
+    """Update the status of a DCC certificate by ID"""
     try:
         # Find the DCC record by ID
         dcc = db.query(DCC).filter(DCC.id == dcc_id).first()
         
         if not dcc:
-            raise HTTPException(
-                status_code=404, 
-                detail=f"DCC with ID {dcc_id} not found"
-            )
+            raise HTTPException(status_code=404, detail=f"DCC with ID {dcc_id} not found")
         
         # Update the status
         dcc.status = status_update.status
@@ -1071,10 +1066,7 @@ async def update_dcc_status(
                 crud.regenerate_dcc_with_embedded_xml(db, dcc_id)
             except Exception as e:
                 logging.error(f"Error regenerating DCC with embedded XML: {e}")
-                raise HTTPException(
-                    status_code=500,
-                    detail=f"Failed to regenerate DCC files: {str(e)}"
-                )
+                raise HTTPException(status_code=500, detail=f"Failed to regenerate DCC files: {str(e)}")
         else:
             # Commit the changes for other status updates
             db.commit()
@@ -1090,10 +1082,7 @@ async def update_dcc_status(
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to update DCC status: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to update DCC status: {str(e)}")
 
 # Schedule cleanup of old preview files
 @app.on_event("startup")
@@ -1754,113 +1743,3 @@ async def get_dcc_data(
             status_code=500, 
             detail=f"Failed to retrieve DCC data: {str(e)}"
         )
-    
-@app.get("/verify/{dcc_id}")
-async def verify_certificate(dcc_id: int, db: Session = Depends(get_db)):
-    """
-    Verify certificate authenticity using database ID
-    """
-    try:
-        from api.digital_signature import DigitalSigner
-        from lxml import etree
-        
-        # Find DCC by database ID
-        dcc = db.query(models.DCC).filter(models.DCC.id == dcc_id).first()
-        
-        if not dcc:
-            raise HTTPException(status_code=404, detail="Certificate not found")
-        
-        # Parse administrative data to get certificate number
-        admin_data = dcc.administrative_data
-        if isinstance(admin_data, str):
-            admin_data = json.loads(admin_data)
-        
-        certificate_id = admin_data.get('sertifikat', f'DCC-{dcc_id}')
-        
-        # Get XML file
-        backend_root = Path(__file__).parent.parent
-        filename_base = f"{dcc_id}_{certificate_id}"
-        xml_path = backend_root / "dcc_files" / f"{filename_base}.xml"
-        
-        if not xml_path.exists():
-            raise HTTPException(status_code=404, detail="Certificate file not found")
-        
-        # Read XML content
-        with open(xml_path, 'r', encoding='utf-8') as f:
-            xml_content = f.read()
-        
-        # Initialize signer for verification
-        keys_dir = backend_root / "keys"
-        signer = DigitalSigner(
-            private_key_path=str(keys_dir / "private_key.pem"),
-            public_key_path=str(keys_dir / "public_key.pem")
-        )
-        
-        # Verify signature
-        verification_result = signer.verify_xml_signature(xml_content)
-        
-        # Parse XML for additional info
-        root = etree.fromstring(xml_content.encode('utf-8'))
-        ns_dcc = 'https://ptb.de/dcc'
-        
-        # Extract responsible persons (signers)
-        signers = []
-        resp_persons = root.findall('.//dcc:respPersons/dcc:respPerson', namespaces={'dcc': ns_dcc})
-        for resp in resp_persons:
-            name = resp.findtext('.//dcc:person/dcc:name/dcc:content', namespaces={'dcc': ns_dcc})
-            role = resp.findtext('.//dcc:role', namespaces={'dcc': ns_dcc})
-            main_signer = resp.findtext('.//dcc:mainSigner', namespaces={'dcc': ns_dcc})
-            
-            if main_signer == "1":
-                signers.append({
-                    "name": name,
-                    "role": role
-                })
-        
-        # Parse dates
-        measurement_timeline = dcc.Measurement_TimeLine
-        if isinstance(measurement_timeline, str):
-            measurement_timeline = json.loads(measurement_timeline)
-        
-        # Parse objects for display
-        objects = dcc.objects_description
-        if isinstance(objects, str):
-            objects = json.loads(objects)
-        
-        # Parse owner info
-        owner = dcc.owner
-        if isinstance(owner, str):
-            owner = json.loads(owner)
-        
-        # Parse responsible persons for signature timestamp
-        resp_persons_data = dcc.responsible_persons
-        if isinstance(resp_persons_data, str):
-            resp_persons_data = json.loads(resp_persons_data)
-        
-        # Get director info (main signer)
-        director = resp_persons_data.get('direktur', {})
-        
-        return {
-            "database_id": dcc_id,
-            "certificate_id": certificate_id,
-            "status": dcc.status.value,
-            "valid": verification_result["valid"],
-            "signed": verification_result["signed"],
-            "verification_message": verification_result["message"],
-            "issue_date": measurement_timeline.get('tgl_pengesahan'),
-            "calibration_start": measurement_timeline.get('tgl_mulai'),
-            "calibration_end": measurement_timeline.get('tgl_akhir'),
-            "signers": signers,
-            "main_signer": director.get('nama_resp', ''),
-            "main_signer_role": director.get('peran', ''),
-            "object_type": objects[0].get('jenis', {}) if objects and len(objects) > 0 else {},
-            "owner_name": owner.get('nama_cust', ''),
-            "pdf_download_url": f"/download-dcc-pdf/{dcc_id}",
-            "xml_download_url": f"/download-dcc-xml/{dcc_id}",
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logging.error(f"Error verifying certificate: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Verification failed: {str(e)}")
