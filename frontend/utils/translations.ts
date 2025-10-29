@@ -500,7 +500,12 @@ const translations: Record<string, { id: string; en: string }> = {
   this_page: { 
     id: "Halaman ini menampilkan informasi tanda tangan digital dari DCC. Anda juga dapat mengunduh salinan sertifikatnya.",
     en: "This page displays digital signature information of the DCC. You can also download a copy of the certificate."
-  }
+  },
+  verification_failed: { id: "Verifikasi gagal", en: "Verification failed" },
+  download_success: { id: "Pengunduhan sukses", en: "Download success" },
+  download_failed: { id: "Pengunduhan gagal", en: "Download failed" },
+  certificate_not_found: { id: "Sertifikat tidak ditemukan", en: "Certificate not found" },
+  
 };
 
 export const getTranslation = (key: string, language: Language = "en") => {

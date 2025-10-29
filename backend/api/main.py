@@ -1029,6 +1029,7 @@ async def options_dcc_status():
 async def update_dcc_status(
     dcc_id: int,
     status_update: StatusUpdateRequest,
+    current_user: schemas.User = Depends(get_current_user),  # Add current_user
     db: Session = Depends(get_db)
 ):
     """Update the status of a DCC certificate by ID"""
@@ -1056,6 +1057,10 @@ async def update_dcc_status(
             
             # Save back to database
             dcc.Measurement_TimeLine = measurement_timeline
+            
+            # Save director's approval information
+            dcc.signed_by = current_user.full_name or current_user.email
+            dcc.signature_timestamp = datetime.now(wib_timezone)
             
             # Commit the changes first
             db.commit()
@@ -1557,22 +1562,48 @@ async def update_dcc_status_with_note(
         
         dcc.status = status_update.status
         
+        # If director approves, save their information
+        if status_update.status == DCCStatusEnum.approved_director:
+            wib_timezone = timezone(timedelta(hours=7))
+            dcc.signed_by = current_user.full_name or current_user.email
+            dcc.signature_timestamp = datetime.now(wib_timezone)
+            
+            # Update issue date
+            measurement_timeline = dcc.Measurement_TimeLine
+            if isinstance(measurement_timeline, str):
+                measurement_timeline = json.loads(measurement_timeline)
+            current_date = datetime.now(wib_timezone).date().isoformat()
+            measurement_timeline['tgl_pengesahan'] = current_date
+            dcc.Measurement_TimeLine = measurement_timeline
+            
+            # Commit changes first
+            db.commit()
+            db.refresh(dcc)
+            
+            # Regenerate PDF with embedded XML
+            try:
+                crud.regenerate_dcc_with_embedded_xml(db, dcc_id)
+            except Exception as e:
+                logging.error(f"Error regenerating DCC with embedded XML: {e}")
+                raise HTTPException(status_code=500, detail=f"Failed to regenerate DCC files: {str(e)}")
+        
         # If rejecting, save the rejection note
-        if status_update.status in [DCCStatusEnum.rejected_head, DCCStatusEnum.rejected_director]:
+        elif status_update.status in [DCCStatusEnum.rejected_head, DCCStatusEnum.rejected_director]:
             if not status_update.rejection_note or not status_update.rejection_note.strip():
                 raise HTTPException(status_code=400, detail="Rejection note is required when rejecting")
             dcc.rejection_note = status_update.rejection_note
             dcc.rejected_by = current_user.full_name or current_user.email
             dcc.rejected_at = datetime.now(timezone(timedelta(hours=7)))
             logging.info(f"DCC {dcc_id} rejected by {current_user.email} with note: {status_update.rejection_note[:50]}...")
+            db.commit()
+            db.refresh(dcc)
         else:
-            # Clear rejection note if approving
+            # Clear rejection note if approving at head level
             dcc.rejection_note = None
             dcc.rejected_by = None
             dcc.rejected_at = None
-        
-        db.commit()
-        db.refresh(dcc)
+            db.commit()
+            db.refresh(dcc)
         
         logging.info(f"DCC {dcc_id} status updated to {status_update.status} by {current_user.email}")
         
@@ -1742,4 +1773,85 @@ async def get_dcc_data(
         raise HTTPException(
             status_code=500, 
             detail=f"Failed to retrieve DCC data: {str(e)}"
+        )
+    
+@app.get("/api/verify/{certificate_id}")
+async def verify_certificate(
+    certificate_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Verify a certificate by its database ID
+    Returns certificate information and signature verification status
+    """
+    try:
+        # Get DCC record
+        dcc = db.query(DCC).filter(DCC.id == certificate_id).first()
+        
+        if not dcc:
+            raise HTTPException(status_code=404, detail="Certificate not found")
+        
+        # Parse administrative data to get certificate number
+        admin_data = dcc.administrative_data
+        if isinstance(admin_data, str):
+            admin_data = json.loads(admin_data)
+        
+        certificate_number = admin_data.get('sertifikat', '')
+        
+        # Check if certificate is approved by director
+        if dcc.status != DCCStatusEnum.approved_director:
+            return {
+                "certificate_number": certificate_number,
+                "signed_by": None,
+                "signature_timestamp": None,
+                "valid": False,
+                "signed": False,
+                "message": "Certificate has not been approved by director"
+            }
+        
+        # Get XML file path to verify signature
+        backend_root = Path(__file__).parent.parent
+        dcc_files_dir = backend_root / "dcc_files"
+        filename_base = f"{dcc.id}_{certificate_number}"
+        xml_path = dcc_files_dir / f"{filename_base}.xml"
+        
+        # Verify XML signature if file exists
+        signature_valid = False
+        signature_message = "Signature not verified"
+        
+        if xml_path.exists():
+            try:
+                from api.digital_signature import DigitalSigner
+                keys_dir = backend_root / "keys"
+                signer = DigitalSigner(
+                    private_key_path=str(keys_dir / "private_key.pem"),
+                    public_key_path=str(keys_dir / "public_key.pem")
+                )
+                
+                with open(xml_path, 'r', encoding='utf-8') as f:
+                    xml_content = f.read()
+                
+                verification_result = signer.verify_xml_signature(xml_content)
+                signature_valid = verification_result.get("valid", False)
+                signature_message = verification_result.get("message", "")
+            except Exception as e:
+                logging.error(f"Error verifying signature: {e}")
+                signature_message = f"Signature verification error: {str(e)}"
+        
+        return {
+            "certificate_number": certificate_number,
+            "signed_by": dcc.signed_by,
+            "signature_timestamp": dcc.signature_timestamp.isoformat() if dcc.signature_timestamp else None,
+            "valid": signature_valid,
+            "signed": dcc.status == DCCStatusEnum.approved_director,
+            "message": signature_message
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error verifying certificate: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to verify certificate: {str(e)}"
         )

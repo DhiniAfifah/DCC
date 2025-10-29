@@ -43,6 +43,9 @@ class DCC(Base):
     rejection_note = Column(Text, nullable=True)
     rejected_by = Column(String(255), nullable=True)
     rejected_at = Column(DateTime, nullable=True)
+
+    signature_timestamp = Column(DateTime, nullable=True)
+    signed_by = Column(String(255), nullable=True)
     
 class XML(Base):
     __tablename__ = "uploaded_files"

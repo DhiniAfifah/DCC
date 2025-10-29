@@ -430,11 +430,29 @@ export const columns: ColumnDef<Certificate>[] = [
  
       const handleStatusChange = async (newStatus: StatusType) => {
         try {
-          await updateCertificateStatus(certificate.id, newStatus);
-          router.refresh(); // Refresh the page to show updated data
+          // Get the token from cookies
+          const token = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('access_token='))
+            ?.split('=')[1];
+
+          const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/status`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ status: newStatus }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to update status');
+          }
+
+          return await response.json();
         } catch (error) {
-          // Show error toast
-          toast.error("Failed to change certificate status");
+          console.error('Error updating status:', error);
+          throw error;
         }
       };
 
