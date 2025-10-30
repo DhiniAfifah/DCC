@@ -2117,10 +2117,12 @@ export default function CreateDCC() {
       <div className="fixed inset-0 -z-20 bg-gradient-to-b from-white to-green-100"></div>
 
       <div className="text-center mt-6">
-        <h1 className="text-2xl font-bold flex items-center justify-center gap-3">
-          <Zap className="text-orange-500 text-3xl" />
-          {t("listrik")}
-        </h1>
+        <div className="inline-flex items-center gap-3 px-6 py-3 bg-orange-50 border border-orange-200 rounded-3xl shadow-sm">
+          <Zap className="text-orange-400 w-7 h-7" />
+          <h1 className="text-2xl font-semibold text-orange-900 tracking-wide">
+            {t("listrik")}
+          </h1>
+        </div>
       </div>
 
       <Stepper

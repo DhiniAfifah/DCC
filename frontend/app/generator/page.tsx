@@ -29,14 +29,14 @@ export default function Generator() {
     const labs: Lab[] = [
         { href: "/generator/electrical", icon: Zap, color: "orange", label: "listrik" },
         { href: "/generator/temperature", icon: Thermometer, color: "red", label: "suhu" },
-        { href: "/generator", icon: Timer, color: "indigo", label: "waktu" },
-        { href: "/generator", icon: Lightbulb, color: "purple", label: "fotometri_radiometri" },
-        { href: "/generator", icon: FlaskConical, color: "green", label: "kimia" },
-        { href: "/generator", icon: Ruler, color: "blue", label: "panjang" },
-        { href: "/generator", icon: Weight, color: "gray", label: "massa" },
-        { href: "/generator", icon: AudioWaveform, color: "lime", label: "akustik_vibrasi" },
-        { href: "/generator", icon: Radiation, color: "yellow", label: "radiasi" },
-        { href: "/generator", icon: Microscope, color: "pink", label: "biologi" },
+        { href: "/generator/time-frequency", icon: Timer, color: "indigo", label: "waktu" },
+        { href: "/generator/photometry-radiometry", icon: Lightbulb, color: "purple", label: "fotometri_radiometri" },
+        { href: "/generator/chemistry", icon: FlaskConical, color: "green", label: "kimia" },
+        { href: "/generator/length", icon: Ruler, color: "blue", label: "panjang" },
+        { href: "/generator/mass", icon: Weight, color: "gray", label: "massa" },
+        { href: "/generator/acoustics-vibration", icon: AudioWaveform, color: "lime", label: "akustik_vibrasi" },
+        { href: "/generator/ionizing-radiation", icon: Radiation, color: "yellow", label: "radiasi" },
+        { href: "/generator/biology", icon: Microscope, color: "pink", label: "biologi" },
     ];
 
     return (
