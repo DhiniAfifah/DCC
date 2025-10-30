@@ -277,11 +277,13 @@ class DCCResponse(BaseModel):
 class DraftCreate(BaseModel):
     name: str
     data: dict
+    form_type: str
 
 class DraftResponse(BaseModel):
     id: int
     name: str
     data: dict
+    form_type: str
     created_at: datetime
     updated_at: datetime
     

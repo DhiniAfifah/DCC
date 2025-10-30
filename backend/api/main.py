@@ -1458,7 +1458,8 @@ async def create_draft(
         db_draft = models.Draft(
             user_id=current_user.id,
             name=draft.name,
-            data=draft.data
+            data=draft.data,
+            form_type=draft.form_type,
         )
         db.add(db_draft)
         db.commit()
@@ -1476,13 +1477,20 @@ async def create_draft(
 # Get user's drafts
 @app.get("/api/drafts/", response_model=List[schemas.DraftResponse])
 async def get_user_drafts(
+    form_type: str = None,
     current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     try:
-        drafts = db.query(models.Draft).filter(
+        query = db.query(models.Draft).filter(
             models.Draft.user_id == current_user.id
-        ).order_by(models.Draft.updated_at.desc()).all()
+        )
+
+        # Filter by form_type if provided
+        if form_type:
+            query = query.filter(models.Draft.form_type == form_type)
+        
+        drafts = query.order_by(models.Draft.updated_at.desc()).all()
         return drafts
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch drafts: {str(e)}")

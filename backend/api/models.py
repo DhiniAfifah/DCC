@@ -73,6 +73,7 @@ class Draft(Base):
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     name = Column(String, nullable=False)
     data = Column(JSON, nullable=False)
+    form_type = Column(String, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone(timedelta(hours=7))))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone(timedelta(hours=7))), onupdate=lambda: datetime.now(timezone(timedelta(hours=7))))
     user = relationship("User", back_populates="drafts")

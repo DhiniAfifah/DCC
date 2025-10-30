@@ -13,6 +13,7 @@ interface Draft {
   id: number;
   name: string;
   data: any;
+  form_type: string;
   created_at: string;
   updated_at: string;
 }
@@ -146,7 +147,7 @@ export default function DashboardClient() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Link href={`/generator/electrical?draft=${draft.id}`}>
+                  <Link href={`/generator/${draft.form_type}?draft=${draft.id}`}>
                     <Button variant="blue" size="sm">{t("load")}</Button>
                   </Link>
                   <Button 

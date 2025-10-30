@@ -1081,6 +1081,7 @@ export default function CreateDCC() {
         body: JSON.stringify({
           name: name,
           data: data,
+          form_type: "photometry-radiometry",
         }),
       });
 
