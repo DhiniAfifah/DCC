@@ -22,10 +22,14 @@ import { toast } from "sonner";
 export default function Comment({
   formData,
   updateFormData,
+  uploadedFiles,
+  setUploadedFiles,
   onValidationChange,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
+  uploadedFiles: File[];
+  setUploadedFiles: (files: File[]) => void;
   onValidationChange?: (isValid: boolean) => void;
 }) {
   const { t } = useLanguage();
@@ -144,7 +148,6 @@ export default function Comment({
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
-    isFileUpload: boolean,
     commentindex?: number
   ) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -167,7 +170,6 @@ export default function Comment({
         const reader = new FileReader();
         reader.onloadend = () => {
           const base64String = reader.result as string;
-
           const base64WithoutPrefix = base64String.split(",")[1];
 
           if (commentindex !== undefined) {
@@ -183,6 +185,11 @@ export default function Comment({
               `comment.files.${commentindex}.base64`,
               base64WithoutPrefix
             );
+
+            // Save the file in state
+            const newUploadedFiles = [...uploadedFiles];
+            newUploadedFiles[commentindex] = file;
+            setUploadedFiles(newUploadedFiles);
           }
 
           toast.success("File uploaded successfully!");
@@ -327,7 +334,7 @@ export default function Comment({
             {form.watch("comment.has_file") && (
               <div id="file">
                 <FormLabel>{t("upload_file")}</FormLabel>
-                <div className="mt-2 space-y-2">
+                <div className="space-y-2">
                   {fileFields.map((field, index) => (
                     <FormField
                       key={field.id}
@@ -337,13 +344,23 @@ export default function Comment({
                         <FormItem>
                           <div className="flex items-center gap-2">
                             <FormControl>
-                              <Input
-                                type="file"
-                                ref={ref}
-                                onChange={(e) =>
-                                  handleFileUpload(e, true, index)
-                                }
-                              />
+                              <div className="flex-1 space-y-2">
+                                <Input
+                                  type="file"
+                                  ref={ref}
+                                  onChange={(e) => {
+                                    handleFileUpload(e, index);
+                                    onChange(
+                                      e.target.files ? e.target.files[0] : null
+                                    );
+                                  }}
+                                />
+                                {uploadedFiles[index] && (
+                                  <p className="text-sm text-sky-500">
+                                    {t("uploaded_file")}: {uploadedFiles[index].name}
+                                  </p>
+                                )}
+                              </div>
                             </FormControl>
                             {fileFields.length > 1 && (
                               <Button

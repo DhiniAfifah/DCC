@@ -19,7 +19,7 @@ import {
   Control,
 } from "react-hook-form";
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
-import { z } from "zod";
+import { z, ZodNumberCheck } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   FormControl,
@@ -763,7 +763,8 @@ function MethodItem({
   handleRemoveMethod,
   insertSymbol,
   latexInputRef,
-  handleFileUpload
+  handleFileUpload,
+  uploadedImages,
 }: any) {
   const { fields: formulaFields, append: appendFormula, remove: removeFormula } = 
     useFieldArray({
@@ -1205,17 +1206,24 @@ function MethodItem({
                       render={({ field: { onChange, ref } }) => (
                         <FormItem>
                           <FormControl>
-                            <Input
-                              type="file"
-                              accept=".jpg, .jpeg, .png"
-                              ref={ref}
-                              onChange={(e) => {
-                                handleFileUpload(e, true, index, imageIndex);
-                                onChange(
-                                  e.target.files ? e.target.files[0] : null
-                                );
-                              }}
-                            />
+                            <div className="space-y-1">
+                              <Input
+                                type="file"
+                                accept=".jpg, .jpeg, .png"
+                                ref={ref}
+                                onChange={(e) => {
+                                  handleFileUpload(e, true, index, imageIndex);
+                                  onChange(
+                                    e.target.files ? e.target.files[0] : null
+                                  );
+                                }}
+                              />
+                              {uploadedImages[index]?.[`image_${imageIndex}`] && (
+                                <p className="text-sm text-sky-500">
+                                  {t("uploaded_file")}: {uploadedImages[index][`image_${imageIndex}`].name}
+                                </p>
+                              )}
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1262,11 +1270,19 @@ export default function Measurement({
   formData,
   updateFormData,
   setFileName,
+  uploadedFile,
+  setUploadedFile,
+  uploadedImages,
+  setUploadedImages,
   onValidationChange,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
   setFileName: (name: string) => void;
+  uploadedFile: File | null;
+  setUploadedFile: (file: File | null) => void;
+  uploadedImages: { [key: string]: File }[];
+  setUploadedImages: (images: { [key: string]: File }[]) => void;
   onValidationChange?: (isValid: boolean) => void;
 }) {
   // Add validation check effect
@@ -1363,8 +1379,8 @@ export default function Measurement({
               .refine((files) => files && files.length > 0, {
                 message: t("input_required"),
               }),
-
         sheet_name: z.string().min(1, { message: t("input_required") }),
+        sheet_names: z.array(z.string()).optional(),
 
         results: z.array(
           z.object({
@@ -1461,16 +1477,16 @@ export default function Measurement({
   const insertSymbol = (
     latex: string,
     methodIndex: number,
+    formulaIndex: number,
     event?: React.MouseEvent<HTMLButtonElement>
   ) => {
     event?.preventDefault();
     event?.stopPropagation();
 
-    const currentFormula =
-      form.getValues(`methods.${methodIndex}.formula.latex`) || "";
+    const currentFormula = form.getValues(`methods.${methodIndex}.formula.${formulaIndex}.latex`) || "";
     const updatedFormula = currentFormula + latex;
 
-    form.setValue(`methods.${methodIndex}.formula.latex`, updatedFormula);
+    form.setValue(`methods.${methodIndex}.formula.${formulaIndex}.latex`, updatedFormula);
   };
 
   useEffect(() => {
@@ -1482,7 +1498,7 @@ export default function Measurement({
         const index = Number(match[1]);
         const hasFormula = value?.methods?.[index]?.has_formula;
         if (!hasFormula) {
-          form.setValue(`methods.${index}.formula`, "");
+          form.setValue(`methods.${index}.formula`, []);
         }
       }
     });
@@ -1553,16 +1569,26 @@ export default function Measurement({
   const [fileName] = useState<string | null>(null);
   const [sheets, setSheets] = useState<string[]>([]);
 
+  const [displayFileName, setDisplayFileName] = useState<string>("");
+  
+  useEffect(() => {
+    if (formData.methods && uploadedImages.length === 0) {
+      const initialImages = formData.methods.map(() => ({}));
+      setUploadedImages(initialImages);
+    }
+  }, [formData.methods]);
+
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
     isImageUpload: boolean, // true jika upload gambar, false jika upload Excel
-    methodIndex?: number // untuk gambar, digunakan untuk mengetahui indeks metode
+    methodIndex?: number, // untuk gambar, digunakan untuk mengetahui indeks metode
+    imageIndex?: ZodNumberCheck
   ) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
 
       // Handle image file upload
-      if (isImageUpload) {
+      if (isImageUpload && methodIndex !== undefined && imageIndex !== undefined) {
         if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
           toast.error("Please upload a valid image (JPEG/PNG/JPG).");
           return;
@@ -1584,32 +1610,36 @@ export default function Measurement({
           const result = await response.json();
 
           // Store file information (name and mimeType) in the form
-          if (methodIndex !== undefined) {
-            form.setValue(
-              `methods.${methodIndex}.image.fileName`,
-              result.filename // Store the file name after uploading
-            );
+          form.setValue(
+            `methods.${methodIndex}.image.${imageIndex}.fileName`,
+            result.filename
+          );
+
+          form.setValue(
+            `methods.${methodIndex}.image.${imageIndex}.mimeType`,
+            result.mimeType
+          );
+
+          // Convert the image file to base64 for preview
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64String = reader.result as string;
+            const base64WithoutPrefix = base64String.split(",")[1];
 
             form.setValue(
-              `methods.${methodIndex}.image.mimeType`,
-              result.mimeType // Store the mimeType
+              `methods.${methodIndex}.image.${imageIndex}.base64`,
+              base64WithoutPrefix
             );
+          };
+          reader.readAsDataURL(file);
 
-            // Convert the image file to base64 for preview
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64String = reader.result as string;
-
-              const base64WithoutPrefix = base64String.split(",")[1];
-
-              // Store base64 image string in the form for preview
-              form.setValue(
-                `methods.${methodIndex}.image.base64`,
-                base64WithoutPrefix
-              );
-            };
-            reader.readAsDataURL(file); // Convert file to base64
+          // Save the file in state
+          const newUploadedImages = [...uploadedImages];
+          if (!newUploadedImages[methodIndex]) {
+            newUploadedImages[methodIndex] = {};
           }
+          newUploadedImages[methodIndex][`image_${imageIndex}`] = file;
+          setUploadedImages(newUploadedImages);
 
           toast.success("Image uploaded successfully!");
         } catch (error) {
@@ -1633,19 +1663,36 @@ export default function Measurement({
 
           setFileName(result.filename);
           setSheets(result.sheets || []);
+          setUploadedFile(file);
+          setDisplayFileName(file.name);
 
-          toast.success("Excel file uploaded successfully!", {
-            description: `${result.filename}`
-          } );
+          // Save sheet names to form data
+          form.setValue("sheet_names", result.sheets || []);
+          
+          // Also update the parent form data
+          updateFormData({ sheet_names: result.sheets || [] });
+
+          toast.success("Excel file uploaded successfully!");
         } catch (error) {
           console.error("Error uploading file:", error);
           toast.error("File upload failed.");
         }
-      } else {
-        toast.error("Please upload a valid file (Excel or Image).");
       }
     }
   };
+
+  useEffect(() => {
+    if (uploadedFile) {
+      setDisplayFileName(uploadedFile.name);
+    }
+  }, [uploadedFile]);
+
+  // Add useEffect to restore sheets when formData changes
+  useEffect(() => {
+    if (formData.sheet_names && Array.isArray(formData.sheet_names) && formData.sheet_names.length > 0) {
+      setSheets(formData.sheet_names);
+    }
+  }, [formData.sheet_names]);
 
   const usedLanguages: { value: string }[] =
     form.watch("administrative_data.used_languages") || [];
@@ -1688,16 +1735,20 @@ export default function Measurement({
       method_desc: createMultilangObject(currentLanguages),
       norm: "",
       has_formula: false,
-      formula: {
-        latex: "",
-        mathml: "",
-      },
-      image: {
-        fileName: "",
-        caption: "",
-        base64: "",
-        mimeType: "",
-      },
+      formula: [
+        {
+          latex: "",
+          mathml: "",
+        }
+      ],
+      image: [
+        {
+          fileName: "",
+          caption: "",
+          base64: "",
+          mimeType: "",
+        }
+      ],
     });
   }, [appendMethod, createMultilangObject, usedLanguages]);
 
@@ -1900,6 +1951,7 @@ export default function Measurement({
                   insertSymbol={insertSymbol}
                   latexInputRef={latexInputRef}
                   handleFileUpload={handleFileUpload}
+                  uploadedImages={uploadedImages}
                 />
               ))}
               <Button
@@ -2639,12 +2691,19 @@ export default function Measurement({
                   return (
                     <FormItem>
                       <FormControl>
-                        <Input
-                          type="file"
-                          {...fileRefExcel}
-                          accept=".xls, .xlsx, .xlsm, .xlsb"
-                          onChange={(e) => handleFileUpload(e, false)}
-                        />
+                        <div className="space-y-1">
+                          <Input
+                            type="file"
+                            {...fileRefExcel}
+                            accept=".xls, .xlsx, .xlsm, .xlsb"
+                            onChange={(e) => handleFileUpload(e, false)}
+                          />
+                          {displayFileName && (
+                            <p className="text-sm text-sky-500">
+                              {t("uploaded_file")}: {displayFileName}
+                            </p>
+                          )}
+                        </div>
                       </FormControl>
                       <FormDescription>{t("excel_desc")}</FormDescription>
                       <FormMessage />

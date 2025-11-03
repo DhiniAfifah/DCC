@@ -196,6 +196,7 @@ const translations: Record<string, { id: string; en: string }> = {
   },
   gambar: { id: "Gambar", en: "Figure" },
   upload_gambar: { id: "Unggah file gambar", en: "Upload figure file" },
+  figure_file: { id: "File gambar", en: "Figure file" },
   caption: { id: "Keterangan gambar", en: "Figure caption" },
 
   // Alat Pengukuran
@@ -321,6 +322,8 @@ const translations: Record<string, { id: string; en: string }> = {
     en: "This comment includes files and/or images",
   },
   upload_file: { id: "Unggah file", en: "Upload file" },
+  
+  uploaded_file: { id: "File yang diunggah", en: "Uploaded file" },
   
   // Preview
   refresh: { id: "Segarkan", en: "Refresh" },
@@ -462,6 +465,8 @@ const translations: Record<string, { id: string; en: string }> = {
   at_least_one: { id: "Setidaknya satu ", en: "At least one " },
   required: { id: " wajib diisi", en: " is required" },
   must_be_filled_for_language: { id: " harus diisi untuk bahasa ", en: " must be filled for language " },
+  uncheck_gambar: { id: ", hapus centang jika tidak ada gambar", en: ", uncheck if there is no figure" },
+  uncheck_file: { id: ", hapus centang jika tidak ada file", en: ", uncheck if there is no file" },
   strip: { id: "Silakan isi dengan '-' jika tidak ada data", en: "Please fill in with '-' if there is no data" },
   
   software_name: { id: "Nama perangkat lunak", en: "Software name" },
@@ -492,6 +497,7 @@ const translations: Record<string, { id: string; en: string }> = {
 
   comment_title: { id: "Judul catatan", en: "Comment title" },
   comment_desc: { id: "Deskripsi catatan", en: "Comment description" },
+  comment_file: { id: "File catatan", en: "Comment file" },
 
   // Verify
   verification: { id: "Verifikasi DCC", en: "DCC Verification" },

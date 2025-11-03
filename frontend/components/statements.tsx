@@ -52,7 +52,8 @@ function StatementItem({
   handleRemoveStatement,
   insertSymbol,
   latexInputRef,
-  handleFileUpload
+  handleFileUpload,
+  uploadedImages
 }: any) {
   const { fields: formulaFields, append: appendFormula, remove: removeFormula } = 
     useFieldArray({
@@ -450,17 +451,24 @@ function StatementItem({
                       render={({ field: { onChange, ref } }) => (
                         <FormItem>
                           <FormControl>
-                            <Input
-                              type="file"
-                              accept=".jpg, .jpeg, .png"
-                              ref={ref}
-                              onChange={(e) => {
-                                handleFileUpload(e, true, statementIndex, imageIndex);
-                                onChange(
-                                  e.target.files ? e.target.files[0] : null
-                                );
-                              }}
-                            />
+                            <div className="space-y-1">
+                              <Input
+                                type="file"
+                                accept=".jpg, .jpeg, .png"
+                                ref={ref}
+                                onChange={(e) => {
+                                  handleFileUpload(e, true, statementIndex, imageIndex);
+                                  onChange(
+                                    e.target.files ? e.target.files[0] : null
+                                  );
+                                }}
+                              />
+                              {uploadedImages[statementIndex]?.[`image_${imageIndex}`] && (
+                                <p className="text-sm text-sky-500">
+                                  {t("uploaded_file")}: {uploadedImages[statementIndex][`image_${imageIndex}`].name}
+                                </p>
+                              )}
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -506,10 +514,14 @@ function StatementItem({
 export default function Statements({
   formData,
   updateFormData,
+  uploadedImages,
+  setUploadedImages,
   onValidationChange,
 }: {
   formData: any;
   updateFormData: (data: any) => void;
+  uploadedImages: { [key: string]: File }[];
+  setUploadedImages: (images: { [key: string]: File }[]) => void;
   onValidationChange?: (isValid: boolean) => void;
 }) {
 
@@ -722,6 +734,13 @@ export default function Statements({
     return usedLanguages.filter((lang) => lang.value && lang.value.trim());
   }, [usedLanguages]);
 
+  useEffect(() => {
+    if (formData.statements && uploadedImages.length === 0) {
+      const initialImages = formData.statements.map(() => ({}));
+      setUploadedImages(initialImages);
+    }
+  }, [formData.statements]);
+
   // Memoize handleFileUpload
   const handleFileUpload = useCallback(async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -766,7 +785,7 @@ export default function Statements({
           const base64String = reader.result as string;
           const base64WithoutPrefix = base64String.split(",")[1];
 
-          if (statementIndex !== undefined) {
+          if (statementIndex !== undefined && imageIndex !== undefined) {
             form.setValue(
               `statements.${statementIndex}.image.${imageIndex}.fileName`,
               result.filename
@@ -779,6 +798,14 @@ export default function Statements({
               `statements.${statementIndex}.image.${imageIndex}.base64`,
               base64WithoutPrefix
             );
+
+            // Save the file in state
+            const newUploadedImages = [...uploadedImages];
+            if (!newUploadedImages[statementIndex]) {
+              newUploadedImages[statementIndex] = {};
+            }
+            newUploadedImages[statementIndex][`image_${imageIndex}`] = file;
+            setUploadedImages(newUploadedImages);
           }
 
           toast.success("Image uploaded successfully!");
@@ -789,7 +816,7 @@ export default function Statements({
         toast.error("Image upload failed.");
       }
     }
-  }, [form]);
+  }, [form, uploadedImages, setUploadedImages]);
 
   const onSubmit = async (data: any) => {
     try {
@@ -867,6 +894,7 @@ export default function Statements({
                   insertSymbol={insertSymbol}
                   latexInputRef={latexInputRef}
                   handleFileUpload={handleFileUpload}
+                  uploadedImages={uploadedImages}
                 />
               ))}
               <Button

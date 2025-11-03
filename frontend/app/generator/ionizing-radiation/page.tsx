@@ -168,6 +168,7 @@ const blankTemplate = {
       },
     },
   ],
+  sheet_names: [],
   sheet_name: "",
   excel: "",
   results: [
@@ -354,9 +355,19 @@ export default function CreateDCC() {
             if (!method.norm?.trim()) errors.push(t("metode") + ` ${index + 1}: ` + t("norm") + t("required"));
             if (!method.refType?.trim()) errors.push(t("metode") + ` ${index + 1}: ` + t("refType") + t("required"));
             if (method.has_image) {
-              if (!method.image?.caption?.trim()) {
-                errors.push(t("metode") + ` ${index + 1}: ` + t("caption") + t("required"));
-              }
+              method.image.forEach((img: any, imgIndex: number) => {
+                // Check if image has been uploaded (either has fileName string or base64)
+                const hasUploadedImage = (img.fileName && typeof img.fileName === 'string') || (img.base64 && img.base64.trim());
+                
+                if (!hasUploadedImage) {
+                  errors.push(t("metode") + ` ${index + 1}, ` + t("gambar") + ` ${imgIndex + 1}: ` + t("figure_file") + t("required") + t("uncheck_gambar"));
+                }
+                
+                // Only check caption if image has been uploaded
+                if (hasUploadedImage && (!img.caption || !img.caption.trim())) {
+                  errors.push(t("metode") + ` ${index + 1}, ` + t("gambar") + ` ${imgIndex + 1}: ` + t("caption") + t("required"));
+                }
+              });
             }
           });
         }
@@ -426,7 +437,7 @@ export default function CreateDCC() {
           });
         }
 
-        if (!formData.excel || formData.excel.length === 0) {
+        if (!formData.excel && !uploadedFile) {
           errors.push(t("excel_file") + t("required"));
         }
         if (!formData.sheet_name?.trim()) errors.push(t("sheet") + t("required"));
@@ -490,9 +501,20 @@ export default function CreateDCC() {
             }
             if (!stmt.refType?.trim()) errors.push(t("statement") + ` ${index + 1}: ` + t("refType") + t("required"));
             if (stmt.has_image) {
-              if (!stmt.image?.caption?.trim()) {
-                errors.push(t("statement") + ` ${index + 1}: ` + t("caption") + t("required"));
-              }
+              stmt.image.forEach((img: any, imgIndex: number) => {
+                // Check if image has been uploaded
+                const hasUploadedImage = (img.fileName && typeof img.fileName === 'string') || 
+                                        (img.base64 && img.base64.trim());
+                
+                if (!hasUploadedImage) {
+                  errors.push(t("statement") + ` ${index + 1}, ` + t("gambar") + ` ${imgIndex + 1}: ` + t("figure_file") + t("required") + t("uncheck_gambar"));
+                }
+                
+                // Only check caption if image has been uploaded
+                if (hasUploadedImage && (!img.caption || !img.caption.trim())) {
+                  errors.push(t("statement") + ` ${index + 1}, ` + t("gambar") + ` ${imgIndex + 1}: ` + t("caption") + t("required"));
+                }
+              });
             }
           });
         }
@@ -509,6 +531,15 @@ export default function CreateDCC() {
             const descValue = (formData.comment.desc as any)[langValue]; // Type assertion to fix the error
             if (!descValue?.trim()) {
               errors.push(t("comment_desc") + t("must_be_filled_for_language") + `"${lang.value}"`);
+            }
+          });
+        }
+        if (formData.comment.has_file) {
+          formData.comment.files.forEach((file: any, index: number) => {
+            // Check if file has been uploaded
+            const hasUploadedFile = (file.fileName && typeof file.fileName === 'string') || (file.base64 && file.base64.trim());
+            if (!hasUploadedFile) {
+              errors.push(t("comment_file") + ` ${index + 1}: File ` + t("required") + t("uncheck_file"));
             }
           });
         }
@@ -1129,6 +1160,7 @@ export default function CreateDCC() {
         conditions: Array.isArray(draft.data.conditions) ? draft.data.conditions : [],
         results: Array.isArray(draft.data.results) ? draft.data.results : [],
         statements: Array.isArray(draft.data.statements) ? draft.data.statements : [],
+        sheet_names: Array.isArray(draft.data.sheet_names) ? draft.data.sheet_names : [],
         // Ensure nested objects exist
         administrative_data: draft.data.administrative_data || blankTemplate.administrative_data,
         Measurement_TimeLine: draft.data.Measurement_TimeLine || blankTemplate.Measurement_TimeLine,
@@ -1210,6 +1242,7 @@ export default function CreateDCC() {
               comment: dccData.comment || blankTemplate.comment,
               excel: dccData.excel || "",
               sheet_name: dccData.sheet_name || "",
+              sheet_names: Array.isArray(dccData.sheet_names) ? dccData.sheet_names : [],
             };
             
             setFormData(transformedData);
@@ -1235,6 +1268,18 @@ export default function CreateDCC() {
       }, 100);
     }
   }, []);
+
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
+  const [uploadedImages, setUploadedImages] = useState<{
+    methods: { [key: string]: File }[];
+    statements: { [key: string]: File }[];
+  }>({
+    methods: [],
+    statements: [],
+  });
+
+  const [uploadedCommentFiles, setUploadedCommentFiles] = useState<File[]>([]);
 
   return (
     <div className="container mx-auto py-8 pt-20">
@@ -1268,18 +1313,26 @@ export default function CreateDCC() {
             formData={formData}
             updateFormData={updateFormData}
             setFileName={setFileName}
+            uploadedFile={uploadedFile}
+            setUploadedFile={setUploadedFile}
+            uploadedImages={uploadedImages.methods}
+            setUploadedImages={(images) => setUploadedImages(prev => ({ ...prev, methods: images }))}
           />
         )}
         {currentStep === 2 && (
           <Statements 
             formData={formData} 
             updateFormData={updateFormData}
+            uploadedImages={uploadedImages.statements}
+            setUploadedImages={(images) => setUploadedImages(prev => ({ ...prev, statements: images }))}
           />
         )}
         {currentStep === 3 && (
           <Comment 
             formData={formData} 
             updateFormData={updateFormData}
+            uploadedFiles={uploadedCommentFiles}
+            setUploadedFiles={setUploadedCommentFiles}
           />
         )}
         {currentStep === 4 && (
