@@ -512,8 +512,14 @@ const pt25Template = {
       image: [
         {
           caption: "",
-          fileName: "",
-          mimeType: "",
+          fileName: "propagated_uncertainty_low_temp.jpg",
+          mimeType: "image/jpg",
+          base64: "",
+        },
+        {
+          caption: "",
+          fileName: "propagated_uncertainty_high_temp.jpg",
+          mimeType: "image/jpg",
           base64: "",
         },
       ],
@@ -1470,17 +1476,57 @@ export default function CreateDCC() {
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [formData, setFormData] = useState(blankTemplate);
 
+  const convertImageToBase64 = async (imagePath: string): Promise<string> => {
+    try {
+      const response = await fetch(imagePath);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result as string;
+          resolve(base64String.split(',')[1]);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Error converting image to base64:', error);
+      return '';
+    }
+  };
+
   // When template changes, update formData
   useEffect(() => {
-    if (selectedTemplate === "pt25") {
-      setFormData(pt25Template);
-    } else if (selectedTemplate === "pt100") {
-      setFormData(pt100Template);
-    } else {
-      setFormData(blankTemplate);
+    const loadTemplate = async () => {
+      if (selectedTemplate === "pt25") {
+        // Load pt25 template with images
+        const templateWithImages = { ...pt25Template };
+        
+        // Pre-fill image for method 7
+        // You'll need to provide the actual image path or URL
+        const imagePath1 = '/templates/propagated_uncertainty_low_temp.jpg';
+        const base64Image1 = await convertImageToBase64(imagePath1);
+
+        const imagePath2 = '/templates/propagated_uncertainty_high_temp.jpg';
+        const base64Image2 = await convertImageToBase64(imagePath2);
+        
+        if (templateWithImages.methods[6] && templateWithImages.methods[6].has_image) {
+          templateWithImages.methods[6].image[0].base64 = base64Image1;
+          templateWithImages.methods[6].image[1].base64 = base64Image2;
+        }
+        
+        setFormData(templateWithImages);
+      } else if (selectedTemplate === "pt100") {
+        setFormData(pt100Template);
+      } else {
+        setFormData(blankTemplate);
       }
-    // Increment key to signal template change
-    setTemplateChangeKey(prev => prev + 1);
+      
+      // Increment key to signal template change
+      setTemplateChangeKey(prev => prev + 1);
+    };
+    
+    loadTemplate();
   }, [selectedTemplate]);
 
   // Kasih warning saat user mencoba meninggalkan halaman (agar isi formulir tidak hilang)

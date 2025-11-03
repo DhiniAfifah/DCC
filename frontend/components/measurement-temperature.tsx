@@ -1218,10 +1218,26 @@ function MethodItem({
                                   );
                                 }}
                               />
-                              {uploadedImages[index]?.[`image_${imageIndex}`] && (
+                              {/* Show template image if exists */}
+                              {(uploadedImages[index]?.[`image_${imageIndex}`] || 
+                                (typeof form.watch(`methods.${index}.image.${imageIndex}.fileName`) === 'string' && 
+                                form.watch(`methods.${index}.image.${imageIndex}.fileName`))) && (
                                 <p className="text-sm text-sky-500">
-                                  {t("uploaded_file")}: {uploadedImages[index][`image_${imageIndex}`].name}
+                                  {t("uploaded_file")}: {
+                                    uploadedImages[index]?.[`image_${imageIndex}`]?.name || 
+                                    (typeof form.watch(`methods.${index}.image.${imageIndex}.fileName`) === 'string' 
+                                      ? form.watch(`methods.${index}.image.${imageIndex}.fileName`) 
+                                      : '')
+                                  }
                                 </p>
+                              )}
+                              {/* Show preview if base64 exists */}
+                              {form.watch(`methods.${index}.image.${imageIndex}.base64`) && (
+                                <img 
+                                  src={`data:${form.watch(`methods.${index}.image.${imageIndex}.mimeType`)};base64,${form.watch(`methods.${index}.image.${imageIndex}.base64`)}`}
+                                  alt="Preview"
+                                  className="max-w-xs mt-2 rounded border"
+                                />
                               )}
                             </div>
                           </FormControl>

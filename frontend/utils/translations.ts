@@ -467,7 +467,7 @@ const translations: Record<string, { id: string; en: string }> = {
   must_be_filled_for_language: { id: " harus diisi untuk bahasa ", en: " must be filled for language " },
   uncheck_gambar: { id: ", hapus centang jika tidak ada gambar", en: ", uncheck if there is no figure" },
   uncheck_file: { id: ", hapus centang jika tidak ada file", en: ", uncheck if there is no file" },
-  strip: { id: "Silakan isi dengan '-' jika tidak ada data", en: "Please fill in with '-' if there is no data" },
+  strip: { id: 'Silakan isi dengan "-" jika tidak ada data', en: 'Please fill in with "-" if there is no data' },
   
   software_name: { id: "Nama perangkat lunak", en: "Software name" },
   software_version: { id: "Versi perangkat lunak", en: "Software version" },
