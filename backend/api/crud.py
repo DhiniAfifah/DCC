@@ -18,6 +18,9 @@ import base64
 import tempfile
 from api.pdf_generator import PDFGenerator
 import uuid
+import time
+from api.digital_signature import DigitalSigner
+import re
 
 def get_progress_message(key: str, lang: str = 'en') -> str:
     """Get localized progress messages"""
@@ -1264,7 +1267,6 @@ def cleanup_old_preview_files(max_age_hours: int = 24):
         if not preview_dir.exists():
             return
             
-        import time
         current_time = time.time()
         max_age_seconds = max_age_hours * 3600
         
@@ -1290,10 +1292,29 @@ def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
     try:
         from api.digital_signature import DigitalSigner
         
-        # Get DCC record from database
+        # Get DCC record from database with fresh query
+        db.expire_all()  # Clear any cached data
         db_dcc = db.query(models.DCC).filter(models.DCC.id == dcc_id).first()
         if not db_dcc:
             raise Exception(f"DCC {dcc_id} not found in database")
+        
+        # Parse the Measurement_TimeLine to get the updated issue date
+        measurement_timeline = db_dcc.Measurement_TimeLine
+        logging.info(f"Raw Measurement_TimeLine from DB: {measurement_timeline}")
+        logging.info(f"Type: {type(measurement_timeline)}")
+        
+        if isinstance(measurement_timeline, str):
+            measurement_timeline = json.loads(measurement_timeline)
+        
+        updated_issue_date = measurement_timeline.get('tgl_pengesahan')
+        logging.info(f"Updated issue date from database: {updated_issue_date}")
+        
+        if not updated_issue_date:
+            raise Exception("Issue date not found in Measurement_TimeLine")
+        
+        # Get file paths
+        backend_root = Path(__file__).parent.parent
+        dcc_files_dir = backend_root / "dcc_files"
         
         # Parse administrative data
         admin_data = db_dcc.administrative_data
@@ -1302,11 +1323,7 @@ def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
         
         certificate_id = admin_data.get('sertifikat', f'DCC-{dcc_id}')
         
-        # Get file paths
-        backend_root = Path(__file__).parent.parent
-        dcc_files_dir = backend_root / "dcc_files"
         filename_base = f"{dcc_id}_{certificate_id}"
-        
         xml_path = dcc_files_dir / f"{filename_base}.xml"
         pdf_path = dcc_files_dir / f"{filename_base}.pdf"
         
@@ -1318,6 +1335,38 @@ def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
         with open(xml_path, 'r', encoding='utf-8') as f:
             xml_content = f.read()
         
+        logging.info(f"Original XML issue date: {xml_content[xml_content.find('<dcc:issueDate>'):xml_content.find('</dcc:issueDate>')+16]}")
+        
+        # Update the issue date in XML content
+        if '<dcc:issueDate/>' in xml_content:
+            # Replace self-closing tag
+            updated_xml = xml_content.replace(
+                '<dcc:issueDate/>',
+                f'<dcc:issueDate>{updated_issue_date}</dcc:issueDate>'
+            )
+        elif '<dcc:issueDate></dcc:issueDate>' in xml_content:
+            # Replace empty paired tags
+            updated_xml = xml_content.replace(
+                '<dcc:issueDate></dcc:issueDate>',
+                f'<dcc:issueDate>{updated_issue_date}</dcc:issueDate>'
+            )
+        else:
+            # Replace tags with existing content
+            updated_xml = re.sub(
+                r'<dcc:issueDate>[^<]*</dcc:issueDate>',
+                f'<dcc:issueDate>{updated_issue_date}</dcc:issueDate>',
+                xml_content
+            )
+
+        logging.info(f"Updated XML issue date: {updated_xml[updated_xml.find('<dcc:issueDate>'):updated_xml.find('</dcc:issueDate>')+16] if '<dcc:issueDate>' in updated_xml else 'NOT FOUND'}")
+
+        # Verify the update worked
+        if f'<dcc:issueDate>{updated_issue_date}</dcc:issueDate>' not in updated_xml:
+            logging.error("Failed to update issue date in XML!")
+            logging.error(f"Looking for: <dcc:issueDate>{updated_issue_date}</dcc:issueDate>")
+            logging.error(f"XML contains: {updated_xml[max(0, updated_xml.find('<dcc:issueDate>')-50):updated_xml.find('<dcc:issueDate>')+100]}")
+            raise Exception("Failed to update issue date in XML content")
+        
         # Initialize digital signer
         keys_dir = backend_root / "keys"
         signer = DigitalSigner(
@@ -1326,7 +1375,7 @@ def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
         )
         
         # Sign XML - use database ID instead of certificate_id
-        signed_xml = signer.sign_xml(xml_content, str(dcc_id))
+        signed_xml = signer.sign_xml(updated_xml, str(dcc_id))
         
         # Save signed XML
         with open(xml_path, 'w', encoding='utf-8') as f:

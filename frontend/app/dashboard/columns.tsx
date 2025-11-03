@@ -52,35 +52,6 @@ type StatusType =
   | "approved_director"
   | "rejected_director";
 
-// Function to update certificate status
-const updateCertificateStatus = async (id: number, status: StatusType) => {
-  try {
-    // Get the token from cookies
-    const token = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('access_token='))
-      ?.split('=')[1];
-
-    const response = await fetch(`http://127.0.0.1:8000/api/dcc/${id}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ status }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to update status');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error updating status:', error);
-    throw error;
-  }
-};
-
 const downloadDCCPDF = async (id: number, certificateId: string) => {
   try {
     const token = document.cookie
@@ -436,7 +407,7 @@ export const columns: ColumnDef<Certificate>[] = [
             .find(row => row.startsWith('access_token='))
             ?.split('=')[1];
 
-          const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/status`, {
+          const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/approve`, {
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
@@ -849,7 +820,7 @@ export const columns: ColumnDef<Certificate>[] = [
                         .find(row => row.startsWith('access_token='))
                         ?.split('=')[1];
 
-                      const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/status-with-note`, {
+                      const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/reject`, {
                         method: 'PATCH',
                         headers: { 
                           'Content-Type': 'application/json',

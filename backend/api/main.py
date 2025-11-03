@@ -39,6 +39,7 @@ from pathlib import Path
 import asyncio
 from typing import AsyncGenerator, List
 from datetime import timezone, timedelta
+from sqlalchemy.orm.attributes import flag_modified
 
 def get_language_from_request(request: Request) -> str:
     """Extract language preference from request headers"""
@@ -1025,11 +1026,11 @@ async def options_dcc_status():
         }
     )
 
-@app.patch("/api/dcc/{dcc_id}/status")
-async def update_dcc_status(
+@app.patch("/api/dcc/{dcc_id}/approve")
+async def approve_dcc(
     dcc_id: int,
     status_update: StatusUpdateRequest,
-    current_user: schemas.User = Depends(get_current_user),  # Add current_user
+    current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Update the status of a DCC certificate by ID"""
@@ -1045,26 +1046,52 @@ async def update_dcc_status(
 
         # If director approves, update the issue date and regenerate PDF with embedded XML
         if status_update.status == DCCStatusEnum.approved_director:
-            # Parse the Measurement_TimeLine JSON
-            measurement_timeline = dcc.Measurement_TimeLine
-            if isinstance(measurement_timeline, str):
-                measurement_timeline = json.loads(measurement_timeline)
-            
-            # Update the issue date to current date
             wib_timezone = timezone(timedelta(hours=7))
             current_date = datetime.now(wib_timezone).date().isoformat()
-            measurement_timeline['tgl_pengesahan'] = current_date
             
-            # Save back to database
-            dcc.Measurement_TimeLine = measurement_timeline
+            logging.info(f"Director approving DCC {dcc_id}, current date: {current_date}")
             
-            # Save director's approval information
             dcc.signed_by = current_user.full_name or current_user.email
             dcc.signature_timestamp = datetime.now(wib_timezone)
             
-            # Commit the changes first
+            # Update issue date in Measurement_TimeLine
+            measurement_timeline = dcc.Measurement_TimeLine
+            logging.info(f"Before update - Measurement_TimeLine: {measurement_timeline}, type: {type(measurement_timeline)}")
+            
+            if isinstance(measurement_timeline, str):
+                measurement_timeline = json.loads(measurement_timeline)
+            elif measurement_timeline is None:
+                measurement_timeline = {}
+            
+            # Create a new dict to ensure change detection
+            new_timeline = {
+                'tgl_mulai': measurement_timeline.get('tgl_mulai', ''),
+                'tgl_akhir': measurement_timeline.get('tgl_akhir', ''),
+                'tgl_pengesahan': current_date
+            }
+            
+            logging.info(f"New timeline dict: {new_timeline}")
+            
+            # Assign and flag as modified
+            dcc.Measurement_TimeLine = new_timeline
+            flag_modified(dcc, 'Measurement_TimeLine')
+            
+            logging.info(f"After assignment - dcc.Measurement_TimeLine: {dcc.Measurement_TimeLine}")
+            
+            # Commit changes BEFORE regenerating
             db.commit()
             db.refresh(dcc)
+            
+            # Verify the update was saved
+            logging.info(f"After commit - dcc.Measurement_TimeLine from DB: {dcc.Measurement_TimeLine}")
+            
+            # Double-check with a fresh query
+            fresh_dcc = db.query(DCC).filter(DCC.id == dcc_id).first()
+            logging.info(f"Fresh query - Measurement_TimeLine: {fresh_dcc.Measurement_TimeLine}")
+            
+            if not fresh_dcc.Measurement_TimeLine.get('tgl_pengesahan'):
+                logging.error("Issue date was not saved to database!")
+                raise HTTPException(status_code=500, detail="Failed to save issue date")
             
             # Regenerate PDF with embedded XML
             try:
@@ -1546,8 +1573,8 @@ class StatusUpdateWithNoteRequest(BaseModel):
     status: DCCStatusEnum
     rejection_note: str | None = None
 
-@app.patch("/api/dcc/{dcc_id}/status-with-note")
-async def update_dcc_status_with_note(
+@app.patch("/api/dcc/{dcc_id}/reject")
+async def reject_dcc(
     dcc_id: int,
     status_update: StatusUpdateWithNoteRequest,
     current_user: schemas.User = Depends(get_current_user),
@@ -1568,35 +1595,11 @@ async def update_dcc_status_with_note(
             if current_user.role != UserRole.director:
                 raise HTTPException(status_code=403, detail="Only directors can approve/reject at this stage")
         
+        # Update status first
         dcc.status = status_update.status
         
-        # If director approves, save their information
-        if status_update.status == DCCStatusEnum.approved_director:
-            wib_timezone = timezone(timedelta(hours=7))
-            dcc.signed_by = current_user.full_name or current_user.email
-            dcc.signature_timestamp = datetime.now(wib_timezone)
-            
-            # Update issue date
-            measurement_timeline = dcc.Measurement_TimeLine
-            if isinstance(measurement_timeline, str):
-                measurement_timeline = json.loads(measurement_timeline)
-            current_date = datetime.now(wib_timezone).date().isoformat()
-            measurement_timeline['tgl_pengesahan'] = current_date
-            dcc.Measurement_TimeLine = measurement_timeline
-            
-            # Commit changes first
-            db.commit()
-            db.refresh(dcc)
-            
-            # Regenerate PDF with embedded XML
-            try:
-                crud.regenerate_dcc_with_embedded_xml(db, dcc_id)
-            except Exception as e:
-                logging.error(f"Error regenerating DCC with embedded XML: {e}")
-                raise HTTPException(status_code=500, detail=f"Failed to regenerate DCC files: {str(e)}")
-        
         # If rejecting, save the rejection note
-        elif status_update.status in [DCCStatusEnum.rejected_head, DCCStatusEnum.rejected_director]:
+        if status_update.status in [DCCStatusEnum.rejected_head, DCCStatusEnum.rejected_director]:
             if not status_update.rejection_note or not status_update.rejection_note.strip():
                 raise HTTPException(status_code=400, detail="Rejection note is required when rejecting")
             dcc.rejection_note = status_update.rejection_note
