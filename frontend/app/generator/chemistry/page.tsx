@@ -8,23 +8,14 @@ import Statements from "@/components/statements";
 import Comment from "@/components/comment";
 import Preview from "@/components/preview";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, FlaskConical, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, FlaskConical, Send, Save, AlertCircle } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "sonner"
 import { Progress } from "@/components/ui/progress"
-import { Save } from "lucide-react";
 import { Input } from "@/components/ui/input"
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 // Helper type guard untuk cek apakah value adalah File
 const isFile = (value: any): value is File => {
@@ -1299,8 +1290,17 @@ export default function CreateDCC() {
         steps={steps}
         onStepClick={setCurrentStep}
       />
+
+      {currentStep == 4 && (
+        <div className="flex justify-center mt-10 mb-6 px-10">
+          <Alert variant="destructive" className="bg-white w-fit">
+            <AlertCircle className="w-4 h-4" />
+            <AlertTitle>{t("close_excel")}</AlertTitle>
+          </Alert>
+        </div>
+      )}
       
-      <div className="space-y-10 mt-10">
+      <div className="space-y-10">
         {currentStep === 0 && (
           <Administrative
             formData={formData}

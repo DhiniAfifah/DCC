@@ -326,6 +326,7 @@ const translations: Record<string, { id: string; en: string }> = {
   uploaded_file: { id: "File yang diunggah", en: "Uploaded file" },
   
   // Preview
+  close_excel: { id: "Harap pastikan aplikasi Excel Anda tertutup.", en: "Please make sure your Excel application is closed." },
   refresh: { id: "Segarkan", en: "Refresh" },
   generate: { id: "Menghasilkan pratinjau", en: "Generating preview" },
   failed: { id: "Gagal memuat pratinjau PDF", en: "Failed to load PDF preview" },
