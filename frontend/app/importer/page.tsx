@@ -2,15 +2,16 @@
 
 import Importer from "@/components/importer";
 import { useState, useEffect } from "react";
-import { useLanguage } from "@/context/LanguageContext";
 
 export default function LoadDCC() {
-  const { t } = useLanguage();
-
   const [formData, setFormData] = useState({
     pdf: null,
     xml: null,
   });
+
+  useEffect(() => {
+    document.title = "Importer | DiCCA";
+  }, []);
 
   useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {

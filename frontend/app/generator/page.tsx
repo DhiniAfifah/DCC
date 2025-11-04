@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import DashboardClient from "./DashboardClient";
+import { useEffect } from "react";
 
 type Lab = {
     href: string;
@@ -25,6 +26,10 @@ type Lab = {
 
 export default function Generator() {
     const { t } = useLanguage();
+
+    useEffect(() => {
+        document.title = "Generator | DiCCA";
+    }, []);
 
     const labs: Lab[] = [
         { href: "/generator/electrical", icon: Zap, color: "orange", label: "listrik" },

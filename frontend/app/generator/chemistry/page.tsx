@@ -218,6 +218,10 @@ const blankTemplate = {
 }
 
 export default function CreateDCC() {
+  useEffect(() => {
+    document.title = "Chemistry | Generator | DiCCA";
+  }, []);
+
   const { t, language } = useLanguage();
 
   const [templateChangeKey, setTemplateChangeKey] = useState(0);

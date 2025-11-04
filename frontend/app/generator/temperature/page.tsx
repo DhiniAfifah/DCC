@@ -1117,6 +1117,10 @@ const pt100Template = {
 }
 
 export default function CreateDCC() {
+  useEffect(() => {
+    document.title = "Temperature | Generator | DiCCA";
+  }, []);
+
   const { t, language } = useLanguage();
 
   const [templateChangeKey, setTemplateChangeKey] = useState(0);

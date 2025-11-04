@@ -85,7 +85,21 @@ const Navbar = () => {
           
           {/* Desktop Menu */}
           <div className="hidden md:flex space-x-4 items-center">
-            <NavLink href="/home"><House /></NavLink>
+            {isLoggedIn && (
+              <NavLink href="/home">
+                <House />
+              </NavLink>
+            )}
+            
+            {isLoggedIn && userIsOfficer && (
+              <NavLink href="/dashboard" isDashboard={true}>
+                {t("dasbor")}
+              </NavLink>
+            )}
+            
+            <NavLink href="/about">
+              {t("about")}
+            </NavLink>
 
             {isLoggedIn && (
               <button
@@ -96,17 +110,10 @@ const Navbar = () => {
               </button>
             )}
             {!isLoggedIn && (
-              <NavLink href="/">{t("login")}</NavLink>
-            )}
-            
-            {/* Dashboard button - only visible for officers */}
-            {isLoggedIn && userIsOfficer && (
-              <NavLink href="/dashboard" isDashboard={true}>
-                {t("dasbor")}
+              <NavLink href="/">
+                {t("login")}
               </NavLink>
             )}
-            
-            <NavLink href="/about">{t("about")}</NavLink>
             
             <LanguageSwitch />
           </div>
@@ -121,17 +128,25 @@ const Navbar = () => {
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuItem asChild>
-                  <Link href="/home">
-                    {t("home")}
-                  </Link>
-                </DropdownMenuItem>
+                {isLoggedIn && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/home">
+                      {t("home")}
+                    </Link>
+                  </DropdownMenuItem>
+                )}
 
                 {isLoggedIn && userIsOfficer && (
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard">Dashboard</Link>
+                    <Link href="/dashboard">
+                      {t("dasbor")}
+                    </Link>
                   </DropdownMenuItem>
                 )}
+
+                <DropdownMenuItem asChild>
+                  <Link href="/about">{t("about")}</Link>
+                </DropdownMenuItem>
 
                 {!isLoggedIn && (
                   <DropdownMenuItem asChild>
@@ -143,10 +158,6 @@ const Navbar = () => {
                     {t("logout")}
                   </DropdownMenuItem>
                 )}
-
-                <DropdownMenuItem asChild>
-                  <Link href="/about">{t("about")}</Link>
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             

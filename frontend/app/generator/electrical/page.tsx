@@ -1092,6 +1092,10 @@ const calibratorTemplate = {
 }
 
 export default function CreateDCC() {
+  useEffect(() => {
+    document.title = "Electrical | Generator | DiCCA";
+  }, []);
+
   const { t, language } = useLanguage();
 
   const [templateChangeKey, setTemplateChangeKey] = useState(0);

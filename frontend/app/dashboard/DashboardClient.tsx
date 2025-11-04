@@ -5,11 +5,15 @@ import { DataTable } from "./data-table"
 import OfficerProtectedRoute from "@/components/OfficerProtectedRoute"
 import { useLanguage } from "@/context/LanguageContext"
 import { isDirector, isHead } from "@/utils/auth"
-import { useMemo } from "react"
+import { useMemo, useEffect } from "react"
 import { UserCog, UserCheck } from "lucide-react"
 
 export default function DashboardClient({ data }: { data: Certificate[] }) {
   const { t } = useLanguage();
+
+  useEffect(() => {
+    document.title = "Dashboard | DiCCA";
+  }, []);
 
   // Filter data based on user role on the client side
   const filteredData = useMemo(() => {

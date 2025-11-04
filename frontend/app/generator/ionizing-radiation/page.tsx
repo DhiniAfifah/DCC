@@ -218,6 +218,10 @@ const blankTemplate = {
 }
 
 export default function CreateDCC() {
+  useEffect(() => {
+    document.title = "Ionizing Radiation | Generator | DiCCA";
+  }, []);
+
   const { t, language } = useLanguage();
 
   const [templateChangeKey, setTemplateChangeKey] = useState(0);

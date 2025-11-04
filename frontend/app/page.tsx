@@ -1,4 +1,5 @@
 "use client";
+
 import Login from "@/components/login";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,10 @@ export default function LoginPage() {
   const router = useRouter();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    document.title = "Login | DiCCA";
+  }, []);
 
   useEffect(() => {
     const checkExistingAuth = () => {

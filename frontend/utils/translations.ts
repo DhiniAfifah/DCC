@@ -6,6 +6,7 @@ const translations: Record<string, { id: string; en: string }> = {
   failed_to_load: { id: "Gagal memuat", en: "Failed to load" },
 
   // Navbar
+  home: { id: "Beranda", en: "Home" },
   language: { id: "Ganti bahasa website", en: "Change website language" },
 
   // ProtectedRoute
