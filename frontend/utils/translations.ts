@@ -513,7 +513,11 @@ const translations: Record<string, { id: string; en: string }> = {
   download_success: { id: "Pengunduhan sukses", en: "Download success" },
   download_failed: { id: "Pengunduhan gagal", en: "Download failed" },
   certificate_not_found: { id: "Sertifikat tidak ditemukan", en: "Certificate not found" },
-  
+  not_approved: { id: "Sertifikat belum/tidak disetujui oleh direktur", en: "Certificate has not been approved by director" },
+  not_verified: { id: "Tanda tangan tidak terverifikasi", en: "Signature not verified" },
+  no_signature: { id: "Tanda tangan digital tidak ditemukan", en: "No digital signature found" },
+  invalid_signature: { id: "Format tanda tangan tidak valid", en: "Invalid signature format" },
+  signature_failed: { id: "Verifikasi tanda tangan gagal", en: "Signature verification failed" },
 };
 
 export const getTranslation = (key: string, language: Language = "en") => {

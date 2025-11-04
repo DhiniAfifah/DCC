@@ -195,7 +195,7 @@ class DigitalSigner:
                 return {
                     "valid": False,
                     "signed": False,
-                    "message": "No digital signature found"
+                    "message": "no_signature"
                 }
             
             # Extract signature value
@@ -204,7 +204,7 @@ class DigitalSigner:
                 return {
                     "valid": False,
                     "signed": False,
-                    "message": "Invalid signature format"
+                    "message": "invalid_signature"
                 }
             
             signature_b64 = sig_value_elem.text.strip()
@@ -235,7 +235,7 @@ class DigitalSigner:
             return {
                 "valid": signature_valid,
                 "signed": True,
-                "message": "Signature is valid" if signature_valid else "Signature verification failed"
+                "message": "Signature is valid" if signature_valid else "signature_failed"
             }
             
         except Exception as e:

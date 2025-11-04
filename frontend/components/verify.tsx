@@ -168,7 +168,18 @@ export function Verify({
                     <CardDescription>
                         {isValid
                             ? t("this_page")
-                            : data.message}
+                            : data.message == "not_approved"
+                            ? t("not_approved")
+                            : data.message == "not_verified"
+                            ? t("not_verified")
+                            : data.message == "no_signature"
+                            ? t("no_signature")
+                            : data.message == "invalid_signature"
+                            ? t("invalid_signature")
+                            : data.message == "signature_failed"
+                            ? t("signature_failed")
+                            : data.message
+                        }
                     </CardDescription>
                 </CardHeader>
 

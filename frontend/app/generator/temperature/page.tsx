@@ -2290,8 +2290,8 @@ export default function CreateDCC() {
               <SelectGroup>
                 <SelectLabel>{t("template")}</SelectLabel>
                 <SelectItem value="blank">{t("blank")}</SelectItem>
-                <SelectItem value="multimeter">Digital Multimeter {t("using")} Fluke 5730A</SelectItem>
-                <SelectItem value="calibrator">Multiproduct Calibrator {t("using")} Fluke 8508A</SelectItem>
+                <SelectItem value="pt25">{t("pt25")}</SelectItem>
+                <SelectItem value="pt100">{t("pt100")}</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>

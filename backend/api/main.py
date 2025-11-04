@@ -1817,7 +1817,7 @@ async def verify_certificate(
                 "signature_timestamp": None,
                 "valid": False,
                 "signed": False,
-                "message": "Certificate has not been approved by director"
+                "message": "not_approved"
             }
         
         # Get XML file path to verify signature
@@ -1828,7 +1828,7 @@ async def verify_certificate(
         
         # Verify XML signature if file exists
         signature_valid = False
-        signature_message = "Signature not verified"
+        signature_message = "not_verified"
         
         if xml_path.exists():
             try:
