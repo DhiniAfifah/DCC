@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, verifyToken } from "@/utils/auth";
 import { useLanguage } from '@/context/LanguageContext';
+import { Spinner } from "@/components/ui/spinner"
 
 export default function LoginPage() {
   const router = useRouter();
@@ -47,9 +48,9 @@ export default function LoginPage() {
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-indigo-200">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t("authentication")}...</p>
+        <div className="text-center text-gray-600">
+          <Spinner className="h-12 w-12 mx-auto stroke-[1]" />
+          <p className="mt-4">{t("authentication")}...</p>
         </div>
       </div>
     );

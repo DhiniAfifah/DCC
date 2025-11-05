@@ -1,21 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Download, FileText, FileCode, SquareArrowOutUpRight, AlertCircle } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, } from "@/components/ui/card"
 import { useLanguage } from '@/context/LanguageContext';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider
-} from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import { Spinner } from "@/components/ui/spinner"
 
 interface PreviewProps {
   previewFiles: {
@@ -148,9 +140,9 @@ export default function Preview({ previewFiles, isLoading, onRefresh }: PreviewP
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
-              <p className="text-gray-600">{t("generate")}...</p>
+            <div className="text-center text-gray-600">
+              <Spinner className="h-12 w-12 mx-auto mb-4 stroke-[1]" />
+              <p>{t("generate")}...</p>
             </div>
           </div>
         ) : (

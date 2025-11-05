@@ -10,9 +10,10 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { useLanguage } from "@/context/LanguageContext"
-import { ShieldCheck, User, Clock, Hash, Download, Loader2, AlertCircle } from "lucide-react"
+import { ShieldCheck, User, Clock, Hash, Download, AlertCircle } from "lucide-react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
+import { Spinner } from "@/components/ui/spinner"
 
 interface VerificationData {
     certificate_number: string
@@ -112,11 +113,9 @@ export function Verify({
             <div className={cn("flex flex-col gap-6", className)} {...props}>
                 <Card>
                     <CardContent className="flex items-center justify-center py-12">
-                        <div className="flex flex-col items-center gap-4">
-                            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">
-                                {t("loading")}...
-                            </p>
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                            <Spinner className="w-8 h-8" />
+                            <p className="text-sm">{t("loading")}...</p>
                         </div>
                     </CardContent>
                 </Card>

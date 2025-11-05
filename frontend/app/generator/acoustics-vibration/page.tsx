@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Spinner } from "@/components/ui/spinner"
 
 // Helper type guard untuk cek apakah value adalah File
 const isFile = (value: any): value is File => {
@@ -1361,8 +1362,8 @@ export default function CreateDCC() {
             <div className="flex items-center justify-between text-xs text-sky-600">
               <div>
                 {progressPercent > 0 && progressPercent < 100 && (
-                  <div className="mt-3 flex items-center text-sm text-sky-700">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-sky-600 mr-2"></div>
+                  <div className="mt-3 flex items-center text-sm">
+                    <Spinner className="" />
                   </div>
                 )}
               </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getToken, verifyToken } from "@/utils/auth";
 import { useLanguage } from '@/context/LanguageContext';
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner"
 
 export default function ProtectedRoute({
   children,
@@ -101,9 +102,9 @@ export default function ProtectedRoute({
     console.log("⏳ ProtectedRoute: Showing loading screen");
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
-          <p className="mt-4 text-gray-600">{t("verify_session")}...</p>
+        <div className="text-center text-gray-600">
+          <Spinner className="h-12 w-12 mx-auto mb-4 stroke-[1]" />
+          <p>{t("generate")}...</p>
         </div>
       </div>
     );

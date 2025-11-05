@@ -459,7 +459,7 @@ const translations: Record<string, { id: string; en: string }> = {
   revision_note_required: { id: "Catatan revisi dibutuhkan", en: "Revision note required" },
   confirm: { id: "Konfirmasi", en: "Confirm" },
 
-  // animate-spin
+  // Spinner"
   authentication: { id: "Memeriksa autentikasi", en: "Checking authentication"},
   verify_officer: { id: "Memverifikasi akses pejabat", en: "Verifying officer access" },
   verify_session: { id: "Memverifikasi sesi", en: "Verifying session" },
