@@ -451,6 +451,7 @@ const translations: Record<string, { id: string; en: string }> = {
   aksi: { id: "Aksi", en: "Actions" },
   cant_undo: { id: "Aksi ini tidak dapat dibatalkan", en: "This action can't be undone" },
   no_result: { id: "Tidak ada hasil.", en: "No result." },
+  failed_status: { id: "Gagal memperbarui status.", en: "Failed to update status." },
 
   rejected_by: { id: "Ditolak oleh", en: "Rejected by" },
   rejected_at: { id: "Ditolak pada", en: "Rejected at" },

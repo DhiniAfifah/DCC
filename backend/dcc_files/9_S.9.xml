@@ -40,33 +40,33 @@
          <dcc:usedLangCodeISO639_1>id</dcc:usedLangCodeISO639_1>
          <dcc:usedLangCodeISO639_1>en</dcc:usedLangCodeISO639_1>
          <dcc:mandatoryLangCodeISO639_1>id</dcc:mandatoryLangCodeISO639_1>
-         <dcc:uniqueIdentifier>S.7</dcc:uniqueIdentifier>
+         <dcc:uniqueIdentifier>S.9</dcc:uniqueIdentifier>
          <dcc:identifications>
             <dcc:identification refType="basic_orderNumber">
                <dcc:issuer>calibrationLaboratory</dcc:issuer>
-               <dcc:value>I-7</dcc:value>
+               <dcc:value>I-9</dcc:value>
                <dcc:name>
                   <dcc:content>Nomor Order</dcc:content>
                </dcc:name>
             </dcc:identification>
          </dcc:identifications>
-         <dcc:beginPerformanceDate>2025-10-29</dcc:beginPerformanceDate>
-         <dcc:endPerformanceDate>2025-10-30</dcc:endPerformanceDate>
+         <dcc:beginPerformanceDate>2025-11-04</dcc:beginPerformanceDate>
+         <dcc:endPerformanceDate>2025-11-05</dcc:endPerformanceDate>
          <dcc:performanceLocation>laboratory</dcc:performanceLocation>
          <dcc:issueDate>2025-11-05</dcc:issueDate>
       </dcc:coreData>
       <dcc:items>
          <dcc:item>
             <dcc:name>
-               <dcc:content lang="id">Digital Multimeter</dcc:content>
-               <dcc:content lang="en">Digital Multimeter</dcc:content>
+               <dcc:content lang="id">Multiproduct Calibrator</dcc:content>
+               <dcc:content lang="en">Multiproduct Calibrator</dcc:content>
             </dcc:name>
             <dcc:manufacturer>
                <dcc:name>
                   <dcc:content>Fluke</dcc:content>
                </dcc:name>
             </dcc:manufacturer>
-            <dcc:model>8508A</dcc:model>
+            <dcc:model>5730A</dcc:model>
             <dcc:identifications>
                <dcc:identification refType="basic_serialNumber">
                   <dcc:issuer>manufacturer</dcc:issuer>
@@ -121,20 +121,6 @@
             </dcc:person>
             <dcc:description>
                <dcc:content>198102142006041004</dcc:content>
-            </dcc:description>
-            <dcc:role>Penyelia Kalibrasi</dcc:role>
-            <dcc:mainSigner>0</dcc:mainSigner>
-            <dcc:cryptElectronicSignature>0</dcc:cryptElectronicSignature>
-            <dcc:cryptElectronicTimeStamp>0</dcc:cryptElectronicTimeStamp>
-         </dcc:respPerson>
-         <dcc:respPerson>
-            <dcc:person>
-               <dcc:name>
-                  <dcc:content>Lukluk Khairiyati, M.T.</dcc:content>
-               </dcc:name>
-            </dcc:person>
-            <dcc:description>
-               <dcc:content>197911292006042005</dcc:content>
             </dcc:description>
             <dcc:role>Penyelia Kalibrasi</dcc:role>
             <dcc:mainSigner>0</dcc:mainSigner>
@@ -204,8 +190,8 @@
                   <dcc:content lang="en">Work Instruction</dcc:content>
                </dcc:name>
                <dcc:description>
-                  <dcc:content lang="id">Hasil kalibrasi ini diperoleh berdasarkan prosedur kalibrasi I.ME.1.03 untuk tegangan DC, I.ME.3.04 untuk arus DC, I.ME.5.05 untuk tegangan AC, I.ME.6.03 untuk arus AC, dan I.ME.2.10 untuk resistansi dengan menggunakan alat standar yang tertelusur ke SI melalui SNSU-BSN.</dcc:content>
-                  <dcc:content lang="en">The calibration result was acquired based on the procedure of I.ME.1.03 for DC voltage, I.ME.3.04 for DC current, I.ME.5.05 for AC voltage, I.ME.6.03 for AC current, and I.ME.2.10 for resistance using standard instruments that is traceable to SI through SNSU-BSN.</dcc:content>
+                  <dcc:content lang="id">Hasil kalibrasi ini diperoleh berdasarkan prosedur kalibrasi I.ME.1.05 untuk tegangan DC, I.ME.3.05 untuk arus DC, I.ME.5.04 untuk tegangan AC, I.ME.6.06 untuk arus AC, dan I.ME.2.09 untuk resistansi dengan menggunakan alat standar yang tertelusur ke SI melalui SNSU-BSN.</dcc:content>
+                  <dcc:content lang="en">The calibration result was acquired based on the procedure of I.ME.1.05 for DC voltage, I.ME.3.05 for DC current, I.ME.5.04 for AC voltage, I.ME.6.06 for AC current, and I.ME.2.09 for resistance using standard instruments that is traceable to SI through SNSU-BSN.</dcc:content>
                </dcc:description>
                <dcc:norm>-</dcc:norm>
             </dcc:usedMethod>
@@ -235,44 +221,22 @@
          <dcc:measuringEquipments>
             <dcc:measuringEquipment refType="basic_measurementStandard">
                <dcc:name>
-                  <dcc:content lang="id">Multifunction Calibrator</dcc:content>
-                  <dcc:content lang="en">Multifunction Calibrator</dcc:content>
+                  <dcc:content lang="id">Reference Multimeter</dcc:content>
+                  <dcc:content lang="en">Reference Multimeter</dcc:content>
                </dcc:name>
                <dcc:manufacturer>
                   <dcc:name>
-                     <dcc:content lang="id">5730A</dcc:content>
-                     <dcc:content lang="en">5730A</dcc:content>
+                     <dcc:content lang="id">8508A</dcc:content>
+                     <dcc:content lang="en">8508A</dcc:content>
                   </dcc:name>
                </dcc:manufacturer>
                <dcc:identifications>
                   <dcc:identification refType="basic_serialNumber">
                      <dcc:issuer>manufacturer</dcc:issuer>
-                     <dcc:value>4978506</dcc:value>
+                     <dcc:value>941254525</dcc:value>
                      <dcc:name>
                         <dcc:content lang="id">Fluke</dcc:content>
                         <dcc:content lang="en">Fluke</dcc:content>
-                     </dcc:name>
-                  </dcc:identification>
-               </dcc:identifications>
-            </dcc:measuringEquipment>
-            <dcc:measuringEquipment refType="basic_measurementStandard">
-               <dcc:name>
-                  <dcc:content lang="id">Transconductance Amplifier</dcc:content>
-                  <dcc:content lang="en">Transconductance Amplifier</dcc:content>
-               </dcc:name>
-               <dcc:manufacturer>
-                  <dcc:name>
-                     <dcc:content lang="id">8200</dcc:content>
-                     <dcc:content lang="en">8200</dcc:content>
-                  </dcc:name>
-               </dcc:manufacturer>
-               <dcc:identifications>
-                  <dcc:identification refType="basic_serialNumber">
-                     <dcc:issuer>manufacturer</dcc:issuer>
-                     <dcc:value>117</dcc:value>
-                     <dcc:name>
-                        <dcc:content lang="id">Clarke Hess</dcc:content>
-                        <dcc:content lang="en">Clarke Hess</dcc:content>
                      </dcc:name>
                   </dcc:identification>
                </dcc:identifications>
@@ -322,7 +286,7 @@
                         <dcc:content>nilai minimum</dcc:content>
                      </dcc:name>
                      <si:real>
-                        <si:value>49.0</si:value>
+                        <si:value>50.0</si:value>
                         <si:unit>\percent</si:unit>
                      </si:real>
                   </dcc:quantity>
@@ -331,7 +295,7 @@
                         <dcc:content>nilai maksimum</dcc:content>
                      </dcc:name>
                      <si:real>
-                        <si:value>59.0</si:value>
+                        <si:value>62.0</si:value>
                         <si:unit>\percent</si:unit>
                      </si:real>
                   </dcc:quantity>
@@ -368,8 +332,8 @@
                      </dcc:quantity>
                      <dcc:quantity>
                         <dcc:name>
-                           <dcc:content lang="id">Pembacaan Alat</dcc:content>
-                           <dcc:content lang="en">Instrument Reading</dcc:content>
+                           <dcc:content lang="id">Pembacaan Standar</dcc:content>
+                           <dcc:content lang="en">Standard Reading</dcc:content>
                         </dcc:name>
                         <si:realListXMLList>
                            <si:valueXMLList>0</si:valueXMLList>
@@ -426,8 +390,8 @@
                      </dcc:quantity>
                      <dcc:quantity>
                         <dcc:name>
-                           <dcc:content lang="id">Pembacaan Alat</dcc:content>
-                           <dcc:content lang="en">Instrument Reading</dcc:content>
+                           <dcc:content lang="id">Pembacaan Standar</dcc:content>
+                           <dcc:content lang="en">Standard Reading</dcc:content>
                         </dcc:name>
                         <si:realListXMLList>
                            <si:valueXMLList>0</si:valueXMLList>
@@ -494,8 +458,8 @@
                      </dcc:quantity>
                      <dcc:quantity>
                         <dcc:name>
-                           <dcc:content lang="id">Pembacaan Alat</dcc:content>
-                           <dcc:content lang="en">Instrument Reading</dcc:content>
+                           <dcc:content lang="id">Pembacaan Standar</dcc:content>
+                           <dcc:content lang="en">Standard Reading</dcc:content>
                         </dcc:name>
                         <si:realListXMLList>
                            <si:valueXMLList>20</si:valueXMLList>
@@ -562,8 +526,8 @@
                      </dcc:quantity>
                      <dcc:quantity>
                         <dcc:name>
-                           <dcc:content lang="id">Pembacaan Alat</dcc:content>
-                           <dcc:content lang="en">Instrument Reading</dcc:content>
+                           <dcc:content lang="id">Pembacaan Standar</dcc:content>
+                           <dcc:content lang="en">Standard Reading</dcc:content>
                         </dcc:name>
                         <si:realListXMLList>
                            <si:valueXMLList>20</si:valueXMLList>
@@ -620,8 +584,8 @@
                      </dcc:quantity>
                      <dcc:quantity>
                         <dcc:name>
-                           <dcc:content lang="id">Pembacaan Alat</dcc:content>
-                           <dcc:content lang="en">Instrument Reading</dcc:content>
+                           <dcc:content lang="id">Pembacaan Standar</dcc:content>
+                           <dcc:content lang="en">Standard Reading</dcc:content>
                         </dcc:name>
                         <si:realListXMLList>
                            <si:valueXMLList>1</si:valueXMLList>
@@ -661,4 +625,4 @@
          <dcc:content lang="en">-</dcc:content>
       </dcc:description>
    </dcc:comment>
-<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><ds:Reference URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>Hc6M4Akxw2zT/dYZ6kNpclRPGCU=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>KnBojQfn0bSJal5in4QCPuiu6PuPTtzdjeT5vjoPtboXhRa+Pi6iQa4BJY40WIiFch93g+fkLXukEgMHAOwL8xMulnvXG7DFr5eZFE1PM42JNwMLkhc+ZMGSSv0T+uBnMgI5xt8NXqyaPcI4EEMr0oSMrTqIWSIXcPKRggo6nnXLsLn3hAvadJD7W/hPZzaCIoSAlGGjyyXik7eRsWfSRUWQxwMux6J2hLNMQNnxAEx75+rrdP0m1mmA+vUJnktsjMvA+L+5/u4VmYlVp1Q/AwqFzRKlWdJw+glV3jPdIMbUSjZ5sFflT10EUtR/3d8KNwqYFO1kB7/yR+RPK85q2g==</ds:SignatureValue><ds:KeyInfo><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>ndJMEHwOqPaocZ5T5JyEwjKRscgrFdSyinIAdQy2XUWc3/kNht/1i2FhX0EBUO5ZKVocagat6ffUc252uI4VPX5OSLqpJ5HhNJI14vECGYrcGYMoCdbuio4wAbOxN+81OThIdwsGOP/Gzx9qxy6YiZvGqdaLg6C5t4uzssr91PCvEnB1y88ZXf8IujV9Ir1UgM3l6cZw69lZzv7YFqpiJkeDPgRuo2GJ4xrdw69GsQ4cY1sC/68X2MhEBnY+qmAKb/jqwFrA88m60OcYX24gGaPgkx9udFg4NcKnQ5O1ux26d7uIUtbCSzrFOPWB7EwscVKXK1WUBKjnQHyQJfkPAw==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo></ds:Signature></dcc:digitalCalibrationCertificate>
+<ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><ds:SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><ds:Reference URI=""><ds:Transforms><ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></ds:Transforms><ds:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><ds:DigestValue>VMSS4g/GbUvA7n0us3dKMznTo5U=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>gQrSpTOMQzIKmiStNh8DJSd8Jd29/j/vcQizDO0xaT8yG16A1B9xw3Lz4LQIZp2sGy+7BZjIVTIFY5f/oX/uFv4yJzWBJp4pDQ3orFkmB8NTSP147a+ZFkeyKSc06njvEiUDdE3SfF7hqf9N9xiLTmVKfDL4eVqKsBd8xfw5E3iFltgvd2lqxmlCL9Br+jBFCkxGIvD5Rb8T/IWmOerPt+3oLUKVzoAHYUJUGitVNfI8DKWt8U4n9OwgBecAVRQxEsI6rKxrOv2t+0QXJ7L8XSG3QJ8Ya1RDKKkVHWPNM6bNnKCnx803ECU1EwP9tfGFjMEpbcwKQhaMbv4KcSFTCg==</ds:SignatureValue><ds:KeyInfo><ds:KeyValue><ds:RSAKeyValue><ds:Modulus>ndJMEHwOqPaocZ5T5JyEwjKRscgrFdSyinIAdQy2XUWc3/kNht/1i2FhX0EBUO5ZKVocagat6ffUc252uI4VPX5OSLqpJ5HhNJI14vECGYrcGYMoCdbuio4wAbOxN+81OThIdwsGOP/Gzx9qxy6YiZvGqdaLg6C5t4uzssr91PCvEnB1y88ZXf8IujV9Ir1UgM3l6cZw69lZzv7YFqpiJkeDPgRuo2GJ4xrdw69GsQ4cY1sC/68X2MhEBnY+qmAKb/jqwFrA88m60OcYX24gGaPgkx9udFg4NcKnQ5O1ux26d7uIUtbCSzrFOPWB7EwscVKXK1WUBKjnQHyQJfkPAw==</ds:Modulus><ds:Exponent>AQAB</ds:Exponent></ds:RSAKeyValue></ds:KeyValue></ds:KeyInfo></ds:Signature></dcc:digitalCalibrationCertificate>

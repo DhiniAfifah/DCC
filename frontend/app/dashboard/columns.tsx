@@ -1,7 +1,20 @@
 "use client"
  
 import { ColumnDef } from "@tanstack/react-table"
-import { MoreHorizontal, ArrowUpDown, ChevronDown, Eye, Download, Check, X, RefreshCw, AlertCircle, FileText, FileCode, SquareArrowOutUpRight, MessageSquareText } from "lucide-react"
+import { 
+  MoreHorizontal, 
+  ArrowUpDown, 
+  ChevronDown, 
+  Eye, 
+  Download, 
+  Check, 
+  X, 
+  RefreshCw, 
+  AlertCircle, 
+  FileText, 
+  FileCode, 
+  SquareArrowOutUpRight, 
+  MessageSquareText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -35,6 +48,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useState, useEffect } from "react"
 import { Textarea } from "@/components/ui/textarea"
+import { Spinner } from "@/components/ui/spinner"
 
 export type Certificate = {
     id: number
@@ -199,6 +213,8 @@ function RejectionNoteDisplay({ certificateId }: { certificateId: number }) {
   );
 }
 
+const updatingRows = new Set<number>();
+
 export const columns: ColumnDef<Certificate>[] = [
   {
     id: "number",
@@ -357,6 +373,22 @@ export const columns: ColumnDef<Certificate>[] = [
     cell: ({ row }) => {
       const { t } = useLanguage()
       const status = row.getValue("status") as Certificate["status"]
+      const certificate = row.original
+      const [isUpdating, setIsUpdating] = useState(false)
+
+      // Listen for updates from the actions cell
+      useEffect(() => {
+        const handleUpdate = (event: CustomEvent) => {
+          if (event.detail.certificateId === certificate.id) {
+            setIsUpdating(event.detail.isUpdating)
+          }
+        }
+
+        window.addEventListener('certificate-updating' as any, handleUpdate as any)
+        return () => {
+          window.removeEventListener('certificate-updating' as any, handleUpdate as any)
+        }
+      }, [certificate.id])
 
       return (
         <Badge variant={
@@ -372,6 +404,7 @@ export const columns: ColumnDef<Certificate>[] = [
                 "default"
               : "default"
         }>
+          {isUpdating && <Spinner className="mr-1" />}
           {isHead()
             ? status === "pending_head" ? t("pending") : 
               status === "approved_head" || status === "approved_director" || status === "rejected_director" ? t("approved") : 
@@ -398,8 +431,16 @@ export const columns: ColumnDef<Certificate>[] = [
       const { t } = useLanguage();
       const router = useRouter();
       const certificate = row.original;
+
+      const [isUpdating, setIsUpdating] = useState(false);
  
       const handleStatusChange = async (newStatus: StatusType) => {
+        setIsUpdating(true);
+        // Dispatch event to update badge
+        window.dispatchEvent(new CustomEvent('certificate-updating', { 
+          detail: { certificateId: certificate.id, isUpdating: true } 
+        }))
+        
         try {
           // Get the token from cookies
           const token = document.cookie
@@ -420,10 +461,20 @@ export const columns: ColumnDef<Certificate>[] = [
             throw new Error('Failed to update status');
           }
 
-          return await response.json();
+          const result = await response.json();
+          router.refresh(); // Refresh the page to show updated status
+          return result;
+
         } catch (error) {
           console.error('Error updating status:', error);
+          toast.error(t("failed_status"));
           throw error;
+        } finally {
+          setIsUpdating(false);
+          // Dispatch event to stop updating badge
+          window.dispatchEvent(new CustomEvent('certificate-updating', { 
+            detail: { certificateId: certificate.id, isUpdating: false } 
+          }))
         }
       };
 
@@ -718,6 +769,7 @@ export const columns: ColumnDef<Certificate>[] = [
               <DropdownMenuItem 
                 onClick={() => handleStatusChange(approve)}
                 disabled={
+                  isUpdating ||
                   (isHead() && (certificate.status === "approved_head" || certificate.status === "rejected_head" || certificate.status === "approved_director" || certificate.status === "rejected_director")) ||
                   (isDirector() && (certificate.status === "approved_director" || certificate.status === "rejected_director"))
                 }
@@ -732,6 +784,7 @@ export const columns: ColumnDef<Certificate>[] = [
                   setRejectDialogOpen(true);
                 }}
                 disabled={
+                  isUpdating ||
                   (isHead() && (certificate.status === "approved_head" || certificate.status === "rejected_head" || certificate.status === "approved_director" || certificate.status === "rejected_director")) ||
                   (isDirector() && (certificate.status === "approved_director" || certificate.status === "rejected_director"))
                 }
@@ -813,6 +866,13 @@ export const columns: ColumnDef<Certificate>[] = [
                       toast.error(t("revision_note_required"));
                       return;
                     }
+
+                    setIsUpdating(true);
+                    // Dispatch event to update badge
+                    window.dispatchEvent(new CustomEvent('certificate-updating', { 
+                      detail: { certificateId: certificate.id, isUpdating: true } 
+                    }))
+
                     try {
                       // Get the token from cookies
                       const token = document.cookie
@@ -842,6 +902,13 @@ export const columns: ColumnDef<Certificate>[] = [
                       router.refresh();
                     } catch (error) {
                       console.error('Rejection error:', error);
+                      toast.error(t("failed_status"));
+                    } finally {
+                      setIsUpdating(false);
+                      // Dispatch event to stop updating badge
+                      window.dispatchEvent(new CustomEvent('certificate-updating', { 
+                        detail: { certificateId: certificate.id, isUpdating: false } 
+                      }))
                     }
                   }}
                 >
