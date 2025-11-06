@@ -228,17 +228,17 @@ export const pt25Template = {
   ],
   responsible_persons: {
     pelaksana: [
-      { // 1
-        nama_resp: "Dwi Larassati, S.T.",
-        nip: "",
-        peran: "Pelaksana Kalibrasi",
-        main_signer: "0",
-        signature: "0",
-        timestamp: "0",
-      },
+      // { // 1
+      //   nama_resp: "Dwi Larassati, S.T.",
+      //   nip: "",
+      //   peran: "Pelaksana Kalibrasi",
+      //   main_signer: "0",
+      //   signature: "0",
+      //   timestamp: "0",
+      // },
       { // 2
         nama_resp: "Kelvin Sapta Dewantara, S.Si.",
-        nip: "",
+        nip: "199709242022031003",
         peran: "Pelaksana Kalibrasi",
         main_signer: "0",
         signature: "0",
@@ -248,7 +248,7 @@ export const pt25Template = {
     penyelia: [
       { // 1
         nama_resp: "Dr. Aditya Achmadi, S.Si., M.T.",
-        nip: "",
+        nip: "198109032005021002",
         peran: "Penyelia Kalibrasi",
         main_signer: "0",
         signature: "0",
@@ -257,7 +257,7 @@ export const pt25Template = {
     ],
     kepala: {
       nama_resp: "Dr. Aditya Achmadi, S.Si., M.T.",
-      nip: "",
+      nip: "198109032005021002",
       peran: "Kepala Laboratorium SNSU Suhu",
       main_signer: "0",
       signature: "0",
@@ -265,7 +265,7 @@ export const pt25Template = {
     },
     direktur: {
       nama_resp: "Dr. Ghufron Zaid",
-      nip: "19711104 199012 1 001",
+      nip: "197111041990121001",
       peran: "Direktur SNSU Termoelektrik dan Kimia",
       main_signer: "1",
       signature: "1",
@@ -759,7 +759,7 @@ export const pt100Template = {
     pelaksana: [
       { // 1
         nama_resp: "Arief Gunawan, S.Si., MPP., M.E.",
-        nip: "",
+        nip: "198904172014021002",
         peran: "Pelaksana Kalibrasi",
         main_signer: "0",
         signature: "0",
@@ -767,7 +767,7 @@ export const pt100Template = {
       },
       { // 2
         nama_resp: "Kelvin Sapta Dewantara, S.Si.",
-        nip: "",
+        nip: "199709242022031003",
         peran: "Pelaksana Kalibrasi",
         main_signer: "0",
         signature: "0",
@@ -775,18 +775,18 @@ export const pt100Template = {
       },
     ],
     penyelia: [
-      { // 1
-        nama_resp: "Dewi Larassati, S.T.",
-        nip: "",
-        peran: "Penyelia Kalibrasi",
-        main_signer: "0",
-        signature: "0",
-        timestamp: "0",
-      },
+      // { // 1
+      //   nama_resp: "Dewi Larassati, S.T.",
+      //   nip: "",
+      //   peran: "Penyelia Kalibrasi",
+      //   main_signer: "0",
+      //   signature: "0",
+      //   timestamp: "0",
+      // },
     ],
     kepala: {
       nama_resp: "Dr. Aditya Achmadi, S.Si., M.T.",
-      nip: "",
+      nip: "198109032005021002",
       peran: "Kepala Laboratorium SNSU Suhu",
       main_signer: "0",
       signature: "0",
@@ -794,7 +794,7 @@ export const pt100Template = {
     },
     direktur: {
       nama_resp: "Dr. Ghufron Zaid",
-      nip: "19711104 199012 1 001",
+      nip: "197111041990121001",
       peran: "Direktur SNSU Termoelektrik dan Kimia",
       main_signer: "1",
       signature: "1",

@@ -320,12 +320,10 @@ export default function Administrative({
   const [penyeliaName, setPenyeliaName] = useState<Record<number, string>>({});
 
   const respPersonData: Record<string, string> = {
-    "Agah Faisal, M.Sc.": "198102142006041004",
-    "Lukluk Khairiyati, M.T.": "197911292006042005",
-    "Nibras Fitrah Yayienda, M.T.": "199107212015032001",
-    "Hayati Amalia, M.T.": "199009212015022002",
-    "Azka Quamila Yusrina, S.T.": "199610192022032010",
-    "Arif Muhamad Fadli, S.Si.": "199802232022031001",
+    "Dr. Aditya Achmadi, S.Si., M.T.": "198109032005021002",
+    "Melati Azizka Fajria, S.Si., M.Si.": "198912252015022001",
+    "Kelvin Sapta Dewantara, S.Si.": "199709242022031003",
+    "Arief Gunawan, S.Si., MPP., M.E.": "198904172014021002",
     "Dyah Styarini, M.Si.": "197910302005022002",
     "Dr. Ghufron Zaid": "197111041990121001"
   };
@@ -1266,12 +1264,10 @@ export default function Administrative({
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="Agah Faisal, M.Sc.">Agah Faisal, M.Sc.</SelectItem>
-                                  <SelectItem value="Lukluk Khairiyati, M.T.">Lukluk Khairiyati, M.T.</SelectItem>
-                                  <SelectItem value="Nibras Fitrah Yayienda, M.T.">Nibras Fitrah Yayienda, M.T.</SelectItem>
-                                  <SelectItem value="Hayati Amalia, M.T.">Hayati Amalia, M.T.</SelectItem>
-                                  <SelectItem value="Azka Quamila Yusrina, S.T.">Azka Quamila Yusrina, S.T.</SelectItem>
-                                  <SelectItem value="Arif Muhamad Fadli, S.Si.">Arif Muhamad Fadli, S.Si.</SelectItem>
+                                  <SelectItem value="Dr. Aditya Achmadi, S.Si., M.T.">Dr. Aditya Achmadi, S.Si., M.T.</SelectItem>
+                                  <SelectItem value="Melati Azizka Fajria, S.Si., M.Si.">Melati Azizka Fajria, S.Si., M.Si.</SelectItem>
+                                  <SelectItem value="Kelvin Sapta Dewantara, S.Si.">Kelvin Sapta Dewantara, S.Si</SelectItem>
+                                  <SelectItem value="Arief Gunawan, S.Si., MPP., M.E.">Arief Gunawan, S.Si., MPP., M.E.</SelectItem>
                                   <SelectItem value="other">{t("other")}</SelectItem>
                                 </SelectContent>
                               </Select>
@@ -1376,12 +1372,10 @@ export default function Administrative({
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="Agah Faisal, M.Sc.">Agah Faisal, M.Sc.</SelectItem>
-                                  <SelectItem value="Lukluk Khairiyati, M.T.">Lukluk Khairiyati, M.T.</SelectItem>
-                                  <SelectItem value="Nibras Fitrah Yayienda, M.T.">Nibras Fitrah Yayienda, M.T.</SelectItem>
-                                  <SelectItem value="Hayati Amalia, M.T.">Hayati Amalia, M.T.</SelectItem>
-                                  <SelectItem value="Azka Quamila Yusrina, S.T.">Azka Quamila Yusrina, S.T.</SelectItem>
-                                  <SelectItem value="Arif Muhamad Fadli, S.Si.">Arif Muhamad Fadli, S.Si.</SelectItem>
+                                  <SelectItem value="Dr. Aditya Achmadi, S.Si., M.T.">Dr. Aditya Achmadi, S.Si., M.T.</SelectItem>
+                                  <SelectItem value="Melati Azizka Fajria, S.Si., M.Si.">Melati Azizka Fajria, S.Si., M.Si.</SelectItem>
+                                  <SelectItem value="Kelvin Sapta Dewantara, S.Si.">Kelvin Sapta Dewantara, S.Si.</SelectItem>
+                                  <SelectItem value="Arief Gunawan, S.Si., MPP., M.E.">Arief Gunawan, S.Si., MPP., M.E.</SelectItem>
                                   <SelectItem value="other">{t("other")}</SelectItem>
                                 </SelectContent>
                               </Select>
@@ -1460,7 +1454,7 @@ export default function Administrative({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="Agah Faisal, M.Sc.">Agah Faisal, M.Sc.</SelectItem>
+                              <SelectItem value="Dr. Aditya Achmadi, S.Si., M.T.">Dr. Aditya Achmadi, S.Si., M.T.</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

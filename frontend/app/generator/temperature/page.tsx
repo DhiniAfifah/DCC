@@ -1,4 +1,5 @@
 import DccFormWrapper from "@/components/DccFormWrapper";
+import Administrative from "@/components/administrative-temperature";
 import Measurement from "@/components/measurement-temperature";
 import { Thermometer } from "lucide-react";
 import { pt25Template, pt100Template, blankTemplate } from "./templates";
@@ -23,6 +24,7 @@ export default function CreateDCC() {
           data: pt100Template
         }
       }}
+      AdministrativeComponent={Administrative}
       MeasurementComponent={Measurement}
     />
   );
