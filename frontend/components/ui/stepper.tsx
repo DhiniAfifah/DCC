@@ -8,7 +8,7 @@ interface StepperProps {
 
 export default function Stepper({ currentStep, steps, onStepClick }: StepperProps) {
   return (
-    <div className="w-full py-6">
+    <div className="w-full my-6">
       <div className="flex items-center justify-center">
         {steps.map((step, index) => (
           <div key={index} className="flex items-center">

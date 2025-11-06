@@ -1153,7 +1153,7 @@ async def generate_preview(
         
         # Process images for preview (same as in create_dcc but for preview)
         for method in dcc.methods:
-            for image in method.image:
+            if method.has_image and method.image:
                 for image in method.image:
                     if image and image.gambar:
                         filename = image.gambar

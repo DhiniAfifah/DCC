@@ -104,7 +104,7 @@ export default function ProtectedRoute({
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center text-gray-600">
           <Spinner className="h-12 w-12 mx-auto mb-4 stroke-[1]" />
-          <p>{t("generate")}...</p>
+          <p>{t("verify_session")}...</p>
         </div>
       </div>
     );

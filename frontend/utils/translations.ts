@@ -68,10 +68,11 @@ const translations: Record<string, { id: string; en: string }> = {
   preview: { id: "Pratinjau", en: "Preview" },
 
   template: { id: "Pilih template...", en: "Select template..." },
-  using: { id: "menggunakan", en: "using" },
-  blank: { id: "Kosong", en: "Blank" },
+  multimeter: { id: "Digital Multimeter menggunakan Fluke 5730A", en: "Digital Multimeter using Fluke 5730A" },
+  calibrator: { id: "Multiproduct Calibrator menggunakan Fluke 8508A", en: "Multiproduct Calibrator using Fluke 8508A" },
   pt25: { id: "Kalibrasi SPRT Pt-25", en: "SPRT Pt-25 Calibration" },
   pt100: { id: "Kalibrasi SPRT Pt-100", en: "SPRT Pt-100 Calibration" },
+  blank: { id: "Kosong", en: "Blank" },
 
   asterisk: {
     id: "Menandakan pertanyaan wajib",
