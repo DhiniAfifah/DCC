@@ -15,17 +15,8 @@ export default function DashboardClient({ data }: { data: Certificate[] }) {
     document.title = "Dashboard | DiCCA";
   }, []);
 
-  // Filter data based on user role on the client side
+  // No client-side filtering - backend handles it now
   const filteredData = useMemo(() => {
-    if (isHead()) {
-      return data.filter((cert) =>
-        ["pending_head", "approved_head", "rejected_head", "approved_director", "rejected_director"].includes(cert.status)
-      );
-    } else if (isDirector()) {
-      return data.filter((cert) =>
-        ["approved_head", "approved_director", "rejected_director"].includes(cert.status)
-      );
-    }
     return data;
   }, [data]);
 

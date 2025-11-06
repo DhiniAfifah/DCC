@@ -945,12 +945,101 @@ async def view_dcc_xml(dcc_id: int, db: Session = Depends(get_db)):
 @app.get("/api/dcc/list")
 async def get_dcc_list(
     db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user),
     skip: int = 0
 ):
-    """Get list of all DCC certificates for dashboard"""
+    """Get list of DCC certificates for dashboard - filtered by user role and assignment"""
     try:
-        # Fetch all DCC records from database
-        dcc_list = db.query(models.DCC).options(joinedload(models.DCC.submitter)).offset(skip).all()
+        logging.info(f"📋 Fetching DCC list for user: {current_user.email} (Role: {current_user.role})")
+        
+        # Start with base query
+        query = db.query(models.DCC).options(joinedload(models.DCC.submitter))
+        
+        # Filter based on user role
+        if current_user.role == UserRole.head:
+            logging.info(f"🔍 Filtering DCCs for lab head: {current_user.full_name}")
+            # For lab heads, only show DCCs where they are assigned as kepala
+            all_dccs = query.all()
+            filtered_dccs = []
+            
+            for dcc in all_dccs:
+                try:
+                    responsible_persons = dcc.responsible_persons
+                    if isinstance(responsible_persons, str):
+                        responsible_persons = json.loads(responsible_persons)
+                    
+                    # Check if current user is the kepala for this DCC
+                    kepala_data = responsible_persons.get('kepala', {})
+                    kepala_name = kepala_data.get('nama_resp', '')
+                    kepala_nip = kepala_data.get('nip', '')
+                    
+                    logging.debug(f"DCC {dcc.id}: Kepala={kepala_name}, NIP={kepala_nip}")
+                    logging.debug(f"Current user: Name={current_user.full_name}, NIP={current_user.nip}")
+                    
+                    # Match by full name or NIP
+                    if (kepala_name == current_user.full_name or 
+                        kepala_nip == current_user.nip):
+                        filtered_dccs.append(dcc)
+                        logging.info(f"✅ DCC {dcc.id} matches user - included")
+                    else:
+                        logging.debug(f"❌ DCC {dcc.id} does not match user - excluded")
+                
+                except Exception as e:
+                    logging.warning(f"Error filtering DCC {dcc.id} for head: {e}")
+                    continue
+            
+            dcc_list = filtered_dccs
+            logging.info(f"📊 Found {len(filtered_dccs)} DCCs for {current_user.full_name}")
+        
+        elif current_user.role == UserRole.director:
+            logging.info(f"🔍 Filtering DCCs for director: {current_user.full_name}")
+            # Directors see DCCs where they are assigned as direktur and approved by heads
+            all_dccs = query.filter(
+                models.DCC.status.in_([
+                    DCCStatusEnum.approved_head,
+                    DCCStatusEnum.approved_director,
+                    DCCStatusEnum.rejected_director
+                ])
+            ).all()
+            
+            filtered_dccs = []
+            
+            for dcc in all_dccs:
+                try:
+                    responsible_persons = dcc.responsible_persons
+                    if isinstance(responsible_persons, str):
+                        responsible_persons = json.loads(responsible_persons)
+                    
+                    # Check if current user is the direktur for this DCC
+                    direktur_data = responsible_persons.get('direktur', {})
+                    direktur_name = direktur_data.get('nama_resp', '')
+                    direktur_nip = direktur_data.get('nip', '')
+                    
+                    logging.debug(f"DCC {dcc.id}: Direktur={direktur_name}, NIP={direktur_nip}")
+                    logging.debug(f"Current user: Name={current_user.full_name}, NIP={current_user.nip}")
+                    
+                    # Match by full name or NIP
+                    if (direktur_name == current_user.full_name or 
+                        direktur_nip == current_user.nip):
+                        filtered_dccs.append(dcc)
+                        logging.info(f"✅ DCC {dcc.id} matches user - included")
+                    else:
+                        logging.debug(f"❌ DCC {dcc.id} does not match user - excluded")
+                
+                except Exception as e:
+                    logging.warning(f"Error filtering DCC {dcc.id} for director: {e}")
+                    continue
+            
+            dcc_list = filtered_dccs
+            logging.info(f"📊 Found {len(filtered_dccs)} DCCs for director {current_user.full_name}")
+        
+        else:
+            logging.info(f"🔍 Filtering DCCs for regular user: {current_user.email}")
+            # Regular users see their own submissions
+            dcc_list = query.filter(
+                models.DCC.submitter_id == current_user.id
+            ).offset(skip).all()
+            logging.info(f"📊 Found {len(dcc_list)} DCCs for user")
         
         # Transform to match frontend expectations
         result = []
@@ -993,22 +1082,79 @@ async def get_dcc_list(
                 
             except (json.JSONDecodeError, AttributeError) as e:
                 logging.warning(f"Error parsing DCC {dcc.id}: {e}")
-                # Still include the record with basic info
-                result.append({
-                    "id": dcc.id,
-                    "created_at": "",
-                    "administrative_data": {"sertifikat": ""},
-                    "Measurement_TimeLine": {},
-                    "objects_description": [{"jenis": {"en": ""}}],
-                    "submitter": "",
-                    "responsible_persons": {"pelaksana": [{"name": ""}], "kepala": {"peran": ""}},
-                    "status": "pending_head"
-                })
+                continue
         
         return result
         
     except Exception as e:
-        logging.error(f"Error fetching DCC list: {e}")
+        logging.error(f"Error fetching DCC list: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to fetch DCC list")
+
+@app.get("/api/dcc/list_generator")
+async def get_dcc_list_generator(
+    db: Session = Depends(get_db),
+    current_user: schemas.User = Depends(get_current_user),
+    skip: int = 0
+):
+    """Get list of DCC certificates for dashboard - filtered by user role and assignment"""
+    try:
+        logging.info(f"📋 Fetching DCC list for user: {current_user.email} (Role: {current_user.role})")
+        
+        # Start with base query
+        query = db.query(models.DCC).options(joinedload(models.DCC.submitter))
+        
+        logging.info(f"🔍 Filtering DCCs for regular user: {current_user.email}")
+        # Regular users see their own submissions
+        dcc_list = query.filter(
+            models.DCC.submitter_id == current_user.id
+        ).offset(skip).all()
+        logging.info(f"📊 Found {len(dcc_list)} DCCs for user")
+        
+        # Transform to match frontend expectations
+        result = []
+        for dcc in dcc_list:
+            try:
+                created_at_str = dcc.created_at.strftime('%Y-%m-%d') if dcc.created_at else None
+
+                administrative_data = dcc.administrative_data
+                if isinstance(administrative_data, str):
+                    administrative_data = json.loads(administrative_data)
+                    
+                measurement_timeline = dcc.Measurement_TimeLine
+                if isinstance(measurement_timeline, str):
+                    measurement_timeline = json.loads(measurement_timeline)
+                    
+                objects_description = dcc.objects_description
+                if isinstance(objects_description, str):
+                    objects_description = json.loads(objects_description)
+                
+                submitter_name = ""
+                if dcc.submitter:
+                    submitter_name = dcc.submitter.full_name or dcc.submitter.email
+                    
+                responsible_persons = dcc.responsible_persons
+                if isinstance(responsible_persons, str):
+                    responsible_persons = json.loads(responsible_persons)
+                
+                result.append({
+                    "id": dcc.id,
+                    "created_at": created_at_str,
+                    "administrative_data": administrative_data,
+                    "Measurement_TimeLine": measurement_timeline,
+                    "objects_description": objects_description,
+                    "submitter": submitter_name,
+                    "responsible_persons": responsible_persons,
+                    "status": getattr(dcc, 'status', 'pending_head')
+                })
+                
+            except (json.JSONDecodeError, AttributeError) as e:
+                logging.warning(f"Error parsing DCC {dcc.id}: {e}")
+                continue
+        
+        return result
+        
+    except Exception as e:
+        logging.error(f"Error fetching DCC list: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch DCC list")
 
 class StatusUpdateRequest(BaseModel):

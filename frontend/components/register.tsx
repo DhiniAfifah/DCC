@@ -27,6 +27,7 @@ export default function Register({ formData }: { formData: any }) {
     () =>
       z.object({
         username: z.string().min(1, { message: t("name_required")}),
+        nip: z.string().min(1, { message: t("nip_required")}),
         email: z.string().email(t("invalid_email")), 
         password: z.string().min(1, t("password_required")),
       }),
@@ -34,7 +35,7 @@ export default function Register({ formData }: { formData: any }) {
   );
 
   const [initialFormData, setInitialFormData] = useState(
-    formData || { username: "", email: "", password: "" }
+    formData || { username: "", nip: "", email: "", password: "" }
   );
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function Register({ formData }: { formData: any }) {
   const [showPassword, setShowPassword] = useState(false)
 
   // Fungsi untuk menangani register
-  const onSubmit = async (data: { username: string; email: string; password: string }) => {
+  const onSubmit = async (data: { username: string; nip: string; email: string; password: string }) => {
     setIsLoading(true);
     setErrorMessage(null);
 
@@ -61,9 +62,10 @@ export default function Register({ formData }: { formData: any }) {
       const response = await axios.post(
         "http://127.0.0.1:8000/register",
         {
+          full_name: data.username,
+          nip: data.nip,
           email: data.email,
           password: data.password,
-          full_name: data.username,
         },
         {
           headers: { "Content-Type": "application/json" },
@@ -85,7 +87,7 @@ export default function Register({ formData }: { formData: any }) {
       <div className="flex flex-col gap-1">
         <Card className="overflow-hidden p-0 border border-gray-400">
           <CardContent className="grid p-0 md:grid-cols-2">
-            <form className="p-6 md:p-8" onSubmit={form.handleSubmit(onSubmit)}>
+            <form className="px-6 pt-6 pb-3" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col items-center text-center">
                   <h1 className="text-2xl font-bold">{t("welcome")}</h1>
@@ -96,84 +98,99 @@ export default function Register({ formData }: { formData: any }) {
                 <div id="username" className="grid gap-1">
                   <FormLabel>{t("nama")}</FormLabel>
                   <FormField
-                      control={form.control}
-                      name="username"
-                      render={({ field }) => (
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
                       <FormItem>
-                          <FormControl>
+                        <FormControl>
                           <Input {...field} required disabled={isLoading} />
-                          </FormControl>
-                          <FormMessage />
+                        </FormControl>
+                        <FormMessage />
                       </FormItem>
-                      )}
+                    )}
+                  />
+                </div>
+                <div id="nip" className="grid gap-1">
+                  <FormLabel>{t("nip")}</FormLabel>
+                  <FormField
+                    control={form.control}
+                    name="nip"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input {...field} required disabled={isLoading} placeholder={`${t('no_space')}`} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 </div>
                 <div id="email">
                   <FormLabel>{t("email")}</FormLabel>
                   <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
                       <FormItem>
-                          <FormControl>
+                        <FormControl>
                           <Input {...field} type="email" required disabled={isLoading} />
-                          </FormControl>
-                          <FormMessage />
+                        </FormControl>
+                        <FormMessage />
                       </FormItem>
-                      )}
+                    )}
                   />
                 </div>
                 <div id="password">
                   <FormLabel>{t("password")}</FormLabel>
                   <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                      <FormItem>
-                          <FormControl>
-                            <div className="relative">
-                              <Input 
-                                {...field} 
-                                type={showPassword ? "text" : "password"} 
-                                disabled={isLoading}
-                              />
-                              <button
-                                type="button"
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
-                                onClick={() => setShowPassword(!showPassword)}
-                                disabled={isLoading}
-                              >
-                                {showPassword ? (
-                                  <Eye className="h-4 w-4" />
-                                ) : (
-                                  <EyeOff className="h-4 w-4" />
-                                )}
-                              </button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                      </FormItem>
-                      )}
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <div className="relative">
+                          <Input 
+                            {...field} 
+                            type={showPassword ? "text" : "password"} 
+                            disabled={isLoading}
+                          />
+                          <button
+                            type="button"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                            onClick={() => setShowPassword(!showPassword)}
+                            disabled={isLoading}
+                          >
+                            {showPassword ? (
+                              <Eye className="h-4 w-4" />
+                            ) : (
+                              <EyeOff className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                    )}
                   />
                 </div>
-                <div className="text-center">
-                  {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
-                  <Button 
-                    variant="green" 
-                    type="submit"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? t("registering") : t("register")}
-                  </Button>
-                </div>
-                <div className="text-center text-sm">
-                  {t("to_login")}{" "}
-                  <Button variant="link" className="p-0">
-                    <a href="/">
-                      {t("login")}
-                    </a>
-                  </Button>
-                </div>
+              </div>
+              <div className="text-center mt-4">
+                {errorMessage && <p className="text-red-600"><small>{errorMessage}</small></p>}
+                <Button 
+                  variant="green" 
+                  type="submit"
+                  disabled={isLoading}
+                >
+                  {isLoading ? t("registering") : t("register")}
+                </Button>
+              </div>
+              <div className="text-center text-sm">
+                {t("to_login")}{" "}
+                <Button variant="link" className="p-0">
+                  <a href="/">
+                    {t("login")}
+                  </a>
+                </Button>
               </div>
             </form>
             <div className="bg-muted relative hidden md:block">

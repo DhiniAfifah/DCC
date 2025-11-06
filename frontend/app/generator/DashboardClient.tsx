@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "sonner"
+import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Draft {
   id: number;
@@ -20,18 +22,44 @@ interface Draft {
 
 export default function DashboardClient() {
   const { t } = useLanguage();
+  const router = useRouter();
 
   const [data, setData] = useState<Certificate[]>([]);
+  const [isLoadingDCCs, setIsLoadingDCCs] = useState(true);
 
   async function getData(): Promise<Certificate[]> {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/dcc/list", {
+      // Get token from cookies
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('access_token='))
+        ?.split('=')[1];
+
+      if (!token) {
+        console.error('No authentication token found');
+        router.push('/');
+        return [];
+      }
+
+      console.log("Fetching DCCs with token:", token ? "present" : "missing");
+
+      const response = await fetch("http://127.0.0.1:8000/api/dcc/list_generator", {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
         cache: "no-store",
       });
 
+      console.log("Fetch DCCs response status:", response.status);
+
       if (!response.ok) {
+        if (response.status === 401) {
+          console.error("Unauthorized - redirecting to login");
+          router.push('/');
+          return [];
+        }
         if (response.status === 403) {
           console.error("Access denied - Officer role required");
           return [];
@@ -59,7 +87,13 @@ export default function DashboardClient() {
   }
 
   useEffect(() => {
-    getData().then((data) => setData(data));
+    const fetchData = async () => {
+      setIsLoadingDCCs(true);
+      const dccData = await getData();
+      setData(dccData);
+      setIsLoadingDCCs(false);
+    };
+    fetchData();
   }, []);
 
   const [drafts, setDrafts] = useState<Draft[]>([]);
@@ -73,8 +107,18 @@ export default function DashboardClient() {
   const fetchDrafts = async () => {
     try {
       setIsLoadingDrafts(true);
-      const token = localStorage.getItem("access_token");
       
+      // Get token from cookies (more reliable than localStorage)
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('access_token='))
+        ?.split('=')[1];
+      
+      if (!token) {
+        console.error('No authentication token found for drafts');
+        return;
+      }
+
       console.log("Fetching drafts with token:", token ? "present" : "missing");
       
       const response = await fetch("http://127.0.0.1:8000/api/drafts/", {
@@ -86,6 +130,10 @@ export default function DashboardClient() {
       console.log("Fetch drafts response status:", response.status);
 
       if (!response.ok) {
+        if (response.status === 401) {
+          console.error("Unauthorized - token may be invalid");
+          return;
+        }
         const errorText = await response.text();
         console.error("Fetch drafts error:", errorText);
         throw new Error(`Failed to fetch drafts: ${response.status}`);
@@ -104,8 +152,18 @@ export default function DashboardClient() {
 
   const handleDeleteDraft = async (draftId: number) => {
     try {
-      const token = localStorage.getItem("access_token");
+      // Get token from cookies
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('access_token='))
+        ?.split('=')[1];
       
+      if (!token) {
+        console.error('No authentication token found');
+        toast.error(t("authentication_required"));
+        return;
+      }
+
       const response = await fetch(`http://127.0.0.1:8000/api/drafts/${draftId}`, {
         method: "DELETE",
         headers: {
@@ -164,7 +222,16 @@ export default function DashboardClient() {
         </div>
       </div>
       
-      <DataTable columns={columns} data={data} />
+      {isLoadingDCCs ? (
+        <div className="flex justify-center items-center py-8">
+          <div className="text-center text-gray-600">
+            <Spinner className="h-12 w-12 mx-auto stroke-[1]" />
+            <p className="mt-4">{t("loading")}...</p>
+          </div>
+        </div>
+      ) : (
+        <DataTable columns={columns} data={data} />
+      )}
     </div>
   );
 }

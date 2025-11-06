@@ -62,6 +62,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     full_name = Column(String, nullable=True)
+    nip = Column(String, nullable=True)
     disabled = Column(Boolean, default=False)
     role = Column(Enum(UserRole), default=UserRole.user)
     drafts = relationship("Draft", back_populates="user", cascade="all, delete-orphan")

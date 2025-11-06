@@ -207,6 +207,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
     full_name: Optional[str] = None
+    nip: Optional[str] = None
     role: UserRole = UserRole.user
 
 class User(UserBase):

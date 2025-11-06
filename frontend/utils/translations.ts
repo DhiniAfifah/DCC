@@ -30,6 +30,8 @@ const translations: Record<string, { id: string; en: string }> = {
   welcome: { id: "Selamat datang!", en: "Welcome!" },
   register_account: { id: "Daftar akun baru", en: "Register a new account" },
   name_required: { id: "Nama wajib diisi", en: "Name is required" },
+  nip_required: { id: "NIP wajib diisi", en: "ID number is required" },
+  no_space: { id: "(tidak ada spasi)", en: "(no spaces)" },
   register: { id: "Daftar", en: "Register" },
   registering: { id: "Mendaftar...", en: "Registering..." },
   register_fail: { id: "Gagal mendaftar, silakan coba lagi.", en: "Registration failed, please try again." },

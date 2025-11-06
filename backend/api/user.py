@@ -18,6 +18,19 @@ def get_user_by_email(db: Session, email: str) -> models.User | None:
     """
     return db.query(models.User).filter(models.User.email == email).first()
 
+def get_user_by_nip(db: Session, nip: str) -> models.User | None:
+    """
+    Mendapatkan user berdasarkan NIP
+    
+    Args:
+        db: Session database
+        nip: NIP user yang dicari
+    
+    Returns:
+        User object jika ditemukan, None jika tidak
+    """
+    return db.query(models.User).filter(models.User.nip == nip).first()
+
 def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     """
     Membuat user baru di database
@@ -42,7 +55,8 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
         email=user.email,
         hashed_password=hashed_password,
         full_name=user.full_name,
-        role=user.role
+        role=user.role,
+        nip=user.nip
     )
     
     # Simpan ke database
