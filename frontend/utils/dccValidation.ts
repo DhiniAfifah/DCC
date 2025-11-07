@@ -111,11 +111,15 @@ function validateMeasurementForm(formData: any, usedLanguages: any[], errors: st
     });
   }
 
+  // Validate excel
+  if (!formData.excel) errors.push(t("excel_file") + t("required"));
+  if (!formData.sheet_name?.trim()) errors.push(t("sheet") + t("required"));
+
   // Validate results
   if (!formData.results?.length) {
     errors.push(t("at_least_one") + "parameter" + t("required"));
   } else {
-    validateResults(formData.results, usedLanguages, errors, t);
+    validateResults(formData.results, usedLanguages, errors, t, formData.form_type);
   }
 }
 
@@ -234,7 +238,7 @@ function validateOwner(formData: any, errors: string[], t: (key: string) => stri
   if (!formData.owner.negara_cust?.trim()) errors.push(t("negara_cust") + t("required"));
 }
 
-function validateResults(results: any[], usedLanguages: any[], errors: string[], t: (key: string) => string) {
+function validateResults(results: any[], usedLanguages: any[], errors: string[], t: (key: string) => string, formType?: string) {
   results.forEach((result: any, index: number) => {
     validateMultilingualField(result.parameters, `Parameter ${index + 1}: ${t("judul")}`, usedLanguages, errors, t);
     
@@ -242,10 +246,15 @@ function validateResults(results: any[], usedLanguages: any[], errors: string[],
       errors.push(`Parameter ${index + 1}: ${t("at_least_one")}${t("kolom")}${t("required")}`);
     } else {
       result.columns.forEach((col: any, colIndex: number) => {
-        validateMultilingualField(col.kolom, `Parameter ${index + 1}, ${t("kolom")}${colIndex + 1}: ${t("kolom_name")}`, usedLanguages, errors, t);
+        validateMultilingualField(col.kolom, `Parameter ${index + 1}, ${t("kolom")} ${colIndex + 1}: ${t("kolom_name")}`, usedLanguages, errors, t);
         
-        if (!col.refType?.trim()) errors.push(`Parameter ${index + 1}, ${t("kolom")}${colIndex + 1}: ${t("refType")}${t("required")}`);
-        if (!col.real_list?.trim()) errors.push(`Parameter ${index + 1}, ${t("kolom")}${colIndex + 1}: ${t("subkolom")}${t("required")}`);
+        if (!col.refType?.trim()) errors.push(`Parameter ${index + 1}, ${t("kolom")} ${colIndex + 1}: ${t("refType")}${t("required")}`);
+        if (!col.real_list?.trim()) errors.push(`Parameter ${index + 1}, ${t("kolom")} ${colIndex + 1}: ${t("subkolom")}${t("required")}`);
+        
+        // Only validate column_unit for temperature forms
+        if (formType === 'temperature' && !col.column_unit?.unit?.trim()) {
+          errors.push(`Parameter ${index + 1}, ${t("kolom")} ${colIndex + 1}: ${t("satuan")}${t("required")}`);
+        }
       });
     }
     

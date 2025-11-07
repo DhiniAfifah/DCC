@@ -134,18 +134,54 @@ function prepareFormData(formData: any, fileName: string) {
     }),
     results: formData.results.map((result: any) => ({
       parameters: result.parameters,
-      columns: result.columns.map((col: any) => ({
-        kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
-        real_list: Number(col.real_list) || 1,
-        refType: col.refType || "",
-      })),
+      columns: result.columns.map((col: any) => {
+        const columnData: any = {
+          kolom: Array.isArray(col.kolom) ? col.kolom[0] || "" : col.kolom,
+          real_list: Number(col.real_list) || 1,
+          refType: col.refType || "",
+        };
+        
+        // Only include column_unit for temperature forms
+        if (formData.form_type === 'temperature' && col.column_unit) {
+          columnData.column_unit = {
+            prefix: col.column_unit.prefix || "",
+            unit: col.column_unit.unit || "",
+            eksponen: col.column_unit.eksponen || "",
+          };
+        }
+        
+        return columnData;
+      }),
       uncertainty: result.uncertainty
         ? {
             factor: result.uncertainty.factor || "0",
             probability: result.uncertainty.probability || "0",
             distribution: result.uncertainty.distribution || "",
+            
+            // Onclude real_list and uncertainty_unit for temperature forms
+            ...(formData.form_type === 'temperature' && result.uncertainty.uncertainty_unit ? {
+              real_list: Number(result.uncertainty.real_list) || 1,
+              uncertainty_unit: {
+                prefix: result.uncertainty.uncertainty_unit.prefix || "",
+                unit: result.uncertainty.uncertainty_unit.unit || "",
+                eksponen: result.uncertainty.uncertainty_unit.eksponen || "",
+              }
+            } : {})
           }
-        : { factor: "0", probability: "0", distribution: "" },
+        : { 
+            factor: "0", 
+            probability: "0", 
+            distribution: "",
+            
+            ...(formData.form_type === 'temperature' ? {
+              real_list: 1,
+              uncertainty_unit: {
+                prefix: "",
+                unit: "",
+                eksponen: "",
+              }
+            } : {})
+          },
     })),
     excel: fileName,
   };
@@ -249,6 +285,10 @@ export async function generatePreview(
     setIsProcessingPreview(true);
 
     const modifiedFormData = prepareFormData(formData, fileName);
+    const sanitizedData = sanitizeData(modifiedFormData);
+    
+    // Log the data being sent to backend
+    console.log("Preview data being sent to backend:", JSON.stringify(sanitizedData, null, 2));
 
     const response = await fetch("http://127.0.0.1:8000/generate-preview/", {
       method: "POST",

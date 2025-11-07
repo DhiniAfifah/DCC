@@ -9,6 +9,7 @@ interface UseDccFormProps {
 }
 
 interface FormState {
+  form_type?: string;
   software: string;
   version: string;
   Measurement_TimeLine: {
@@ -37,7 +38,10 @@ export function useDccForm({ formType, blankTemplate, templates = {} }: UseDccFo
   const [currentStep, setCurrentStep] = useState(0);
   const [fileName, setFileName] = useState<string>("");
   const [selectedTemplate, setSelectedTemplate] = useState("");
-  const [formData, setFormData] = useState<FormState>(blankTemplate);
+  const [formData, setFormData] = useState<FormState>({
+    ...blankTemplate,
+    form_type: formType
+  });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImages, setUploadedImages] = useState<{
     methods: { [key: string]: File }[];
@@ -141,6 +145,7 @@ export function useDccForm({ formType, blankTemplate, templates = {} }: UseDccFo
       
       return {
         ...prev,
+        form_type: prev.form_type || formType, // Preserve or set form_type
         ...data,
         administrative_data: {
           ...prev.administrative_data,
@@ -181,7 +186,7 @@ export function useDccForm({ formType, blankTemplate, templates = {} }: UseDccFo
           : prev.statements,
       };
     });
-  }, []);
+  }, [formType]);
 
   // Load draft from URL
   const loadDraft = async (draftId: string) => {
