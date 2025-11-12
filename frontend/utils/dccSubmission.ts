@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { getAccessToken } from "@/utils/auth"
 
 const isFile = (value: any): value is File => {
   return (
@@ -24,10 +25,7 @@ export async function handleDccSubmission(
   setProgressMessage(t("preparing"));
   setProgressPercent(0);
 
-  const token = document.cookie
-    .split('; ')
-    .find(row => row.startsWith('access_token='))
-    ?.split('=')[1];
+  const token = getAccessToken();
 
   if (!token) {
     toast.error("Authentication required", {

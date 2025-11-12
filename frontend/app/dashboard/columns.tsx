@@ -14,7 +14,8 @@ import {
   FileText, 
   FileCode, 
   SquareArrowOutUpRight, 
-  MessageSquareText } from "lucide-react"
+  MessageSquareText 
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -34,7 +35,7 @@ import {
   TooltipTrigger,
   TooltipProvider
 } from "@/components/ui/tooltip"
-import { isDirector, isHead } from "@/utils/auth"
+import { isDirector, isHead, getAccessToken } from "@/utils/auth"
 import {
   Dialog,
   DialogContent,
@@ -68,10 +69,7 @@ type StatusType =
 
 const downloadDCCPDF = async (id: number, certificateId: string) => {
   try {
-    const token = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('access_token='))
-      ?.split('=')[1];
+    const token = getAccessToken();
 
     const response = await fetch(`http://127.0.0.1:8000/download-dcc-pdf/${id}`, {
       method: 'GET',
@@ -113,10 +111,7 @@ const downloadDCCPDF = async (id: number, certificateId: string) => {
 
 const downloadDCCXML = async (id: number, certificateId: string) => {
   try {
-    const token = document.cookie
-      .split('; ')
-      .find(row => row.startsWith('access_token='))
-      ?.split('=')[1];
+    const token = getAccessToken();
 
     const response = await fetch(`http://127.0.0.1:8000/download-dcc-xml/${id}`, {
       method: 'GET',
@@ -156,6 +151,350 @@ const downloadDCCXML = async (id: number, certificateId: string) => {
   }
 };
 
+function ViewDialog({ 
+  certificate, 
+  open, 
+  onOpenChange 
+}: { 
+  certificate: Certificate; 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { t } = useLanguage();
+  const [pdfError, setPdfError] = useState(false);
+  const [xmlText, setXmlText] = useState<string | null>(null);
+  const [xmlLoading, setXmlLoading] = useState(false);
+  const [xmlError, setXmlError] = useState<string | null>(null);
+
+  const pdfUrl = `http://127.0.0.1:8000/view-dcc-pdf/${certificate.id}`;
+  const xmlUrl = `http://127.0.0.1:8000/view-dcc-xml/${certificate.id}`;
+
+  const handlePdfError = () => setPdfError(true);
+  const handlePdfLoad = () => setPdfError(false);
+
+  const formatXml = (xmlDoc: Document) => {
+    const serializer = new XMLSerializer();
+    const xmlString = serializer.serializeToString(xmlDoc.documentElement);
+    const PADDING = "  ";
+    const reg = /(>)(<)(\/*)/g;
+    let xml = xmlString.replace(reg, "$1\r\n$2$3");
+    let pad = 0;
+    return xml.split("\r\n").map((node) => {
+      let indent = "";
+      if (node.match(/.+<\/\w[^>]*>$/)) {
+        indent = PADDING.repeat(pad);
+      } else if (node.match(/^<\/\w/)) {
+        pad = Math.max(pad - 1, 0);
+        indent = PADDING.repeat(pad);
+      } else if (node.match(/^<\w([^>]*[^/])?>.*$/)) {
+        indent = PADDING.repeat(pad);
+        pad++;
+      } else {
+        indent = PADDING.repeat(pad);
+      }
+      return indent + node;
+    }).join("\n");
+  };
+
+  useEffect(() => {
+    const fetchXml = async () => {
+      if (!open) return;
+      
+      setXmlText(null);
+      setXmlError(null);
+      setXmlLoading(true);
+      
+      try {
+        const res = await fetch(xmlUrl, { method: 'GET' });
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        const text = await res.text();
+
+        try {
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(text, "application/xml");
+          const parserError = xmlDoc.getElementsByTagName("parsererror")[0];
+          if (parserError) {
+            setXmlText(text);
+          } else {
+            const pretty = formatXml(xmlDoc);
+            setXmlText(pretty);
+          }
+        } catch (e) {
+          setXmlText(text);
+        }
+      } catch (err: any) {
+        setXmlError(err?.message || "Failed to fetch XML");
+      } finally {
+        setXmlLoading(false);
+      }
+    };
+
+    fetchXml();
+  }, [open, xmlUrl]);
+
+  const handleDownloadPDF = async () => {
+    try {
+      await downloadDCCPDF(certificate.id, certificate.certificateId);
+    } catch (error) {
+      toast.error(`Failed to download PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleDownloadXML = async () => {
+    try {
+      await downloadDCCXML(certificate.id, certificate.certificateId);
+    } catch (error) {
+      toast.error(`Failed to download XML: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleViewPdf = (url: string) => {
+    window.open(url, '_blank');
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[95vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
+        <DialogHeader>
+          <DialogTitle>{t("view")} {certificate.certificateId}</DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex-1 overflow-y-auto space-y-6 py-4">
+          <div id="xml" className="border rounded-lg p-4">
+            <div className='flex justify-between items-center mb-4'>
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <FileCode className="w-5 h-5 text-green-600" />
+                XML
+              </h3>
+              <div className="flex gap-3">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => window.open(xmlUrl, '_blank')}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <SquareArrowOutUpRight className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("tab")}</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleDownloadXML}
+                      variant="blue"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("download")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+
+            {xmlLoading ? (
+              <p className="text-sm text-gray-600">{t("loading")}...</p>
+            ) : xmlError ? (
+              <div className="text-sm text-red-600">
+                {t("xml_error")}: {xmlError}
+              </div>
+            ) : xmlText ? (
+              <ScrollArea className="h-[300px] w-full pr-2">
+                <SyntaxHighlighter
+                  language="xml"
+                  style={coy}
+                  customStyle={{
+                    fontSize: "0.875rem",
+                    background: "transparent",
+                    margin: 0,
+                    width: "max-content",
+                  }}
+                >
+                  {xmlText}
+                </SyntaxHighlighter>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            ) : (
+              <p className="text-sm text-gray-600">{t("loading")}...</p>
+            )}
+          </div>
+
+          <div id="pdf" className="border rounded-lg p-4">
+            <div className='flex justify-between items-center mb-4'>
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <FileText className="w-5 h-5 text-red-600" />
+                PDF
+              </h3>
+              <div className="flex gap-3">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => handleViewPdf(pdfUrl)}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <SquareArrowOutUpRight className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("tab")}</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={handleDownloadPDF}
+                      variant="blue"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{t("download")}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+            
+            <div className="border rounded-lg overflow-hidden">
+              {pdfError ? (
+                <div className="flex items-center justify-center py-12 bg-red-50">
+                  <div className="text-center">
+                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-red-700 font-medium mb-2">{t("fail")}</p>
+                    <p className="text-red-600 text-sm mb-4">{t("might")}</p>
+                    <Button
+                      onClick={() => {
+                        setPdfError(false);
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      {t("try")}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <embed
+                  src={pdfUrl}
+                  type="application/pdf"
+                  width="100%"
+                  height="500px"
+                  onError={handlePdfError}
+                  onLoad={handlePdfLoad}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function RejectionDialog({
+  certificate,
+  reject,
+  open,
+  onOpenChange,
+  isUpdating,
+  setIsUpdating
+}: {
+  certificate: Certificate;
+  reject: StatusType;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  isUpdating: boolean;
+  setIsUpdating: (updating: boolean) => void;
+}) {
+  const { t } = useLanguage();
+  const router = useRouter();
+  const [rejectionNote, setRejectionNote] = useState("");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-x-2">
+            <MessageSquareText className="w-5 h-5" /> 
+            {t("revision_note")}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <Textarea
+            value={rejectionNote}
+            onChange={(e) => setRejectionNote(e.target.value)}
+          />
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button 
+            variant="green" 
+            onClick={async () => {
+              if (!rejectionNote.trim()) {
+                toast.error(t("revision_note_required"));
+                return;
+              }
+
+              setIsUpdating(true);
+              window.dispatchEvent(new CustomEvent('certificate-updating', { 
+                detail: { certificateId: certificate.id, isUpdating: true } 
+              }))
+
+              try {
+                const token = getAccessToken();
+
+                const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/reject`, {
+                  method: 'PATCH',
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify({ 
+                    status: reject, 
+                    rejection_note: rejectionNote 
+                  }),
+                });
+                
+                if (!response.ok) {
+                  const error = await response.json();
+                  throw new Error(error.detail || 'Failed to reject');
+                }
+                
+                onOpenChange(false);
+                setRejectionNote("");
+                router.refresh();
+              } catch (error) {
+                console.error('Rejection error:', error);
+                toast.error(t("failed_status"));
+              } finally {
+                setIsUpdating(false);
+                window.dispatchEvent(new CustomEvent('certificate-updating', { 
+                  detail: { certificateId: certificate.id, isUpdating: false } 
+                }))
+              }
+            }}
+          >
+            {t("confirm")}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function RejectionNoteDisplay({ certificateId }: { certificateId: number }) {
   const { t } = useLanguage();
   const [note, setNote] = useState<string>("");
@@ -167,10 +506,7 @@ function RejectionNoteDisplay({ certificateId }: { certificateId: number }) {
     const fetchNote = async () => {
       try {
         // Get the token from cookies
-        const token = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('access_token='))
-          ?.split('=')[1];
+        const token = getAccessToken();
 
         const response = await fetch(
           `http://127.0.0.1:8000/api/dcc/${certificateId}/rejection-note`,
@@ -443,10 +779,7 @@ export const columns: ColumnDef<Certificate>[] = [
         
         try {
           // Get the token from cookies
-          const token = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('access_token='))
-            ?.split('=')[1];
+          const token = getAccessToken();
 
           const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/approve`, {
             method: 'PATCH',
@@ -486,18 +819,9 @@ export const columns: ColumnDef<Certificate>[] = [
           toast.error(`Failed to download PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
       };
-
-      const handleDownloadXML = async () => {
-        try {
-          await downloadDCCXML(certificate.id, certificate.certificateId);
-        } catch (error) {
-          // Show error message to user
-          toast.error(`Failed to download XML: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      };
       
-      let approve: StatusType;
-      let reject: StatusType;
+      let approve: StatusType = "approved_head";
+      let reject: StatusType = "rejected_head";
 
       if (isHead()) {
         approve = "approved_head";
@@ -507,89 +831,8 @@ export const columns: ColumnDef<Certificate>[] = [
         reject = "rejected_director";
       }
 
-      const [dialogOpen, setDialogOpen] = useState(false);
-      const [pdfError, setPdfError] = useState(false);
-      const [xmlText, setXmlText] = useState<string | null>(null);
-      const [xmlLoading, setXmlLoading] = useState(false);
-      const [xmlError, setXmlError] = useState<string | null>(null);
-
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('access_token='))
-        ?.split('=')[1];
-
-      const pdfUrl = `http://127.0.0.1:8000/view-dcc-pdf/${certificate.id}`;
-      const xmlUrl = `http://127.0.0.1:8000/view-dcc-xml/${certificate.id}`;
-
-      const handlePdfError = () => setPdfError(true);
-      const handlePdfLoad = () => setPdfError(false);
-
-      const formatXml = (xmlDoc: Document) => {
-        const serializer = new XMLSerializer();
-        const xmlString = serializer.serializeToString(xmlDoc.documentElement);
-        const PADDING = "  ";
-        const reg = /(>)(<)(\/*)/g;
-        let xml = xmlString.replace(reg, "$1\r\n$2$3");
-        let pad = 0;
-        return xml.split("\r\n").map((node) => {
-          let indent = "";
-          if (node.match(/.+<\/\w[^>]*>$/)) {
-            indent = PADDING.repeat(pad);
-          } else if (node.match(/^<\/\w/)) {
-            pad = Math.max(pad - 1, 0);
-            indent = PADDING.repeat(pad);
-          } else if (node.match(/^<\w([^>]*[^/])?>.*$/)) {
-            indent = PADDING.repeat(pad);
-            pad++;
-          } else {
-            indent = PADDING.repeat(pad);
-          }
-          return indent + node;
-        }).join("\n");
-      };
-
-      useEffect(() => {
-        const fetchXml = async () => {
-          if (!dialogOpen) return;
-          
-          setXmlText(null);
-          setXmlError(null);
-          setXmlLoading(true);
-          
-          try {
-            const res = await fetch(xmlUrl, { method: 'GET' });
-            if (!res.ok) throw new Error(`Status ${res.status}`);
-            const text = await res.text();
-
-            try {
-              const parser = new DOMParser();
-              const xmlDoc = parser.parseFromString(text, "application/xml");
-              const parserError = xmlDoc.getElementsByTagName("parsererror")[0];
-              if (parserError) {
-                setXmlText(text);
-              } else {
-                const pretty = formatXml(xmlDoc);
-                setXmlText(pretty);
-              }
-            } catch (e) {
-              setXmlText(text);
-            }
-          } catch (err: any) {
-            setXmlError(err?.message || "Failed to fetch XML");
-          } finally {
-            setXmlLoading(false);
-          }
-        };
-
-        fetchXml();
-      }, [dialogOpen, xmlUrl]);
-
-      const handleViewPdf = (url: string) => {
-        window.open(url, '_blank');
-      };
-
+      const [viewDialogOpen, setViewDialogOpen] = useState(false);
       const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
-      const [rejectionNote, setRejectionNote] = useState("");
 
       return (
         <TooltipProvider>
@@ -602,161 +845,20 @@ export const columns: ColumnDef<Certificate>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {certificate.status !== "approved_director" ? (
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}> 
-                      <Eye className="mr-2 h-4 w-4 text-sky-500" />
-                      {t("view")}
-                    </DropdownMenuItem>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-[95vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
-                    <DialogHeader>
-                      <DialogTitle>{t("view")} {certificate.certificateId}</DialogTitle>
-                    </DialogHeader>
-                    
-                    <div className="flex-1 overflow-y-auto space-y-6 py-4">
-                      <div id="xml" className="border rounded-lg p-4">
-                        <div className='flex justify-between items-center mb-4'>
-                          <h3 className="text-lg font-semibold flex items-center gap-2">
-                            <FileCode className="w-5 h-5 text-green-600" />
-                            XML
-                          </h3>
-                          <div className="flex gap-3">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  onClick={() => window.open(xmlUrl, '_blank')}
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex items-center gap-2"
-                                >
-                                  <SquareArrowOutUpRight className="w-4 h-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{t("tab")}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  onClick={handleDownloadXML}
-                                  variant="blue"
-                                  size="sm"
-                                  className="flex items-center gap-2"
-                                >
-                                  <Download className="w-4 h-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{t("download")}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                        </div>
-
-                        {xmlLoading ? (
-                          <p className="text-sm text-gray-600">{t("loading")}...</p>
-                        ) : xmlError ? (
-                          <div className="text-sm text-red-600">
-                            {t("xml_error")}: {xmlError}
-                          </div>
-                        ) : xmlText ? (
-                          <ScrollArea className="h-[300px] w-full pr-2">
-                            <SyntaxHighlighter
-                              language="xml"
-                              style={coy}
-                              customStyle={{
-                                fontSize: "0.875rem",
-                                background: "transparent",
-                                margin: 0,
-                                width: "max-content",
-                              }}
-                            >
-                              {xmlText}
-                            </SyntaxHighlighter>
-                            <ScrollBar orientation="horizontal" />
-                          </ScrollArea>
-                        ) : (
-                          <p className="text-sm text-gray-600">{t("loading")}...</p>
-                        )}
-                      </div>
-
-                      <div id="pdf" className="border rounded-lg p-4">
-                        <div className='flex justify-between items-center mb-4'>
-                          <h3 className="text-lg font-semibold flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-red-600" />
-                            PDF
-                          </h3>
-                          <div className="flex gap-3">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  onClick={() => handleViewPdf(pdfUrl)}
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex items-center gap-2"
-                                >
-                                  <SquareArrowOutUpRight className="w-4 h-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{t("tab")}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  onClick={handleDownloadPDF}
-                                  variant="blue"
-                                  size="sm"
-                                  className="flex items-center gap-2"
-                                >
-                                  <Download className="w-4 h-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{t("download")}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                        </div>
-                        
-                        <div className="border rounded-lg overflow-hidden">
-                          {pdfError ? (
-                            <div className="flex items-center justify-center py-12 bg-red-50">
-                              <div className="text-center">
-                                <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                                <p className="text-red-700 font-medium mb-2">{t("fail")}</p>
-                                <p className="text-red-600 text-sm mb-4">{t("might")}</p>
-                                <Button
-                                  onClick={() => {
-                                    setPdfError(false);
-                                  }}
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex items-center gap-2"
-                                >
-                                  <RefreshCw className="w-4 h-4" />
-                                  {t("try")}
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <embed
-                              src={pdfUrl}
-                              type="application/pdf"
-                              width="100%"
-                              height="500px"
-                              onError={handlePdfError}
-                              onLoad={handlePdfLoad}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <>
+                  <DropdownMenuItem onSelect={(e) => {
+                    e.preventDefault();
+                    setViewDialogOpen(true);
+                  }}> 
+                    <Eye className="mr-2 h-4 w-4 text-sky-500" />
+                    {t("view")}
+                  </DropdownMenuItem>
+                  <ViewDialog 
+                    certificate={certificate}
+                    open={viewDialogOpen}
+                    onOpenChange={setViewDialogOpen}
+                  />
+                </>
               ) : (
                 <DropdownMenuItem onClick={handleDownloadPDF}>
                   <Download className="mr-2 h-4 w-4 text-sky-500" /> 
@@ -844,79 +946,14 @@ export const columns: ColumnDef<Certificate>[] = [
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-x-2">
-                  <MessageSquareText className="w-5 h-5" /> 
-                  {t("revision_note")}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <Textarea
-                  value={rejectionNote}
-                  onChange={(e) => setRejectionNote(e.target.value)}
-                />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button 
-                  variant="green" 
-                  onClick={async () => {
-                    if (!rejectionNote.trim()) {
-                      toast.error(t("revision_note_required"));
-                      return;
-                    }
-
-                    setIsUpdating(true);
-                    // Dispatch event to update badge
-                    window.dispatchEvent(new CustomEvent('certificate-updating', { 
-                      detail: { certificateId: certificate.id, isUpdating: true } 
-                    }))
-
-                    try {
-                      // Get the token from cookies
-                      const token = document.cookie
-                        .split('; ')
-                        .find(row => row.startsWith('access_token='))
-                        ?.split('=')[1];
-
-                      const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/reject`, {
-                        method: 'PATCH',
-                        headers: { 
-                          'Content-Type': 'application/json',
-                          'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ 
-                          status: reject, 
-                          rejection_note: rejectionNote 
-                        }),
-                      });
-                      
-                      if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.detail || 'Failed to reject');
-                      }
-                      
-                      setRejectDialogOpen(false);
-                      setRejectionNote("");
-                      router.refresh();
-                    } catch (error) {
-                      console.error('Rejection error:', error);
-                      toast.error(t("failed_status"));
-                    } finally {
-                      setIsUpdating(false);
-                      // Dispatch event to stop updating badge
-                      window.dispatchEvent(new CustomEvent('certificate-updating', { 
-                        detail: { certificateId: certificate.id, isUpdating: false } 
-                      }))
-                    }
-                  }}
-                >
-                  {t("confirm")}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <RejectionDialog
+            certificate={certificate}
+            reject={reject}
+            open={rejectDialogOpen}
+            onOpenChange={setRejectDialogOpen}
+            isUpdating={isUpdating}
+            setIsUpdating={setIsUpdating}
+          />
         </TooltipProvider>
       )
     },

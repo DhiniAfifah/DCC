@@ -191,3 +191,10 @@ export const isAuthenticated = (): boolean => {
   const token = getToken();
   return token ? verifyToken(token) : false;
 };
+
+export const getAccessToken = (): string | undefined => {
+  return document.cookie
+    .split('; ')
+    .find(row => row.startsWith('access_token='))
+    ?.split('=')[1];
+};

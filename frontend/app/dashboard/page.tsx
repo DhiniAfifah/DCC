@@ -6,6 +6,7 @@ import { Certificate } from "./columns"
 import { useRouter } from "next/navigation"
 import { Spinner } from "@/components/ui/spinner"
 import { useLanguage } from "@/context/LanguageContext"
+import { getAccessToken } from "@/utils/auth"
 
 export default function Dashboard() {
   const [data, setData] = useState<Certificate[]>([])
@@ -17,10 +18,7 @@ export default function Dashboard() {
     async function fetchData() {
       try {
         // Get token from cookies (client-side)
-        const token = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('access_token='))
-          ?.split('=')[1];
+        const token = getAccessToken();
 
         if (!token) {
           console.error('No authentication token found');

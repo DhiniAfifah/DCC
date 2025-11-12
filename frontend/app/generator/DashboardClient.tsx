@@ -10,6 +10,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { toast } from "sonner"
 import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
+import { getAccessToken } from "@/utils/auth"
 
 interface Draft {
   id: number;
@@ -30,10 +31,7 @@ export default function DashboardClient() {
   async function getData(): Promise<Certificate[]> {
     try {
       // Get token from cookies
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('access_token='))
-        ?.split('=')[1];
+      const token = getAccessToken();
 
       if (!token) {
         console.error('No authentication token found');
@@ -109,10 +107,7 @@ export default function DashboardClient() {
       setIsLoadingDrafts(true);
       
       // Get token from cookies (more reliable than localStorage)
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('access_token='))
-        ?.split('=')[1];
+      const token = getAccessToken();
       
       if (!token) {
         console.error('No authentication token found for drafts');
@@ -153,10 +148,7 @@ export default function DashboardClient() {
   const handleDeleteDraft = async (draftId: number) => {
     try {
       // Get token from cookies
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('access_token='))
-        ?.split('=')[1];
+      const token = getAccessToken();
       
       if (!token) {
         console.error('No authentication token found');
