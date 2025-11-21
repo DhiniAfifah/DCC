@@ -214,12 +214,16 @@ export function useDccForm({ formType, blankTemplate, templates = {} }: UseDccFo
         conditions: Array.isArray(draft.data.conditions) ? draft.data.conditions : [],
         results: Array.isArray(draft.data.results) ? draft.data.results : [],
         statements: Array.isArray(draft.data.statements) ? draft.data.statements : [],
-        sheet_names: Array.isArray(draft.data.sheet_names) ? draft.data.sheet_names : [],
         administrative_data: draft.data.administrative_data || blankTemplate.administrative_data,
         Measurement_TimeLine: draft.data.Measurement_TimeLine || blankTemplate.Measurement_TimeLine,
         responsible_persons: draft.data.responsible_persons || blankTemplate.responsible_persons,
         owner: draft.data.owner || blankTemplate.owner,
         comment: draft.data.comment || blankTemplate.comment,
+        excel: draft.excel || "",
+        sheet_name: draft.sheet_name || "",
+        sheet_names: Array.isArray(draft.sheet_names) ? draft.sheet_names : [],
+        original_dcc_id: draft.data.original_dcc_id,
+        revision_number: draft.data.revision_number || 0,
       };
       
       setFormData(loadedData);
@@ -234,15 +238,82 @@ export function useDccForm({ formType, blankTemplate, templates = {} }: UseDccFo
     }
   };
 
-  // Check for draft parameter in URL
+  // Check for draft/edit parameter in URL
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const draftId = searchParams.get('draft');
+    const editId = searchParams.get('edit');
     
     if (draftId) {
       setTimeout(() => loadDraft(draftId), 100);
+    } else if (editId) {
+      const loadDccForEdit = async () => {
+        try {
+          setIsLoadingDraft(true);
+          const storedData = sessionStorage.getItem('editDccData');
+          
+          if (storedData) {
+            const dccData = JSON.parse(storedData);
+            
+            const transformedData = {
+              form_type: formType,
+              software: dccData.software || "",
+              version: dccData.version || "",
+              administrative_data: {
+                ...dccData.administrative_data,
+                used_languages: Array.isArray(dccData.administrative_data?.used_languages)
+                  ? dccData.administrative_data.used_languages.map((lang: any) => 
+                      typeof lang === 'object' && 'value' in lang ? lang : { value: lang }
+                    )
+                  : [],
+                mandatory_languages: Array.isArray(dccData.administrative_data?.mandatory_languages)
+                  ? dccData.administrative_data.mandatory_languages.map((lang: any) => 
+                      typeof lang === 'object' && 'value' in lang ? lang : { value: lang }
+                    )
+                  : [],
+              },
+              Measurement_TimeLine: dccData.Measurement_TimeLine || blankTemplate.Measurement_TimeLine,
+              objects: Array.isArray(dccData.objects) ? dccData.objects : [],
+              responsible_persons: dccData.responsible_persons || blankTemplate.responsible_persons,
+              owner: dccData.owner || blankTemplate.owner,
+              methods: Array.isArray(dccData.methods) ? dccData.methods : [],
+              equipments: Array.isArray(dccData.equipments) ? dccData.equipments : [],
+              conditions: Array.isArray(dccData.conditions) ? dccData.conditions : [],
+              results: Array.isArray(dccData.results) ? dccData.results : [],
+              statements: Array.isArray(dccData.statements) ? dccData.statements : [],
+              comment: dccData.comment || blankTemplate.comment,
+              excel: dccData.excel || "",
+              sheet_name: dccData.sheet_name || "",
+              sheet_names: Array.isArray(dccData.sheet_names) ? dccData.sheet_names : [],
+              original_dcc_id: dccData.original_dcc_id,
+              revision_number: (dccData.revision_number || 0) + 1,
+            };
+            
+            console.log("Transformed data for edit:", transformedData);
+        
+            setFormData(transformedData);
+            setFileName(dccData.excel || "");
+            
+            // Trigger template change with delay to ensure data is set
+            setTimeout(() => {
+              setTemplateChangeKey(prev => prev + 1);
+            }, 100);
+            
+            sessionStorage.removeItem('editDccData');
+            toast.success(t("loaded"));
+          }
+          
+          setIsLoadingDraft(false);
+        } catch (error) {
+          console.error('Error loading DCC for edit:', error);
+          toast.error(t("failed_to_load"));
+          setIsLoadingDraft(false);
+        }
+      };
+      
+      setTimeout(() => loadDccForEdit(), 100);
     }
-  }, [blankTemplate, t]);
+  }, [blankTemplate, formType, t]);
 
   const saveDraft = async (name: string, data: FormState) => {
     try {

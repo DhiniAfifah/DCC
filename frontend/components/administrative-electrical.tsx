@@ -220,18 +220,24 @@ export default function Administrative({
   });
 
   useEffect(() => {
-    const currentFormData = form.getValues();
     const hasTemplateChanged = templateChangeKey !== lastTemplateChangeKey;
     
-    // Only reset if template changed, not for regular updates
     if (hasTemplateChanged) {
-      form.reset(formData, { 
-        keepDirtyValues: false,
-        keepTouched: false
-      });
+      // Use setTimeout to ensure formData is fully updated
+      setTimeout(() => {
+        form.reset(formData, { 
+          keepDirtyValues: false,
+          keepTouched: false,
+          keepErrors: false,
+        });
+        
+        // Update local state
+        setPlace(formData.administrative_data?.tempat || "");
+      }, 0);
+      
       setLastTemplateChangeKey(templateChangeKey || 0);
     }
-  }, [templateChangeKey, lastTemplateChangeKey]);
+  }, [templateChangeKey, lastTemplateChangeKey, formData, form]);
 
   const [selectedPlace, setPlace] = useState<string>(
     form.getValues("administrative_data.tempat") || ""

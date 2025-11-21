@@ -81,9 +81,11 @@ const translations: Record<string, { id: string; en: string }> = {
     en: "Indicates required question",
   },
   
+  // Draft
   saved_drafts: { id: "Draf Tersimpan", en: "Saved Drafts" },
   no_draft: { id: "Tidak ada draf.", en: "No draft." },
   load: { id: "Muat", en: "Load" },
+  failed_to_load_drafts: { id: "Gagal memuat draf.", en: "Failed to load drafts." },
   save_draft: { id: "Simpan Draf", en: "Save Draft" },
   draft_desc: { id: "Progres Anda akan disimpan sebagai draf. Anda dapat kembali kapan saja untuk menyelesaikan dan mengirimnya.", 
                 en: "Your progress will be saved as a draft. You can return anytime to complete and submit it." },
@@ -434,6 +436,7 @@ const translations: Record<string, { id: string; en: string }> = {
     id: "Selamat datang di dasbor kepala laboratorium. Di sini Anda dapat melihat dan mengelola semua pengajuan DCC.", 
     en: "Welcome to the Head of Laboratory dashboard. Here you can view and manage all DCC submissions." 
   },
+
   search: { id: "Cari", en: "Search" },
   columns: { id: "Kolom", en: "Columns" },
   certificate_id: { id: "No. Sertifikat", en: "Certificate No." },
@@ -452,15 +455,23 @@ const translations: Record<string, { id: string; en: string }> = {
   approved_director: { id: "Disetujui oleh Direktur", en: "Approved by Director" },
   rejected_director: { id: "Ditolak oleh Direktur", en: "Rejected by Director" },
   aksi: { id: "Aksi", en: "Actions" },
+
   cant_undo: { id: "Aksi ini tidak dapat dibatalkan", en: "This action can't be undone" },
   no_result: { id: "Tidak ada hasil.", en: "No result." },
   failed_status: { id: "Gagal memperbarui status.", en: "Failed to update status." },
+  status_changed: { id: "Status diperbarui!", en: "Status changed!" },
+  no_revisions_found: { id: "Tidak ada revisi yang ditemukan", en: "No revisions found" },
 
   rejected_by: { id: "Ditolak oleh", en: "Rejected by" },
   rejected_at: { id: "Ditolak pada", en: "Rejected at" },
   revision_note: { id: "Catatan revisi", en: "Revision note" },
   revision_note_required: { id: "Catatan revisi dibutuhkan", en: "Revision note required" },
   confirm: { id: "Konfirmasi", en: "Confirm" },
+  
+  Revision_history: { id: "Riwayat revisi", en: "Revision history" },
+  Revision_History: { id: "Riwayat Revisi", en: "Revision History" },
+  original: { id: "Asli", en: "Original" },
+  revision: { id: "Revisi", en: "Revision" },
 
   // Spinner"
   authentication: { id: "Memeriksa autentikasi", en: "Checking authentication"},

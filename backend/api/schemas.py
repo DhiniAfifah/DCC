@@ -248,6 +248,13 @@ class DCCFormCreate(BaseModel):
     statements: List[Statements]  # Catatan
     comment: Optional[Comment]
 
+    original_dcc_id: Optional[int] = None
+    revision_number: Optional[int] = 0
+    revised_badge: bool = False
+    has_been_revised: bool = False
+    a_revision_is_approved_by_head: bool = False
+    a_revision_is_approved_by_director: bool = False
+
 class ExcelFileResponse(BaseModel):
     excel_file_path: str
 
@@ -271,6 +278,13 @@ class DCCResponse(BaseModel):
     sheet_name: str
     statements: List[Statements]  # Catatan
     comment: Optional[Comment]
+
+    original_dcc_id: Optional[int] = None
+    revision_number: Optional[int] = 0
+    revised_badge: bool = False
+    has_been_revised: bool = False
+    a_revision_is_approved_by_head: bool = False
+    a_revision_is_approved_by_director: bool = False
     
     class Config:
         from_attributes = True
@@ -298,6 +312,10 @@ class RejectionNoteResponse(BaseModel):
     note: str
     created_at: datetime
     rejected_by: str
+
+class RejectionInfoForRevision(BaseModel):
+    rejector_role: str
+    has_been_rejected: bool
 
 class DCCEditResponse(BaseModel):
     id: int

@@ -207,6 +207,7 @@ export default function DccFormWrapper({
       <div className="space-y-10">
         {currentStep === 0 && (
           <AdministrativeComponent
+            key={`admin-${templateChangeKey}`}
             formData={formData}
             updateFormData={updateFormData}
             templateChangeKey={templateChangeKey}

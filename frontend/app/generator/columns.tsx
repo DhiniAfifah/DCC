@@ -13,7 +13,10 @@ import {
   FileCode, 
   SquareArrowOutUpRight, 
   MessageSquareText, 
-  Pencil 
+  Pencil,
+  Check, 
+  X, 
+  History,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -47,6 +50,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useState, useEffect } from "react"
 import { getAccessToken } from "@/utils/auth"
+import { Spinner } from "@/components/ui/spinner"
 
 export type Certificate = {
     id: number
@@ -56,13 +60,16 @@ export type Certificate = {
     submitter: string
     lab: string
     status: "pending_head" | "approved_head" | "rejected_head" | "approved_director" | "rejected_director"
+    effective_status?: "pending_head" | "approved_head" | "rejected_head" | "approved_director" | "rejected_director"
+    rejector_role?: "head" | "director"
+    has_been_rejected?: boolean
+    original_dcc_id?: number
+    revision_number?: number
+    revised_badge?: boolean
+    has_been_revised?: boolean
+    a_revision_is_approved_by_head?: boolean
+    a_revision_is_approved_by_director?: boolean
 }
-
-type StatusType =
-  | "approved_head"
-  | "rejected_head"
-  | "approved_director"
-  | "rejected_director";
 
 const downloadDCCPDF = async (id: number, certificateId: string) => {
   try {
@@ -392,7 +399,11 @@ function ViewDialog({
   );
 }
 
-function RejectionNoteDisplay({ certificateId }: { certificateId: number }) {
+function RejectionNoteDisplay({ 
+  certificateId,
+}: { 
+  certificateId: number;
+}) {
   const { t } = useLanguage();
   const [note, setNote] = useState<string>("");
   const [rejectedBy, setRejectedBy] = useState<string>("");
@@ -445,6 +456,266 @@ function RejectionNoteDisplay({ certificateId }: { certificateId: number }) {
     </div>
   );
 }
+
+function RevisionHistoryDialog({ 
+  certificateId,
+  certificate,
+  openView,
+  onOpenChangeView,
+}: { 
+  certificateId: number;
+  certificate: Certificate; 
+  openView: boolean; 
+  onOpenChangeView: (open: boolean) => void;
+}) {
+  const { t } = useLanguage();
+  const [revisions, setRevisions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [selectedRevision, setSelectedRevision] = useState<Certificate | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchRevisions = async () => {
+      if (!open) return;
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const token = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('access_token='))
+          ?.split('=')[1];
+
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/dcc/${certificateId}/revisions`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch revisions');
+        }
+        
+        const data = await response.json();
+        setRevisions(data);
+      } catch (err) {
+        console.error('Error fetching revisions:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRevisions();
+  }, [certificateId, open]);
+
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { variant: any; text: string }> = {
+      pending_head: { variant: "blue", text: t("pending_head") },
+      approved_head: { variant: "teal", text: t("approved_head") },
+      rejected_head: { variant: "red", text: t("rejected_head") },
+      approved_director: { variant: "green", text: t("approved_director") },
+      rejected_director: { variant: "red", text: t("rejected_director") },
+    };
+    
+    const config = statusMap[status] || { variant: "default", text: t("unknown") };
+    return <Badge variant={config.variant}>{config.text}</Badge>;
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date);
+    } catch {
+      return "Invalid date";
+    }
+  };
+  
+  const handleDownloadRevisionPDF = async (revisionId: number) => {
+    try {
+      await downloadDCCPDF(revisionId, certificate.certificateId);
+    } catch (error) {
+      toast.error(`Failed to download PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  return (
+    <div className="py-4">
+      {loading ? (
+        <div className="flex items-center justify-center py-8">
+          <Spinner className="h-8 w-8" />
+          <span className="ml-2">{t("loading")}...</span>
+        </div>
+      ) : error ? (
+        <div className="flex items-center justify-center py-8 text-red-600">
+          <AlertCircle className="w-5 h-5 mr-2" />
+          {t("error")}: {error}
+        </div>
+      ) : revisions.length === 0 ? (
+        <div className="flex items-center justify-center py-8 text-muted-foreground">
+          {t("no_revisions_found")}
+        </div>
+      ) : (
+        <ScrollArea className="h-[400px] pr-4">
+          <div className="space-y-4">
+            {revisions.map((revision, index) => (
+              <div 
+                key={revision.id}
+                className="border rounded-lg p-4"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold">
+                      {index === 0 
+                        ? t("original") 
+                        : `${t("revision")} ${index}`}
+                    </h4>
+                  </div>
+                  {getStatusBadge(revision.status)}
+                </div>
+                <div className="text-sm space-y-1">
+                  <p>
+                    <span className="font-medium">{t("submission_date")}:</span>{" "}
+                    {formatDate(revision.created_at)}
+                  </p>
+                  {/* <p>
+                    <span className="font-medium">{t("database_id")}:</span> {revision.id}
+                  </p> */}
+                  {(revision.status === "rejected_head" || revision.status === "rejected_director") && (
+                    <>
+                      <p>
+                        <span className="font-medium">{t("revision_note")}:</span>
+                      </p>
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <div className="whitespace-pre-wrap">{revision.rejection_note}</div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex justify-between gap-2 mt-3">
+                  {revision.status !== "approved_director" ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="flex items-center gap-1"
+                      onClick={() => {
+                        // Create a Certificate object for the revision
+                        setSelectedRevision({
+                          id: revision.id,
+                          certificateId: certificate.certificateId,
+                          date: revision.created_at,
+                          object: certificate.object,
+                          submitter: certificate.submitter,
+                          lab: certificate.lab,
+                          status: revision.status as any,
+                          original_dcc_id: certificate.id,
+                          revision_number: revision.revision_number,
+                        });
+                        setViewDialogOpen(true);
+                      }}
+                    >
+                      <Eye className="w-4 h-4 text-sky-500" />
+                      {t("view")}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="flex items-center gap-1"
+                      onClick={() => handleDownloadRevisionPDF(revision.id)}
+                    >
+                      <Download className="w-4 h-4 text-sky-500" />
+                      {t("download")}
+                    </Button>
+                  )}
+
+                  { 
+                    (
+                      (revision.status === "rejected_head" && !certificate.a_revision_is_approved_by_head) ||
+                      (revision.status === "rejected_director" && !certificate.a_revision_is_approved_by_director)
+                    ) && (
+                      <Button 
+                        variant="green"
+                        size="sm"
+                        onClick={() => {
+                          handleEditDCC({
+                            ...certificate,
+                            id: revision.id,
+                            status: revision.status as any,
+                            revision_number: revision.revision_number,
+                          }, router, t);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" /> 
+                        {t("Edit")}
+                      </Button>
+                    )
+                  }
+
+                  {selectedRevision && (
+                    <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+                      <ViewDialog 
+                        certificate={selectedRevision}
+                        open={viewDialogOpen}
+                        onOpenChange={setViewDialogOpen}
+                      />
+                    </Dialog>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      )}
+    </div>
+  );
+}
+
+const handleEditDCC = async (certificate: Certificate, router: any, t: any) => {
+  try {
+    const token = getAccessToken();
+
+    const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/data`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to load DCC data');
+    }
+    
+    const dccData = await response.json();
+
+    // Store complete DCC data
+    sessionStorage.setItem('editDccData', JSON.stringify(dccData));
+    
+    // Determine redirect path based on responsible persons
+    const kepala = dccData.responsible_persons?.kepala;
+    const redirectPath = kepala?.peran?.includes("Kelistrikan")
+      ? `/generator/electrical?edit=${certificate.id}` 
+      : `/generator/temperature?edit=${certificate.id}`;
+    
+    window.location.href = redirectPath;
+  } catch (error) {
+    console.error('Edit error:', error);
+    toast.error(t("failed_to_load_dcc"));
+  }
+};
 
 export const columns: ColumnDef<Certificate>[] = [
   {
@@ -602,26 +873,100 @@ export const columns: ColumnDef<Certificate>[] = [
     },
     cell: ({ row }) => {
       const { t } = useLanguage()
+      
       const status = row.getValue("status") as Certificate["status"]
+      const certificate = row.original
+
+      const [hasPendingHeadRevision, setHasPendingHeadRevision] = useState(false)
+      const [hasRejectedHeadRevision, setHasRejectedHeadRevision] = useState(false)
+      const [hasApprovedHeadRevision, setHasApprovedHeadRevision] = useState(false)
+      const [hasRejectedDirectorRevision, setHasRejectedDirectorRevision] = useState(false)
+      const [hasApprovedDirectorRevision, setHasApprovedDirectorRevision] = useState(false)
+
+      const [loading, setLoading] = useState(false)
+
+      useEffect(() => {
+        const checkRevisions = async () => {
+          setLoading(true)
+
+          try {
+            const token = document.cookie
+              .split('; ')
+              .find(row => row.startsWith('access_token='))
+              ?.split('=')[1]
+
+            const response = await fetch(
+              `http://127.0.0.1:8000/api/dcc/${certificate.id}/revisions`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              }
+            )
+            
+            if (response.ok) {
+              const revisions = await response.json();
+
+              const pending_head = revisions.some(
+                (rev: any) => rev.status === "pending_head"
+              );
+              const rejected_head = revisions.some(
+                (rev: any) => rev.status === "rejected_head"
+              );
+              const approved_head = revisions.some(
+                (rev: any) => rev.status === "approved_head"
+              );
+              const rejected_director = revisions.some(
+                (rev: any) => rev.status === "rejected_director"
+              );
+              const approved_director = revisions.some(
+                (rev: any) => rev.status === "approved_director"
+              );
+
+              setHasPendingHeadRevision(pending_head);
+              setHasRejectedHeadRevision(rejected_head);
+              setHasApprovedHeadRevision(approved_head);
+              setHasRejectedDirectorRevision(rejected_director);
+              setHasApprovedDirectorRevision(approved_director);
+            }
+          } catch (err) {
+            console.error('Error checking revisions:', err)
+          } finally {
+            setLoading(false)
+          }
+        }
+
+        checkRevisions()
+      }, [certificate.id])
 
       return (
         <Badge 
           variant={
+            hasApprovedDirectorRevision ? "green" :
+            hasApprovedHeadRevision ? "teal" :
+            hasRejectedDirectorRevision ? "red" :
+            hasPendingHeadRevision ? "blue" :
+            hasRejectedHeadRevision ? "red" :
             status === "pending_head" ? "blue" : 
-            status === "approved_head" ? "teal" : 
             status === "rejected_head" ? "red" : 
-            status === "approved_director" ? "green" : 
+            status === "approved_head" ? "teal" : 
             status === "rejected_director" ? "red" : 
+            status === "approved_director" ? "green" : 
             "default"
           }
           className="whitespace-nowrap"
         >
           {
+            hasApprovedDirectorRevision ? t("approved_director") : 
+            hasApprovedHeadRevision ? t("approved_head") :
+            hasRejectedDirectorRevision ? t("rejected_director") : 
+            hasPendingHeadRevision ? t("pending_head") :
+            hasRejectedHeadRevision ? t("rejected_head") :
             status === "pending_head" ? t("pending_head") : 
-            status === "approved_head" ? t("approved_head") : 
             status === "rejected_head" ? t("rejected_head") : 
-            status === "approved_director" ? t("approved_director") : 
+            status === "approved_head" ? t("approved_head") : 
             status === "rejected_director" ? t("rejected_director") : 
+            status === "approved_director" ? t("approved_director") : 
             t("unknown")
           }
         </Badge>
@@ -649,19 +994,20 @@ export const columns: ColumnDef<Certificate>[] = [
       };
 
       const [viewDialogOpen, setViewDialogOpen] = useState(false);
+      const [revisionDialogOpen, setRevisionDialogOpen] = useState(false);
 
       return (
-        <TooltipProvider>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {certificate.status !== "approved_director" ? (
-                <>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {!certificate.has_been_revised && certificate.status !== "approved_director" && (
+              <Dialog>
+                <DialogTrigger asChild>
                   <DropdownMenuItem onSelect={(e) => {
                     e.preventDefault();
                     setViewDialogOpen(true);
@@ -669,79 +1015,96 @@ export const columns: ColumnDef<Certificate>[] = [
                     <Eye className="mr-2 h-4 w-4 text-sky-500" />
                     {t("view")}
                   </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogContent className="max-w-[95vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
+                  <DialogHeader>
+                    <DialogTitle>{t("view")} {certificate.certificateId}</DialogTitle>
+                  </DialogHeader>
                   <ViewDialog 
                     certificate={certificate}
                     open={viewDialogOpen}
                     onOpenChange={setViewDialogOpen}
                   />
-                </>
-              ) : (
-                <DropdownMenuItem onClick={handleDownloadPDF}>
-                  <Download className="mr-2 h-4 w-4 text-sky-500" /> 
-                  {t("download")}
-                </DropdownMenuItem>
-              )}
+                </DialogContent>
+              </Dialog>
+            )}
 
-              {(certificate.status === "rejected_head" || certificate.status === "rejected_director") && (
-                <>
-                  <DropdownMenuSeparator />
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <MessageSquareText className="mr-2 h-4 w-4 text-red-600" />
-                        {t("revision_note")}
-                      </DropdownMenuItem>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle className="flex items-center gap-x-2">
-                          <MessageSquareText className="w-5 h-5" /> 
-                          {t("revision_note")}
-                        </DialogTitle>
-                      </DialogHeader>
-                      <RejectionNoteDisplay certificateId={certificate.id} />
-                    </DialogContent>
-                  </Dialog>
-                  <DropdownMenuItem 
-                    onClick={async () => {
-                      try {
-                        const token = getAccessToken();
+            {certificate.status === "approved_director" && (
+              <DropdownMenuItem onClick={handleDownloadPDF}>
+                <Download className="mr-2 h-4 w-4 text-sky-500" /> 
+                {t("download")}
+              </DropdownMenuItem>
+            )}
 
-                        const response = await fetch(`http://127.0.0.1:8000/api/dcc/${certificate.id}/data`, {
-                          headers: {
-                            'Authorization': `Bearer ${token}`
-                          }
-                        });
-                        
-                        if (!response.ok) {
-                          throw new Error('Failed to load DCC data');
-                        }
-                        
-                        const dccData = await response.json();
-                        
-                        // Determine redirect path based on responsible persons
-                        const kepala = dccData.responsible_persons?.kepala;
-                        const redirectPath = kepala?.peran?.includes("Kelistrikan") 
-                          ? `/generator/electrical?edit=${certificate.id}` 
-                          : `/generator/temperature?edit=${certificate.id}`;
-                        
-                        // Store DCC data in sessionStorage
-                        sessionStorage.setItem('editDccData', JSON.stringify(dccData));
-                        router.push(redirectPath);
-                      } catch (error) {
-                        console.error('Edit error:', error);
-                        toast.error(t("failed_to_load_dcc"));
-                      }
+            {certificate.has_been_revised && (
+              <Dialog open={revisionDialogOpen} onOpenChange={setRevisionDialogOpen}>
+                <DialogTrigger asChild>
+                 <DropdownMenuItem 
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      setRevisionDialogOpen(true);
                     }}
                   >
-                    <Pencil className="mr-2 h-4 w-4 text-green-600" />
-                    Edit
+                    <History className="mr-2 h-4 w-4 text-purple-600" />
+                    {t("Revision_history")}
                   </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TooltipProvider>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <History className="w-5 h-5" />
+                      {t("Revision_History")}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <RevisionHistoryDialog 
+                    certificateId={certificate.id}
+                    certificate={certificate}
+                    openView={viewDialogOpen}
+                    onOpenChangeView={setViewDialogOpen}
+                  />
+                </DialogContent>
+              </Dialog>
+            )}
+
+            {!certificate.has_been_revised && (
+              <>
+                <DropdownMenuSeparator />
+
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <MessageSquareText className="mr-2 h-4 w-4 text-red-600" />
+                      {t("revision_note")}
+                    </DropdownMenuItem>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-x-2">
+                        <MessageSquareText className="w-5 h-5" /> 
+                        {t("revision_note")}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <RejectionNoteDisplay certificateId={certificate.id} />
+                  </DialogContent>
+                </Dialog>
+              </>
+            )}
+
+            { 
+              !certificate.has_been_revised &&
+              !(certificate.a_revision_is_approved_by_head || certificate.a_revision_is_approved_by_director) && 
+              (certificate.status === "rejected_head" || certificate.status === "rejected_director") && 
+              (
+                <DropdownMenuItem 
+                  onClick={() => handleEditDCC(certificate, router, t)}
+                >
+                  <Pencil className="mr-2 h-4 w-4 text-green-600" />
+                  Edit
+                </DropdownMenuItem>
+              )
+            }
+          </DropdownMenuContent>
+        </DropdownMenu>
       )
     },
   },

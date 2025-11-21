@@ -44,6 +44,17 @@ class DCC(Base):
     rejected_by = Column(String(255), nullable=True)
     rejected_at = Column(DateTime, nullable=True)
 
+    rejector_role = Column(String(50), nullable=True)
+    has_been_rejected = Column(Boolean, default=False)
+
+    original_dcc_id = Column(Integer, ForeignKey('dcc.id'), nullable=True)
+    revision_number = Column(Integer, default=0)
+    revised_badge = Column(Boolean, default=False)
+    has_been_revised = Column(Boolean, default=False)
+    a_revision_is_approved_by_head = Column(Boolean, default=False)
+    a_revision_is_approved_by_director = Column(Boolean, default=False)
+    original_dcc = relationship("DCC", remote_side=[id], backref="revisions")
+
     signature_timestamp = Column(DateTime, nullable=True)
     signed_by = Column(String(255), nullable=True)
     

@@ -959,11 +959,19 @@ async def get_dcc_list(
         if current_user.role == UserRole.head:
             logging.info(f"🔍 Filtering DCCs for lab head: {current_user.full_name}")
             # For lab heads, only show DCCs where they are assigned as kepala
+            # Include revisions of director-rejected DCCs since heads need to review them
             all_dccs = query.all()
             filtered_dccs = []
             
             for dcc in all_dccs:
                 try:
+                    # Skip revisions of director-rejected DCCs - they should only appear in revision history
+                    if dcc.original_dcc_id:
+                        parent = db.query(models.DCC).filter(models.DCC.id == dcc.original_dcc_id).first()
+                        if parent and parent.status == DCCStatusEnum.rejected_director:
+                            logging.debug(f"⏭️ Skipping DCC {dcc.id} - revision of director-rejected DCC {parent.id}")
+                            continue
+                    
                     responsible_persons = dcc.responsible_persons
                     if isinstance(responsible_persons, str):
                         responsible_persons = json.loads(responsible_persons)
@@ -994,6 +1002,7 @@ async def get_dcc_list(
         elif current_user.role == UserRole.director:
             logging.info(f"🔍 Filtering DCCs for director: {current_user.full_name}")
             # Directors see DCCs where they are assigned as direktur and approved by heads
+            # Exclude revisions that belong to director-rejected sub-chains
             all_dccs = query.filter(
                 models.DCC.status.in_([
                     DCCStatusEnum.approved_head,
@@ -1006,6 +1015,23 @@ async def get_dcc_list(
             
             for dcc in all_dccs:
                 try:
+                    # Skip if this DCC has an original_dcc_id that points to a director-rejected DCC
+                    # This means it's a revision within a director-rejection sub-chain
+                    if dcc.original_dcc_id:
+                        parent = db.query(models.DCC).filter(models.DCC.id == dcc.original_dcc_id).first()
+                        if parent:
+                            # If parent was rejected by director, this is part of that sub-chain
+                            # and should only appear in revision history, not as a separate row
+                            if parent.status == DCCStatusEnum.rejected_director:
+                                logging.debug(f"⭕ Skipping DCC {dcc.id} - revision of director-rejected DCC {parent.id}")
+                                continue
+                            # Also check if parent itself is a revision of a director-rejected DCC
+                            if parent.original_dcc_id:
+                                grandparent = db.query(models.DCC).filter(models.DCC.id == parent.original_dcc_id).first()
+                                if grandparent and grandparent.status == DCCStatusEnum.rejected_director:
+                                    logging.debug(f"⭕ Skipping DCC {dcc.id} - nested revision in director-rejected chain")
+                                    continue
+                    
                     responsible_persons = dcc.responsible_persons
                     if isinstance(responsible_persons, str):
                         responsible_persons = json.loads(responsible_persons)
@@ -1068,6 +1094,38 @@ async def get_dcc_list(
                 responsible_persons = dcc.responsible_persons
                 if isinstance(responsible_persons, str):
                     responsible_persons = json.loads(responsible_persons)
+
+                # Calculate effective status based on revisions
+                effective_status = None
+                highest_revision_status = None
+                
+                if dcc.has_been_revised:
+                    # Get all revisions to determine the highest status
+                    original_id = dcc.original_dcc_id if dcc.original_dcc_id else dcc.id
+                    revisions = db.query(models.DCC).filter(
+                        models.DCC.original_dcc_id == original_id
+                    ).all()
+                    
+                    # Priority order for status determination
+                    status_priority = {
+                        'pending_head': 5,
+                        'approved_head': 4,
+                        'rejected_director': 3,
+                        'approved_director': 2,
+                        'rejected_head': 1
+                    }
+                    
+                    highest_priority = 0
+                    for rev in revisions:
+                        rev_status = rev.status.value if hasattr(rev.status, 'value') else rev.status
+                        priority = status_priority.get(rev_status, 0)
+                        if priority > highest_priority:
+                            highest_priority = priority
+                            highest_revision_status = rev_status
+                    
+                    # Use the highest revision status if it exists
+                    if highest_revision_status:
+                        effective_status = highest_revision_status
                 
                 result.append({
                     "id": dcc.id,
@@ -1077,7 +1135,16 @@ async def get_dcc_list(
                     "objects_description": objects_description,
                     "submitter": submitter_name,
                     "responsible_persons": responsible_persons,
-                    "status": getattr(dcc, 'status', 'pending_head')
+                    "status": getattr(dcc, 'status', 'pending_head'),
+                    "effective_status": effective_status,
+                    "original_dcc_id": getattr(dcc, 'original_dcc_id', None),
+                    "revision_number": getattr(dcc, 'revision_number', 0),
+                    "revised_badge": getattr(dcc, 'revised_badge', False),
+                    "has_been_revised": getattr(dcc, 'has_been_revised', False),
+                    "a_revision_is_approved_by_head": getattr(dcc, 'a_revision_is_approved_by_head', False),
+                    "a_revision_is_approved_by_director": getattr(dcc, 'a_revision_is_approved_by_director', False),
+                    "rejector_role": getattr(dcc, 'rejector_role', None),
+                    "rejection_note": getattr(dcc, 'rejection_note', None),
                 })
                 
             except (json.JSONDecodeError, AttributeError) as e:
@@ -1135,6 +1202,38 @@ async def get_dcc_list_generator(
                 responsible_persons = dcc.responsible_persons
                 if isinstance(responsible_persons, str):
                     responsible_persons = json.loads(responsible_persons)
+
+                # Calculate effective status based on revisions
+                effective_status = None
+                highest_revision_status = None
+                
+                if dcc.has_been_revised:
+                    # Get all revisions to determine the highest status
+                    original_id = dcc.original_dcc_id if dcc.original_dcc_id else dcc.id
+                    revisions = db.query(models.DCC).filter(
+                        models.DCC.original_dcc_id == original_id
+                    ).all()
+                    
+                    # Priority order for status determination
+                    status_priority = {
+                        'pending_head': 5,
+                        'approved_head': 4,
+                        'rejected_director': 3,
+                        'approved_director': 2,
+                        'rejected_head': 1
+                    }
+                    
+                    highest_priority = 0
+                    for rev in revisions:
+                        rev_status = rev.status.value if hasattr(rev.status, 'value') else rev.status
+                        priority = status_priority.get(rev_status, 0)
+                        if priority > highest_priority:
+                            highest_priority = priority
+                            highest_revision_status = rev_status
+                    
+                    # Use the highest revision status if it exists
+                    if highest_revision_status:
+                        effective_status = highest_revision_status
                 
                 result.append({
                     "id": dcc.id,
@@ -1144,7 +1243,16 @@ async def get_dcc_list_generator(
                     "objects_description": objects_description,
                     "submitter": submitter_name,
                     "responsible_persons": responsible_persons,
-                    "status": getattr(dcc, 'status', 'pending_head')
+                    "status": getattr(dcc, 'status', 'pending_head'),
+                    "effective_status": effective_status,
+                    "original_dcc_id": getattr(dcc, 'original_dcc_id', None),
+                    "revision_number": getattr(dcc, 'revision_number', 0),
+                    "revised_badge": getattr(dcc, 'revised_badge', False),
+                    "has_been_revised": getattr(dcc, 'has_been_revised', False),
+                    "a_revision_is_approved_by_head": getattr(dcc, 'a_revision_is_approved_by_head', False),
+                    "a_revision_is_approved_by_director": getattr(dcc, 'a_revision_is_approved_by_director', False),
+                    "rejector_role": getattr(dcc, 'rejector_role', None),
+                    "rejection_note": getattr(dcc, 'rejection_note', None),
                 })
                 
             except (json.JSONDecodeError, AttributeError) as e:
@@ -1187,8 +1295,51 @@ async def approve_dcc(
         if not dcc:
             raise HTTPException(status_code=404, detail=f"DCC with ID {dcc_id} not found")
         
+        # Get the original ID
+        original_id = dcc.original_dcc_id if dcc.original_dcc_id else dcc.id
+        
+        # If approving, reject all other revisions of the same DCC
+        if status_update.status in [DCCStatusEnum.approved_head, DCCStatusEnum.approved_director]:
+            # Get all revisions
+            all_revisions = db.query(DCC).filter(
+                (DCC.id == original_id) | (DCC.original_dcc_id == original_id),
+                DCC.id != dcc_id  # Exclude current DCC
+            ).all()
+            
+            # Reject all other revisions at the same level
+            reject_status = DCCStatusEnum.rejected_head if status_update.status == DCCStatusEnum.approved_head else DCCStatusEnum.rejected_director
+            
+            for rev in all_revisions:
+                if rev.status == DCCStatusEnum.pending_head or rev.status == DCCStatusEnum.approved_head:
+                    rev.status = reject_status
+                    if not rev.rejection_note:
+                        rev.rejection_note = "Auto-rejected: Another revision was approved"
+                    rev.rejected_by = "System"
+                    rev.rejected_at = datetime.now(timezone(timedelta(hours=7)))
+
+            # Update the original DCC's approval flags when a revision is approved
+            if dcc.original_dcc_id:  # This is a revision
+                original = db.query(DCC).filter(DCC.id == dcc.original_dcc_id).first()
+                if original:
+                    if status_update.status == DCCStatusEnum.approved_head:
+                        original.a_revision_is_approved_by_head = True
+                    elif status_update.status == DCCStatusEnum.approved_director:
+                        original.a_revision_is_approved_by_director = True
+        
         # Update the status
         dcc.status = status_update.status
+        
+        # Reset revised_badge when approved or rejected
+        if status_update.status in [DCCStatusEnum.approved_head, DCCStatusEnum.rejected_head,
+                                     DCCStatusEnum.approved_director, DCCStatusEnum.rejected_director]:
+            # Find the original DCC and reset its revised_badge
+            if dcc.original_dcc_id:
+                original = db.query(DCC).filter(DCC.id == dcc.original_dcc_id).first()
+                if original:
+                    original.revised_badge = False
+            
+            # Also check if this DCC itself has been marked with revised_badge
+            dcc.revised_badge = False
 
         # If director approves, update the issue date and regenerate PDF with embedded XML
         if status_update.status == DCCStatusEnum.approved_director:
@@ -1580,6 +1731,12 @@ async def create_dcc_streaming(
             
             # Get the final result
             result = await dcc_task
+
+            # If this is a revision, update the original DCC
+            if dcc.original_dcc_id:
+                original = db.query(DCC).filter(DCC.id == dcc.original_dcc_id).first()
+                if original:
+                    db.commit()
             
             # Process any remaining progress updates
             while not progress_queue.empty():
@@ -1746,19 +1903,23 @@ async def reject_dcc(
         
         # If rejecting, save the rejection note
         if status_update.status in [DCCStatusEnum.rejected_head, DCCStatusEnum.rejected_director]:
+            # Find the original DCC and reset its revised_badge
+            if dcc.original_dcc_id:
+                original = db.query(DCC).filter(DCC.id == dcc.original_dcc_id).first()
+                if original:
+                    original.revised_badge = False
+            
+            # Also reset this DCC's revised_badge
+            dcc.revised_badge = False
+            
             if not status_update.rejection_note or not status_update.rejection_note.strip():
                 raise HTTPException(status_code=400, detail="Rejection note is required when rejecting")
             dcc.rejection_note = status_update.rejection_note
             dcc.rejected_by = current_user.full_name or current_user.email
+            dcc.rejector_role = current_user.role
             dcc.rejected_at = datetime.now(timezone(timedelta(hours=7)))
+            dcc.has_been_rejected = True
             logging.info(f"DCC {dcc_id} rejected by {current_user.email} with note: {status_update.rejection_note[:50]}...")
-            db.commit()
-            db.refresh(dcc)
-        else:
-            # Clear rejection note if approving at head level
-            dcc.rejection_note = None
-            dcc.rejected_by = None
-            dcc.rejected_at = None
             db.commit()
             db.refresh(dcc)
         
@@ -1799,7 +1960,9 @@ async def get_rejection_note(
         return {
             "note": dcc.rejection_note,
             "rejected_by": dcc.rejected_by or "Unknown",
-            "rejected_at": dcc.rejected_at.isoformat() if dcc.rejected_at else None
+            "rejector_role": dcc.rejector_role or "Unknown",
+            "rejected_at": dcc.rejected_at.isoformat() if dcc.rejected_at else None,
+            "has_been_rejected": dcc.has_been_rejected
         }
     except HTTPException:
         raise
@@ -1813,7 +1976,6 @@ async def get_rejection_note(
 @app.get("/api/dcc/{dcc_id}/data")
 async def get_dcc_data(
     dcc_id: int,
-    current_user: schemas.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Get full DCC data for editing"""
@@ -1918,7 +2080,9 @@ async def get_dcc_data(
             "comment": safe_parse_json(dcc.comment),
             "excel": dcc.excel,
             "sheet_name": dcc.sheet_name,
-            "status": dcc.status.value if hasattr(dcc.status, 'value') else dcc.status
+            "status": dcc.status.value if hasattr(dcc.status, 'value') else dcc.status,
+            "original_dcc_id": dcc.id,
+            "revision_number": dcc.revision_number,
         }
         
         return result
@@ -2012,3 +2176,101 @@ async def verify_certificate(
             status_code=500,
             detail=f"Failed to verify certificate: {str(e)}"
         )
+    
+@app.get("/api/dcc/{dcc_id}/revisions")
+async def get_dcc_revisions(
+    dcc_id: int,
+    current_user: schemas.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get all revisions of a DCC based on user role"""
+    try:
+        # Find the DCC
+        dcc = db.query(DCC).filter(DCC.id == dcc_id).first()
+        if not dcc:
+            raise HTTPException(status_code=404, detail="DCC not found")
+        
+        revisions = []
+        
+        if current_user.role == UserRole.director:
+            # Directors see the sub-chain starting from director-level revisions
+            # If this DCC was rejected by director, show its chain
+            if dcc.status == DCCStatusEnum.rejected_director or dcc.original_dcc_id:
+                # Find the root of this director sub-chain
+                root_id = dcc_id
+                current = dcc
+                
+                # Trace back to find director-rejected parent or self
+                while current.original_dcc_id:
+                    parent = db.query(DCC).filter(DCC.id == current.original_dcc_id).first()
+                    if not parent:
+                        break
+                    if parent.status == DCCStatusEnum.rejected_director:
+                        root_id = parent.id
+                        break
+                    current = parent
+                
+                # Get this DCC and all its descendants
+                revisions = [db.query(DCC).filter(DCC.id == root_id).first()]
+                revisions.extend(
+                    db.query(DCC).filter(DCC.original_dcc_id == root_id).all()
+                )
+            else:
+                # This is a head-approved DCC, show just it
+                revisions = [dcc]
+        
+        else:  # Head or regular user
+            # Heads see the full original chain, including sub-chains from director rejections
+            # Find the true original (not rejected by director)
+            root_id = dcc_id
+            current = dcc
+            
+            while current.original_dcc_id:
+                parent = db.query(DCC).filter(DCC.id == current.original_dcc_id).first()
+                if not parent:
+                    break
+                # Stop if parent was rejected by director (this marks the start of original chain)
+                if parent.status == DCCStatusEnum.rejected_director:
+                    break
+                root_id = parent.id
+                current = parent
+            
+            # Recursively get all revisions in this chain and sub-chains
+            def get_all_descendants(parent_id: int) -> List[DCC]:
+                """Recursively get all descendants"""
+                direct_children = db.query(DCC).filter(DCC.original_dcc_id == parent_id).all()
+                all_descendants = list(direct_children)
+                
+                for child in direct_children:
+                    all_descendants.extend(get_all_descendants(child.id))
+                
+                return all_descendants
+            
+            # Get root and all its descendants
+            root = db.query(DCC).filter(DCC.id == root_id).first()
+            if root:
+                revisions = [root]
+                revisions.extend(get_all_descendants(root_id))
+        
+        # Remove duplicates and sort
+        seen = set()
+        unique_revisions = []
+        for rev in revisions:
+            if rev and rev.id not in seen:
+                seen.add(rev.id)
+                unique_revisions.append(rev)
+        
+        # Sort by revision number and creation date
+        unique_revisions.sort(key=lambda x: (x.revision_number, x.created_at or datetime.min))
+        
+        return [{
+            "id": rev.id,
+            "revision_number": rev.revision_number,
+            "status": rev.status.value,
+            "created_at": rev.created_at.isoformat() if rev.created_at else None,
+            "rejection_note": rev.rejection_note,
+        } for rev in unique_revisions]
+        
+    except Exception as e:
+        logging.error(f"Error fetching revisions: {str(e)}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to fetch revisions: {str(e)}")

@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dcc:digitalCalibrationCertificate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://ptb.de/dcc https://ptb.de/dcc/v3.3.0/dcc.xsd" xmlns:dcc="https://ptb.de/dcc" xmlns:si="https://ptb.de/si" schemaVersion="3.3.0">
+   <dcc:administrativeData>
+      <dcc:dccSoftware>
+         <dcc:software>
+            <dcc:name>
+               <dcc:content>DiCCA</dcc:content>
+            </dcc:name>
+            <dcc:release>0.1</dcc:release>
+         </dcc:software>
+      </dcc:dccSoftware>
+      <dcc:refTypeDefinitions>
+         <dcc:refTypeDefinition>
+            <dcc:name>
+               <dcc:content lang="de">Namensraum für Querschnitts-RefTypes</dcc:content>
+               <dcc:content lang="en">Namespace for Cross-Community RefTypes</dcc:content>
+            </dcc:name>
+            <dcc:description>
+               <dcc:content lang="de">Der Namensraum 'basic' beinhaltet allgemeine RefTypes die messgrößenübergreifend genutzt werden.</dcc:content>
+               <dcc:content lang="en">The "basic" namespace contains RefTypes common for multiple communities.</dcc:content>
+            </dcc:description>
+            <dcc:namespace>basic</dcc:namespace>
+            <dcc:link>https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=2</dcc:link>
+         </dcc:refTypeDefinition>
+         <dcc:refTypeDefinition>
+            <dcc:name>
+               <dcc:content lang="de">Namensraum für mathematische RefTypes</dcc:content>
+               <dcc:content lang="en">Namespace for mathematical RefTypes</dcc:content>
+            </dcc:name>
+            <dcc:description>
+               <dcc:content lang="de">Der Namensraum 'math' beinhaltet RefTypes mathematischer Operationen.</dcc:content>
+               <dcc:content lang="en">The "math" namespace contains RefTypes for mathematical operations.</dcc:content>
+            </dcc:description>
+            <dcc:namespace>math</dcc:namespace>
+            <dcc:link>https://digilab.ptb.de/dkd/refType/vocab/index.php?tema=292</dcc:link>
+         </dcc:refTypeDefinition>
+      </dcc:refTypeDefinitions>
+      <dcc:coreData>
+         <dcc:countryCodeISO3166_1>ID</dcc:countryCodeISO3166_1>
+         <dcc:usedLangCodeISO639_1>id</dcc:usedLangCodeISO639_1>
+         <dcc:usedLangCodeISO639_1>en</dcc:usedLangCodeISO639_1>
+         <dcc:mandatoryLangCodeISO639_1>id</dcc:mandatoryLangCodeISO639_1>
+         <dcc:uniqueIdentifier>S.14</dcc:uniqueIdentifier>
+         <dcc:identifications>
+            <dcc:identification refType="basic_orderNumber">
+               <dcc:issuer>calibrationLaboratory</dcc:issuer>
+               <dcc:value>I-14</dcc:value>
+               <dcc:name>
+                  <dcc:content>Nomor Order</dcc:content>
+               </dcc:name>
+            </dcc:identification>
+         </dcc:identifications>
+         <dcc:beginPerformanceDate>2025-11-12</dcc:beginPerformanceDate>
+         <dcc:endPerformanceDate>2025-11-13</dcc:endPerformanceDate>
+         <dcc:performanceLocation>laboratory</dcc:performanceLocation>
+         <dcc:issueDate></dcc:issueDate>
+      </dcc:coreData>
+      <dcc:items>
+         <dcc:item>
+            <dcc:name>
+               <dcc:content lang="id">SPRT Pt-25</dcc:content>
+               <dcc:content lang="en">SPRT Pt-25</dcc:content>
+            </dcc:name>
+            <dcc:manufacturer>
+               <dcc:name>
+                  <dcc:content>Fluke</dcc:content>
+               </dcc:name>
+            </dcc:manufacturer>
+            <dcc:model>5681</dcc:model>
+            <dcc:identifications>
+               <dcc:identification refType="basic_serialNumber">
+                  <dcc:issuer>manufacturer</dcc:issuer>
+                  <dcc:value>-</dcc:value>
+                  <dcc:name>
+                     <dcc:content lang="id">-</dcc:content>
+                     <dcc:content lang="en">-</dcc:content>
+                  </dcc:name>
+               </dcc:identification>
+            </dcc:identifications>
+         </dcc:item>
+      </dcc:items>
+      <dcc:calibrationLaboratory>
+         <dcc:calibrationLaboratoryCode>LK-070-IDN</dcc:calibrationLaboratoryCode>
+         <dcc:contact>
+            <dcc:name>
+               <dcc:content>Laboratorium Standar Nasional Satuan Ukuran, Badan Standarisasi Nasional (SNSU-BSN)</dcc:content>
+            </dcc:name>
+            <dcc:eMail>nmi@bsn.go.id</dcc:eMail>
+            <dcc:phone>Telephone +62-21-7560534, +62-21-7560571, Mobile +62-857-8085-7833</dcc:phone>
+            <dcc:link>www.bsn.go.id</dcc:link>
+            <dcc:location>
+               <dcc:city>Tangerang Selatan</dcc:city>
+               <dcc:countryCode>ID</dcc:countryCode>
+               <dcc:postCode>15314</dcc:postCode>
+               <dcc:state>Banten</dcc:state>
+               <dcc:street>KST BJ Habibie Setu</dcc:street>
+               <dcc:streetNo>Gedung 420</dcc:streetNo>
+            </dcc:location>
+         </dcc:contact>
+      </dcc:calibrationLaboratory>
+      <dcc:respPersons>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Kelvin Sapta Dewantara, S.Si.</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>199709242022031003</dcc:content>
+            </dcc:description>
+            <dcc:role>Pelaksana Kalibrasi</dcc:role>
+            <dcc:mainSigner>0</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>0</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>0</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Dr. Aditya Achmadi, S.Si., M.T.</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>198109032005021002</dcc:content>
+            </dcc:description>
+            <dcc:role>Penyelia Kalibrasi</dcc:role>
+            <dcc:mainSigner>0</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>0</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>0</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Dr. Aditya Achmadi, S.Si., M.T.</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>198109032005021002</dcc:content>
+            </dcc:description>
+            <dcc:role>Kepala Laboratorium SNSU Suhu</dcc:role>
+            <dcc:mainSigner>0</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>0</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>0</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+         <dcc:respPerson>
+            <dcc:person>
+               <dcc:name>
+                  <dcc:content>Dr. Ghufron Zaid</dcc:content>
+               </dcc:name>
+            </dcc:person>
+            <dcc:description>
+               <dcc:content>197111041990121001</dcc:content>
+            </dcc:description>
+            <dcc:role>Direktur SNSU Termoelektrik dan Kimia</dcc:role>
+            <dcc:mainSigner>1</dcc:mainSigner>
+            <dcc:cryptElectronicSignature>1</dcc:cryptElectronicSignature>
+            <dcc:cryptElectronicTimeStamp>1</dcc:cryptElectronicTimeStamp>
+         </dcc:respPerson>
+      </dcc:respPersons>
+      <dcc:customer>
+         <dcc:name>
+            <dcc:content>.</dcc:content>
+         </dcc:name>
+         <dcc:location>
+            <dcc:city>edit</dcc:city>
+            <dcc:countryCode>ID</dcc:countryCode>
+            <dcc:postCode>.</dcc:postCode>
+            <dcc:state>.</dcc:state>
+            <dcc:street>.</dcc:street>
+            <dcc:streetNo>.</dcc:streetNo>
+         </dcc:location>
+      </dcc:customer>
+      <dcc:statements>
+         <dcc:statement>
+            <dcc:declaration>
+               <dcc:content lang="id">Kalibrasi ini dilakukan pada rentang pengukuran (-38,8344 ~ 660,323) °C</dcc:content>
+               <dcc:content lang="en">The calibration is performed within the measurement range (-38,8344 ~ 660,323) °C</dcc:content>
+            </dcc:declaration>
+         </dcc:statement>
+         <dcc:statement refType="basic_metrologicallyTraceableToSI">
+            <dcc:declaration>
+               <dcc:content lang="id">Hasil kalibrasi tersebut tertelusur ke satuan pengukuran SI melalui Laboratorium Standar Nasional Satuan Ukuran (SNSU) — Badan Standardisasi Nasional (BSN).</dcc:content>
+               <dcc:content lang="en">The calibration results are traceable to the SI unit through the Laboratory of National Measurement Standards (NMS) — The National Standardization Agency (BSN).</dcc:content>
+            </dcc:declaration>
+         </dcc:statement>
+      </dcc:statements>
+   </dcc:administrativeData>
+   <dcc:measurementResults>
+      <dcc:measurementResult>
+         <dcc:name>
+            <dcc:content>Hasil Kalibrasi / Calibration Results</dcc:content>
+         </dcc:name>
+         <dcc:usedMethods>
+            <dcc:usedMethod refType="basic_calibrationMethod">
+               <dcc:name>
+                  <dcc:content lang="id">Metode Titik Tetap</dcc:content>
+                  <dcc:content lang="en">Fixed Point Method</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">Termometer Tahanan Platina Semi Standar (TTPS) Pt-100 dengan spesifikasi di atas dikalibrasi dengan metode titik tetap berdasarkan skala suhu internasional tahun 1990 (ITS-90) pada sub-rentang W_5 (-38,8344 °C — 29,7646 °C) dan sub-rentang W_7 (0.01 °C — 660.323 °C).</dcc:content>
+                  <dcc:content lang="en">The Semi Standard Platinum Resistance Thermometer (SPRT) Pt-100 with above specifications is calibrated by fixed point method in accordance with the International Temperature Scale of 1990 (ITS-90) in the sub-range W_5 (-38,8344 °C — 29,7646 °C) and in the sub-range W_7 (0.01 °C — 660.323 °C).</dcc:content>
+               </dcc:description>
+               <dcc:norm>ITS-90</dcc:norm>
+            </dcc:usedMethod>
+            <dcc:usedMethod refType="basic_calibrationMethod">
+               <dcc:name>
+                  <dcc:content lang="id">Persamaan untuk Konversi Suhu</dcc:content>
+                  <dcc:content lang="en">Equations for Temperature Conversion</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">Konversi suhu dalam derajat celcius (t_90/°C) dapat diperolah dengan persamaan ITS-90 sebagai berikut.</dcc:content>
+                  <dcc:content lang="en">The temperature conversion in unit of degree celcius (t_90/°C) can be obtained using the following ITS-90 equations.</dcc:content>
+                  <dcc:formula></dcc:formula>
+               </dcc:description>
+               <dcc:norm>ITS-90</dcc:norm>
+            </dcc:usedMethod>
+            <dcc:usedMethod refType="basic_calibrationMethod">
+               <dcc:name>
+                  <dcc:content lang="id">Koefisien D dan B</dcc:content>
+                  <dcc:content lang="en">D and B Coefficients</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">Koefisien-koefisien D_i dan B_i diperoleh dari dokumen ITS-90 sebagai berikut: D_0 = 439,932 854 ; D_1 = 472,418 020 ; D_2 = 37,684 494 ; D_3 = 7,472 018 ; D_4 = 2,920 828 ; D_5 = 0,005 184 ; D_6 = -0,963 864 ; D_7 = -0,188 732 ; D_8 = 0,191 203 ; D_9 = 0,049 025 ; B_0 = 0,183 324 722 ; B_1 = 0,240 975 303 ; B_2 = 0,209 108 771 ; B_3 = 0,190 439 972 ; B_4 = 0,142 648 498 ; B_5 = 0,077 993 465 ; B_6 = 0,012 475 611 ; B_7 = -0,032 267 127 ; B_8 = -0,075 291 522 ; B_9 = -0,056 470 670 ; B_10 = 0,076 201 285 ; B_11 = 0,123 893 204 ; B_12 = -0,029 201 193 ; B_13 = -0,091 173 542 ; B_14 = 0,001 317 696 ; B_15 = 0,026 025 526</dcc:content>
+                  <dcc:content lang="en">The coefficients D_i and B_i can be obtained from the ITS-90 official document as follows: D_0 = 439,932 854 ; D_1 = 472,418 020 ; D_2 = 37,684 494 ; D_3 = 7,472 018 ; D_4 = 2,920 828 ; D_5 = 0,005 184 ; D_6 = -0,963 864 ; D_7 = -0,188 732 ; D_8 = 0,191 203 ; D_9 = 0,049 025 ; B_0 = 0,183 324 722 ; B_1 = 0,240 975 303 ; B_2 = 0,209 108 771 ; B_3 = 0,190 439 972 ; B_4 = 0,142 648 498 ; B_5 = 0,077 993 465 ; B_6 = 0,012 475 611 ; B_7 = -0,032 267 127 ; B_8 = -0,075 291 522 ; B_9 = -0,056 470 670 ; B_10 = 0,076 201 285 ; B_11 = 0,123 893 204 ; B_12 = -0,029 201 193 ; B_13 = -0,091 173 542 ; B_14 = 0,001 317 696 ; B_15 = 0,026 025 526</dcc:content>
+               </dcc:description>
+               <dcc:norm>ITS-90</dcc:norm>
+            </dcc:usedMethod>
+            <dcc:usedMethod refType="basic_calibrationMethod">
+               <dcc:name>
+                  <dcc:content lang="id">Persamaan W_r</dcc:content>
+                  <dcc:content lang="en">W_r Equation</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">W_r(t_90) dapat diperoleh dari persamaan berikut:</dcc:content>
+                  <dcc:content lang="en">W_r(t_90) can be obtained using the following equations:</dcc:content>
+                  <dcc:formula></dcc:formula>
+               </dcc:description>
+               <dcc:norm>-</dcc:norm>
+            </dcc:usedMethod>
+            <dcc:usedMethod refType="basic_calibrationMethod">
+               <dcc:name>
+                  <dcc:content lang="id">Persamaan W</dcc:content>
+                  <dcc:content lang="en">W Equation</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">W(t_90) dapat diperoleh dari persamaan berikut, di mana R(t_90) adalah tahanan SSPRT pada suhu t dalam satuan Ω dan R(t_TPW) adalah tahanan SSPRT pada titik tripel air (0,01 °C) dalam satuan Ω.</dcc:content>
+                  <dcc:content lang="en">W(t_90) can be obtained using the following equations, where R(t_90) is the SPRT resistance at a temperature t in unit Ω and R(t_TPW) is the SPRT resistance at triple point of water (0,01 °C) in unit Ω.</dcc:content>
+                  <dcc:formula></dcc:formula>
+               </dcc:description>
+               <dcc:norm>-</dcc:norm>
+            </dcc:usedMethod>
+            <dcc:usedMethod refType="basic_calibrationMethod">
+               <dcc:name>
+                  <dcc:content lang="id">Koefisien a, b, c</dcc:content>
+                  <dcc:content lang="en">a, b, c Coefficients</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">Koefisien-koefisien a_5, b_5, a_7, b_7, dan c_7 diperoleh dari hasil kalibrasi pada arus eksitasi 1 mA: a_5 = -2,930 475 E-04 ; b_5 = 2,563 645 E-04 ; a_7 = -2,717 029 E-04 ; b_7 = -1,586 798 E-05 ; c_7 = 1,043 757 E-06</dcc:content>
+                  <dcc:content lang="en">The coefficients a_5, b_5, a_7, b_7, and c_7 were obtained from the calibration at exitation current of 1 mA: a_5 = -2,930 475 E-04 ; b_5 = 2,563 645 E-04 ; a_7 = -2,717 029 E-04 ; b_7 = -1,586 798 E-05 ; c_7 = 1,043 757 E-06</dcc:content>
+               </dcc:description>
+               <dcc:norm>-</dcc:norm>
+            </dcc:usedMethod>
+            <dcc:usedMethod refType="basic_calibrationMethod">
+               <dcc:name>
+                  <dcc:content lang="id">Ketidakpastian Rambatan</dcc:content>
+                  <dcc:content lang="en">Propagated Uncertainty</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">Ketidakpastian rambatan dalam satuan mK sebagai fungsi suhu U(t_90) pada rentang-rentang kalibrasi tersebut dapat diperkirakan dengan grafik berikut:</dcc:content>
+                  <dcc:content lang="en">The propagated uncertainty in unit of mK, as the function of temperature U(t_90) in the mentioned calibration ranges, can be estimated using the following chart:</dcc:content>
+                  <dcc:file>
+                     <dcc:fileName>propagated_uncertainty_low_temp.jpg</dcc:fileName>
+                     <dcc:mimeType>image/jpg</dcc:mimeType>
+                  </dcc:file>
+                  <dcc:file>
+                     <dcc:fileName>propagated_uncertainty_high_temp.jpg</dcc:fileName>
+                     <dcc:mimeType>image/jpg</dcc:mimeType>
+                  </dcc:file>
+               </dcc:description>
+               <dcc:norm>-</dcc:norm>
+            </dcc:usedMethod>
+            <dcc:usedMethod refType="basic_methodMeasurementUncertainty">
+               <dcc:name>
+                  <dcc:content lang="id">Ketidakpastian</dcc:content>
+                  <dcc:content lang="en">Uncertainty</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">Semua nilai ketidakpastian pada pengukuran ini dinyatakan pada tingkat kepercayaan 95% dengan faktor cakupan k = 2</dcc:content>
+                  <dcc:content lang="en">All the uncertainty values in this measurement are expressed at 95% confidence level with coverage factor of k = 2</dcc:content>
+               </dcc:description>
+               <dcc:norm>-</dcc:norm>
+            </dcc:usedMethod>
+         </dcc:usedMethods>
+         <dcc:measuringEquipments>
+            <dcc:measuringEquipment refType="basic_measurementStandard">
+               <dcc:name>
+                  <dcc:content lang="id">Hg TP Cell</dcc:content>
+                  <dcc:content lang="en">Hg TP Cell</dcc:content>
+               </dcc:name>
+               <dcc:manufacturer>
+                  <dcc:name>
+                     <dcc:content lang="id">5900</dcc:content>
+                     <dcc:content lang="en">5900</dcc:content>
+                  </dcc:name>
+               </dcc:manufacturer>
+               <dcc:identifications>
+                  <dcc:identification refType="basic_serialNumber">
+                     <dcc:issuer>manufacturer</dcc:issuer>
+                     <dcc:value>Hg 00001</dcc:value>
+                     <dcc:name>
+                        <dcc:content lang="id">Fluke</dcc:content>
+                        <dcc:content lang="en">Fluke</dcc:content>
+                     </dcc:name>
+                  </dcc:identification>
+               </dcc:identifications>
+            </dcc:measuringEquipment>
+            <dcc:measuringEquipment refType="basic_measurementStandard">
+               <dcc:name>
+                  <dcc:content lang="id">H2O TP Cell</dcc:content>
+                  <dcc:content lang="en">H2O TP Cell</dcc:content>
+               </dcc:name>
+               <dcc:manufacturer>
+                  <dcc:name>
+                     <dcc:content lang="id">-</dcc:content>
+                     <dcc:content lang="en">-</dcc:content>
+                  </dcc:name>
+               </dcc:manufacturer>
+               <dcc:identifications>
+                  <dcc:identification refType="basic_serialNumber">
+                     <dcc:issuer>manufacturer</dcc:issuer>
+                     <dcc:value>PTB4</dcc:value>
+                     <dcc:name>
+                        <dcc:content lang="id">PTB</dcc:content>
+                        <dcc:content lang="en">PTB</dcc:content>
+                     </dcc:name>
+                  </dcc:identification>
+               </dcc:identifications>
+            </dcc:measuringEquipment>
+            <dcc:measuringEquipment refType="basic_measurementStandard">
+               <dcc:name>
+                  <dcc:content lang="id">Ga MP Cell</dcc:content>
+                  <dcc:content lang="en">Ga MP Cell</dcc:content>
+               </dcc:name>
+               <dcc:manufacturer>
+                  <dcc:name>
+                     <dcc:content lang="id">HS 5943</dcc:content>
+                     <dcc:content lang="en">HS 5943</dcc:content>
+                  </dcc:name>
+               </dcc:manufacturer>
+               <dcc:identifications>
+                  <dcc:identification refType="basic_serialNumber">
+                     <dcc:issuer>manufacturer</dcc:issuer>
+                     <dcc:value>43013</dcc:value>
+                     <dcc:name>
+                        <dcc:content lang="id">Fluke</dcc:content>
+                        <dcc:content lang="en">Fluke</dcc:content>
+                     </dcc:name>
+                  </dcc:identification>
+               </dcc:identifications>
+            </dcc:measuringEquipment>
+            <dcc:measuringEquipment refType="basic_measurementStandard">
+               <dcc:name>
+                  <dcc:content lang="id">Sn FP Cell</dcc:content>
+                  <dcc:content lang="en">Sn FP Cell</dcc:content>
+               </dcc:name>
+               <dcc:manufacturer>
+                  <dcc:name>
+                     <dcc:content lang="id">HS 5925</dcc:content>
+                     <dcc:content lang="en">HS 5925</dcc:content>
+                  </dcc:name>
+               </dcc:manufacturer>
+               <dcc:identifications>
+                  <dcc:identification refType="basic_serialNumber">
+                     <dcc:issuer>manufacturer</dcc:issuer>
+                     <dcc:value>05065</dcc:value>
+                     <dcc:name>
+                        <dcc:content lang="id">Fluke</dcc:content>
+                        <dcc:content lang="en">Fluke</dcc:content>
+                     </dcc:name>
+                  </dcc:identification>
+               </dcc:identifications>
+            </dcc:measuringEquipment>
+            <dcc:measuringEquipment refType="basic_measurementStandard">
+               <dcc:name>
+                  <dcc:content lang="id">Zn FP Cell</dcc:content>
+                  <dcc:content lang="en">Zn FP Cell</dcc:content>
+               </dcc:name>
+               <dcc:manufacturer>
+                  <dcc:name>
+                     <dcc:content lang="id">HS 5926</dcc:content>
+                     <dcc:content lang="en">HS 5926</dcc:content>
+                  </dcc:name>
+               </dcc:manufacturer>
+               <dcc:identifications>
+                  <dcc:identification refType="basic_serialNumber">
+                     <dcc:issuer>manufacturer</dcc:issuer>
+                     <dcc:value>06070</dcc:value>
+                     <dcc:name>
+                        <dcc:content lang="id">Fluke</dcc:content>
+                        <dcc:content lang="en">Fluke</dcc:content>
+                     </dcc:name>
+                  </dcc:identification>
+               </dcc:identifications>
+            </dcc:measuringEquipment>
+            <dcc:measuringEquipment refType="basic_measurementStandard">
+               <dcc:name>
+                  <dcc:content lang="id">Al FP Cell</dcc:content>
+                  <dcc:content lang="en">Al FP Cell</dcc:content>
+               </dcc:name>
+               <dcc:manufacturer>
+                  <dcc:name>
+                     <dcc:content lang="id">HS 5927</dcc:content>
+                     <dcc:content lang="en">HS 5927</dcc:content>
+                  </dcc:name>
+               </dcc:manufacturer>
+               <dcc:identifications>
+                  <dcc:identification refType="basic_serialNumber">
+                     <dcc:issuer>manufacturer</dcc:issuer>
+                     <dcc:value>07096</dcc:value>
+                     <dcc:name>
+                        <dcc:content lang="id">Fluke</dcc:content>
+                        <dcc:content lang="en">Fluke</dcc:content>
+                     </dcc:name>
+                  </dcc:identification>
+               </dcc:identifications>
+            </dcc:measuringEquipment>
+            <dcc:measuringEquipment refType="basic_measurementStandard">
+               <dcc:name>
+                  <dcc:content lang="id">Thermometry Bridge</dcc:content>
+                  <dcc:content lang="en">Thermometry Bridge</dcc:content>
+               </dcc:name>
+               <dcc:manufacturer>
+                  <dcc:name>
+                     <dcc:content lang="id">20-P2273</dcc:content>
+                     <dcc:content lang="en">20-P2273</dcc:content>
+                  </dcc:name>
+               </dcc:manufacturer>
+               <dcc:identifications>
+                  <dcc:identification refType="basic_serialNumber">
+                     <dcc:issuer>manufacturer</dcc:issuer>
+                     <dcc:value>ITL42569-1</dcc:value>
+                     <dcc:name>
+                        <dcc:content lang="id">Isotech MicroK 70</dcc:content>
+                        <dcc:content lang="en">Isotech MicroK 70</dcc:content>
+                     </dcc:name>
+                  </dcc:identification>
+               </dcc:identifications>
+            </dcc:measuringEquipment>
+         </dcc:measuringEquipments>
+         <dcc:influenceConditions>
+            <dcc:influenceCondition>
+               <dcc:name>
+                  <dcc:content>Suhu</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">-</dcc:content>
+                  <dcc:content lang="en">-</dcc:content>
+               </dcc:description>
+               <dcc:data>
+                  <dcc:quantity refType="math_minimum">
+                     <dcc:name>
+                        <dcc:content>nilai minimum</dcc:content>
+                     </dcc:name>
+                     <si:real>
+                        <si:value>21.4</si:value>
+                        <si:unit>\degreecelsius</si:unit>
+                     </si:real>
+                  </dcc:quantity>
+                  <dcc:quantity refType="math_maximum">
+                     <dcc:name>
+                        <dcc:content>nilai maksimum</dcc:content>
+                     </dcc:name>
+                     <si:real>
+                        <si:value>21.4</si:value>
+                        <si:unit>\degreecelsius</si:unit>
+                     </si:real>
+                  </dcc:quantity>
+               </dcc:data>
+            </dcc:influenceCondition>
+            <dcc:influenceCondition>
+               <dcc:name>
+                  <dcc:content>Kelembapan</dcc:content>
+               </dcc:name>
+               <dcc:description>
+                  <dcc:content lang="id">-</dcc:content>
+                  <dcc:content lang="en">-</dcc:content>
+               </dcc:description>
+               <dcc:data>
+                  <dcc:quantity refType="math_minimum">
+                     <dcc:name>
+                        <dcc:content>nilai minimum</dcc:content>
+                     </dcc:name>
+                     <si:real>
+                        <si:value>62.6</si:value>
+                        <si:unit>\percent</si:unit>
+                     </si:real>
+                  </dcc:quantity>
+                  <dcc:quantity refType="math_maximum">
+                     <dcc:name>
+                        <dcc:content>nilai maksimum</dcc:content>
+                     </dcc:name>
+                     <si:real>
+                        <si:value>62.6</si:value>
+                        <si:unit>\percent</si:unit>
+                     </si:real>
+                  </dcc:quantity>
+               </dcc:data>
+            </dcc:influenceCondition>
+         </dcc:influenceConditions>
+         <dcc:results>
+            <dcc:result>
+               <dcc:name>
+                  <dcc:content lang="id">Hasil Kalibrasi SSPRT Pt-100 Menggunakan Metode Titik Tetap</dcc:content>
+                  <dcc:content lang="en">Calibration Results of SSPRT Pt-100 using Fixed Points Method</dcc:content>
+               </dcc:name>
+               <dcc:data>
+                  <dcc:list>
+                     <dcc:quantity>
+                        <dcc:name>
+                           <dcc:content lang="id">Definisi Suhu</dcc:content>
+                           <dcc:content lang="en">Temp. Definitions</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>-38.8344 0.01 29.7646 231.928 419.527 660.323</si:valueXMLList>
+                           <si:unitXMLList>\degreecelsius \degreecelsius \degreecelsius \degreecelsius \degreecelsius \degreecelsius</si:unitXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                     <dcc:quantity refType="basic_measurementError">
+                        <dcc:name>
+                           <dcc:content lang="id">Penunjukkan SPRT</dcc:content>
+                           <dcc:content lang="en">SPRT Indications</dcc:content>
+                        </dcc:name>
+                        <si:realListXMLList>
+                           <si:valueXMLList>21.492790 25.459708 28.466701 48.183526 65.392049 85.933750</si:valueXMLList>
+                           <si:unitXMLList>\ohm \ohm \ohm \ohm \ohm \ohm</si:unitXMLList>
+                           <si:measurementUncertaintyUnivariateXMLList>
+                              <si:expandedMUXMLList>
+                                 <si:valueExpandedMUXMLList>4.3 1.2 5.1 8.0 10.0 10.0</si:valueExpandedMUXMLList>
+                                 <si:coverageFactorXMLList>2</si:coverageFactorXMLList>
+                                 <si:coverageProbabilityXMLList>0.95</si:coverageProbabilityXMLList>
+                                 <si:distributionXMLList>normal</si:distributionXMLList>
+                              </si:expandedMUXMLList>
+                           </si:measurementUncertaintyUnivariateXMLList>
+                        </si:realListXMLList>
+                     </dcc:quantity>
+                  </dcc:list>
+               </dcc:data>
+            </dcc:result>
+         </dcc:results>
+      </dcc:measurementResult>
+   </dcc:measurementResults>
+   <dcc:comment>
+      <dcc:name>
+         <dcc:content>-</dcc:content>
+      </dcc:name>
+      <dcc:description>
+         <dcc:content lang="id">-</dcc:content>
+         <dcc:content lang="en">-</dcc:content>
+      </dcc:description>
+   </dcc:comment>
+</dcc:digitalCalibrationCertificate>

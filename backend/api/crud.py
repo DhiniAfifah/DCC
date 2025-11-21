@@ -57,7 +57,7 @@ def get_progress_message(key: str, lang: str = 'en') -> str:
 logging.basicConfig(level=logging.DEBUG)
 
 #path
-def get_project_paths(dcc: schemas.DCCFormCreate, db_id: int = None):
+def get_project_paths(dcc: schemas.DCCFormCreate, db_id: int = None, revision_number: int = 0):
     """Mengambil semua path berdasarkan struktur folder proyek"""
     try:
         backend_root = Path(__file__).parent.parent
@@ -78,7 +78,11 @@ def get_project_paths(dcc: schemas.DCCFormCreate, db_id: int = None):
                 # Don't raise error here, just log the warning
 
         if db_id is not None:
-            filename_base = f"{db_id}_{dcc.administrative_data.sertifikat}"
+            # Include revision number in filename if it's a revision
+            if revision_number > 0:
+                filename_base = f"{db_id}_{dcc.administrative_data.sertifikat}_rev{revision_number}"
+            else:
+                filename_base = f"{db_id}_{dcc.administrative_data.sertifikat}"
         else:
             filename_base = dcc.administrative_data.sertifikat
         
@@ -1000,6 +1004,53 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
                     })
             statements_data.append(statement_data)
 
+        # Determine revision number and original DCC ID
+        revision_number = 0
+        original_dcc_id = None
+
+        if hasattr(dcc, 'original_dcc_id') and dcc.original_dcc_id:
+            # This is a revision
+            original = db.query(models.DCC).filter(models.DCC.id == dcc.original_dcc_id).first()
+            if original:
+                # Check if the original was rejected by director
+                if original.status == models.DCCStatusEnum.rejected_director:
+                    # For director rejections, create a new chain
+                    original_dcc_id = dcc.original_dcc_id
+                    # Count revisions in this sub-chain
+                    sub_chain_revisions = db.query(models.DCC).filter(
+                        models.DCC.original_dcc_id == original_dcc_id
+                    ).all()
+                    revision_number = len(sub_chain_revisions) + 1
+                    
+                    # Mark the rejected DCC as having been revised
+                    original.has_been_revised = True
+                    original.revised_badge = True
+                else:
+                    # For head rejections or pending, continue the original chain
+                    if original.original_dcc_id:
+                        # The provided ID is itself a revision, find the true original
+                        true_original_id = original.original_dcc_id
+                    else:
+                        # This is the true original
+                        true_original_id = dcc.original_dcc_id
+                    
+                    # Get all DCCs in the original chain to find max revision number
+                    all_revisions = db.query(models.DCC).filter(
+                        (models.DCC.id == true_original_id) | (models.DCC.original_dcc_id == true_original_id)
+                    ).all()
+                    
+                    max_revision = max([r.revision_number for r in all_revisions], default=0)
+                    revision_number = max_revision + 1
+                    original_dcc_id = true_original_id
+                    
+                    # Mark the true original as having been revised
+                    original_to_update = db.query(models.DCC).filter(models.DCC.id == true_original_id).first()
+                    if original_to_update:
+                        original_to_update.has_been_revised = True
+                        original_to_update.revised_badge = True
+                
+                logging.info(f"Creating revision {revision_number} of DCC {original_dcc_id}")
+
         if progress_callback:
             progress_callback(40, get_progress_message("saving", language))
 
@@ -1021,6 +1072,11 @@ def create_dcc(db: Session, dcc: schemas.DCCFormCreate, progress_callback=None, 
             statement=json.dumps(statements_data),
             comment=comment_data,
             results=json.dumps(results_data),
+            original_dcc_id=original_dcc_id,
+            revision_number=revision_number,
+            revised_badge=False,
+            has_been_revised=False,
+            status=models.DCCStatusEnum.pending_head,
         )
 
         logging.info(f"Saving DCC: {dcc.administrative_data.sertifikat} to the database")
@@ -1324,6 +1380,7 @@ def regenerate_dcc_with_embedded_xml(db: Session, dcc_id: int):
         certificate_id = admin_data.get('sertifikat', f'DCC-{dcc_id}')
         
         filename_base = f"{dcc_id}_{certificate_id}"
+
         xml_path = dcc_files_dir / f"{filename_base}.xml"
         pdf_path = dcc_files_dir / f"{filename_base}.pdf"
         
@@ -1491,3 +1548,76 @@ def extract_corrections_from_database(db_dcc: models.DCC):
         logging.warning(f"Error extracting corrections from database: {e}")
     
     return corrections
+
+def get_dcc_revision_history(db: Session, dcc_id: int):
+    """
+    Get the complete revision history for a DCC
+    Returns all versions (original and all revisions)
+    """
+    try:
+        # Get the DCC
+        dcc = db.query(models.DCC).filter(models.DCC.id == dcc_id).first()
+        if not dcc:
+            return []
+        
+        # Determine the original DCC ID
+        original_id = dcc.original_dcc_id if dcc.original_dcc_id else dcc.id
+        
+        # Get all DCCs in this revision chain
+        revisions = db.query(models.DCC).filter(
+            (models.DCC.id == original_id) | (models.DCC.original_dcc_id == original_id)
+        ).order_by(models.DCC.revision_number.asc()).all()
+        
+        return [{
+            "id": rev.id,
+            "revision_number": rev.revision_number,
+            "status": rev.status.value if hasattr(rev.status, 'value') else rev.status,
+            "created_at": rev.created_at.isoformat() if rev.created_at else None,
+            "certificate_id": json.loads(rev.administrative_data).get('sertifikat', '') if isinstance(rev.administrative_data, str) else rev.administrative_data.get('sertifikat', ''),
+            "submitter_id": rev.submitter_id
+        } for rev in revisions]
+        
+    except Exception as e:
+        logging.error(f"Error getting revision history: {str(e)}")
+        return []
+    
+def can_edit_dcc(db: Session, dcc_id: int, user_id: int) -> dict:
+    """
+    Check if a DCC can be edited
+    Returns dict with 'can_edit' boolean and 'reason' if not editable
+    """
+    try:
+        dcc = db.query(models.DCC).filter(models.DCC.id == dcc_id).first()
+        
+        if not dcc:
+            return {"can_edit": False, "reason": "DCC not found"}
+        
+        # Check if user is the submitter
+        if dcc.submitter_id != user_id:
+            return {"can_edit": False, "reason": "Not the original submitter"}
+        
+        # Check if DCC is rejected (only rejected DCCs can be edited)
+        if dcc.status not in [models.DCCStatusEnum.rejected_head, models.DCCStatusEnum.rejected_director]:
+            return {"can_edit": False, "reason": "DCC is not in rejected status"}
+        
+        return {"can_edit": True, "reason": None}
+        
+    except Exception as e:
+        logging.error(f"Error checking if DCC can be edited: {str(e)}")
+        return {"can_edit": False, "reason": str(e)}
+    
+def get_certificate_filename(dcc: models.DCC) -> str:
+    """
+    Generate filename for DCC certificate including revision info
+    """
+    admin_data = dcc.administrative_data
+    if isinstance(admin_data, str):
+        admin_data = json.loads(admin_data)
+    
+    certificate_id = admin_data.get('sertifikat', f'DCC-{dcc.id}')
+    
+    # Include revision number if it's a revision
+    if dcc.revision_number > 0:
+        return f"{dcc.id}_{certificate_id}_rev{dcc.revision_number}"
+    else:
+        return f"{dcc.id}_{certificate_id}"
